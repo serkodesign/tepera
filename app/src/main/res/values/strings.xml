@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Tepera</string>
 
+    <!-- Базова доступність (SRS 5.4) — спільний опис для кнопки "Назад" у TopAppBar на всіх екранах -->
+    <string name="nav_back">Назад</string>
+
     <!-- v2.0: 5 дефолтних категорій (FR-2.1) — робочий список, підтвердити перед фазою 1 (SRS розділ 11) -->
     <string name="category_nature">Природа</string>
     <string name="category_reading">Читання</string>
@@ -40,6 +43,17 @@
     <string name="settings_target_label">Таргет Online-часу, хв/день</string>
     <string name="settings_exclusion_list_action">Виключені застосунки</string>
 
+    <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
+    <string name="backup_export_action">Експортувати дані (JSON)</string>
+    <string name="backup_import_action">Імпортувати дані (JSON)</string>
+    <string name="backup_export_success">Дані експортовано</string>
+    <string name="backup_export_failure">Не вдалося експортувати дані</string>
+    <string name="backup_import_success">Дані імпортовано</string>
+    <string name="backup_import_failure">Не вдалося імпортувати дані — перевірте файл</string>
+    <string name="backup_import_confirm_title">Замінити всі дані?</string>
+    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й таргет поточними даними з файлу. Це не можна скасувати.</string>
+    <string name="backup_import_confirm_action">Імпортувати</string>
+
     <!-- Exclusion List (FR-3.5) -->
     <string name="exclusion_list_screen_title">Виключені застосунки</string>
     <string name="exclusion_list_hint">Позначені застосунки не враховуються в Online-часі (напр. карти, е-читалки, банкінг)</string>
@@ -59,6 +73,7 @@
     <string name="category_color_label">Колір</string>
     <string name="dialog_save">Зберегти</string>
     <string name="dialog_cancel">Скасувати</string>
+    <string name="dialog_ok">Гаразд</string>
 
     <!-- Add entry (FR-1.1–1.4) -->
     <string name="add_entry_screen_title">Нова активність</string>
@@ -73,6 +88,7 @@
     <string name="add_entry_preset_format">+%d хв</string>
     <string name="add_entry_start_time_label">Початок</string>
     <string name="add_entry_end_time_label">Кінець</string>
+    <string name="time_field_format">%1$s: %2$s</string>
     <string name="add_entry_note_label">Нотатка (необов\'язково)</string>
     <string name="add_entry_note_counter">%1$d/%2$d</string>
     <string name="add_entry_save">Зберегти</string>

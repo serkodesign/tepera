@@ -83,7 +83,7 @@ fun AddEntryScreen(
                 title = { Text(stringResource(R.string.add_entry_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.nav_back))
                     }
                 }
             )
@@ -298,7 +298,9 @@ private fun TimeField(label: String, minuteOfDay: Int, onMinuteSelected: (Int) -
         "%02d:%02d".format(minuteOfDay / 60, minuteOfDay % 60)
     }
 
-    OutlinedButton(onClick = { showPicker = true }) { Text("$label: $formatted") }
+    OutlinedButton(onClick = { showPicker = true }) {
+        Text(stringResource(R.string.time_field_format, label, formatted))
+    }
 
     if (showPicker) {
         val pickerState = rememberTimePickerState(

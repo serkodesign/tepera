@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Cloud backup / device-transfer (API 31+) — правила уточнюються у Фазі 5 разом із ручним
-     JSON-експортом/імпортом. -->
+<!-- FR-6.1: cloud backup / device-transfer (API 31+), фінальні правила з Фази 5. Без <include>/
+     <exclude> — усе включається за замовчуванням, той самий підхід, що й backup_rules.xml
+     (pre-API 31): немає даних, які варто виключати з бекапу. -->
 <data-extraction-rules>
     <cloud-backup />
     <device-transfer />

@@ -71,10 +71,27 @@
       fallback-картка без наданого доступу до статистики використання; перевірено вживу
 
 ## Фаза 5 — Локалізація, доступність, бекап (~2 тижні)
-- [ ] UA/EN у strings.xml (вже є базовий набір під 5 категорій)
-- [ ] Android Auto Backup + ручний JSON експорт/імпорт
-- [ ] Firebase Crashlytics
-- [ ] Базова accessibility (системні дефолти)
+- [x] UA/EN у strings.xml — аудит усього UI виявив 2 хардкод-рядки поза ресурсами
+      (TimeField у AddEntryScreen, "OK" у CategoriesScreen), обидва виправлені; повна
+      відповідність ключів між values/ і values-en/ підтверджена
+- [x] Android Auto Backup + ручний JSON експорт/імпорт — `backup_rules.xml`/
+      `data_extraction_rules.xml` фіналізовані (повне включення, свідомо без винятків,
+      SRS розділ 5.2); новий `BackupRepository` (org.json, без нової залежності) + дві дії в
+      Налаштуваннях через SAF (`CreateDocument`/`OpenDocument`); імпорт ПОВНІСТЮ замінює
+      локальні дані (категорії/записи/excluded apps/таргет) в одній Room-транзакції, з
+      діалогом підтвердження; перевірено вживу — експорт → перегляд JSON adb → імпорт →
+      дані на Home ідентичні початковим
+- [x] Firebase Crashlytics — проєкт `tepera-8d00f` створено користувачем у Firebase Console,
+      `google-services.json` покладено в `app/` (у .gitignore з Фази 0, не в репозиторії).
+      Підключено окремий Gradle-плагін `com.google.firebase.crashlytics` (не лише google-services —
+      з версії Crashlytics Gradle plugin 3.x потрібен для завантаження mapping-файлів),
+      `firebase-bom:34.18.0` + `firebase-crashlytics` — СВІДОМО без `firebase-analytics`
+      (CLAUDE.md: лише crash-репортинг, жодної usage-аналітики). Перевірено вживу: застосунок
+      запускається без крашу, FirebaseSessions успішно фетчить remote-налаштування (мережеве
+      з'єднання з Firebase підтверджено)
+- [x] Базова accessibility (системні дефолти) — усі 5 кнопок "Назад" у TopAppBar мали
+      `contentDescription = null` (не оголошувались для TalkBack); додано спільний рядок
+      `nav_back` і застосовано на всіх екранах
 
 ## Фаза 6 — Інтеграція дизайну з Figma (1-2 тижні, паралельно з фазами 1-5)
 - [ ] Перенести стилі через Figma MCP-конектор у Theme.kt

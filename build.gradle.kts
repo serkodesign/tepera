@@ -11,4 +11,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.21" apply false
     id("com.google.devtools.ksp") version "2.3.11" apply false
     id("com.google.gms.google-services") version "4.5.0" apply false
+    // Crashlytics (Фаза 5) — окремий Gradle-плагін від google-services, потрібен для завантаження
+    // mapping-файлів і символів крашів.
+    id("com.google.firebase.crashlytics") version "3.0.8" apply false
 }

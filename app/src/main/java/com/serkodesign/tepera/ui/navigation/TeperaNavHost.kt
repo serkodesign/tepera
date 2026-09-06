@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
+import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
@@ -44,6 +45,7 @@ fun TeperaNavHost(
     excludedAppRepository: ExcludedAppRepository,
     installedAppsProvider: InstalledAppsProvider,
     settingsStore: SettingsStore,
+    backupRepository: BackupRepository,
     navController: NavHostController = rememberNavController(),
     // FR-4.1/4.4: тап по кнопці категорії на віджеті або по Quick Settings tile відкриває
     // MainActivity з цим "натяком" — обробляється один раз при вході, не при кожній рекомпозиції.
@@ -113,6 +115,7 @@ fun TeperaNavHost(
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 settingsStore = settingsStore,
+                backupRepository = backupRepository,
                 onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                 onBack = { navController.popBackStack() }
             )

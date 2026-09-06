@@ -7,6 +7,7 @@ import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
+import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
@@ -52,6 +53,8 @@ class TeperaApp : Application() {
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
 
     val installedAppsProvider: InstalledAppsProvider by lazy { InstalledAppsProvider(this) }
+
+    val backupRepository: BackupRepository by lazy { BackupRepository(database, settingsStore) }
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

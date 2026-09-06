@@ -17,6 +17,10 @@ interface CategoryDao {
     @Query("SELECT * FROM categories ORDER BY sortOrder ASC")
     fun observeAllCategories(): Flow<List<CategoryEntity>>
 
+    // FR-6.2: одноразовий (не Flow) зчит усіх категорій, включно з архівованими, для JSON-експорту.
+    @Query("SELECT * FROM categories ORDER BY sortOrder ASC")
+    suspend fun getAllOnce(): List<CategoryEntity>
+
     @Query("SELECT * FROM categories WHERE id = :id")
     suspend fun getById(id: String): CategoryEntity?
 
@@ -26,6 +30,11 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertDefaults(categories: List<CategoryEntity>)
 
+    // FR-6.2: імпорт JSON повністю замінює локальні дані — REPLACE, бо id категорій з бекапу
+    // мають зберегтись буквально (на них посилаються activityEntries.categoryId).
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(categories: List<CategoryEntity>)
+
     @Update
     suspend fun update(category: CategoryEntity)
 
@@ -34,4 +43,8 @@ interface CategoryDao {
     // адмін/debug-функціоналу, з UI MVP не викликається.
     @Query("DELETE FROM categories WHERE id = :id")
     suspend fun hardDeleteNotUsedInMvpUi(id: String)
+
+    // FR-6.2: очищення перед імпортом JSON-бекапу (повна заміна, не злиття).
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
 }

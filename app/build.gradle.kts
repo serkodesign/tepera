@@ -5,7 +5,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
-    // id("com.google.gms.google-services") // розкоментувати у фазі 5 (Crashlytics)
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -77,7 +78,8 @@ dependencies {
     // Графіки — Vico, без власного chart-движка (out-of-scope, SRS розділ 6)
     implementation("com.patrykandpatrick.vico:compose-m3:3.3.1")
 
-    // Crashlytics — підключити у фазі 5
-    // implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
-    // implementation("com.google.firebase:firebase-crashlytics-ktx")
+    // Crashlytics (Фаза 5) — лише crash-репортинг, СВІДОМО без firebase-analytics
+    // (CLAUDE.md: жодної usage-аналітики в MVP, тільки crash-репорти).
+    implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
+    implementation("com.google.firebase:firebase-crashlytics")
 }

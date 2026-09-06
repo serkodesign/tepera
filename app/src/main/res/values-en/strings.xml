@@ -2,6 +2,9 @@
 <resources>
     <string name="app_name">Tepera</string>
 
+    <!-- Basic accessibility (SRS 5.4) — shared "Back" description for the TopAppBar on every screen -->
+    <string name="nav_back">Back</string>
+
     <string name="category_nature">Nature</string>
     <string name="category_reading">Reading</string>
     <string name="category_hobby">Hobbies</string>
@@ -39,6 +42,17 @@
     <string name="settings_target_label">Online-time target, min/day</string>
     <string name="settings_exclusion_list_action">Excluded apps</string>
 
+    <!-- Backup (FR-6.1, FR-6.2) -->
+    <string name="backup_export_action">Export data (JSON)</string>
+    <string name="backup_import_action">Import data (JSON)</string>
+    <string name="backup_export_success">Data exported</string>
+    <string name="backup_export_failure">Failed to export data</string>
+    <string name="backup_import_success">Data imported</string>
+    <string name="backup_import_failure">Failed to import data — check the file</string>
+    <string name="backup_import_confirm_title">Replace all data?</string>
+    <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the target with the data from the file. This cannot be undone.</string>
+    <string name="backup_import_confirm_action">Import</string>
+
     <!-- Exclusion List (FR-3.5) -->
     <string name="exclusion_list_screen_title">Excluded apps</string>
     <string name="exclusion_list_hint">Checked apps are not counted toward Online time (e.g. maps, e-readers, banking)</string>
@@ -58,6 +72,7 @@
     <string name="category_color_label">Color</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_ok">OK</string>
 
     <!-- Add entry (FR-1.1–1.4) -->
     <string name="add_entry_screen_title">New activity</string>
@@ -72,6 +87,7 @@
     <string name="add_entry_preset_format">+%d min</string>
     <string name="add_entry_start_time_label">Start</string>
     <string name="add_entry_end_time_label">End</string>
+    <string name="time_field_format">%1$s: %2$s</string>
     <string name="add_entry_note_label">Note (optional)</string>
     <string name="add_entry_note_counter">%1$d/%2$d</string>
     <string name="add_entry_save">Save</string>

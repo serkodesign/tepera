@@ -87,7 +87,7 @@ fun CategoriesScreen(
                 title = { Text(stringResource(R.string.categories_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.nav_back))
                     }
                 }
             )
@@ -129,7 +129,7 @@ fun CategoriesScreen(
         AlertDialog(
             onDismissRequest = { limitReachedNotice = false },
             confirmButton = {
-                TextButton(onClick = { limitReachedNotice = false }) { Text("OK") }
+                TextButton(onClick = { limitReachedNotice = false }) { Text(stringResource(R.string.dialog_ok)) }
             },
             text = { Text(stringResource(R.string.category_custom_limit_reached)) }
         )
