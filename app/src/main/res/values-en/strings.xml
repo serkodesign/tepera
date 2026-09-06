@@ -13,12 +13,36 @@
     <string name="tile_quick_add">Add activity</string>
     <string name="usage_access_prompt_title">See your balance</string>
     <string name="usage_access_prompt_body">To show your screen-time vs real-life ratio, enable usage access in system settings</string>
+    <string name="usage_access_open_settings">Open settings</string>
+    <string name="usage_access_learn_more">Why is this needed?</string>
 
     <!-- Home -->
     <string name="home_screen_title">Today</string>
     <string name="home_no_entries_today">No entries logged today yet</string>
     <string name="minutes_short_format">%d min</string>
     <string name="categories_nav_action">Categories</string>
+    <string name="settings_nav_action">Settings</string>
+
+    <!-- Balance (FR-3.1–3.6) -->
+    <string name="balance_card_title">Today\'s balance</string>
+    <string name="balance_online_label">Online</string>
+    <string name="balance_offline_label">Offline</string>
+    <string name="balance_target_format">Target: %d min</string>
+
+    <!-- Usage access onboarding (FR-7.1) -->
+    <string name="onboarding_screen_title">Online/Offline balance</string>
+    <string name="onboarding_explanation">Tepera shows your screen-time vs real-life ratio for the day. This needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings. Offline logging stays fully functional without it.</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Settings (FR-3.4, FR-3.5) -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_target_label">Online-time target, min/day</string>
+    <string name="settings_exclusion_list_action">Excluded apps</string>
+
+    <!-- Exclusion List (FR-3.5) -->
+    <string name="exclusion_list_screen_title">Excluded apps</string>
+    <string name="exclusion_list_hint">Checked apps are not counted toward Online time (e.g. maps, e-readers, banking)</string>
+    <string name="exclusion_list_empty">No apps with usage history in the last 30 days</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>

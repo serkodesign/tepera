@@ -5,22 +5,36 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
+import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.repository.ExcludedAppRepository
+import com.serkodesign.tepera.data.repository.InstalledAppsProvider
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
+import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
+import com.serkodesign.tepera.ui.settings.ExclusionListScreen
+import com.serkodesign.tepera.ui.settings.SettingsScreen
 
 private object Routes {
     const val HOME = "home"
     const val ADD_ENTRY = "add_entry"
     const val CATEGORIES = "categories"
+    const val ONBOARDING = "onboarding"
+    const val SETTINGS = "settings"
+    const val EXCLUSION_LIST = "exclusion_list"
 }
 
 @Composable
 fun TeperaNavHost(
     categoryRepository: CategoryRepository,
     activityRepository: ActivityRepository,
+    balanceRepository: BalanceRepository,
+    excludedAppRepository: ExcludedAppRepository,
+    installedAppsProvider: InstalledAppsProvider,
+    settingsStore: SettingsStore,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = Routes.HOME) {
@@ -28,8 +42,12 @@ fun TeperaNavHost(
             HomeScreen(
                 categoryRepository = categoryRepository,
                 activityRepository = activityRepository,
+                balanceRepository = balanceRepository,
+                settingsStore = settingsStore,
                 onAddEntry = { navController.navigate(Routes.ADD_ENTRY) },
-                onOpenCategories = { navController.navigate(Routes.CATEGORIES) }
+                onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onShowOnboarding = { navController.navigate(Routes.ONBOARDING) }
             )
         }
         composable(Routes.ADD_ENTRY) {
@@ -43,6 +61,26 @@ fun TeperaNavHost(
         composable(Routes.CATEGORIES) {
             CategoriesScreen(
                 repository = categoryRepository,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                settingsStore = settingsStore,
+                onDone = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                settingsStore = settingsStore,
+                onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.EXCLUSION_LIST) {
+            ExclusionListScreen(
+                installedAppsProvider = installedAppsProvider,
+                excludedAppRepository = excludedAppRepository,
                 onBack = { navController.popBackStack() }
             )
         }

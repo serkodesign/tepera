@@ -16,6 +16,20 @@
 
     <!-- Свідомо ВІДСУТНІ: жодні локаційні дозволи (FR-7.2) -->
 
+    <!-- FR-3.5, спайк Фази 2 (ROADMAP.md): package visibility filtering (Android 11+) справді
+         блокує PackageManager.getApplicationInfo() для більшості пакетів, побачених через
+         UsageStatsManager, — підтверджено на реальному пристрої (Samsung S23). Замість
+         QUERY_ALL_PACKAGES (другий чутливий дозвіл, ризик Google Play review, SRS розділ 10)
+         достатньо задекларувати видимість застосунків із launcher-іконкою — це охоплює
+         практично всі застосунки, які користувач реально захоче виключити (карти, е-читалки,
+         банкінг), і НЕ вважається "чутливим" дозволом при review. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".TeperaApp"
         android:allowBackup="true"

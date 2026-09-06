@@ -25,8 +25,9 @@ data class OnlineOfflineBalance(
  */
 class BalanceRepository(
     private val context: Context,
-    private val excludedAppDao: ExcludedAppDao,
-    private val defaultTargetMinutes: Int = 180 // FR-3.4 дефолт, користувач може змінити через DataStore
+    private val excludedAppDao: ExcludedAppDao
+    // FR-3.4: сам таргет (дефолт 180 хв, налаштовується) живе в SettingsStore, не тут —
+    // BalanceRepository лише рахує Online-хвилини й знаменник Grace Period Buffer.
 ) {
 
     /**

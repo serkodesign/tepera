@@ -22,4 +22,7 @@ interface ExcludedAppDao {
 
     @Delete
     suspend fun delete(app: ExcludedAppEntity)
+
+    @Query("DELETE FROM excluded_apps WHERE packageName = :packageName")
+    suspend fun deleteByPackageName(packageName: String)
 }

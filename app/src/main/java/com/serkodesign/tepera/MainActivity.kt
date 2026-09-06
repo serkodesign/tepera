@@ -19,7 +19,11 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     TeperaNavHost(
                         categoryRepository = app.categoryRepository,
-                        activityRepository = app.activityRepository
+                        activityRepository = app.activityRepository,
+                        balanceRepository = app.balanceRepository,
+                        excludedAppRepository = app.excludedAppRepository,
+                        installedAppsProvider = app.installedAppsProvider,
+                        settingsStore = app.settingsStore
                     )
                 }
             }
