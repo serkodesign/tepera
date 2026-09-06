@@ -4,9 +4,11 @@
 // або на https://developer.android.com/studio/releases — вони змінюються часто.
 
 plugins {
-    id("com.android.application") version "8.7.0" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.20" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.20" apply false // обов'язковий окремий плагін з Kotlin 2.0+
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25" apply false // для Room
-    id("com.google.gms.google-services") version "4.4.2" apply false // Firebase — підключити у фазі 4
+    id("com.android.application") version "9.2.1" apply false
+    // Kotlin навмисно 2.3.21, не 2.4.x: остання опублікована KSP (2.3.11) ще не підтримує
+    // Kotlin 2.4.x — при розсинхроні падає з "unexpected jvm signature V" (станом на 09.2026).
+    id("org.jetbrains.kotlin.android") version "2.3.21" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.21" apply false
+    id("com.google.devtools.ksp") version "2.3.11" apply false
+    id("com.google.gms.google-services") version "4.5.0" apply false
 }

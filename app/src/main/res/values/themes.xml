@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ЗАГЛУШКА: лише для системного launch-екрана до setContent { } — весь UI на Compose,
+         тому платформовий Theme.Material без окремої бібліотеки достатньо (SRS 4.1). -->
+    <style name="Theme.Tepera" parent="@android:style/Theme.Material.Light.NoActionBar" />
+</resources>

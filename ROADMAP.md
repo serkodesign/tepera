@@ -5,14 +5,15 @@
 
 ## Фаза 0 — Налаштування та архітектура (~2 тижні)
 - [x] Вирішено: applicationId, категорії, віджет без live-таймера, Health Connect → post-MVP
-- [ ] Створити Gradle-проєкт з наявного скелету
-- [ ] Підключити Room, Compose, Vico, Glance, WorkManager (Crashlytics — фаза 5)
-- [ ] Перенести Kotlin-файли моделі даних (entity, dao, repository)
-- [ ] AppDatabase з явною міграційною стратегією
-- [ ] Repository-абстракція: Category, ActivityEntry, ExcludedApp, Balance
-- [ ] Базовий Theme.kt (заглушка до Figma)
-- [ ] Локальний анонімний device-ID (DataStore)
-- [ ] Паралельно: Google Play Developer акаунт, Git-репозиторій з `.gitignore` для keystore
+- [x] Створити Gradle-проєкт з наявного скелету (`./gradlew :app:assembleDebug` збирається)
+- [x] Підключити Room, Compose, Vico, Glance, WorkManager (Crashlytics — фаза 5)
+- [x] Перенести Kotlin-файли моделі даних (entity, dao, repository)
+- [x] AppDatabase з явною міграційною стратегією (schema export у `app/schemas/`, без `fallbackToDestructiveMigration()`)
+- [x] Repository-абстракція: Category, ActivityEntry, ExcludedApp, Balance
+- [x] Базовий Theme.kt (заглушка до Figma)
+- [x] Локальний анонімний device-ID (DataStore) — `DeviceIdProvider`
+- [x] Git-репозиторій з `.gitignore` для keystore (відновлено після випадкового видалення)
+- [ ] Google Play Developer акаунт — паралельна задача, не автоматизується звідси
 
 ## Фаза 1 — Базові екрани (~4 тижні)
 - [ ] **Підтвердити 5 дефолтних категорій зі стейкхолдером перед стартом** (SRS відкрите питання)

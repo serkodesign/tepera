@@ -2,8 +2,8 @@
 
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") // обов'язковий з Kotlin 2.0+, без нього compose { } нижче не спрацює
     id("com.google.devtools.ksp")
     // id("com.google.gms.google-services") // розкоментувати у фазі 5 (Crashlytics)
 }
@@ -28,9 +28,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
+}
+
+// NFR-5.3: явна стратегія Room-міграцій починається з експорту схеми — без цього немає з чим
+// звіряти Migration-об'єкти, коли з'явиться перша зміна схеми.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -42,9 +50,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
     // Room
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.8.4")
+    implementation("androidx.room:room-ktx:2.8.4")
+    ksp("androidx.room:room-compiler:2.8.4")
 
     // DataStore — анонімний device-ID (NFR-7.3) і налаштування таргету Online-часу (FR-3.4)
     implementation("androidx.datastore:datastore-preferences:1.1.1")

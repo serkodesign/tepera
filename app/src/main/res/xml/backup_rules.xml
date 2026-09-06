@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Auto Backup (pre-API 31) — правила уточнюються у Фазі 5 разом із ручним
+     JSON-експортом/імпортом. Порожньо = усе за замовчуванням. -->
+<full-backup-content />

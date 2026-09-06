@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ЗАГЛУШКА: кольори/форма адаптивної іконки переносяться з Figma у Фазі 6 (CLAUDE.md). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#2E4B3F" />
+</shape>
