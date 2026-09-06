@@ -19,9 +19,12 @@ data class OnlineOfflineBalance(
 /**
  * FR-3.1–3.6: доступ до статистики використання (UsageStatsManager) + Grace Period Buffer.
  *
- * ВАЖЛИВО: PACKAGE_USAGE_STATS — protected permission. queryUsageStats() поверне ПОРОЖНІЙ
- * список, якщо доступ не наданий через Налаштування (не кине exception) — саме тому
- * hasUsageAccess() перевіряється окремо, це і є основа для fallback-стану (FR-3.6).
+ * ВАЖЛИВО: PACKAGE_USAGE_STATS — protected permission. Коли доступ НІКОЛИ не надавався,
+ * queryUsageStats() справді повертає порожній список, без винятку. Але якщо доступ був
+ * наданий, а тоді користувач вручну вимкнув його в Налаштуваннях (Спеціальний доступ) —
+ * queryUsageStats() кидає SecurityException, а не повертає порожній список (підтверджено
+ * крашем на реальному пристрої). Обидва методи нижче явно ловлять SecurityException, інакше
+ * відкликаний посеред сесії доступ ламає fallback з FR-3.6 замість вмикати його.
  */
 class BalanceRepository(
     private val context: Context,
@@ -39,8 +42,12 @@ class BalanceRepository(
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val end = System.currentTimeMillis()
         val start = end - 1000 * 60 * 60 // остання година як контрольний інтервал
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
-        stats.isNotEmpty()
+        try {
+            val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
+            stats.isNotEmpty()
+        } catch (e: SecurityException) {
+            false
+        }
     }
 
     /**
@@ -59,12 +66,16 @@ class BalanceRepository(
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val excluded = excludedAppDao.getExcludedPackageNames().toSet()
 
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, from, to)
-        val totalForegroundMs = stats
-            .filterNot { it.packageName in excluded }
-            .sumOf { it.totalTimeInForeground }
+        try {
+            val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, from, to)
+            val totalForegroundMs = stats
+                .filterNot { it.packageName in excluded }
+                .sumOf { it.totalTimeInForeground }
 
-        (totalForegroundMs / 60_000L).toInt()
+            (totalForegroundMs / 60_000L).toInt()
+        } catch (e: SecurityException) {
+            0
+        }
     }
 
     /** FR-3.2: Grace Period Buffer — знаменник ніколи не менший за 180 хв. */
