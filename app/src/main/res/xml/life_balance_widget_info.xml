@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- FR-4.1–4.3: компактна 4x1 / розширена 4x2 через SizeMode.Responsive у TeperaWidget.kt.
-     updatePeriodMillis=0, бо оновлення веде WorkManager (~30 хв, Фаза 3), не система. -->
+<!-- FR-4.1–4.3: компактна 4x1 (250x60dp) / розширена 4x2 (250x120dp) через
+     SizeMode.Responsive у TeperaWidget.kt. updatePeriodMillis=0, бо оновлення веде
+     WorkManager (WidgetUpdateWorker, ~30 хв), не система. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="180dp"
-    android:minHeight="40dp"
+    android:minWidth="250dp"
+    android:minHeight="60dp"
     android:targetCellWidth="4"
     android:targetCellHeight="1"
+    android:maxResizeHeight="120dp"
     android:updatePeriodMillis="0"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

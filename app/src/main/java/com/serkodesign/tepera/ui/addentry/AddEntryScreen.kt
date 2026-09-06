@@ -64,10 +64,11 @@ fun AddEntryScreen(
     categoryRepository: CategoryRepository,
     activityRepository: ActivityRepository,
     onSaved: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    initialCategoryId: String? = null
 ) {
     val viewModel: AddEntryViewModel = viewModel(
-        factory = AddEntryViewModel.Factory(categoryRepository, activityRepository)
+        factory = AddEntryViewModel.Factory(categoryRepository, activityRepository, initialCategoryId)
     )
     val categories by viewModel.categories.collectAsState()
     val state by viewModel.uiState.collectAsState()

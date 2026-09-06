@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import android.content.Context
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 
@@ -56,11 +57,22 @@ fun categoryColor(colorHex: String): Color = runCatching { Color(android.graphic
  * (UA/EN), для кастомної — буквальний текст, який ввів користувач.
  */
 @Composable
-fun categoryDisplayName(category: CategoryEntity): String = when (category.nameKey) {
-    "nature" -> stringResource(R.string.category_nature)
-    "reading" -> stringResource(R.string.category_reading)
-    "hobby" -> stringResource(R.string.category_hobby)
-    "movement" -> stringResource(R.string.category_movement)
-    "sleep" -> stringResource(R.string.category_sleep)
-    else -> category.name
-}
+fun categoryDisplayName(category: CategoryEntity): String =
+    categoryDisplayName(category) { stringResource(it) }
+
+/**
+ * Non-Compose варіант для Jetpack Glance (FR-4.1) — Glance-композиції не мають доступу до
+ * compose-ui's stringResource(), лише до звичайного Context.getString().
+ */
+fun categoryDisplayName(category: CategoryEntity, context: Context): String =
+    categoryDisplayName(category) { context.getString(it) }
+
+private inline fun categoryDisplayName(category: CategoryEntity, resolve: (Int) -> String): String =
+    when (category.nameKey) {
+        "nature" -> resolve(R.string.category_nature)
+        "reading" -> resolve(R.string.category_reading)
+        "hobby" -> resolve(R.string.category_hobby)
+        "movement" -> resolve(R.string.category_movement)
+        "sleep" -> resolve(R.string.category_sleep)
+        else -> category.name
+    }

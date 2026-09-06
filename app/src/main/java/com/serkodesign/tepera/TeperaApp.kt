@@ -14,6 +14,7 @@ import com.serkodesign.tepera.data.repository.InstalledAppsProvider
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
+import com.serkodesign.tepera.widget.WidgetUpdateWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -61,5 +62,7 @@ class TeperaApp : Application() {
         applicationScope.launch {
             categoryRepository.ensureDefaultsSeeded(DefaultCategories.all)
         }
+        // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
+        WidgetUpdateWorker.schedule(this)
     }
 }

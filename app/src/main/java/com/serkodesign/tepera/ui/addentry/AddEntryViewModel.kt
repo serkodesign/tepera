@@ -26,7 +26,7 @@ private const val MAX_NOTE_LENGTH = 250
  * +60/+120), ручний ввід або інтервал (кінець - початок).
  */
 data class AddEntryUiState(
-    val selectedCategoryId: String? = null,
+    val selectedCategoryId: String? = null, // FR-4.1: може прийти передвибраним з кнопки віджета
     val mode: DurationMode = DurationMode.PRESETS,
     val presetMinutes: Int = 0,
     val manualMinutesText: String = "",
@@ -49,13 +49,14 @@ data class AddEntryUiState(
 
 class AddEntryViewModel(
     categoryRepository: CategoryRepository,
-    private val activityRepository: ActivityRepository
+    private val activityRepository: ActivityRepository,
+    initialCategoryId: String? = null
 ) : ViewModel() {
 
     val categories: StateFlow<List<CategoryEntity>> = categoryRepository.observeActiveCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    private val _uiState = MutableStateFlow(AddEntryUiState())
+    private val _uiState = MutableStateFlow(AddEntryUiState(selectedCategoryId = initialCategoryId))
     val uiState: StateFlow<AddEntryUiState> = _uiState.asStateFlow()
 
     fun selectCategory(categoryId: String) {
@@ -137,10 +138,11 @@ class AddEntryViewModel(
 
     class Factory(
         private val categoryRepository: CategoryRepository,
-        private val activityRepository: ActivityRepository
+        private val activityRepository: ActivityRepository,
+        private val initialCategoryId: String? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddEntryViewModel(categoryRepository, activityRepository) as T
+            AddEntryViewModel(categoryRepository, activityRepository, initialCategoryId) as T
     }
 }

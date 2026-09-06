@@ -43,6 +43,10 @@ interface ActivityEntryDao {
     )
     suspend fun sumDurationForCategory(categoryId: String, from: Long, to: Long): Int?
 
+    /** FR-4.6: "5-й слот" — коли востаннє логували цю категорію, щоб підсвітити занедбану (>3 днів). */
+    @Query("SELECT MAX(startTime) FROM activity_entries WHERE categoryId = :categoryId")
+    suspend fun lastLoggedTime(categoryId: String): Long?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entry: ActivityEntryEntity)
 
