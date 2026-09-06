@@ -17,11 +17,17 @@ import java.util.UUID
  *
  * "Видалення" з UI = isHidden = true, однаково для дефолтних і кастомної категорії (FR-2.3).
  * Реального видалення рядка з UI не викликається.
+ *
+ * nameKey — стабільний ключ ("nature", "reading", ...) для 5 дефолтних категорій, за яким UI
+ * резолвить локалізовану назву через strings.xml (UA/EN, CLAUDE.md). null для кастомної
+ * категорії — там name зберігає буквальний текст, який ввів користувач. Без nameKey назва
+ * дефолтної категорії застигла б у мові пристрою на момент першого запуску застосунку.
  */
 @Entity(tableName = "categories")
 data class CategoryEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
+    val nameKey: String? = null,
     val iconName: String,
     val colorHex: String,
     val isDefault: Boolean = false,

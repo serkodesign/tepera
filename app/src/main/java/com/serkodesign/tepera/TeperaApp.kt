@@ -2,6 +2,7 @@ package com.serkodesign.tepera
 
 import android.app.Application
 import androidx.room.Room
+import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
 import com.serkodesign.tepera.data.repository.ActivityRepository
@@ -11,6 +12,10 @@ import com.serkodesign.tepera.data.repository.ExcludedAppRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Без DI-фреймворку (CLAUDE.md) — ручний factory pattern. Усі залежності будуються тут
@@ -40,4 +45,15 @@ class TeperaApp : Application() {
     }
 
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onCreate() {
+        super.onCreate()
+        // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
+        // у CategoryDao), тож виклик щозапуску безпечний.
+        applicationScope.launch {
+            categoryRepository.ensureDefaultsSeeded(DefaultCategories.all)
+        }
+    }
 }

@@ -13,4 +13,47 @@
     <string name="tile_quick_add">Add activity</string>
     <string name="usage_access_prompt_title">See your balance</string>
     <string name="usage_access_prompt_body">To show your screen-time vs real-life ratio, enable usage access in system settings</string>
+
+    <!-- Home -->
+    <string name="home_screen_title">Today</string>
+    <string name="home_no_entries_today">No entries logged today yet</string>
+    <string name="minutes_short_format">%d min</string>
+    <string name="categories_nav_action">Categories</string>
+
+    <!-- Categories (FR-2.1–2.3) -->
+    <string name="categories_screen_title">Categories</string>
+    <string name="categories_section_active">Active</string>
+    <string name="categories_section_archived">Archived</string>
+    <string name="category_archive_action">Archive</string>
+    <string name="category_add_custom">Add your own category</string>
+    <string name="category_custom_limit_reached">You can only have one custom category</string>
+    <string name="category_dialog_title">New category</string>
+    <string name="category_name_label">Name</string>
+    <string name="category_name_required">Enter a name</string>
+    <string name="category_icon_label">Icon</string>
+    <string name="category_color_label">Color</string>
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+
+    <!-- Add entry (FR-1.1–1.4) -->
+    <string name="add_entry_screen_title">New activity</string>
+    <string name="add_entry_category_label">Category</string>
+    <string name="add_entry_category_empty">No active categories</string>
+    <string name="add_entry_mode_presets">Presets</string>
+    <string name="add_entry_mode_manual">Manual</string>
+    <string name="add_entry_mode_interval">Interval</string>
+    <string name="add_entry_duration_label">Duration: %1$d min</string>
+    <string name="add_entry_duration_minutes_label">Minutes</string>
+    <string name="add_entry_reset_duration">Reset</string>
+    <string name="add_entry_preset_format">+%d min</string>
+    <string name="add_entry_start_time_label">Start</string>
+    <string name="add_entry_end_time_label">End</string>
+    <string name="add_entry_note_label">Note (optional)</string>
+    <string name="add_entry_note_counter">%1$d/%2$d</string>
+    <string name="add_entry_save">Save</string>
+    <string name="add_entry_select_category_first">Choose a category first</string>
+    <string name="add_entry_interval_invalid">End time must be after start time</string>
+    <string name="add_entry_overlap_title">Overlapping time</string>
+    <string name="add_entry_overlap_body">There is already an overlapping entry in this category. Save anyway?</string>
+    <string name="add_entry_overlap_confirm">Save anyway</string>
 </resources>

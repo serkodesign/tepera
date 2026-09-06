@@ -10,7 +10,10 @@ plugins {
 
 android {
     namespace = "com.serkodesign.tepera"
-    compileSdk = 36
+    // compileSdk 37, окремо від targetSdk: новіший Compose BOM вимагає компіляції проти API 37,
+    // але targetSdk (нижче) свідомо лишається 36 — саме targetSdk, а не compileSdk, регулює
+    // Google Play політику з 31.08.2026 (SRS PUB-4, CLAUDE.md).
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.serkodesign.tepera"
@@ -43,11 +46,13 @@ ksp {
 
 dependencies {
     // Compose
-    implementation(platform("androidx.compose:compose-bom:2024.09.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.08.00"))
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")
-    implementation("androidx.activity:activity-compose:1.9.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.navigation:navigation-compose:2.10.0")
 
     // Room
     implementation("androidx.room:room-runtime:2.8.4")
@@ -55,19 +60,19 @@ dependencies {
     ksp("androidx.room:room-compiler:2.8.4")
 
     // DataStore — анонімний device-ID (NFR-7.3) і налаштування таргету Online-часу (FR-3.4)
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
 
     // v2.0: Health Connect ВИДАЛЕНО (перенесено на post-MVP, SRS 3.1)
 
     // Jetpack Glance — адаптивний домашній віджет (FR-4.1)
-    implementation("androidx.glance:glance-appwidget:1.1.1")
-    implementation("androidx.glance:glance-material3:1.1.1")
+    implementation("androidx.glance:glance-appwidget:1.2.0")
+    implementation("androidx.glance:glance-material3:1.2.0")
 
     // WorkManager — періодичне оновлення віджета (FR-4.3), ~30 хв інтервал
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
 
     // Графіки — Vico, без власного chart-движка (out-of-scope, SRS розділ 6)
-    implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-alpha.28")
+    implementation("com.patrykandpatrick.vico:compose-m3:3.3.1")
 
     // Crashlytics — підключити у фазі 5
     // implementation(platform("com.google.firebase:firebase-bom:33.4.0"))

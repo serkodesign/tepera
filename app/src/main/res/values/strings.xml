@@ -14,4 +14,47 @@
     <string name="tile_quick_add">Додати активність</string>
     <string name="usage_access_prompt_title">Дозвольте побачити баланс</string>
     <string name="usage_access_prompt_body">Щоб показати співвідношення екранного й реального часу, увімкніть доступ до статистики використання в системних налаштуваннях</string>
+
+    <!-- Home -->
+    <string name="home_screen_title">Сьогодні</string>
+    <string name="home_no_entries_today">Сьогодні ще немає записів</string>
+    <string name="minutes_short_format">%d хв</string>
+    <string name="categories_nav_action">Категорії</string>
+
+    <!-- Categories (FR-2.1–2.3) -->
+    <string name="categories_screen_title">Категорії</string>
+    <string name="categories_section_active">Активні</string>
+    <string name="categories_section_archived">Архівовано</string>
+    <string name="category_archive_action">Архівувати</string>
+    <string name="category_add_custom">Додати свою категорію</string>
+    <string name="category_custom_limit_reached">Можна мати лише одну власну категорію</string>
+    <string name="category_dialog_title">Нова категорія</string>
+    <string name="category_name_label">Назва</string>
+    <string name="category_name_required">Введіть назву</string>
+    <string name="category_icon_label">Іконка</string>
+    <string name="category_color_label">Колір</string>
+    <string name="dialog_save">Зберегти</string>
+    <string name="dialog_cancel">Скасувати</string>
+
+    <!-- Add entry (FR-1.1–1.4) -->
+    <string name="add_entry_screen_title">Нова активність</string>
+    <string name="add_entry_category_label">Категорія</string>
+    <string name="add_entry_category_empty">Немає активних категорій</string>
+    <string name="add_entry_mode_presets">Пресети</string>
+    <string name="add_entry_mode_manual">Вручну</string>
+    <string name="add_entry_mode_interval">Інтервал</string>
+    <string name="add_entry_duration_label">Тривалість: %1$d хв</string>
+    <string name="add_entry_duration_minutes_label">Хвилини</string>
+    <string name="add_entry_reset_duration">Скинути</string>
+    <string name="add_entry_preset_format">+%d хв</string>
+    <string name="add_entry_start_time_label">Початок</string>
+    <string name="add_entry_end_time_label">Кінець</string>
+    <string name="add_entry_note_label">Нотатка (необов\'язково)</string>
+    <string name="add_entry_note_counter">%1$d/%2$d</string>
+    <string name="add_entry_save">Зберегти</string>
+    <string name="add_entry_select_category_first">Спершу оберіть категорію</string>
+    <string name="add_entry_interval_invalid">Час завершення має бути пізніше початку</string>
+    <string name="add_entry_overlap_title">Перекриття часу</string>
+    <string name="add_entry_overlap_body">У цій категорії вже є запис, що перекривається за часом. Зберегти все одно?</string>
+    <string name="add_entry_overlap_confirm">Зберегти все одно</string>
 </resources>
