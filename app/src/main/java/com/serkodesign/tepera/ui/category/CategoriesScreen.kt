@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
+import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -107,12 +108,20 @@ fun CategoriesScreen(
         ) {
             item { SectionHeader(stringResource(R.string.categories_section_active)) }
             items(active, key = { it.id }) { category ->
-                CategoryRow(category = category, onArchive = { viewModel.archive(category.id) })
+                CategoryRow(
+                    category = category,
+                    isArchived = false,
+                    onToggleArchive = { viewModel.archive(category.id) }
+                )
             }
             if (archived.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.categories_section_archived)) }
                 items(archived, key = { it.id }) { category ->
-                    CategoryRow(category = category, onArchive = null)
+                    CategoryRow(
+                        category = category,
+                        isArchived = true,
+                        onToggleArchive = { viewModel.unarchive(category.id) }
+                    )
                 }
             }
         }
@@ -147,7 +156,7 @@ private fun SectionHeader(title: String) {
 }
 
 @Composable
-private fun CategoryRow(category: CategoryEntity, onArchive: (() -> Unit)?) {
+private fun CategoryRow(category: CategoryEntity, isArchived: Boolean, onToggleArchive: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -173,8 +182,13 @@ private fun CategoryRow(category: CategoryEntity, onArchive: (() -> Unit)?) {
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-            if (onArchive != null) {
-                IconButton(onClick = onArchive) {
+            IconButton(onClick = onToggleArchive) {
+                if (isArchived) {
+                    Icon(
+                        Icons.Filled.Unarchive,
+                        contentDescription = stringResource(R.string.category_unarchive_action)
+                    )
+                } else {
                     Icon(
                         Icons.Filled.Archive,
                         contentDescription = stringResource(R.string.category_archive_action)

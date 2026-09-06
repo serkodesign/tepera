@@ -3,6 +3,7 @@ package com.serkodesign.tepera
 import android.app.Application
 import androidx.room.Room
 import com.serkodesign.tepera.data.DefaultCategories
+import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
 import com.serkodesign.tepera.data.local.SettingsStore
@@ -51,6 +52,8 @@ class TeperaApp : Application() {
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
 
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
+
+    val activeTimerStore: ActiveTimerStore by lazy { ActiveTimerStore(this) }
 
     val installedAppsProvider: InstalledAppsProvider by lazy { InstalledAppsProvider(this) }
 

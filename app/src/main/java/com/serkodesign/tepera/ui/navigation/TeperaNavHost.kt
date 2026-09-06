@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
@@ -45,6 +46,7 @@ fun TeperaNavHost(
     excludedAppRepository: ExcludedAppRepository,
     installedAppsProvider: InstalledAppsProvider,
     settingsStore: SettingsStore,
+    activeTimerStore: ActiveTimerStore,
     backupRepository: BackupRepository,
     navController: NavHostController = rememberNavController(),
     // FR-4.1/4.4: тап по кнопці категорії на віджеті або по Quick Settings tile відкриває
@@ -65,6 +67,7 @@ fun TeperaNavHost(
                 activityRepository = activityRepository,
                 balanceRepository = balanceRepository,
                 settingsStore = settingsStore,
+                activeTimerStore = activeTimerStore,
                 onAddEntry = { navController.navigate(Routes.ADD_ENTRY) },
                 onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },

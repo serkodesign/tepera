@@ -64,6 +64,7 @@
     <string name="categories_section_active">Активні</string>
     <string name="categories_section_archived">Архівовано</string>
     <string name="category_archive_action">Архівувати</string>
+    <string name="category_unarchive_action">Повернути з архіву</string>
     <string name="category_add_custom">Додати свою категорію</string>
     <string name="category_custom_limit_reached">Можна мати лише одну власну категорію</string>
     <string name="category_dialog_title">Нова категорія</string>

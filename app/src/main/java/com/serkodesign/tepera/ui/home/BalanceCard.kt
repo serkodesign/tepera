@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
@@ -53,22 +54,23 @@ fun BalanceCard(
                     }
                 }
                 true -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "${stringResource(R.string.balance_online_label)}: " +
-                                stringResource(R.string.minutes_short_format, state.onlineMinutes)
-                        )
-                        Text(
-                            "${stringResource(R.string.balance_offline_label)}: " +
-                                stringResource(R.string.minutes_short_format, state.offlineMinutes)
-                        )
-                    }
-                    BalanceBar(
-                        onlineRatio = state.onlineMinutes.toFloat() / state.denominatorMinutes.coerceAtLeast(1),
-                        targetRatio = state.targetMinutes.toFloat() / state.denominatorMinutes.coerceAtLeast(1)
+                    // Два окремі пропорційні бари (Online/Offline) замість однієї шкали —
+                    // інформативніше, ніж один bar, що ніяк не показував Offline-хвилини візуально.
+                    // Спільний максимум для обох барів, щоб їхня довжина була порівнюваною між собою.
+                    val maxScale = maxOf(state.onlineMinutes, state.offlineMinutes, state.targetMinutes, 1)
+                    ProportionalBar(
+                        label = stringResource(R.string.balance_online_label),
+                        valueText = stringResource(R.string.minutes_short_format, state.onlineMinutes),
+                        ratio = state.onlineMinutes.toFloat() / maxScale,
+                        targetRatio = state.targetMinutes.toFloat() / maxScale,
+                        barColor = MaterialTheme.colorScheme.primary
+                    )
+                    ProportionalBar(
+                        label = stringResource(R.string.balance_offline_label),
+                        valueText = stringResource(R.string.minutes_short_format, state.offlineMinutes),
+                        ratio = state.offlineMinutes.toFloat() / maxScale,
+                        targetRatio = null,
+                        barColor = MaterialTheme.colorScheme.tertiary
                     )
                     Text(
                         stringResource(R.string.balance_target_format, state.targetMinutes),
@@ -80,31 +82,47 @@ fun BalanceCard(
     }
 }
 
-/** FR-3.4: горизонтальна шкала Online-ratio з вертикальною засічкою на позиції таргету. */
+/**
+ * Один пропорційний бар з підписом і значенням хвилин над ним; targetRatio — необов'язкова
+ * вертикальна засічка (таргет стосується лише Online-часу, FR-3.4, тож Offline-бар її не має).
+ */
 @Composable
-private fun BalanceBar(onlineRatio: Float, targetRatio: Float, modifier: Modifier = Modifier) {
-    val clampedOnline = onlineRatio.coerceIn(0f, 1f)
-    val clampedTarget = targetRatio.coerceIn(0f, 1f)
+private fun ProportionalBar(
+    label: String,
+    valueText: String,
+    ratio: Float,
+    targetRatio: Float?,
+    barColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val clampedRatio = ratio.coerceIn(0f, 1f)
     val trackColor = MaterialTheme.colorScheme.surfaceVariant
-    val fillColor = MaterialTheme.colorScheme.primary
     val markerColor = MaterialTheme.colorScheme.error
 
-    Canvas(modifier = modifier.fillMaxWidth().height(12.dp)) {
-        val corner = CornerRadius(size.height / 2)
-        drawRoundRect(color = trackColor, cornerRadius = corner)
-        if (clampedOnline > 0f) {
-            drawRoundRect(
-                color = fillColor,
-                size = size.copy(width = size.width * clampedOnline),
-                cornerRadius = corner
-            )
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(valueText, style = MaterialTheme.typography.bodyMedium)
         }
-        val markerX = size.width * clampedTarget
-        drawLine(
-            color = markerColor,
-            start = Offset(markerX, 0f),
-            end = Offset(markerX, size.height),
-            strokeWidth = 3.dp.toPx()
-        )
+        Canvas(modifier = Modifier.fillMaxWidth().height(12.dp)) {
+            val corner = CornerRadius(size.height / 2)
+            drawRoundRect(color = trackColor, cornerRadius = corner)
+            if (clampedRatio > 0f) {
+                drawRoundRect(
+                    color = barColor,
+                    size = size.copy(width = size.width * clampedRatio),
+                    cornerRadius = corner
+                )
+            }
+            if (targetRatio != null) {
+                val markerX = size.width * targetRatio.coerceIn(0f, 1f)
+                drawLine(
+                    color = markerColor,
+                    start = Offset(markerX, 0f),
+                    end = Offset(markerX, size.height),
+                    strokeWidth = 3.dp.toPx()
+                )
+            }
+        }
     }
 }

@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
                         excludedAppRepository = app.excludedAppRepository,
                         installedAppsProvider = app.installedAppsProvider,
                         settingsStore = app.settingsStore,
+                        activeTimerStore = app.activeTimerStore,
                         backupRepository = app.backupRepository,
                         pendingOpenAddEntry = openAddEntry,
                         pendingCategoryId = categoryId

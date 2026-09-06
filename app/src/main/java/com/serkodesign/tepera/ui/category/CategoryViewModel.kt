@@ -33,6 +33,10 @@ class CategoryViewModel(
         viewModelScope.launch { repository.archive(categoryId) }
     }
 
+    fun unarchive(categoryId: String) {
+        viewModelScope.launch { repository.unarchive(categoryId) }
+    }
+
     fun createCustomCategory(name: String, iconName: String, colorHex: String) {
         viewModelScope.launch {
             if (allCategories.value.any { it.isCustom }) {

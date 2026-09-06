@@ -15,6 +15,7 @@ interface CategoryRepository {
     suspend fun getById(id: String): CategoryEntity?
     suspend fun create(category: CategoryEntity)
     suspend fun archive(categoryId: String) // FR-2.4: єдиний спосіб "видалення" з UI
+    suspend fun unarchive(categoryId: String) // повернення з архіву — зворотна дія до archive()
     suspend fun update(category: CategoryEntity)
     suspend fun ensureDefaultsSeeded(defaults: List<CategoryEntity>)
 }
@@ -36,6 +37,11 @@ class RoomCategoryRepository(
     override suspend fun archive(categoryId: String) {
         val category = dao.getById(categoryId) ?: return
         dao.update(category.copy(isHidden = true))
+    }
+
+    override suspend fun unarchive(categoryId: String) {
+        val category = dao.getById(categoryId) ?: return
+        dao.update(category.copy(isHidden = false))
     }
 
     override suspend fun update(category: CategoryEntity) = dao.update(category)
