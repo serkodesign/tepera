@@ -1,0 +1,21 @@
+# Android Studio / Gradle
+*.iml
+.gradle/
+/local.properties
+.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+
+# Keystore / підписання застосунку — НІКОЛИ не комітити (SRS PUB-6)
+*.jks
+*.keystore
+key.properties
+
+# Firebase (google-services.json містить проєктні ключі — не публічний секрет,
+# але краще виключити з публічного репозиторію; підключити у фазі 5)
+google-services.json

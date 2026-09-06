@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tepera</string>
+
+    <string name="category_nature">Nature</string>
+    <string name="category_reading">Reading</string>
+    <string name="category_hobby">Hobbies</string>
+    <string name="category_movement">Movement</string>
+    <string name="category_sleep">Sleep</string>
+
+    <string name="add_entry_button">Add activity</string>
+    <string name="home_today_summary">Today</string>
+    <string name="tile_quick_add">Add activity</string>
+    <string name="usage_access_prompt_title">See your balance</string>
+    <string name="usage_access_prompt_body">To show your screen-time vs real-life ratio, enable usage access in system settings</string>
+</resources>

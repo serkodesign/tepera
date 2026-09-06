@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tepera</string>
+
+    <!-- v2.0: 5 дефолтних категорій (FR-2.1) — робочий список, підтвердити перед фазою 1 (SRS розділ 11) -->
+    <string name="category_nature">Природа</string>
+    <string name="category_reading">Читання</string>
+    <string name="category_hobby">Хобі/творчість</string>
+    <string name="category_movement">Рух/спорт</string>
+    <string name="category_sleep">Сон</string>
+
+    <string name="add_entry_button">Додати активність</string>
+    <string name="home_today_summary">Сьогодні</string>
+    <string name="tile_quick_add">Додати активність</string>
+    <string name="usage_access_prompt_title">Дозвольте побачити баланс</string>
+    <string name="usage_access_prompt_body">Щоб показати співвідношення екранного й реального часу, увімкніть доступ до статистики використання в системних налаштуваннях</string>
+</resources>

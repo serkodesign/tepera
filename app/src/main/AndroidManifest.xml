@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- v2.0: Health Connect / Activity Recognition ВИДАЛЕНО — перенесено на post-MVP (SRS 3.1, FR-1.5) -->
+
+    <!-- UsageStatsManager (FR-3.1, FR-7.1) — це protected permission, звичайний runtime-діалог
+         не працює. Користувач надає доступ вручну через Налаштування → Спеціальний доступ →
+         Доступ до статистики використання (Intent: ACTION_USAGE_ACCESS_SETTINGS).
+         tools:ignore потрібен, бо lint попереджає про protected permissions за замовчуванням. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <!-- WorkManager для періодичного оновлення віджета (FR-4.3) не потребує окремого дозволу -->
+
+    <!-- Свідомо ВІДСУТНІ: жодні локаційні дозволи (FR-7.2) -->
+
+    <application
+        android:name=".TeperaApp"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Tepera">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Jetpack Glance-віджет (FR-4.1) — компактна 4x1 і розширена 4x2 через SizeMode.Responsive -->
+        <receiver
+            android:name=".widget.TeperaWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/life_balance_widget_info" />
+        </receiver>
+
+        <!-- Quick Settings Tile (FR-4.4) -->
+        <service
+            android:name=".widget.QuickLogTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_add"
+            android:label="@string/tile_quick_add"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+    </application>
+</manifest>
