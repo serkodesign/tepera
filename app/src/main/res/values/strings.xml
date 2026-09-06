@@ -81,4 +81,14 @@
     <string name="add_entry_overlap_title">Перекриття часу</string>
     <string name="add_entry_overlap_body">У цій категорії вже є запис, що перекривається за часом. Зберегти все одно?</string>
     <string name="add_entry_overlap_confirm">Зберегти все одно</string>
+
+    <!-- Статистика (FR-5.2, FR-5.3) -->
+    <string name="stats_nav_action">Статистика</string>
+    <string name="stats_screen_title">Статистика</string>
+    <string name="stats_period_day">День</string>
+    <string name="stats_period_week">Тиждень</string>
+    <string name="stats_period_month">Місяць</string>
+    <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
+    <string name="stats_weekly_trend_title">Тижневий тренд Online/Offline</string>
+    <string name="stats_no_data">Немає даних за цей період</string>
 </resources>

@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -58,6 +59,7 @@ fun HomeScreen(
     onAddEntry: () -> Unit,
     onOpenCategories: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenStats: () -> Unit,
     onShowOnboarding: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
@@ -91,6 +93,12 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.home_screen_title)) },
                 actions = {
+                    IconButton(onClick = onOpenStats) {
+                        Icon(
+                            Icons.Filled.BarChart,
+                            contentDescription = stringResource(R.string.stats_nav_action)
+                        )
+                    }
                     IconButton(onClick = onOpenCategories) {
                         Icon(
                             Icons.Filled.Category,

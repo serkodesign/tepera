@@ -20,6 +20,7 @@ import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
+import com.serkodesign.tepera.ui.stats.StatsScreen
 
 private object Routes {
     const val HOME = "home"
@@ -29,6 +30,7 @@ private object Routes {
     const val ONBOARDING = "onboarding"
     const val SETTINGS = "settings"
     const val EXCLUSION_LIST = "exclusion_list"
+    const val STATS = "stats"
 
     fun addEntry(categoryId: String? = null) =
         if (categoryId != null) "add_entry?categoryId=$categoryId" else ADD_ENTRY
@@ -64,7 +66,16 @@ fun TeperaNavHost(
                 onAddEntry = { navController.navigate(Routes.ADD_ENTRY) },
                 onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onOpenStats = { navController.navigate(Routes.STATS) },
                 onShowOnboarding = { navController.navigate(Routes.ONBOARDING) }
+            )
+        }
+        composable(Routes.STATS) {
+            StatsScreen(
+                categoryRepository = categoryRepository,
+                activityRepository = activityRepository,
+                balanceRepository = balanceRepository,
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Routes.ADD_ENTRY) {

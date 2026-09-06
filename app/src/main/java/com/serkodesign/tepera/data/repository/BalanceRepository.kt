@@ -47,14 +47,19 @@ class BalanceRepository(
      * FR-3.1, FR-3.5: сумарний Online-час за сьогодні, за вирахуванням застосунків
      * зі списку виключень.
      */
-    suspend fun getOnlineMinutesToday(): Int = withContext(Dispatchers.IO) {
-        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val startOfDay = startOfTodayMillis()
-        val now = System.currentTimeMillis()
+    suspend fun getOnlineMinutesToday(): Int = getOnlineMinutes(startOfTodayMillis(), System.currentTimeMillis())
 
+    /**
+     * FR-5.3: узагальнена версія getOnlineMinutesToday() для довільного інтервалу — потрібна
+     * для тижневого тренду балансу (по одному запиту на кожен з минулих днів, той самий підхід,
+     * що й для "сьогодні", а не один запит з INTERVAL_DAILY на весь тиждень: бакетизація
+     * queryUsageStats() по межах діб не гарантовано збігається з локальною північчю).
+     */
+    suspend fun getOnlineMinutes(from: Long, to: Long): Int = withContext(Dispatchers.IO) {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val excluded = excludedAppDao.getExcludedPackageNames().toSet()
 
-        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startOfDay, now)
+        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, from, to)
         val totalForegroundMs = stats
             .filterNot { it.packageName in excluded }
             .sumOf { it.totalTimeInForeground }
