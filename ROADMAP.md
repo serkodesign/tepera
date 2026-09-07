@@ -136,9 +136,16 @@
       `contentDescription = null` (не оголошувались для TalkBack); додано спільний рядок
       `nav_back` і застосовано на всіх екранах
 - [x] **Перемикач мови застосунку (поза первинним обсягом фази, додано за запитом):**
-      `AppCompatDelegate.setApplicationLocales()` (`androidx.appcompat`) у Налаштуваннях,
-      3-way перемикач Системна/Українська/English — не потребує переведення `MainActivity`
-      на `AppCompatActivity`
+      3-way перемикач Системна/Українська/English у Налаштуваннях.
+- [x] **Багфікс (за запитом, "перемикач мови не працює"):** перша реалізація через
+      `AppCompatDelegate.setApplicationLocales()` (`androidx.appcompat`) лише запам'ятовувала
+      вибір — та бібліотека застосовує мову до ресурсів лише для `AppCompatActivity`, а
+      `MainActivity` звичайний `ComponentActivity`, тож UI не перемикався (підтверджено на
+      Samsung S23: "English" позначався, текст лишався українською). Замінено на
+      `util/LocaleStore.kt` (SharedPreferences + ручне обгортання контексту через
+      `MainActivity.attachBaseContext()`) + `Activity.recreate()` після зміни вибору; працює
+      однаково на всіх API-рівнях (26+). `androidx.appcompat` прибрано із залежностей.
+      Перевірено вживу на Samsung S23: UA→EN, EN→UA, і збереження після force-stop.
 
 ## Фаза 6 — Інтеграція дизайну з Figma (1-2 тижні, паралельно з фазами 1-5)
 - [x] **Home screen (частково, за запитом):** дизайн перенесено з Figma-фрейму

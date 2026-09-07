@@ -1,10 +1,10 @@
 package com.serkodesign.tepera.ui.settings
 
+import android.app.Activity
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,10 +45,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.os.LocaleListCompat
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BackupRepository
+import com.serkodesign.tepera.util.LocaleStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -124,10 +124,12 @@ fun SettingsScreen(
         targetText = settingsStore.targetMinutes.first().toString()
     }
 
-    // AppCompatDelegate — джерело істини для поточної мови (переживає recreate), не DataStore:
-    // сам виклик setApplicationLocales() уже персистує вибір і перезапускає Activity з новими
-    // ресурсами, окреме зберігання в SettingsStore було б зайвим дублюванням стану.
-    var selectedLanguageTag by remember { mutableStateOf(AppCompatDelegate.getApplicationLocales().toLanguageTags()) }
+    // LocaleStore (SharedPreferences), не AppCompatDelegate: AppCompatDelegate.
+    // setApplicationLocales() застосовує збережену мову до ресурсів лише для AppCompatActivity
+    // (через власний attachBaseContext-хук) — MainActivity звичайний ComponentActivity, тож
+    // виклик лише запам'ятовував вибір, а UI лишався тою самою мовою (підтверджено на
+    // Samsung S23: вибір "English" позначався, але текст лишався українською).
+    var selectedLanguageTag by remember { mutableStateOf(LocaleStore.getLanguageTag(context)) }
 
     Scaffold(
         topBar = {
@@ -174,12 +176,11 @@ fun SettingsScreen(
                         selected = selectedLanguageTag == tag,
                         onClick = {
                             selectedLanguageTag = tag
-                            val locales = if (tag.isEmpty()) {
-                                LocaleListCompat.getEmptyLocaleList()
-                            } else {
-                                LocaleListCompat.forLanguageTags(tag)
-                            }
-                            AppCompatDelegate.setApplicationLocales(locales)
+                            LocaleStore.setLanguageTag(context, tag)
+                            // recreate() перезапускає Activity — attachBaseContext() зчитує
+                            // щойно збережений тег і обгортає нові ресурси одразу, без
+                            // повного перезапуску процесу.
+                            (context as? Activity)?.recreate()
                         },
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = languageOptions.size)
                     ) {

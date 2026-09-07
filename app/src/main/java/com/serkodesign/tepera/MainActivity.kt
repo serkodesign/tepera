@@ -1,5 +1,6 @@
 package com.serkodesign.tepera
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -12,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.serkodesign.tepera.ui.navigation.TeperaNavHost
 import com.serkodesign.tepera.ui.theme.TeperaTheme
+import com.serkodesign.tepera.util.LocaleStore
 
 class MainActivity : ComponentActivity() {
 
@@ -19,6 +21,13 @@ class MainActivity : ComponentActivity() {
         // FR-4.1: тап по кнопці категорії на віджеті. FR-4.4: тап по Quick Settings tile.
         const val EXTRA_OPEN_ADD_ENTRY = "open_add_entry"
         const val EXTRA_CATEGORY_ID = "category_id"
+    }
+
+    // Застосовує збережений вибір мови (Налаштування → Мова застосунку) ДО того, як
+    // з'явиться будь-який ресурс/рядок цієї Activity — LocaleStore.kt пояснює, чому це
+    // обов'язково ручний attachBaseContext(), а не AppCompatDelegate.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleStore.wrap(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

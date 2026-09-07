@@ -96,10 +96,17 @@ Firebase Crashlytics (лише crash-репортинг).
   Налаштування відкриваються іконкою-шестернею на Home (не вкладка навбару, як раніше). Вкладки
   Home/Статистика перемикаються через `popUpTo(startDestination) { saveState = true } +
   launchSingleTop + restoreState` (стандартний Compose Navigation патерн), без back-стрілки.
-- **Перемикач мови застосунку:** `AppCompatDelegate.setApplicationLocales()` (`androidx.appcompat`,
-  без переведення `MainActivity` на `AppCompatActivity` — autoStoreLocales працює й так) у
-  Налаштуваннях, 3-way перемикач Системна/Українська/English. Джерело істини — сам
-  `AppCompatDelegate`, окремого зберігання в `SettingsStore` нема.
+- **Перемикач мови застосунку:** 3-way перемикач Системна/Українська/English у Налаштуваннях.
+  **НЕ `AppCompatDelegate.setApplicationLocales()`** (перша реалізація, `androidx.appcompat`) —
+  та бібліотека застосовує збережену мову до ресурсів лише для `AppCompatActivity` (власний
+  `attachBaseContext`-хук у `AppCompatDelegateImpl`); `MainActivity` — звичайний
+  `ComponentActivity`, тож виклик лише запам'ятовував вибір (`getApplicationLocales()` коректно
+  його повертав), а UI не перемикався — підтверджено на Samsung S23 (Android 16): вибір
+  "English" позначався, текст лишався українською. Фікс — `util/LocaleStore.kt`: SharedPreferences
+  (синхронне читання, потрібне в `attachBaseContext()` до появи Compose/Coroutines) + ручне
+  обгортання контексту (`Configuration.setLocale()` + `createConfigurationContext()`) в
+  `MainActivity.attachBaseContext()`, і `Activity.recreate()` після зміни вибору. Працює
+  однаково на всіх API-рівнях (26+); `androidx.appcompat` прибрано із залежностей.
 - **Дизайн з Figma (Фаза 6) — джерело `https://www.figma.com/design/UyVsim0I8KSwt6qHakkdxp/
   Everyday_Designs`, Home screen (node 1930:233), користувачів власний фрейм.** Перенесено на
   Home і Статистику: `ui/theme/TeperaPalette.kt` (кольори/градієнт), нові `LifeBalanceSection`
