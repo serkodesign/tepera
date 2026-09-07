@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -131,10 +134,21 @@ fun TeperaNavHost(
                 }
             }
         ) { scaffoldPadding ->
+            // Навмисно БЕЗ нижнього відступу scaffoldPadding: інакше екрани з навбаром-"таблеткою"
+            // (Home, Статистика) отримують подвійний нижній inset (тут + власний Scaffold
+            // усередині HomeScreen) і картки категорій обрізаються, не влазячи в стиснуту область.
+            // Замість цього контент тепер сягає самого низу екрана, а те, що не влазить, за
+            // запитом користувача просто заходить під напівпрозору "таблетку" навбару (вона
+            // малюється поверх контенту, бо bottomBar розміщується останнім у Scaffold).
+            val layoutDirection = LocalLayoutDirection.current
             NavHost(
                 navController = navController,
                 startDestination = Routes.HOME,
-                modifier = Modifier.padding(scaffoldPadding)
+                modifier = Modifier.padding(
+                    top = scaffoldPadding.calculateTopPadding(),
+                    start = scaffoldPadding.calculateStartPadding(layoutDirection),
+                    end = scaffoldPadding.calculateEndPadding(layoutDirection)
+                )
             ) {
             composable(Routes.HOME) {
                 HomeScreen(

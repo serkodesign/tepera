@@ -170,11 +170,17 @@ fun HomeScreen(
                 }
             } else {
                 // 2x3 сітка категорій (було 3x2): до 5 дефолтних + 1 кастомна (FR-2.1/2.2)
-                // точно заповнюють 2 колонки на 3 ряди.
+                // точно заповнюють 2 колонки на 3 ряди. Раніше NavHost резервував під навбар-
+                // "таблетку" фіксовану висоту зверху від Scaffold, і ЦЕЙ екран мав ще й власний
+                // Scaffold-inset поверх — подвійний нижній відступ стискав сітку так, що останній
+                // ряд карток обрізався. NavHost більше не резервує нижній відступ для цього
+                // екрана (TeperaNavHost.kt), тож тут потрібен власний bottomNavBarHeight-запас, щоб
+                // картки за замовчуванням лишались НАД "таблеткою" — а якщо не влазять, останній
+                // ряд природно йде під напівпрозору "таблетку" при прокрутці (за запитом користувача).
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {

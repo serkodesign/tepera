@@ -9,14 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,6 +49,7 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -90,11 +90,16 @@ fun StatsScreen(
             )
         }
     ) { padding ->
+        // Прокручуваний Column, а не fillMaxSize() без скролу: NavHost більше не резервує нижній
+        // відступ під навбар-"таблетку" (TeperaNavHost.kt, той самий фікс, що й для Home), тож без
+        // прокрутки й запасу знизу графік тижневого тренду обрізався б під напівпрозорою
+        // "таблеткою" на екранах, де вміст не влазить.
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             PeriodSelector(selected = state.period, onSelect = viewModel::selectPeriod)
@@ -112,25 +117,19 @@ fun StatsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Unit) {
     val options = listOf(
-        StatsPeriod.DAY to R.string.stats_period_day,
-        StatsPeriod.WEEK to R.string.stats_period_week,
-        StatsPeriod.MONTH to R.string.stats_period_month
+        StatsPeriod.DAY to stringResource(R.string.stats_period_day),
+        StatsPeriod.WEEK to stringResource(R.string.stats_period_week),
+        StatsPeriod.MONTH to stringResource(R.string.stats_period_month)
     )
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, (period, labelRes) ->
-            SegmentedButton(
-                selected = selected == period,
-                onClick = { onSelect(period) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
-            ) {
-                Text(stringResource(labelRes))
-            }
-        }
-    }
+    PillSegmentedControl(
+        options = options,
+        selected = selected,
+        onSelect = onSelect,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 /** FR-5.2: стовпчикова діаграма розподілу офлайн-часу по категоріях за обраний період. */

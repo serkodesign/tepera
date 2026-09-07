@@ -47,6 +47,7 @@ import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.util.roundToQuarterHour
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.first
 
@@ -266,6 +267,18 @@ class ToggleCategoryTimerAction : ActionCallback {
     }
 }
 
+/** Той самий стиль і округлення до 15 хв, що на Home (BalanceCard.formatBalanceDuration) — тут
+ * без @Composable/stringResource, бо Glance-код викликає його поза composable-контекстом Compose
+ * UI застосунку. */
+private fun formatBalanceDuration(context: Context, minutes: Int): String {
+    val (hours, remainderMinutes) = roundToQuarterHour(minutes)
+    return when {
+        hours <= 0 -> context.getString(R.string.minutes_short_format, remainderMinutes)
+        remainderMinutes == 0 -> context.getString(R.string.hours_short_format, hours)
+        else -> context.getString(R.string.hours_minutes_short_format, hours, remainderMinutes)
+    }
+}
+
 @Composable
 private fun BalanceRow(
     hasUsageAccess: Boolean,
@@ -287,13 +300,13 @@ private fun BalanceRow(
         Row(modifier = GlanceModifier.fillMaxWidth()) {
             Text(
                 text = context.getString(R.string.balance_online_label) + ": " +
-                    context.getString(R.string.minutes_short_format, onlineMinutes),
+                    formatBalanceDuration(context, onlineMinutes),
                 modifier = GlanceModifier.defaultWeight(),
                 style = TextStyle(color = GlanceTheme.colors.onBackground)
             )
             Text(
                 text = context.getString(R.string.balance_offline_label) + ": " +
-                    context.getString(R.string.minutes_short_format, offlineMinutes),
+                    formatBalanceDuration(context, offlineMinutes),
                 style = TextStyle(color = GlanceTheme.colors.onBackground)
             )
         }

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.util.roundToQuarterHour
 
 /**
  * FR-3.1–3.6: "Life balance" — стиль з Figma-фрейму Everyday_Designs (Home screen, node
@@ -53,16 +54,16 @@ fun LifeBalanceSection(
             }
         }
         true -> {
-            // Таргет стосується лише Online-часу (FR-3.4): рахуємо його як частку ONLINE-блоку,
-            // потім переводимо в частку ВСІЄЇ секції (offline-блок + online-блок разом), щоб
-            // розмістити вертикальну позначку в правильному місці по всій ширині.
-            val onlineScaleMax = maxOf(state.onlineMinutes, state.targetMinutes, 1)
-            val targetFractionWithinOnline = (state.targetMinutes.toFloat() / onlineScaleMax).coerceIn(0f, 1f)
             val offlineWeight = state.offlineMinutes.coerceAtLeast(1).toFloat()
             val onlineWeight = state.onlineMinutes.coerceAtLeast(1).toFloat()
-            val onlineFraction = onlineWeight / (offlineWeight + onlineWeight)
-            val offlineFraction = 1f - onlineFraction
-            val markerFraction = offlineFraction + onlineFraction * targetFractionWithinOnline
+
+            // Позначка таргету — той самий лінійний діапазон 0-8 год, що й HourRangeSlider у
+            // Налаштуваннях (FR-3.4), але ОБЕРНЕНИЙ відносно нього за прямим запитом користувача:
+            // там 0h зліва, 8h справа (заповнення росте вправо); тут навпаки — 0h справа, 8h
+            // зліва (targetSliderMaxHours той самий maxHours=8, що в SettingsScreen.HourRangeSlider).
+            val targetSliderMaxHours = 8f
+            val targetHours = (state.targetMinutes / 60f).coerceIn(0f, targetSliderMaxHours)
+            val markerFraction = 1f - (targetHours / targetSliderMaxHours)
 
             BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
                 val markerX = maxWidth * markerFraction
@@ -83,13 +84,13 @@ fun LifeBalanceSection(
                     ) {
                         BalanceBlock(
                             label = stringResource(R.string.balance_offline_label),
-                            valueText = stringResource(R.string.minutes_short_format, state.offlineMinutes),
+                            valueText = formatBalanceDuration(state.offlineMinutes),
                             color = TeperaPalette.offlineCard,
                             modifier = Modifier.weight(offlineWeight)
                         )
                         BalanceBlock(
                             label = stringResource(R.string.balance_online_label),
-                            valueText = stringResource(R.string.minutes_short_format, state.onlineMinutes),
+                            valueText = formatBalanceDuration(state.onlineMinutes),
                             color = TeperaPalette.onlineCard,
                             modifier = Modifier.weight(onlineWeight)
                         )
@@ -100,6 +101,20 @@ fun LifeBalanceSection(
                 }
             }
         }
+    }
+}
+
+/**
+ * Offline/Online картки показують години+хвилини з округленням до 15 хв (за запитом
+ * користувача, замість "245 хв") — напр. "3 год 45 хв", а не "3 год 47 хв".
+ */
+@Composable
+private fun formatBalanceDuration(minutes: Int): String {
+    val (hours, remainderMinutes) = roundToQuarterHour(minutes)
+    return when {
+        hours <= 0 -> stringResource(R.string.minutes_short_format, remainderMinutes)
+        remainderMinutes == 0 -> stringResource(R.string.hours_short_format, hours)
+        else -> stringResource(R.string.hours_minutes_short_format, hours, remainderMinutes)
     }
 }
 

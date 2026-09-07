@@ -24,6 +24,8 @@
     <string name="home_screen_title">Сьогодні</string>
     <string name="home_no_entries_today">Сьогодні ще немає записів</string>
     <string name="minutes_short_format">%d хв</string>
+    <string name="hours_short_format">%d год</string>
+    <string name="hours_minutes_short_format">%1$d год %2$d хв</string>
     <string name="settings_nav_action">Налаштування</string>
     <string name="add_time_action_format">Додати час: %1$s</string>
     <string name="category_start_action">Почати</string>
