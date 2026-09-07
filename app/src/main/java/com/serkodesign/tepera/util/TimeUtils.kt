@@ -22,6 +22,20 @@ fun currentMinuteOfDay(): Int {
 }
 
 /**
+ * Спільний поділ доби на 4 періоди — використовується і для сортування кнопок віджета (FR-4.5,
+ * WidgetLogic.sortCategoriesForWidget), і для привітання на Home ("Доброго ранку" тощо, Figma-
+ * фрейм Everyday_Designs). Робочі межі, не з SRS буквально.
+ */
+enum class DayPeriod { MORNING, DAY, EVENING, NIGHT }
+
+fun currentDayPeriod(hourOfDay: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)): DayPeriod = when (hourOfDay) {
+    in 5..10 -> DayPeriod.MORNING
+    in 11..17 -> DayPeriod.DAY
+    in 18..22 -> DayPeriod.EVENING
+    else -> DayPeriod.NIGHT
+}
+
+/**
  * Material3 DatePicker повертає обрану дату як UTC-північ (selectedDateMillis), не локальну
  * (задокументована особливість API). Конвертує в локальну північ того ж календарного дня,
  * інакше в часових поясах на схід від UTC (напр. Київ) дата могла б "з'їхати" на день раніше.

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Спрощене ліжко (сон) для віджета — тонується категорійним кольором (Glance
+     ColorFilter.tint()), базовий fillColor значення не має. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M2,16 L22,16 L22,20 L2,20 Z M2,10 L5,10 L5,16 L2,16 Z M6,12 L11,12 L11,15 L6,15 Z" />
+</vector>

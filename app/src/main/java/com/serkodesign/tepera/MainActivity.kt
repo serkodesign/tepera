@@ -1,9 +1,12 @@
 package com.serkodesign.tepera
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -20,6 +23,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Фаза 6: градієнтний фон (TeperaPalette) має йти під статус-баром і навігаційною смугою
+        // до самого краю екрана, як у Figma-фреймі — без edge-to-edge system bar area лишається
+        // окремою суцільною смугою поверх контенту. Темні іконки статус-бару завжди (не
+        // SystemBarStyle.auto): TeperaTheme свідомо ігнорує системну темну тему, тож іконки мають
+        // лишатись темними незалежно від системних налаштувань, інакше вони зіллються зі світлим
+        // градієнтом.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+        )
         val app = application as TeperaApp
         val categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID)
         val openAddEntry = intent.getBooleanExtra(EXTRA_OPEN_ADD_ENTRY, false) || categoryId != null

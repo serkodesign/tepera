@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Запасна іконка (проста крапка) для категорійних iconName, яких немає серед 5 дефолтних —
+     на віджеті показуються лише перші 5 категорій (CategoryButtonsRow бере take(5)), тож
+     кастомна категорія (6-та) сюди на практиці не потрапляє, це суто захист від NPE/помилки
+     мапінгу. Тонується категорійним кольором (Glance ColorFilter.tint()). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,4 A8,8 0 1,0 12,20 A8,8 0 1,0 12,4 Z" />
+</vector>

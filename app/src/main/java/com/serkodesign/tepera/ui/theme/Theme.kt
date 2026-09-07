@@ -1,26 +1,23 @@
 package com.serkodesign.tepera.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-// ЗАГЛУШКА: дефолтна Material 3 палітра. Коли дизайн у Figma буде готовий, кольори/типографіка
-// сюди переносяться через Figma MCP-конектор (SRS 4.1, CLAUDE.md) — логіка й екрани при цьому
-// не переробляються, лише значення тут.
-
+// Фаза 6: палітра з Figma-фрейму Everyday_Designs (TeperaPalette.kt) — м'який пастельний
+// градієнт зі ЗАВЖДИ темним текстом. Дизайн не має темної версії (наданий лише один Light-фрейм
+// Home), тож TeperaTheme свідомо ІГНОРУЄ isSystemInDarkTheme() і завжди застосовує LightColors:
+// system dark theme раніше вмикав darkColorScheme() з білим текстом onSurface/onBackground, який
+// був майже невидимий на світлому градієнті (підтверджено на Samsung S23 із системною темною
+// темою — "Доброго ранку" й назви категорій ледь читались).
 private val LightColors = lightColorScheme()
-private val DarkColors = darkColorScheme()
 
 @Composable
 fun TeperaTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) DarkColors else LightColors
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = LightColors,
         content = content
     )
 }

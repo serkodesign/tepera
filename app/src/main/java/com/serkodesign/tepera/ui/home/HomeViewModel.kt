@@ -4,17 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.data.local.ActiveTimerStore
-import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 data class CategoryTodaySummary(
     val category: CategoryEntity,
@@ -48,27 +47,13 @@ class HomeViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /** Перемикач: почати таймер, якщо для цієї категорії він не йде, інакше зупинити й зберегти. */
+    /**
+     * Перемикач: почати таймер, якщо для цієї категорії він не йде, інакше зупинити й зберегти.
+     * Спільна логіка з кнопками категорій на віджеті — див. toggleCategoryTimer().
+     */
     fun toggleTimer(categoryId: String) {
         viewModelScope.launch {
-            val startTime = activeTimerStore.stop(categoryId)
-            if (startTime == null) {
-                activeTimerStore.start(categoryId)
-            } else {
-                val minutes = ((System.currentTimeMillis() - startTime) / 60_000.0)
-                    .roundToInt()
-                    .coerceAtLeast(1) // навіть кількасекундний тап логує хоч 1 хв, а не 0
-                // forceOverwrite: зупинка живого таймера — швидка дія без діалогів; overlap-перевірка
-                // (FR-1.4) створена для ручного вводу, тут би лише заважала непередбачувано.
-                activityRepository.addEntry(
-                    ActivityEntryEntity(
-                        categoryId = categoryId,
-                        startTime = startTime,
-                        durationMinutes = minutes
-                    ),
-                    forceOverwrite = true
-                )
-            }
+            toggleCategoryTimer(activeTimerStore, activityRepository, categoryId)
         }
     }
 

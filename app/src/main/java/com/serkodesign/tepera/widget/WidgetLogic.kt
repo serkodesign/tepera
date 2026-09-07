@@ -1,17 +1,8 @@
 package com.serkodesign.tepera.widget
 
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
-import java.util.Calendar
-
-/** FR-4.5: три періоди доби, за якими змінюється порядок кнопок категорій на віджеті. */
-enum class DayPeriod { MORNING, DAY, EVENING, NIGHT }
-
-fun currentDayPeriod(hourOfDay: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)): DayPeriod = when (hourOfDay) {
-    in 5..10 -> DayPeriod.MORNING
-    in 11..17 -> DayPeriod.DAY
-    in 18..22 -> DayPeriod.EVENING
-    else -> DayPeriod.NIGHT
-}
+import com.serkodesign.tepera.util.DayPeriod
+import com.serkodesign.tepera.util.currentDayPeriod
 
 // FR-4.5: пріоритет nameKey для кожного періоду доби — робочі, не з SRS буквально (там лише
 // вимога "порядок змінюється залежно від часу доби", без точних правил).

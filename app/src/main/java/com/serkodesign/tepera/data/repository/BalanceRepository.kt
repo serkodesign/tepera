@@ -1,7 +1,11 @@
 package com.serkodesign.tepera.data.repository
 
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.view.inputmethod.InputMethodManager
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -64,18 +68,70 @@ class BalanceRepository(
      */
     suspend fun getOnlineMinutes(from: Long, to: Long): Int = withContext(Dispatchers.IO) {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val excluded = excludedAppDao.getExcludedPackageNames().toSet()
+        // Лаунчер і клавіатура виключені за замовчуванням, поверх ручного списку виключень
+        // (FR-3.5): це системні застосунки, час у яких — не "екранний час" у побутовому
+        // розумінні (гортання додатків, набір тексту), Digital Wellbeing теж їх не рахує.
+        // Визначаються динамічно через PackageManager/InputMethodManager, а не жорстко
+        // захардкоджені імена пакетів — на тестових пристроях стоять різні лаунчери
+        // (One UI Home, Microsoft Launcher, ROADMAP Фаза 3).
+        val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages()
 
+        // ВАЖЛИВО: queryUsageStats(INTERVAL_DAILY, from, to) рахує totalTimeInForeground для
+        // ЦІЛОГО бакета статистики, а не строго обрізаний на [from, to] — межі бакетів не
+        // гарантовано збігаються з локальною північчю чи "зараз", тож для часткової доби він
+        // систематично завищував Online-час (підтверджено користувачем: 159 хв Tepera проти
+        // 47 хв у системному Samsung Digital Wellbeing за той самий момент). Точний підрахунок —
+        // по сирих подіях MOVE_TO_FOREGROUND/MOVE_TO_BACKGROUND, обрізаних рівно по [from, to],
+        // той самий підхід, що й системні лічильники екранного часу.
         try {
-            val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, from, to)
-            val totalForegroundMs = stats
-                .filterNot { it.packageName in excluded }
-                .sumOf { it.totalTimeInForeground }
+            val events = usm.queryEvents(from, to)
+            val foregroundSince = HashMap<String, Long>()
+            var totalMs = 0L
+            val event = UsageEvents.Event()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                val packageName = event.packageName ?: continue
+                if (packageName in excluded) continue
+                when (event.eventType) {
+                    UsageEvents.Event.MOVE_TO_FOREGROUND ->
+                        foregroundSince[packageName] = event.timeStamp
+                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                        val start = foregroundSince.remove(packageName)
+                        if (start != null) {
+                            totalMs += (event.timeStamp - start).coerceAtLeast(0)
+                        }
+                    }
+                }
+            }
+            // Застосунок, що й досі на передньому плані на момент "to" (напр. "зараз"), ніколи
+            // не отримає завершального MOVE_TO_BACKGROUND у вибірці — рахуємо його до "to".
+            for (start in foregroundSince.values) {
+                totalMs += (to - start).coerceAtLeast(0)
+            }
 
-            (totalForegroundMs / 60_000L).toInt()
+            (totalMs / 60_000L).toInt()
         } catch (e: SecurityException) {
             0
         }
+    }
+
+    /**
+     * Пакети поточного лаунчера (усіх, хто відповідає на CATEGORY_HOME — на випадок кількох
+     * встановлених лаунчерів, не лише активного за замовчуванням) та ввімкнених клавіатур.
+     * Викликається на кожен запит (не кешується): і лаунчер, і клавіатура можуть змінитись
+     * протягом життя процесу, а сам запит — лише пара дешевих системних викликів.
+     */
+    private fun systemExclusionPackages(): Set<String> {
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val launcherPackages = context.packageManager
+            .queryIntentActivities(launcherIntent, PackageManager.MATCH_DEFAULT_ONLY)
+            .map { it.activityInfo.packageName }
+            .toSet()
+
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val keyboardPackages = imm.enabledInputMethodList.map { it.packageName }.toSet()
+
+        return launcherPackages + keyboardPackages
     }
 
     /** FR-3.2: Grace Period Buffer — знаменник ніколи не менший за 180 хв. */

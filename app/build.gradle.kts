@@ -47,6 +47,9 @@ ksp {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.19.0")
+    // AppCompatDelegate.setApplicationLocales() — перемикач мови застосунку в Налаштуваннях,
+    // працює без AppCompatActivity (autoStoreLocales через ContentProvider бібліотеки).
+    implementation("androidx.appcompat:appcompat:1.7.1")
 
     // Compose
     implementation(platform("androidx.compose:compose-bom:2026.08.00"))

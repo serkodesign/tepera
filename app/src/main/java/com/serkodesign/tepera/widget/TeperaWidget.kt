@@ -1,21 +1,26 @@
 package com.serkodesign.tepera.widget
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
+import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
-import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
@@ -35,19 +40,39 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.first
 
 /**
+ * RemoteViews (тобто й Glance) не вміє відобразити androidx.compose.material ImageVector
+ * напряму — потрібен реальний drawable-ресурс. Тому для віджета — окремий, спрощений набір
+ * vector drawable (drawable/ic_widget_*), а не той самий catalog, що categoryIcon() в застосунку
+ * (ui/category/CategoryVisuals.kt). Лише 5 дефолтних категорій: CategoryButtonsRow бере
+ * take(5), кастомна (6-та) категорія на віджеті ніколи не показується.
+ */
+private fun widgetIconRes(iconName: String): Int = when (iconName) {
+    "nature" -> R.drawable.ic_widget_nature
+    "reading" -> R.drawable.ic_widget_reading
+    "hobby" -> R.drawable.ic_widget_hobby
+    "movement" -> R.drawable.ic_widget_movement
+    "sleep" -> R.drawable.ic_widget_sleep
+    else -> R.drawable.ic_widget_generic
+}
+
+/**
  * FR-4.1–4.6: компактна 4x1 (5 кнопок категорій) і розширена 4x2 (+ шкала балансу) через
- * SizeMode.Responsive. FR-4.2: жодного live-таймера — стан статичний, оновлюється лише при
- * provideGlance() (тап по віджету, ручний resize, WidgetUpdateWorker ~30 хв).
+ * SizeMode.Responsive. Кнопки категорій — той самий тап-таймер, що на Home (перший тап починає,
+ * другий по тій самій категорії зупиняє й зберігає, toggleCategoryTimer()) — БЕЗ live-лічильника
+ * (FR-4.2 лишається чинним для самого віджета): активний стан позначається лише статичним
+ * кільцем навколо кнопки, оновлюється одразу після тапу (ToggleCategoryTimerAction викликає
+ * update()) або періодично через WidgetUpdateWorker ~30 хв.
  */
 class TeperaWidget : GlanceAppWidget() {
 
@@ -69,6 +94,8 @@ class TeperaWidget : GlanceAppWidget() {
             isNeglected(app.activityRepository.lastLoggedTime(category.id))
         }?.id
 
+        val activeTimers = app.activeTimerStore.activeTimers.first()
+
         val hasUsageAccess = app.balanceRepository.hasUsageAccess()
         val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday() else 0
         val denominatorMinutes = app.balanceRepository.calculateDenominatorMinutes()
@@ -85,13 +112,19 @@ class TeperaWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier
                         .fillMaxSize()
-                        .background(GlanceTheme.colors.background)
-                        .cornerRadius(16.dp)
-                        .padding(8.dp)
+                        // Фіксований TeperaPalette-колір (не GlanceTheme.colors.background,
+                        // яке слідує системній темі) — узгоджується з рішенням "дизайн ЗАВЖДИ
+                        // light" для Home/Статистики (Theme.kt): та сама напівпрозора "скляна"
+                        // картка, що й нижній навбар-"таблетка" в застосунку.
+                        .background(ColorProvider(day = TeperaPalette.navPill, night = TeperaPalette.navPill))
+                        .cornerRadius(24.dp)
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     CategoryButtonsRow(
                         categories = sorted.take(5),
                         neglectedCategoryId = neglectedCategoryId,
+                        activeTimers = activeTimers,
                         context = context
                     )
                     if (isExtended) {
@@ -111,14 +144,19 @@ class TeperaWidget : GlanceAppWidget() {
     }
 }
 
-private val MAX_BUTTON_SIZE = 48.dp // FR-4.1: hit-box >=48x48dp
+// За запитом (новий стиль застосунку) — збільшено з 48dp: FR-4.1 вимагає ЛИШЕ мінімум
+// >=48x48dp, а не стелю в 48dp; попередня стеля не давала кнопкам вирости, навіть коли
+// ширина/висота віджета дозволяли, через що іконки виглядали дрібними в 4x1.
+private val MAX_BUTTON_SIZE = 56.dp
 private val BUTTON_GAP = 4.dp
-private val BUTTON_RING_INSET = 8.dp
+private val RING_INSET = 4.dp // зазор між зовнішнім кільцем і внутрішньою карткою
+private val ICON_PADDING = 6.dp // відступ від картки до самої іконки
 
 @Composable
 private fun CategoryButtonsRow(
     categories: List<CategoryEntity>,
     neglectedCategoryId: String?,
+    activeTimers: Map<String, Long>,
     context: Context
 ) {
     // Реальна ширина, яку дає launcher, не завжди збігається з нашими DpSize-кандидатами
@@ -138,6 +176,7 @@ private fun CategoryButtonsRow(
             CategoryButton(
                 category = category,
                 isNeglected = category.id == neglectedCategoryId,
+                isTracking = activeTimers.containsKey(category.id),
                 context = context,
                 size = buttonSize
             )
@@ -145,53 +184,85 @@ private fun CategoryButtonsRow(
     }
 }
 
+private val CATEGORY_ID_KEY = ActionParameters.Key<String>("category_id")
+
 @Composable
 private fun CategoryButton(
     category: CategoryEntity,
     isNeglected: Boolean,
+    isTracking: Boolean,
     context: Context,
     size: Dp
 ) {
-    val label = categoryDisplayName(category, context)
-    val initial = label.take(1).uppercase()
-    val intent = Intent(context, MainActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        putExtra(MainActivity.EXTRA_CATEGORY_ID, category.id)
+    // Пріоритет кільця: активний таймер > занедбана категорія > нічого. Колір кільця для
+    // активного таймера навмисно контрастний (error), а не колір самої категорії — інакше він
+    // зливається з однаково пофарбованою карткою і кільце не видно.
+    //
+    // ВАЖЛИВО: .background() застосовується ЗАВЖДИ, лише колір змінюється (прозорий за
+    // замовчуванням) — а не умовно то є, то немає самого модифікатора. RemoteViews-діфінг у
+    // Glance не завжди коректно ЗНІМАЄ раніше застосований background, коли новий рендер узагалі
+    // не викликає .background(): на реальному пристрої кільце "застрягало" після зупинки
+    // таймера, поки колір лишався той самий модифікатор з іншим значенням.
+    val ringColor = when {
+        isTracking -> GlanceTheme.colors.error
+        isNeglected -> GlanceTheme.colors.primary
+        else -> ColorProvider(day = Color.Transparent, night = Color.Transparent)
     }
+    // Картка — той самий принцип, що категорійні картки на Home (BalanceCard.kt/HomeScreen.kt):
+    // біла, коли активна, напівпрозора інакше, іконка тонована власним кольором категорії
+    // (не колір-кружок з білою літерою, як було раніше).
+    val cardColor = if (isTracking) TeperaPalette.cardActive else TeperaPalette.cardTranslucent
 
-    // FR-4.6: занедбана категорія (>3 дні без запису) отримує підсвічене кільце навколо кружка.
     Box(
         modifier = GlanceModifier
             .size(size)
-            .then(
-                if (isNeglected) {
-                    GlanceModifier
-                        .background(GlanceTheme.colors.primary)
-                        .cornerRadius(size / 2)
-                } else {
-                    GlanceModifier
-                }
-            )
-            .clickable(actionStartActivity(intent)),
+            .background(ringColor)
+            .cornerRadius(size / 2)
+            .clickable(
+                actionRunCallback<ToggleCategoryTimerAction>(
+                    actionParametersOf(CATEGORY_ID_KEY to category.id)
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
-        val color = categoryColor(category.colorHex)
-        val innerSize = (size - BUTTON_RING_INSET).coerceAtLeast(1.dp)
+        val innerSize = (size - RING_INSET).coerceAtLeast(1.dp)
         Box(
             modifier = GlanceModifier
                 .size(innerSize)
-                .background(ColorProvider(day = color, night = color))
+                .background(ColorProvider(day = cardColor, night = cardColor))
                 .cornerRadius(innerSize / 2),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = initial,
-                style = TextStyle(
-                    color = ColorProvider(day = Color.White, night = Color.White),
-                    fontWeight = FontWeight.Bold
+            if (isTracking) {
+                // "■" — той самий принцип, що іконка "стоп" на Home, без live-лічильника
+                // (FR-4.2 лишається чинним саме для віджета).
+                Text(
+                    text = "■",
+                    style = TextStyle(color = GlanceTheme.colors.error, fontWeight = FontWeight.Bold)
                 )
-            )
+            } else {
+                val color = categoryColor(category.colorHex)
+                val iconSize = (innerSize - ICON_PADDING).coerceAtLeast(1.dp)
+                Image(
+                    provider = ImageProvider(widgetIconRes(category.iconName)),
+                    contentDescription = categoryDisplayName(category, context),
+                    colorFilter = ColorFilter.tint(ColorProvider(day = color, night = color)),
+                    modifier = GlanceModifier.size(iconSize)
+                )
+            }
         }
+    }
+}
+
+/** Тап по кнопці категорії на віджеті — toggleCategoryTimer(), та сама логіка, що на Home. */
+class ToggleCategoryTimerAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val categoryId = parameters[CATEGORY_ID_KEY] ?: return
+        val app = context.applicationContext as TeperaApp
+        toggleCategoryTimer(app.activeTimerStore, app.activityRepository, categoryId)
+        // provideGlance() не перекомпоновується сам по собі після ActionCallback — без явного
+        // update() кільце й "■" з'явились би лише при наступному WidgetUpdateWorker (~30 хв).
+        TeperaWidget().update(context, glanceId)
     }
 }
 
