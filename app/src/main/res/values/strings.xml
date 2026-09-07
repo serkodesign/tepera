@@ -25,6 +25,10 @@
     <string name="home_no_entries_today">Сьогодні ще немає записів</string>
     <string name="minutes_short_format">%d хв</string>
     <string name="settings_nav_action">Налаштування</string>
+    <string name="add_time_action_format">Додати час: %1$s</string>
+    <string name="category_start_action">Почати</string>
+    <string name="category_stop_action">Зупинити</string>
+    <string name="nav_more_placeholder">Незабаром</string>
 
     <!-- Привітання на Home, за часом доби (Figma-фрейм Everyday_Designs) -->
     <string name="greeting_morning">Доброго ранку</string>
@@ -53,6 +57,10 @@
     <string name="settings_language_system">Системна</string>
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
+    <string name="settings_backup_restore_action">Резервне копіювання</string>
+    <string name="settings_other_section">Інше</string>
+    <string name="settings_target_info">Скільки годин екранного часу на день ви вважаєте нормою — використовується для позначки таргету на балансі.</string>
+    <string name="settings_target_hours_format">%d год</string>
 
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Експортувати дані (JSON)</string>
@@ -69,6 +77,8 @@
     <string name="exclusion_list_screen_title">Виключені застосунки</string>
     <string name="exclusion_list_hint">Позначені застосунки не враховуються в Online-часі (напр. карти, е-читалки, банкінг)</string>
     <string name="exclusion_list_empty">Немає застосунків з історією використання за останні 30 днів</string>
+    <string name="exclusion_list_section_excluded">Виключені</string>
+    <string name="exclusion_list_section_all">Усі</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>

@@ -10,17 +10,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Pending
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,6 +50,7 @@ import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
+import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
@@ -66,13 +65,21 @@ private object Routes {
     const val ONBOARDING = "onboarding"
     const val SETTINGS = "settings"
     const val EXCLUSION_LIST = "exclusion_list"
+    const val BACKUP_RESTORE = "backup_restore"
     const val STATS = "stats"
 
-    // Дві вкладки нижнього навбару (Figma-фрейм Everyday_Designs, Фаза 6): Home і Статистика.
-    // Кнопка "+" всередині тієї самої "таблетки" — не окрема вкладка, а одноразовий перехід на
-    // Add Entry. Налаштування (раніше третя вкладка "Меню") тепер відкриваються іконкою-шестернею
-    // на самому Home, як у фреймі — це вже НЕ вкладка навбару.
+    // Три вкладки нижнього навбару (оновлений Figma-фрейм, node 1951:4017): Home, Статистика,
+    // і третя ("pending"-іконка) — за запитом користувача додана як вкладка, але поки що
+    // НЕактивна (немає екрана в фреймі, який вона мала б відкривати). Кнопки "+" в навбарі
+    // більше нема: додавання часу тепер per-категорійне (see CategoryCard.onAddTime у
+    // HomeScreen.kt) через ADD_ENTRY_WITH_CATEGORY, а не через загальний вибір категорії.
+    // Налаштування відкриваються іконкою-шестернею на Home, не вкладкою навбару.
     val BOTTOM_NAV_ROUTES = setOf(HOME, STATS)
+
+    // Екрани, для яких уже є Figma-дизайн (сторінка "Tepera", node 1873:2567) — градієнтний фон
+    // малює зовнішній Box у TeperaNavHost для ВСІХ них, не лише для вкладок навбару. Онбординг і
+    // Add Entry свідомо лишаються поза цим списком — для них ще нема окремого фрейму.
+    val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE)
 
     fun addEntry(categoryId: String? = null) =
         if (categoryId != null) "add_entry?categoryId=$categoryId" else ADD_ENTRY
@@ -108,7 +115,7 @@ fun TeperaNavHost(
     // країв екрана (status bar/навбар лишаються білою смугою поверх, підтверджено на
     // Samsung S23). Умовний, не глобальний: Налаштування/Категорії/Додати активність — досі
     // дефолтна Material 3 тема, для них Figma-дизайну ще нема.
-    val useGradientBackground = currentRoute in Routes.BOTTOM_NAV_ROUTES
+    val useGradientBackground = currentRoute in Routes.GRADIENT_ROUTES
     Box(
         modifier = if (useGradientBackground) {
             Modifier.teperaGradientBackground()
@@ -137,6 +144,7 @@ fun TeperaNavHost(
                     settingsStore = settingsStore,
                     activeTimerStore = activeTimerStore,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) }
                 )
             }
@@ -182,9 +190,9 @@ fun TeperaNavHost(
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     settingsStore = settingsStore,
-                    backupRepository = backupRepository,
                     onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
+                    onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -195,16 +203,24 @@ fun TeperaNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(Routes.BACKUP_RESTORE) {
+                BackupRestoreScreen(
+                    backupRepository = backupRepository,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
     }
 }
 
 /**
- * "Таблетка" нижнього навбару з Figma-фрейму Everyday_Designs (node 1930:250): напівпрозорий
- * фон, Home + Статистика як вкладки (popUpTo+launchSingleTop+restoreState — стандартний Compose
- * Navigation патерн, щоб перемикання між ними не нарощувало backstack), "+" по центру — окремий
- * колірний кружок, ОДНОРАЗОВИЙ перехід на Add Entry (не вкладка, тому без popUpTo/selected-стану).
+ * "Таблетка" нижнього навбару з оновленого Figma-фрейму (Home screen, node 1951:4017): суцільна
+ * темно-зелена напівпрозора підложка (не біла, як раніше), 3 РІВНОВЕЛИКІ вкладки — вибрана
+ * показує іконку+підпис на світлішій підсвітці, невибрані лишень іконку. Кнопки "+" по центру
+ * більше нема (за запитом користувача — додавання часу тепер per-категорійне, див.
+ * HomeScreen.CategoryCard). Третя вкладка ("pending", кружок із трьома крапками) поки що НЕ
+ * веде нікуди — у фреймі немає екрана для неї; додана як вкладка, але неактивна (за запитом).
  */
 @Composable
 private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostController) {
@@ -213,15 +229,16 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             .fillMaxWidth()
             .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 24.dp)
             .height(62.dp)
-            .clip(RoundedCornerShape(40.dp))
-            .background(TeperaPalette.navPill)
-            .padding(4.dp),
+            .clip(RoundedCornerShape(32.dp))
+            .background(TeperaPalette.navPillDark)
+            .padding(6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavPillTab(
-            icon = Icons.Outlined.Home,
-            contentDescription = stringResource(R.string.home_screen_title),
+            icon = Icons.Filled.Home,
+            label = stringResource(R.string.home_screen_title),
+            selected = currentRoute == Routes.HOME,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.HOME) {
@@ -233,19 +250,10 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
                 }
             }
         )
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(TeperaPalette.addButtonBackground)
-                .clickable { navController.navigate(Routes.ADD_ENTRY) },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_entry_button), tint = Color.Black)
-        }
         NavPillTab(
-            icon = Icons.Outlined.BarChart,
-            contentDescription = stringResource(R.string.stats_nav_action),
+            icon = Icons.Filled.BarChart,
+            label = stringResource(R.string.stats_nav_action),
+            selected = currentRoute == Routes.STATS,
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.STATS) {
@@ -257,19 +265,45 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
                 }
             }
         )
+        NavPillTab(
+            icon = Icons.Filled.Pending,
+            label = stringResource(R.string.nav_more_placeholder),
+            selected = false,
+            enabled = false,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            onClick = { }
+        )
     }
 }
 
 @Composable
 private fun NavPillTab(
     icon: ImageVector,
-    contentDescription: String,
+    label: String,
+    selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        IconButton(onClick = onClick) {
-            Icon(icon, contentDescription = contentDescription, tint = Color.Black)
+    val contentColor = Color.White.copy(alpha = if (enabled) 1f else 0.4f)
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .then(if (selected) Modifier.background(TeperaPalette.navPillSelectedHighlight) else Modifier)
+            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(icon, contentDescription = if (selected) null else label, tint = contentColor)
+            if (selected) {
+                Text(label, color = contentColor, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

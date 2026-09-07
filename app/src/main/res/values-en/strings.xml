@@ -24,6 +24,10 @@
     <string name="home_no_entries_today">No entries logged today yet</string>
     <string name="minutes_short_format">%d min</string>
     <string name="settings_nav_action">Settings</string>
+    <string name="add_time_action_format">Add time: %1$s</string>
+    <string name="category_start_action">Start</string>
+    <string name="category_stop_action">Stop</string>
+    <string name="nav_more_placeholder">Coming soon</string>
 
     <!-- Time-of-day greeting on Home (Figma frame Everyday_Designs) -->
     <string name="greeting_morning">Good morning</string>
@@ -52,6 +56,10 @@
     <string name="settings_language_system">System</string>
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
+    <string name="settings_backup_restore_action">Backup and restore</string>
+    <string name="settings_other_section">Other</string>
+    <string name="settings_target_info">How many hours of daily screen time you consider normal — used for the target mark on the balance.</string>
+    <string name="settings_target_hours_format">%dh</string>
 
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>
@@ -68,6 +76,8 @@
     <string name="exclusion_list_screen_title">Excluded apps</string>
     <string name="exclusion_list_hint">Checked apps are not counted toward Online time (e.g. maps, e-readers, banking)</string>
     <string name="exclusion_list_empty">No apps with usage history in the last 30 days</string>
+    <string name="exclusion_list_section_excluded">Excluded</string>
+    <string name="exclusion_list_section_all">All</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>

@@ -9,19 +9,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreTime
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Pause
-import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -60,11 +62,13 @@ import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
 
 /**
- * Стиль Home перенесений з Figma-фрейму "Everyday_Designs" (node 1930:233, Фаза 6): м'який
- * градієнтний фон, привітання за часом доби замість статичного заголовка, "Life balance" — два
- * пропорційні блоки Offline/Online (BalanceCard.kt) замість тонкого бару, картки категорій без
- * колонки Card/TopAppBar/FAB — плюс переїхав у "таблетку" нижнього навбару (TeperaNavHost), а
- * Налаштування відкриваються через іконку-шестерню тут, а не окремою вкладкою навбару.
+ * Стиль Home перенесений з Figma-фрейму "Everyday_Designs" (сторінка "Tepera", node 1951:4017,
+ * оновлений мокап — Фаза 6): "Life balance" тепер ОДНА картка-обгортка (заголовок + бари разом),
+ * сітка категорій 2x3 (було 3x2) з більшими картками, і КОЖНА картка має ДВІ окремі кнопки
+ * знизу — широку play/pause (тап-таймер, як і раніше) і окрему кнопку "more_time" (годинник із
+ * плюсом) для РУЧНОГО додавання часу САМЕ до цієї категорії. За запитом користувача це замінює
+ * загальну кнопку "+" (яка раніше відкривала Add Entry з вибором категорії зі списку) — тепер
+ * такого загального входу з Home більше нема, лише per-категорійний "add time".
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +79,7 @@ fun HomeScreen(
     settingsStore: SettingsStore,
     activeTimerStore: ActiveTimerStore,
     onOpenSettings: () -> Unit,
+    onAddEntryForCategory: (String) -> Unit,
     onShowOnboarding: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
@@ -106,11 +111,21 @@ fun HomeScreen(
     // Прозорий containerColor: градієнтний фон малює зовнішній Box у TeperaNavHost (а не тут) —
     // інакше він потрапляє під contentPadding зовнішнього Scaffold і не сягає країв екрана.
     Scaffold(containerColor = Color.Transparent) { padding ->
-            Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-                HomeHeader(onOpenSettings = onOpenSettings)
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            HomeHeader(onOpenSettings = onOpenSettings)
 
+            // "Life balance" — ОДНА картка-обгортка (заголовок+бари разом), а не окремий
+            // заголовок над секцією без фону, як було раніше.
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(TeperaPalette.cardTranslucentLight)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -135,40 +150,44 @@ fun HomeScreen(
                     onOpenUsageAccessSettings = {
                         context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                     },
-                    onLearnMore = onShowOnboarding,
-                    modifier = Modifier.padding(16.dp)
+                    onLearnMore = onShowOnboarding
                 )
+            }
 
-                Text(
-                    text = stringResource(R.string.activities_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
+            Text(
+                text = stringResource(R.string.activities_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
 
-                if (summary.isEmpty()) {
-                    Box(
-                        modifier = Modifier.weight(1f).fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(stringResource(R.string.home_no_entries_today))
-                    }
-                } else {
-                    // 3x2 сітка категорій: до 5 дефолтних + 1 кастомна (FR-2.1/2.2) точно
-                    // заповнюють 3 колонки на 2 ряди, без порожніх чи переповнених рядків.
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(summary, key = { it.category.id }) { item ->
-                            CategoryCard(item = item, onClick = { viewModel.toggleTimer(item.category.id) })
-                        }
+            if (summary.isEmpty()) {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(stringResource(R.string.home_no_entries_today))
+                }
+            } else {
+                // 2x3 сітка категорій (було 3x2): до 5 дефолтних + 1 кастомна (FR-2.1/2.2)
+                // точно заповнюють 2 колонки на 3 ряди.
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(summary, key = { it.category.id }) { item ->
+                        CategoryCard(
+                            item = item,
+                            onToggleTimer = { viewModel.toggleTimer(item.category.id) },
+                            onAddTime = { onAddEntryForCategory(item.category.id) }
+                        )
                     }
                 }
             }
+        }
     }
 }
 
@@ -202,49 +221,88 @@ private fun HomeHeader(onOpenSettings: () -> Unit) {
 }
 
 /**
- * Тап починає/зупиняє живий таймер для цієї категорії (HomeViewModel.toggleTimer). Стиль картки —
- * з Figma-фрейму: іконка категорії (тонована власним кольором категорії, без кружка-підложки),
- * play/pause замість тексту з часом (за запитом прибрано і живий лічильник, і статичний підпис
- * хвилин — лишились лише іконка й назва).
+ * Картка категорії (Home screen, node 1951:4017): іконка+назва зверху, ДВІ кнопки знизу —
+ * широка play/pause (тап-таймер, HomeViewModel.toggleTimer) і окрема "add time" (Icons.Filled.
+ * MoreTime — той самий глиф, що "more_time" у фреймі) для ручного додавання часу САМЕ цій
+ * категорії (AddEntryScreen з попередньо вибраною категорією, ADD_ENTRY_WITH_CATEGORY).
  */
 @Composable
-private fun CategoryCard(item: CategoryTodaySummary, onClick: () -> Unit) {
+private fun CategoryCard(
+    item: CategoryTodaySummary,
+    onToggleTimer: () -> Unit,
+    onAddTime: () -> Unit
+) {
     val isTracking = item.trackingStartTime != null
     val accentColor = categoryColor(item.category.colorHex)
     val containerColor = if (isTracking) TeperaPalette.cardActive else TeperaPalette.cardTranslucent
+    val displayName = categoryDisplayName(item.category)
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(16.dp))
+            .height(132.dp)
+            .clip(RoundedCornerShape(28.dp))
             .background(containerColor)
-            .clickable(onClick = onClick)
-            .padding(12.dp)
+            .padding(8.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-            Icon(
-                imageVector = categoryIcon(item.category.iconName),
-                contentDescription = null,
-                tint = accentColor,
-                modifier = Modifier.size(32.dp)
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Column(modifier = Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = categoryDisplayName(item.category),
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
                 Icon(
-                    imageVector = if (isTracking) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    imageVector = categoryIcon(item.category.iconName),
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    tint = accentColor,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = displayName,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(if (isTracking) TeperaPalette.brandAccent else TeperaPalette.cardActive)
+                    .clickable(onClick = onToggleTimer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isTracking) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = stringResource(
+                        if (isTracking) R.string.category_stop_action else R.string.category_start_action
+                    ),
+                    tint = if (isTracking) Color.White else Color.Black
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(TeperaPalette.cardActive)
+                    .clickable(onClick = onAddTime),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.MoreTime,
+                    contentDescription = stringResource(R.string.add_time_action_format, displayName),
+                    tint = Color.Black
                 )
             }
         }

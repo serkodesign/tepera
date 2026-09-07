@@ -32,10 +32,24 @@ object TeperaPalette {
     val onlineCard = Color(0x80FF9162) // rgba(255,145,98,0.5)
 
     val cardTranslucent = Color(0x80FFFFFF) // rgba(255,255,255,0.5)
+    val cardTranslucentLight = Color(0x4DFFFFFF) // rgba(255,255,255,0.3) — обгортка "Life balance"
     val cardActive = Color(0xFFFFFFFF)
 
     val navPill = Color(0x80FFFFFF)
     val addButtonBackground = offlineCard // за запитом: той самий зелений, що й Offline-блок балансу
+
+    // Оновлений нижній навбар (Home screen, node 1951:4017): суцільна темно-зелена "таблетка"
+    // замість напівпрозорої білої, вибрана вкладка підсвічена світлішим напівпрозорим кружком.
+    val navPillDark = Color(0xB2073634) // rgba(7,54,52,0.7)
+    val navPillSelectedHighlight = Color(0x40FFFFFF) // rgba(255,255,255,0.25)
+
+    // Фрейми Settings/Categories/Excluded apps/Backup and restore (node 1951:909 сторінка) —
+    // фірмовий темно-зелений для іконок-навігаторів у Налаштуваннях (Категорії/Виключені
+    // застосунки/Резервне копіювання) і для ввімкненого стану перемикачів (той самий колір,
+    // що на toggle track у фреймі, #005e3e).
+    val brandAccent = Color(0xFF005E3E)
+    val brandAccentSoft = Color(0x1A005E3E) // rgba(0,94,62,0.1) — фон кружка-іконки
+    val switchTrackOff = Color(0x80FFFFFF) // той самий "скляний" відтінок, що інші картки
 
     val headlineFont: FontFamily = FontFamily.Serif
 }
