@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Park
@@ -29,7 +30,8 @@ private val iconCatalog: Map<String, ImageVector> = mapOf(
     "reading" to Icons.AutoMirrored.Outlined.MenuBook,
     "hobby" to Icons.Outlined.Palette,
     "movement" to Icons.AutoMirrored.Outlined.DirectionsRun,
-    "sleep" to Icons.Outlined.Bedtime,
+    "social" to Icons.Outlined.Groups,
+    "sleep" to Icons.Outlined.Bedtime, // legacy, лише для вже заархівованих записів (v2.4)
     "star" to Icons.Outlined.Star,
     "favorite" to Icons.Outlined.Favorite,
     "coffee" to Icons.Outlined.Coffee,
@@ -73,6 +75,7 @@ private inline fun categoryDisplayName(category: CategoryEntity, resolve: (Int) 
         "reading" -> resolve(R.string.category_reading)
         "hobby" -> resolve(R.string.category_hobby)
         "movement" -> resolve(R.string.category_movement)
-        "sleep" -> resolve(R.string.category_sleep)
+        "social" -> resolve(R.string.category_social)
+        "sleep" -> resolve(R.string.category_sleep) // legacy, вже заархівовані записи (v2.4)
         else -> category.name
     }

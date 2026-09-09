@@ -70,12 +70,17 @@ fun SettingsScreen(
     // застосунку (BalanceRepository, віджет) далі працюють у хвилинах — конвертація лише тут.
     var targetHours by remember { mutableStateOf(3) }
     var showTargetInfo by remember { mutableStateOf(false) }
+    // FR-3.2 (SRS v2.5): межа "вікна сну" — до цієї години коротка нічна перевірка телефону
+    // не рахується стартом дня (BalanceRepository.calculateDayStartMillis()).
+    var sleepWindowEndHour by remember { mutableStateOf(6) }
+    var showSleepWindowInfo by remember { mutableStateOf(false) }
 
     // Один одноразовий зчит з DataStore на вхід — на відміну від reactive collectAsState,
     // це навмисно НЕ синхронізується з полем повторно після кожної власної зміни (інакше
     // повзунок "стрибав" би під час перетягування).
     LaunchedEffect(Unit) {
         targetHours = (settingsStore.targetMinutes.first() / 60f).roundToInt().coerceIn(1, 8)
+        sleepWindowEndHour = settingsStore.sleepWindowEndHour.first().coerceIn(0, 11)
     }
 
     // LocaleStore (SharedPreferences), не AppCompatDelegate: AppCompatDelegate.
@@ -92,6 +97,15 @@ fun SettingsScreen(
                 TextButton(onClick = { showTargetInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
             },
             text = { Text(stringResource(R.string.settings_target_info)) }
+        )
+    }
+    if (showSleepWindowInfo) {
+        AlertDialog(
+            onDismissRequest = { showSleepWindowInfo = false },
+            confirmButton = {
+                TextButton(onClick = { showSleepWindowInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+            },
+            text = { Text(stringResource(R.string.settings_sleep_window_info)) }
         )
     }
 
@@ -129,6 +143,33 @@ fun SettingsScreen(
                         valueLabel = { hours -> stringResource(R.string.settings_target_hours_format, hours) },
                         minHours = 1,
                         maxHours = 8
+                    )
+                }
+
+                // FR-3.2: межа вікна сну — той самий слайдер-компонент, 0-11 год.
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.settings_sleep_window_label),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        IconButton(onClick = { showSleepWindowInfo = true }, modifier = Modifier.size(20.dp)) {
+                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_sleep_window_info))
+                        }
+                    }
+                    HourRangeSlider(
+                        hours = sleepWindowEndHour,
+                        onHoursChange = { hour ->
+                            sleepWindowEndHour = hour
+                            scope.launch { settingsStore.setSleepWindowEndHour(hour) }
+                        },
+                        valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
+                        minHours = 0,
+                        maxHours = 11
                     )
                 }
 

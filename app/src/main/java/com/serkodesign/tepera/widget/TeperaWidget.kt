@@ -47,7 +47,6 @@ import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.TeperaPalette
-import com.serkodesign.tepera.util.roundToQuarterHour
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.first
 
@@ -63,7 +62,8 @@ private fun widgetIconRes(iconName: String): Int = when (iconName) {
     "reading" -> R.drawable.ic_widget_reading
     "hobby" -> R.drawable.ic_widget_hobby
     "movement" -> R.drawable.ic_widget_movement
-    "sleep" -> R.drawable.ic_widget_sleep
+    "social" -> R.drawable.ic_widget_social
+    "sleep" -> R.drawable.ic_widget_sleep // legacy, вже заархівована категорія (v2.4)
     else -> R.drawable.ic_widget_generic
 }
 
@@ -97,14 +97,34 @@ class TeperaWidget : GlanceAppWidget() {
 
         val activeTimers = app.activeTimerStore.activeTimers.first()
 
+        // SRS v2.5, FR-3.5: точка старту дня замінює локальну північ — та сама логіка, що на
+        // Home (BalanceViewModel.refresh()).
         val hasUsageAccess = app.balanceRepository.hasUsageAccess()
-        val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday() else 0
-        val denominatorMinutes = app.balanceRepository.calculateDenominatorMinutes()
+        val sleepWindowEndHour = app.settingsStore.sleepWindowEndHour.first()
+        val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
+        val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday(dayStartMillis) else 0
+        val dayLengthMinutes = app.balanceRepository.calculateDayLengthMinutes(dayStartMillis)
         val targetMinutes = app.settingsStore.targetMinutes.first()
-        val offlineMinutes = app.activityRepository
+
+        // FR-4.1: та сама тришарова структура доби, що на Home (Online + категорії з часом
+        // сьогодні + Решта дня) — не окремий Online/Offline підрахунок.
+        val entries = app.activityRepository
             .observeEntriesInRange(startOfTodayMillis(), Long.MAX_VALUE)
             .first()
-            .sumOf { it.durationMinutes }
+        val minutesByCategory = entries.groupBy { it.categoryId }
+            .mapValues { (_, categoryEntries) -> categoryEntries.sumOf { it.durationMinutes } }
+        val allCategories = app.categoryRepository.observeAllCategories().first()
+        val loggedSegments = allCategories
+            .filter { (minutesByCategory[it.id] ?: 0) > 0 }
+            .sortedBy { it.sortOrder }
+            .map { categoryColor(it.colorHex) to minutesByCategory.getValue(it.id) }
+        val loggedMinutes = loggedSegments.sumOf { it.second }
+        val restOfDayMinutes = (dayLengthMinutes - onlineMinutes - loggedMinutes).coerceAtLeast(0)
+        val daySegments = buildList {
+            if (onlineMinutes > 0) add(TeperaPalette.onlineCard to onlineMinutes)
+            addAll(loggedSegments)
+            if (restOfDayMinutes > 0) add(TeperaPalette.restOfDayCard to restOfDayMinutes)
+        }
 
         provideContent {
             GlanceTheme {
@@ -130,12 +150,11 @@ class TeperaWidget : GlanceAppWidget() {
                     )
                     if (isExtended) {
                         Spacer(modifier = GlanceModifier.height(8.dp))
-                        BalanceRow(
+                        DayStructureRow(
                             hasUsageAccess = hasUsageAccess,
-                            onlineMinutes = onlineMinutes,
-                            offlineMinutes = offlineMinutes,
+                            segments = daySegments,
+                            dayLengthMinutes = dayLengthMinutes,
                             targetMinutes = targetMinutes,
-                            denominatorMinutes = denominatorMinutes,
                             context = context
                         )
                     }
@@ -267,25 +286,17 @@ class ToggleCategoryTimerAction : ActionCallback {
     }
 }
 
-/** Той самий стиль і округлення до 15 хв, що на Home (BalanceCard.formatBalanceDuration) — тут
- * без @Composable/stringResource, бо Glance-код викликає його поза composable-контекстом Compose
- * UI застосунку. */
-private fun formatBalanceDuration(context: Context, minutes: Int): String {
-    val (hours, remainderMinutes) = roundToQuarterHour(minutes)
-    return when {
-        hours <= 0 -> context.getString(R.string.minutes_short_format, remainderMinutes)
-        remainderMinutes == 0 -> context.getString(R.string.hours_short_format, hours)
-        else -> context.getString(R.string.hours_minutes_short_format, hours, remainderMinutes)
-    }
-}
-
+/**
+ * FR-4.1, FR-3.10 (SRS v2.5): тиха тришарова шкала структури доби — БЕЗ тексту з сумами (шкала
+ * має бути "візуально тихішою за кнопки логування", розділ 4.3), лише коли є доступ до
+ * статистики використання; без нього — той самий заклик до дії, що на Home.
+ */
 @Composable
-private fun BalanceRow(
+private fun DayStructureRow(
     hasUsageAccess: Boolean,
-    onlineMinutes: Int,
-    offlineMinutes: Int,
+    segments: List<Pair<Color, Int>>,
+    dayLengthMinutes: Int,
     targetMinutes: Int,
-    denominatorMinutes: Int,
     context: Context
 ) {
     if (!hasUsageAccess) {
@@ -295,58 +306,44 @@ private fun BalanceRow(
         )
         return
     }
+    if (dayLengthMinutes <= 0 || segments.isEmpty()) return // день щойно почався — ще нема чого показувати
 
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        Row(modifier = GlanceModifier.fillMaxWidth()) {
-            Text(
-                text = context.getString(R.string.balance_online_label) + ": " +
-                    formatBalanceDuration(context, onlineMinutes),
-                modifier = GlanceModifier.defaultWeight(),
-                style = TextStyle(color = GlanceTheme.colors.onBackground)
-            )
-            Text(
-                text = context.getString(R.string.balance_offline_label) + ": " +
-                    formatBalanceDuration(context, offlineMinutes),
-                style = TextStyle(color = GlanceTheme.colors.onBackground)
-            )
-        }
-        Spacer(modifier = GlanceModifier.height(6.dp))
-        GlanceBalanceBar(
-            onlineRatio = onlineMinutes.toFloat() / denominatorMinutes.coerceAtLeast(1),
-            targetRatio = targetMinutes.toFloat() / denominatorMinutes.coerceAtLeast(1)
-        )
-    }
+    GlanceDayStructureBar(segments = segments, dayLengthMinutes = dayLengthMinutes, targetMinutes = targetMinutes)
 }
 
 // Glance/RemoteViews не має Canvas і GlanceModifier.defaultWeight() не приймає довільну вагу
 // (лише рівний розподіл) — на відміну від BalanceCard у застосунку (Compose Canvas), тому
-// шкалу тут імітуємо решіткою з фіксованої кількості РІВНИХ за вагою сегментів: кожен сегмент
-// пофарбований залежно від того, чи він у межах online-заповнення, і один сегмент — засічка
-// таргету. 20 сегментів дають ~5% роздільної здатності, достатньо для розміру віджета.
+// шкалу тут імітуємо решіткою з фіксованої кількості РІВНИХ за вагою сегментів, кожен пофарбований
+// залежно від того, у яку смугу дня (Online/категорія/Решта дня) він потрапляє за часовою часткою.
+// 20 сегментів дають ~5% роздільної здатності, достатньо для розміру віджета. Заввишки 8dp —
+// суттєво тихіша за 48-56dp кнопки категорій над нею (FR-4.1).
 private const val BALANCE_BAR_SEGMENTS = 20
 
-/** FR-3.4/FR-4.1: та сама ідея, що BalanceCard у застосунку — заповнення + засічка таргету. */
+/** FR-3.10: та сама формула засічки орієнтиру, що на Home (BalanceCard.DayStructureBar). */
 @Composable
-private fun GlanceBalanceBar(onlineRatio: Float, targetRatio: Float) {
-    val filledCount = (onlineRatio.coerceIn(0f, 1f) * BALANCE_BAR_SEGMENTS)
-        .toInt()
-        .coerceIn(0, BALANCE_BAR_SEGMENTS)
-    val markerIndex = (targetRatio.coerceIn(0f, 1f) * (BALANCE_BAR_SEGMENTS - 1))
+private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, dayLengthMinutes: Int, targetMinutes: Int) {
+    val referenceMinutes = maxOf(dayLengthMinutes, targetMinutes, 1)
+    val markerIndex = ((targetMinutes.toFloat() / referenceMinutes) * (BALANCE_BAR_SEGMENTS - 1))
         .toInt()
         .coerceIn(0, BALANCE_BAR_SEGMENTS - 1)
+    // Тиха нейтральна риска — НЕ error/тривожний колір (FR-4.3: жодного trafic-light кодування,
+    // засічка ніколи не змінює колір при перевищенні).
+    val markerColor = ColorProvider(day = Color.Black.copy(alpha = 0.3f), night = Color.Black.copy(alpha = 0.3f))
 
     Row(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .height(10.dp)
-            .cornerRadius(5.dp)
+            .height(8.dp)
+            .cornerRadius(4.dp)
     ) {
         for (index in 0 until BALANCE_BAR_SEGMENTS) {
             if (index > 0) Spacer(modifier = GlanceModifier.width(1.dp))
-            val segmentColor = when {
-                index == markerIndex -> GlanceTheme.colors.error
-                index < filledCount -> GlanceTheme.colors.primary
-                else -> GlanceTheme.colors.secondaryContainer
+            val segmentColor = if (index == markerIndex) {
+                markerColor
+            } else {
+                val fraction = (index + 0.5f) / BALANCE_BAR_SEGMENTS
+                val color = colorForFraction(segments, dayLengthMinutes, fraction)
+                ColorProvider(day = color, night = color)
             }
             Box(
                 modifier = GlanceModifier
@@ -356,6 +353,17 @@ private fun GlanceBalanceBar(onlineRatio: Float, targetRatio: Float) {
             ) {}
         }
     }
+}
+
+/** Який сегмент дня (Online/категорія/Решта дня) відповідає даній частці ширини шкали. */
+private fun colorForFraction(segments: List<Pair<Color, Int>>, totalMinutes: Int, fraction: Float): Color {
+    val targetMinute = fraction * totalMinutes
+    var cumulative = 0
+    for ((color, minutes) in segments) {
+        cumulative += minutes
+        if (targetMinute < cumulative) return color
+    }
+    return segments.lastOrNull()?.first ?: TeperaPalette.restOfDayCard
 }
 
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {

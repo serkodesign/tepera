@@ -3,9 +3,14 @@ package com.serkodesign.tepera.data
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 
 /**
- * FR-2.1: 5 дефолтних категорій, підтверджено в SRS розділ 11 (Природа, Читання, Хобі/Творчість,
- * Рух/Спорт, Сон). id — фіксовані (не UUID.randomUUID()), інакше insertDefaults()
+ * FR-2.1 (SRS v2.5): 5 дефолтних категорій — Природа, Читання, Хобі/Творчість, Рух/Спорт,
+ * Живе спілкування. id — фіксовані (не UUID.randomUUID()), інакше insertDefaults()
  * з OnConflictStrategy.IGNORE не впізнавав би вже засіяні рядки і плодив дублікати щозапуску.
+ *
+ * "default-sleep" прибрано зі списку у v2.4: без Sleep API вікно сну було здогадкою, поданою
+ * як факт (розділ 3.3 SRS). На вже засіяних БД цей рядок не видаляється (FR-2.3 — лише
+ * архівація), а архівується один раз при старті — TeperaApp.onCreate(). "default-social"
+ * (Живе спілкування) — нова категорія на звільненому слоті.
  */
 object DefaultCategories {
 
@@ -47,13 +52,16 @@ object DefaultCategories {
             sortOrder = 3
         ),
         CategoryEntity(
-            id = "default-sleep",
-            name = "Сон",
-            nameKey = "sleep",
-            iconName = "sleep",
-            colorHex = "#5C6B73",
+            id = "default-social",
+            name = "Живе спілкування",
+            nameKey = "social",
+            iconName = "social",
+            colorHex = "#8A5A83",
             isDefault = true,
             sortOrder = 4
         )
     )
+
+    /** Дефолтна категорія, прибрана з v2.4 — archive(), не видалення (FR-2.3). */
+    const val LEGACY_SLEEP_ID = "default-sleep"
 }

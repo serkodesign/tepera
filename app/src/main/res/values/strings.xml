@@ -5,11 +5,14 @@
     <!-- Базова доступність (SRS 5.4) — спільний опис для кнопки "Назад" у TopAppBar на всіх екранах -->
     <string name="nav_back">Назад</string>
 
-    <!-- v2.0: 5 дефолтних категорій (FR-2.1) — робочий список, підтвердити перед фазою 1 (SRS розділ 11) -->
+    <!-- SRS v2.5, FR-2.1: 5 дефолтних категорій. Сон прибрано з v2.4 (без Sleep API вікно сну
+         було здогадкою, поданою як факт) — category_sleep лишається лише для локалізації вже
+         заархівованих історичних записів, не використовується як активна дефолтна категорія. -->
     <string name="category_nature">Природа</string>
     <string name="category_reading">Читання</string>
     <string name="category_hobby">Хобі/творчість</string>
     <string name="category_movement">Рух/спорт</string>
+    <string name="category_social">Живе спілкування</string>
     <string name="category_sleep">Сон</string>
 
     <string name="add_entry_button">Додати активність</string>
@@ -38,21 +41,23 @@
     <string name="greeting_evening">Доброго вечора</string>
     <string name="greeting_night">Доброї ночі</string>
 
-    <!-- Баланс (FR-3.1–3.6) -->
-    <string name="life_balance_title">Баланс</string>
+    <!-- Структура доби (FR-3.1–3.12, SRS v2.5, розділ 3.3) — раніше "Online/Offline баланс" (v2.1);
+         перейменовано у v2.2, бо пряме протиставлення Online/Offline структурно гарантувало
+         відчуття провини. Тепер три нейтральні складові: Online, категорії "Ти відмітив",
+         "Решта дня" — без окремої відсоткової оцінки (FR-P.6). -->
+    <string name="my_day_title_format">Твій день триває %1$s</string>
     <string name="balance_online_label">Online</string>
-    <string name="balance_offline_label">Offline</string>
-    <string name="balance_target_label">Таргет</string>
+    <string name="balance_rest_of_day_label">Решта дня</string>
     <string name="activities_title">Активності</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
-    <string name="onboarding_screen_title">Online/Offline баланс</string>
-    <string name="onboarding_explanation">Tepera показує співвідношення екранного й реального часу за добу. Для цього потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях. Без нього офлайн-логування лишається повністю робочим.</string>
+    <string name="onboarding_screen_title">Структура твого дня</string>
+    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях. Без нього офлайн-логування лишається повністю робочим.</string>
     <string name="onboarding_skip">Пропустити</string>
 
-    <!-- Налаштування (FR-3.4, FR-3.5) -->
+    <!-- Налаштування (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Налаштування</string>
-    <string name="settings_target_label">Таргет Online-часу, хв/день</string>
+    <string name="settings_target_label">Орієнтир Online-часу</string>
     <string name="settings_exclusion_list_action">Виключені застосунки</string>
     <string name="settings_categories_action">Категорії</string>
     <string name="settings_language_label">Мова застосунку</string>
@@ -61,8 +66,11 @@
     <string name="settings_language_en">English</string>
     <string name="settings_backup_restore_action">Резервне копіювання</string>
     <string name="settings_other_section">Інше</string>
-    <string name="settings_target_info">Скільки годин екранного часу на день ви вважаєте нормою — використовується для позначки таргету на балансі.</string>
+    <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, без оцінки перевищення.</string>
     <string name="settings_target_hours_format">%d год</string>
+    <string name="settings_sleep_window_label">Кінець вікна сну</string>
+    <string name="settings_sleep_window_info">До цієї години коротка нічна перевірка телефону не рахується початком дня — лише довша сесія або будь-що після цієї межі. Зміни, якщо працюєш ночами.</string>
+    <string name="settings_sleep_window_hour_format">До %d:00</string>
 
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Експортувати дані (JSON)</string>

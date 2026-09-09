@@ -7,10 +7,10 @@ import com.serkodesign.tepera.util.currentDayPeriod
 // FR-4.5: пріоритет nameKey для кожного періоду доби — робочі, не з SRS буквально (там лише
 // вимога "порядок змінюється залежно від часу доби", без точних правил).
 private val priorityByPeriod: Map<DayPeriod, List<String>> = mapOf(
-    DayPeriod.MORNING to listOf("movement", "nature", "reading", "hobby", "sleep"),
-    DayPeriod.DAY to listOf("reading", "hobby", "nature", "movement", "sleep"),
-    DayPeriod.EVENING to listOf("hobby", "reading", "nature", "movement", "sleep"),
-    DayPeriod.NIGHT to listOf("sleep", "hobby", "reading", "nature", "movement")
+    DayPeriod.MORNING to listOf("movement", "nature", "reading", "hobby", "social"),
+    DayPeriod.DAY to listOf("reading", "hobby", "nature", "movement", "social"),
+    DayPeriod.EVENING to listOf("social", "hobby", "reading", "nature", "movement"),
+    DayPeriod.NIGHT to listOf("social", "hobby", "reading", "nature", "movement")
 )
 
 /**

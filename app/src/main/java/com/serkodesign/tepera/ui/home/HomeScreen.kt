@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -88,7 +87,7 @@ fun HomeScreen(
     val summary by viewModel.todaySummary.collectAsState()
 
     val balanceViewModel: BalanceViewModel = viewModel(
-        factory = BalanceViewModel.Factory(balanceRepository, activityRepository, settingsStore)
+        factory = BalanceViewModel.Factory(balanceRepository, activityRepository, categoryRepository, settingsStore)
     )
     val balanceState by balanceViewModel.uiState.collectAsState()
 
@@ -114,8 +113,8 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             HomeHeader(onOpenSettings = onOpenSettings)
 
-            // "Life balance" — ОДНА картка-обгортка (заголовок+бари разом), а не окремий
-            // заголовок над секцією без фону, як було раніше.
+            // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
+            // разом), а не окремий заголовок над секцією без фону, як було раніше.
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -125,27 +124,7 @@ fun HomeScreen(
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.life_balance_title),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontFamily = TeperaPalette.headlineFont,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        )
-                    )
-                    IconButton(onClick = onShowOnboarding, modifier = Modifier.size(20.dp)) {
-                        Icon(
-                            Icons.Outlined.Info,
-                            contentDescription = stringResource(R.string.usage_access_learn_more)
-                        )
-                    }
-                }
-
-                LifeBalanceSection(
+                MyDaySection(
                     state = balanceState,
                     onOpenUsageAccessSettings = {
                         context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))

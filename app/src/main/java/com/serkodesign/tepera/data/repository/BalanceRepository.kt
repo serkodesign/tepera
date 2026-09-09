@@ -11,17 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
-/** Результат розрахунку балансу на конкретний момент. */
-data class OnlineOfflineBalance(
-    val onlineMinutesToday: Int,
-    val offlineMinutesToday: Int, // сума ActivityEntryEntity за сьогодні — рахує ActivityRepository окремо
-    val targetMinutes: Int,
-    val denominatorMinutes: Int, // FR-3.2: max(180, хвилин_від_00:00)
-    val onlineRatio: Float // onlineMinutesToday / denominatorMinutes, для UI-шкали
-)
-
 /**
- * FR-3.1–3.6: доступ до статистики використання (UsageStatsManager) + Grace Period Buffer.
+ * FR-3.1–3.12 (SRS v2.5): доступ до статистики використання (UsageStatsManager) + Grace Period
+ * Buffer, тепер відлічений від точки старту дня (перше суттєве розблокування), а не від півночі.
  *
  * ВАЖЛИВО: PACKAGE_USAGE_STATS — protected permission. Коли доступ НІКОЛИ не надавався,
  * queryUsageStats() справді повертає порожній список, без винятку. Але якщо доступ був
@@ -55,10 +47,11 @@ class BalanceRepository(
     }
 
     /**
-     * FR-3.1, FR-3.5: сумарний Online-час за сьогодні, за вирахуванням застосунків
-     * зі списку виключень.
+     * FR-3.1, FR-3.11: сумарний Online-час від точки старту дня (FR-3.5) до зараз, за
+     * вирахуванням застосунків зі списку виключень.
      */
-    suspend fun getOnlineMinutesToday(): Int = getOnlineMinutes(startOfTodayMillis(), System.currentTimeMillis())
+    suspend fun getOnlineMinutesToday(dayStartMillis: Long): Int =
+        getOnlineMinutes(dayStartMillis, System.currentTimeMillis())
 
     /**
      * FR-5.3: узагальнена версія getOnlineMinutesToday() для довільного інтервалу — потрібна
@@ -134,11 +127,16 @@ class BalanceRepository(
         return launcherPackages + keyboardPackages
     }
 
-    /** FR-3.2: Grace Period Buffer — знаменник ніколи не менший за 180 хв. */
-    fun calculateDenominatorMinutes(): Int {
-        val minutesSinceMidnight = minutesSinceStartOfDay()
-        return maxOf(180, minutesSinceMidnight)
-    }
+    /** FR-3.9: Grace Period Buffer — знаменник ніколи не менший за 180 хв. */
+    fun calculateDenominatorMinutes(dayStartMillis: Long): Int =
+        maxOf(180, minutesSince(dayStartMillis))
+
+    /** FR-3.7: скільки хвилин уже триває сьогоднішній день (для "Твій день триває X"). */
+    fun calculateDayLengthMinutes(dayStartMillis: Long): Int =
+        minutesSince(dayStartMillis).coerceAtLeast(0)
+
+    private fun minutesSince(millis: Long): Int =
+        ((System.currentTimeMillis() - millis) / 60_000L).toInt()
 
     /** FR-3.3: локальна північ (узгоджується з відомим timezone-обмеженням, SRS розділ 11). */
     private fun startOfTodayMillis(): Long {
@@ -150,6 +148,53 @@ class BalanceRepository(
         return cal.timeInMillis
     }
 
-    private fun minutesSinceStartOfDay(): Int =
-        ((System.currentTimeMillis() - startOfTodayMillis()) / 60_000L).toInt()
+    /**
+     * FR-3.2, FR-3.5: точка старту дня — перше "суттєве" розблокування (перший MOVE_TO_FOREGROUND
+     * будь-якого застосунку, включно з лаунчером) після півночі. Сесія, що починається до
+     * [sleepWindowEndHour] (дефолт 6, FR-3.2) і триває коротше 5 хв, ігнорується як нічна
+     * перевірка годинника (узгоджено зі стейкхолдером — SRS текстом називав поріг 2-3 хв і
+     * окрему межу 05:00; тут обидва об'єднані в один редагований параметр). Якщо сьогодні ще
+     * не було жодного "суттєвого" розблокування (напр. щойно прокинулись) — день ще не почався,
+     * повертаємо "зараз": знаменник і Online-хвилини тоді коректно виходять ~0.
+     */
+    suspend fun calculateDayStartMillis(sleepWindowEndHour: Int): Long = withContext(Dispatchers.IO) {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val midnight = startOfTodayMillis()
+        val now = System.currentTimeMillis()
+        try {
+            val events = usm.queryEvents(midnight, now)
+            val event = UsageEvents.Event()
+            var pendingStart: Long? = null
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                when (event.eventType) {
+                    UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                        if (pendingStart == null) pendingStart = event.timeStamp
+                    }
+                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                        val start = pendingStart
+                        pendingStart = null
+                        if (start != null && isSignificantUnlock(start, event.timeStamp, sleepWindowEndHour)) {
+                            return@withContext start
+                        }
+                    }
+                }
+            }
+            // Останнє розблокування ще триває (нема завершального MOVE_TO_BACKGROUND у вибірці).
+            val start = pendingStart
+            if (start != null && isSignificantUnlock(start, now, sleepWindowEndHour)) {
+                return@withContext start
+            }
+            now // ще жодного суттєвого розблокування сьогодні — день ще не почався
+        } catch (e: SecurityException) {
+            midnight
+        }
+    }
+
+    private fun isSignificantUnlock(startMillis: Long, endMillis: Long, sleepWindowEndHour: Int): Boolean {
+        val hour = Calendar.getInstance().apply { timeInMillis = startMillis }.get(Calendar.HOUR_OF_DAY)
+        if (hour >= sleepWindowEndHour) return true
+        val durationMinutes = (endMillis - startMillis) / 60_000L
+        return durationMinutes >= 5
+    }
 }

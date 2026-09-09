@@ -67,6 +67,10 @@ class TeperaApp : Application() {
         // у CategoryDao), тож виклик щозапуску безпечний.
         applicationScope.launch {
             categoryRepository.ensureDefaultsSeeded(DefaultCategories.all)
+            // SRS v2.4: "Сон" прибрано з дефолтних категорій — archive(), не видалення (FR-2.3).
+            // Ідемпотентно (archive() лише виставляє isHidden=true), безпечно викликати щозапуску;
+            // не чіпає вже існуючі записи цієї категорії, лише ховає її з активного списку.
+            categoryRepository.archive(DefaultCategories.LEGACY_SLEEP_ID)
         }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)

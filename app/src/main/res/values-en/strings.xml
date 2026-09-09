@@ -9,6 +9,7 @@
     <string name="category_reading">Reading</string>
     <string name="category_hobby">Hobbies</string>
     <string name="category_movement">Movement</string>
+    <string name="category_social">Time with people</string>
     <string name="category_sleep">Sleep</string>
 
     <string name="add_entry_button">Add activity</string>
@@ -37,21 +38,21 @@
     <string name="greeting_evening">Good evening</string>
     <string name="greeting_night">Good night</string>
 
-    <!-- Balance (FR-3.1–3.6) -->
-    <string name="life_balance_title">Life balance</string>
+    <!-- Day structure (FR-3.1–3.12) — formerly "Online/Offline balance"; renamed because
+         directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
+    <string name="my_day_title_format">Your day so far: %1$s</string>
     <string name="balance_online_label">Online</string>
-    <string name="balance_offline_label">Offline</string>
-    <string name="balance_target_label">Target</string>
+    <string name="balance_rest_of_day_label">Rest of day</string>
     <string name="activities_title">Activities</string>
 
     <!-- Usage access onboarding (FR-7.1) -->
-    <string name="onboarding_screen_title">Online/Offline balance</string>
-    <string name="onboarding_explanation">Tepera shows your screen-time vs real-life ratio for the day. This needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings. Offline logging stays fully functional without it.</string>
+    <string name="onboarding_screen_title">Your day\'s structure</string>
+    <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted offline, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings. Offline logging stays fully functional without it.</string>
     <string name="onboarding_skip">Skip</string>
 
-    <!-- Settings (FR-3.4, FR-3.5) -->
+    <!-- Settings (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Settings</string>
-    <string name="settings_target_label">Online-time target, min/day</string>
+    <string name="settings_target_label">Online-time reference</string>
     <string name="settings_exclusion_list_action">Excluded apps</string>
     <string name="settings_categories_action">Categories</string>
     <string name="settings_language_label">App language</string>
@@ -60,8 +61,11 @@
     <string name="settings_language_en">English</string>
     <string name="settings_backup_restore_action">Backup and restore</string>
     <string name="settings_other_section">Other</string>
-    <string name="settings_target_info">How many hours of daily screen time you consider normal — used for the target mark on the balance.</string>
+    <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment for going over.</string>
     <string name="settings_target_hours_format">%dh</string>
+    <string name="settings_sleep_window_label">End of sleep window</string>
+    <string name="settings_sleep_window_info">Before this hour, a brief nighttime phone check doesn\'t count as the start of your day — only a longer session, or anything after this hour, does. Adjust it if you work nights.</string>
+    <string name="settings_sleep_window_hour_format">Until %d:00</string>
 
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>

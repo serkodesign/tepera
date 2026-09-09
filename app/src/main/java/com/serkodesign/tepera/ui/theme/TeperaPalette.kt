@@ -28,8 +28,12 @@ object TeperaPalette {
     val backgroundPeachBlob = Color(0xFFFFB58A)
     val backgroundLavenderBlob = Color(0xFFC7BFE8)
 
-    val offlineCard = Color(0x8000C567) // rgba(0,197,103,0.5)
+    val offlineCard = Color(0x8000C567) // rgba(0,197,103,0.5) — лишається лише для addButtonBackground
     val onlineCard = Color(0x80FF9162) // rgba(255,145,98,0.5)
+
+    // SRS v2.5, розділ 4.4: "теплий сірий" для нейтрального сегмента "Решта дня" — НЕ traffic-
+    // light колір (не червоний/зелений), не читається як оцінка (FR-4.3).
+    val restOfDayCard = Color(0xFFDCD5C6)
 
     val cardTranslucent = Color(0x80FFFFFF) // rgba(255,255,255,0.5)
     val cardTranslucentLight = Color(0x4DFFFFFF) // rgba(255,255,255,0.3) — обгортка "Life balance"

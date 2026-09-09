@@ -106,7 +106,12 @@ class StatsViewModel(
                 // BalanceRepository, як на Home. Для минулих завершених діб знаменник — повна
                 // доба (1440 хв), Grace Buffer тут не застосовний.
                 val dayEnd = if (daysAgo == 0) System.currentTimeMillis() else dayStart + MS_PER_DAY
-                val denominator = if (daysAgo == 0) balanceRepository.calculateDenominatorMinutes() else MINUTES_PER_DAY
+                // ПРИМІТКА (SRS v2.5): BalanceRepository тепер рахує денний старт від першого
+                // суттєвого розблокування (FR-3.5), не від півночі — Stats-екран поки що лишається
+                // на старому наближенні (північ) для сьогоднішньої точки тренду, це не входить у
+                // Stage 1 (ядро балансу/Home/віджет), потребує окремого проходу по цьому екрану.
+                val denominator =
+                    if (daysAgo == 0) balanceRepository.calculateDenominatorMinutes(startOfTodayMillis()) else MINUTES_PER_DAY
                 val onlineMinutes = balanceRepository.getOnlineMinutes(dayStart, dayEnd)
                 DailyBalancePoint(dayStart, onlineMinutes / denominator.toFloat())
             }
