@@ -171,6 +171,14 @@ private fun DayStructureBar(
                                 .background(segment.color)
                         )
                     }
+                    // Те, що ще не сталося (від "Now" до півночі) — за запитом користувача НЕ
+                    // зафарбоване: "Офлайн-життя" заповнює лише до позначки "Now" (вище), а не
+                    // до кінця шкали. Порожній Box без .background() — крізь заокруглений Row
+                    // проглядає фон картки, як недомальована частина прогрес-бару.
+                    val futureMinutes = (daySpanMinutes - dayLengthMinutes).coerceAtLeast(0)
+                    if (futureMinutes > 0) {
+                        Box(modifier = Modifier.weight(futureMinutes.toFloat()).fillMaxHeight())
+                    }
                 }
                 Box(
                     modifier = Modifier

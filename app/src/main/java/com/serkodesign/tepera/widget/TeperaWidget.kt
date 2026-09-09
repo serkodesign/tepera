@@ -103,13 +103,15 @@ class TeperaWidget : GlanceAppWidget() {
         val sleepWindowEndHour = app.settingsStore.sleepWindowEndHour.first()
         val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
         val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday(dayStartMillis) else 0
-        // За запитом користувача: шкала охоплює весь день — від пробудження до 00:00, не лише
-        // до "зараз" (та сама логіка, що на Home — BalanceViewModel.uiState).
+        val dayLengthMinutes = app.balanceRepository.calculateDayLengthMinutes(dayStartMillis)
+        // Шкала охоплює весь день — від пробудження до 00:00 (за запитом користувача), але
+        // "Офлайн-життя" заповнює лише до "зараз" — те, що ще не сталося, лишається порожньою
+        // ділянкою шкали (colorForFraction нижче), не зафарбованою "Офлайн-життя".
         val daySpanMinutes = app.balanceRepository.calculateDaySpanMinutes(dayStartMillis)
         val targetMinutes = app.settingsStore.targetMinutes.first()
 
         // FR-4.1: та сама тришарова структура доби, що на Home (Online + категорії з часом
-        // сьогодні + Решта дня) — не окремий Online/Offline підрахунок.
+        // сьогодні + Офлайн-життя) — не окремий Online/Offline підрахунок.
         val entries = app.activityRepository
             .observeEntriesInRange(startOfTodayMillis(), Long.MAX_VALUE)
             .first()
@@ -121,7 +123,7 @@ class TeperaWidget : GlanceAppWidget() {
             .sortedBy { it.sortOrder }
             .map { categoryColor(it.colorHex) to minutesByCategory.getValue(it.id) }
         val loggedMinutes = loggedSegments.sumOf { it.second }
-        val restOfDayMinutes = (daySpanMinutes - onlineMinutes - loggedMinutes).coerceAtLeast(0)
+        val restOfDayMinutes = (dayLengthMinutes - onlineMinutes - loggedMinutes).coerceAtLeast(0)
         val daySegments = buildList {
             if (onlineMinutes > 0) add(TeperaPalette.onlineCard to onlineMinutes)
             addAll(loggedSegments)
@@ -323,7 +325,11 @@ private const val BALANCE_BAR_SEGMENTS = 20
 
 /** FR-3.10: та сама формула засічки орієнтиру, що на Home (BalanceCard.DayStructureBar). */
 @Composable
-private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, daySpanMinutes: Int, targetMinutes: Int) {
+private fun GlanceDayStructureBar(
+    segments: List<Pair<Color, Int>>,
+    daySpanMinutes: Int,
+    targetMinutes: Int
+) {
     val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
     val markerIndex = ((targetMinutes.toFloat() / referenceMinutes) * (BALANCE_BAR_SEGMENTS - 1))
         .toInt()
@@ -331,6 +337,9 @@ private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, daySpanMinut
     // Тиха нейтральна риска — НЕ error/тривожний колір (FR-4.3: жодного trafic-light кодування,
     // засічка ніколи не змінює колір при перевищенні).
     val markerColor = ColorProvider(day = Color.Black.copy(alpha = 0.3f), night = Color.Black.copy(alpha = 0.3f))
+    // "Те, що ще не сталося" (від "Now" до півночі, за запитом користувача) — прозоре, крізь
+    // Row проглядає фон віджета (TeperaPalette.navPill), а не дофарбоване кольором сегмента.
+    val transparentColor = ColorProvider(day = Color.Transparent, night = Color.Transparent)
 
     Row(
         modifier = GlanceModifier
@@ -344,8 +353,11 @@ private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, daySpanMinut
                 markerColor
             } else {
                 val fraction = (index + 0.5f) / BALANCE_BAR_SEGMENTS
+                // null = "ще не сталося" (за межами реальних сегментів, від "Now" до півночі) —
+                // прозорий, не дофарбований кольором останнього сегмента (за запитом користувача:
+                // "Офлайн-життя" заповнює лише до "Now", не до кінця шкали).
                 val color = colorForFraction(segments, daySpanMinutes, fraction)
-                ColorProvider(day = color, night = color)
+                if (color != null) ColorProvider(day = color, night = color) else transparentColor
             }
             Box(
                 modifier = GlanceModifier
@@ -357,15 +369,19 @@ private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, daySpanMinut
     }
 }
 
-/** Який сегмент дня (Online/категорія/Решта дня) відповідає даній частці ширини шкали. */
-private fun colorForFraction(segments: List<Pair<Color, Int>>, totalMinutes: Int, fraction: Float): Color {
+/**
+ * Який сегмент дня (Online/категорія/Офлайн-життя) відповідає даній частці ширини шкали.
+ * null = частка лежить за межами реальних сегментів (те, що ще не сталося) — викликач малює
+ * її прозорою, не дофарбовує кольором останнього сегмента.
+ */
+private fun colorForFraction(segments: List<Pair<Color, Int>>, totalMinutes: Int, fraction: Float): Color? {
     val targetMinute = fraction * totalMinutes
     var cumulative = 0
     for ((color, minutes) in segments) {
         cumulative += minutes
         if (targetMinute < cumulative) return color
     }
-    return segments.lastOrNull()?.first ?: TeperaPalette.restOfDayCard
+    return null
 }
 
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {

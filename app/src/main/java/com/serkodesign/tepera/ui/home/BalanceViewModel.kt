@@ -72,13 +72,16 @@ class BalanceViewModel(
             .map { CategorySegment(it, minutesByCategory.getValue(it.id)) }
 
         val dayLength = balanceRepository.calculateDayLengthMinutes(dayStart)
-        // За запитом користувача: шкала охоплює весь день — від пробудження до 00:00, не лише
-        // до "зараз" — інакше "Решта дня" обривалась на "зараз", а не сягала кінця шкали.
+        // Шкала охоплює весь день — від пробудження до 00:00 (за запитом користувача), але
+        // "Офлайн-життя" (раніше "Решта дня") заповнює лише ДО позначки "Now", не далі: те, що
+        // ще не сталося (від "зараз" до півночі), лишається порожньою ділянкою шкали — її додає
+        // DayStructureBar/GlanceDayStructureBar окремим незабарвленим сегментом, порівнюючи
+        // dayLengthMinutes із daySpanMinutes нижче.
         val daySpan = balanceRepository.calculateDaySpanMinutes(dayStart)
         val loggedMinutes = segments.sumOf { it.minutes }
-        // FR-3.4: "Решта дня" — залишок ДО КІНЦЯ ДНЯ (не лише до "зараз"), НІКОЛИ від'ємний
-        // навіть якщо Online+записи вже перевищили весь діапазон дня (напр. запис заднім числом).
-        val restOfDay = (daySpan - online - loggedMinutes).coerceAtLeast(0)
+        // FR-3.4: "Офлайн-життя" — залишок часу, що вже МИНУВ (не Online, не запис), НІКОЛИ
+        // від'ємний, навіть якщо Online+записи вже перевищили довжину дня (напр. запис заднім числом).
+        val restOfDay = (dayLength - online - loggedMinutes).coerceAtLeast(0)
 
         BalanceUiState(
             hasUsageAccess = access,

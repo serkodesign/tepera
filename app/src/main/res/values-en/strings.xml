@@ -42,7 +42,7 @@
          directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
     <string name="my_day_title_format">Your day so far: %1$s</string>
     <string name="balance_online_label">Online</string>
-    <string name="balance_rest_of_day_label">Rest of day</string>
+    <string name="balance_rest_of_day_label">Offline life</string>
     <string name="activities_title">Activities</string>
 
     <!-- Usage access onboarding (FR-7.1) -->
