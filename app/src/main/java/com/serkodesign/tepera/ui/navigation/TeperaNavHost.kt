@@ -169,7 +169,8 @@ fun TeperaNavHost(
                 StatsScreen(
                     categoryRepository = categoryRepository,
                     activityRepository = activityRepository,
-                    balanceRepository = balanceRepository
+                    balanceRepository = balanceRepository,
+                    settingsStore = settingsStore
                 )
             }
             composable(Routes.ADD_ENTRY) {

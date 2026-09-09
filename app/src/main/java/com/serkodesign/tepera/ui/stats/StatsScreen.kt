@@ -45,6 +45,7 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
@@ -64,10 +65,11 @@ private val dayLabelKey = ExtraStore.Key<List<String>>()
 fun StatsScreen(
     categoryRepository: CategoryRepository,
     activityRepository: ActivityRepository,
-    balanceRepository: BalanceRepository
+    balanceRepository: BalanceRepository,
+    settingsStore: SettingsStore
 ) {
     val viewModel: StatsViewModel = viewModel(
-        factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository)
+        factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository, settingsStore)
     )
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current

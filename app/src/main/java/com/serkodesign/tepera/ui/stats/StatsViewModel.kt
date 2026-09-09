@@ -3,6 +3,7 @@ package com.serkodesign.tepera.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -44,7 +46,8 @@ data class StatsUiState(
 class StatsViewModel(
     private val categoryRepository: CategoryRepository,
     private val activityRepository: ActivityRepository,
-    private val balanceRepository: BalanceRepository
+    private val balanceRepository: BalanceRepository,
+    private val settingsStore: SettingsStore
 ) : ViewModel() {
 
     private val period = MutableStateFlow(StatsPeriod.WEEK)
@@ -100,20 +103,25 @@ class StatsViewModel(
                 return@launch
             }
             val todayStart = startOfTodayMillis()
+            // FR-3.5 (SRS v2.5): та сама точка старту дня, що на Home (BalanceViewModel.refresh())
+            // — перше суттєве розблокування після вікна сну, не локальна північ. Рахується один
+            // раз тут, бо стосується лише сьогоднішньої (daysAgo == 0) точки тренду.
+            val sleepWindowEndHour = settingsStore.sleepWindowEndHour.first()
+            val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
             val points = (6 downTo 0).map { daysAgo ->
-                val dayStart = todayStart - daysAgo * MS_PER_DAY
                 // Для сьогодні (daysAgo == 0) день ще не завершився — Grace Period Buffer з
-                // BalanceRepository, як на Home. Для минулих завершених діб знаменник — повна
-                // доба (1440 хв), Grace Buffer тут не застосовний.
+                // BalanceRepository, як на Home (точка старту дня, не північ). Для минулих
+                // завершених діб межі — календарна доба [північ, наступна північ), знаменник —
+                // повна доба (1440 хв), Grace Buffer тут не застосовний.
+                val dayStart = if (daysAgo == 0) todayDayStart else todayStart - daysAgo * MS_PER_DAY
                 val dayEnd = if (daysAgo == 0) System.currentTimeMillis() else dayStart + MS_PER_DAY
-                // ПРИМІТКА (SRS v2.5): BalanceRepository тепер рахує денний старт від першого
-                // суттєвого розблокування (FR-3.5), не від півночі — Stats-екран поки що лишається
-                // на старому наближенні (північ) для сьогоднішньої точки тренду, це не входить у
-                // Stage 1 (ядро балансу/Home/віджет), потребує окремого проходу по цьому екрану.
                 val denominator =
-                    if (daysAgo == 0) balanceRepository.calculateDenominatorMinutes(startOfTodayMillis()) else MINUTES_PER_DAY
+                    if (daysAgo == 0) balanceRepository.calculateDenominatorMinutes(todayDayStart) else MINUTES_PER_DAY
                 val onlineMinutes = balanceRepository.getOnlineMinutes(dayStart, dayEnd)
-                DailyBalancePoint(dayStart, onlineMinutes / denominator.toFloat())
+                // Точка на графіку лишається прив'язана до календарного дня (todayStart - daysAgo
+                // * MS_PER_DAY), не до фактичної точки старту дня — інакше вісь X "тижневого
+                // тренду" сьогоднішньої точки зсувалась би вбік від решти днів.
+                DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes / denominator.toFloat())
             }
             weeklyTrend.value = points
         }
@@ -122,10 +130,11 @@ class StatsViewModel(
     class Factory(
         private val categoryRepository: CategoryRepository,
         private val activityRepository: ActivityRepository,
-        private val balanceRepository: BalanceRepository
+        private val balanceRepository: BalanceRepository,
+        private val settingsStore: SettingsStore
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            StatsViewModel(categoryRepository, activityRepository, balanceRepository) as T
+            StatsViewModel(categoryRepository, activityRepository, balanceRepository, settingsStore) as T
     }
 }
