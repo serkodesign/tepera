@@ -27,6 +27,7 @@ data class BalanceUiState(
     val categorySegments: List<CategorySegment> = emptyList(),
     val restOfDayMinutes: Int = 0,
     val dayLengthMinutes: Int = 0,
+    val daySpanMinutes: Int = 1,
     val targetMinutes: Int = 180,
     val denominatorMinutes: Int = 180
 )
@@ -71,10 +72,13 @@ class BalanceViewModel(
             .map { CategorySegment(it, minutesByCategory.getValue(it.id)) }
 
         val dayLength = balanceRepository.calculateDayLengthMinutes(dayStart)
+        // За запитом користувача: шкала охоплює весь день — від пробудження до 00:00, не лише
+        // до "зараз" — інакше "Решта дня" обривалась на "зараз", а не сягала кінця шкали.
+        val daySpan = balanceRepository.calculateDaySpanMinutes(dayStart)
         val loggedMinutes = segments.sumOf { it.minutes }
-        // FR-3.4: "Решта дня" — залишок, НІКОЛИ від'ємний навіть якщо Online+записи вже
-        // перевищили поточну довжину дня (напр. запис заднім числом).
-        val restOfDay = (dayLength - online - loggedMinutes).coerceAtLeast(0)
+        // FR-3.4: "Решта дня" — залишок ДО КІНЦЯ ДНЯ (не лише до "зараз"), НІКОЛИ від'ємний
+        // навіть якщо Online+записи вже перевищили весь діапазон дня (напр. запис заднім числом).
+        val restOfDay = (daySpan - online - loggedMinutes).coerceAtLeast(0)
 
         BalanceUiState(
             hasUsageAccess = access,
@@ -82,6 +86,7 @@ class BalanceViewModel(
             categorySegments = segments,
             restOfDayMinutes = restOfDay,
             dayLengthMinutes = dayLength,
+            daySpanMinutes = daySpan,
             targetMinutes = target,
             denominatorMinutes = balanceRepository.calculateDenominatorMinutes(dayStart)
         )

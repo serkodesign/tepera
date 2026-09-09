@@ -103,7 +103,9 @@ class TeperaWidget : GlanceAppWidget() {
         val sleepWindowEndHour = app.settingsStore.sleepWindowEndHour.first()
         val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
         val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday(dayStartMillis) else 0
-        val dayLengthMinutes = app.balanceRepository.calculateDayLengthMinutes(dayStartMillis)
+        // За запитом користувача: шкала охоплює весь день — від пробудження до 00:00, не лише
+        // до "зараз" (та сама логіка, що на Home — BalanceViewModel.uiState).
+        val daySpanMinutes = app.balanceRepository.calculateDaySpanMinutes(dayStartMillis)
         val targetMinutes = app.settingsStore.targetMinutes.first()
 
         // FR-4.1: та сама тришарова структура доби, що на Home (Online + категорії з часом
@@ -119,7 +121,7 @@ class TeperaWidget : GlanceAppWidget() {
             .sortedBy { it.sortOrder }
             .map { categoryColor(it.colorHex) to minutesByCategory.getValue(it.id) }
         val loggedMinutes = loggedSegments.sumOf { it.second }
-        val restOfDayMinutes = (dayLengthMinutes - onlineMinutes - loggedMinutes).coerceAtLeast(0)
+        val restOfDayMinutes = (daySpanMinutes - onlineMinutes - loggedMinutes).coerceAtLeast(0)
         val daySegments = buildList {
             if (onlineMinutes > 0) add(TeperaPalette.onlineCard to onlineMinutes)
             addAll(loggedSegments)
@@ -153,7 +155,7 @@ class TeperaWidget : GlanceAppWidget() {
                         DayStructureRow(
                             hasUsageAccess = hasUsageAccess,
                             segments = daySegments,
-                            dayLengthMinutes = dayLengthMinutes,
+                            daySpanMinutes = daySpanMinutes,
                             targetMinutes = targetMinutes,
                             context = context
                         )
@@ -295,7 +297,7 @@ class ToggleCategoryTimerAction : ActionCallback {
 private fun DayStructureRow(
     hasUsageAccess: Boolean,
     segments: List<Pair<Color, Int>>,
-    dayLengthMinutes: Int,
+    daySpanMinutes: Int,
     targetMinutes: Int,
     context: Context
 ) {
@@ -306,9 +308,9 @@ private fun DayStructureRow(
         )
         return
     }
-    if (dayLengthMinutes <= 0 || segments.isEmpty()) return // день щойно почався — ще нема чого показувати
+    if (daySpanMinutes <= 0 || segments.isEmpty()) return // день щойно почався — ще нема чого показувати
 
-    GlanceDayStructureBar(segments = segments, dayLengthMinutes = dayLengthMinutes, targetMinutes = targetMinutes)
+    GlanceDayStructureBar(segments = segments, daySpanMinutes = daySpanMinutes, targetMinutes = targetMinutes)
 }
 
 // Glance/RemoteViews не має Canvas і GlanceModifier.defaultWeight() не приймає довільну вагу
@@ -321,8 +323,8 @@ private const val BALANCE_BAR_SEGMENTS = 20
 
 /** FR-3.10: та сама формула засічки орієнтиру, що на Home (BalanceCard.DayStructureBar). */
 @Composable
-private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, dayLengthMinutes: Int, targetMinutes: Int) {
-    val referenceMinutes = maxOf(dayLengthMinutes, targetMinutes, 1)
+private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, daySpanMinutes: Int, targetMinutes: Int) {
+    val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
     val markerIndex = ((targetMinutes.toFloat() / referenceMinutes) * (BALANCE_BAR_SEGMENTS - 1))
         .toInt()
         .coerceIn(0, BALANCE_BAR_SEGMENTS - 1)
@@ -342,7 +344,7 @@ private fun GlanceDayStructureBar(segments: List<Pair<Color, Int>>, dayLengthMin
                 markerColor
             } else {
                 val fraction = (index + 0.5f) / BALANCE_BAR_SEGMENTS
-                val color = colorForFraction(segments, dayLengthMinutes, fraction)
+                val color = colorForFraction(segments, daySpanMinutes, fraction)
                 ColorProvider(day = color, night = color)
             }
             Box(

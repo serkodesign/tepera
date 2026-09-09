@@ -135,6 +135,24 @@ class BalanceRepository(
     fun calculateDayLengthMinutes(dayStartMillis: Long): Int =
         minutesSince(dayStartMillis).coerceAtLeast(0)
 
+    /**
+     * Повний діапазон шкали "Мій день" (за запитом користувача) — від точки старту дня
+     * (пробудження) до найближчої півночі (00:00), НЕ лише до "зараз". "Твій день триває X"
+     * (calculateDayLengthMinutes) лишається зростаючою величиною для заголовка — цей діапазон
+     * лише для розрахунку часток сегментів шкали, щоб "Решта дня" сягала кінця шкали (півночі),
+     * а не обривалась на "зараз".
+     */
+    fun calculateDaySpanMinutes(dayStartMillis: Long): Int {
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.DAY_OF_YEAR, 1)
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val nextMidnight = cal.timeInMillis
+        return ((nextMidnight - dayStartMillis) / 60_000L).toInt().coerceAtLeast(1)
+    }
+
     private fun minutesSince(millis: Long): Int =
         ((System.currentTimeMillis() - millis) / 60_000L).toInt()
 

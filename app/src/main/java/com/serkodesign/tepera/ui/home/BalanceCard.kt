@@ -92,7 +92,12 @@ fun MyDaySection(
         true -> {
             val segments = daySegments(state)
             if (segments.isNotEmpty()) {
-                DayStructureBar(segments = segments, targetMinutes = state.targetMinutes, dayLengthMinutes = state.dayLengthMinutes)
+                DayStructureBar(
+                    segments = segments,
+                    targetMinutes = state.targetMinutes,
+                    daySpanMinutes = state.daySpanMinutes,
+                    dayLengthMinutes = state.dayLengthMinutes
+                )
                 DayStructureLegend(segments = segments)
             }
         }
@@ -119,40 +124,63 @@ private fun daySegments(state: BalanceUiState): List<DaySegment> {
 }
 
 @Composable
-private fun DayStructureBar(segments: List<DaySegment>, targetMinutes: Int, dayLengthMinutes: Int) {
+private fun DayStructureBar(
+    segments: List<DaySegment>,
+    targetMinutes: Int,
+    daySpanMinutes: Int,
+    dayLengthMinutes: Int
+) {
     // FR-3.10: тиха засічка орієнтиру — тонка вертикальна лінія, БЕЗ підпису, ніколи не
     // змінює колір при перевищенні (розділ 4.3–4.4 SRS: "якщо з'явиться спокуса підсвітити
     // перевищення кольором — це сигнал звірити рішення з розділом 4, не з інтуїцією"). Позиція —
-    // частка від max(довжина дня, орієнтир), щоб лишатись у межах шкали незалежно від того,
-    // досягнутий орієнтир чи ще ні.
-    val referenceMinutes = maxOf(dayLengthMinutes, targetMinutes, 1)
+    // частка від повного діапазону шкали (пробудження → 00:00, за запитом користувача), а не
+    // лише від довжини дня, що минула, — інакше засічка "стрибала" б праворуч разом з ростом дня.
+    val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
     val markerFraction = (targetMinutes.toFloat() / referenceMinutes).coerceIn(0f, 1f)
+
+    // Позначка "Now" (референсний макет, розділ 4.4 SRS, Figma node 2002:170) — де саме "зараз"
+    // на шкалі "пробудження → 00:00" (за запитом користувача). На відміну від засічки орієнтиру
+    // вище, ця позначка РУХАЄТЬСЯ разом із часом — по своїй природі не evaluативна (просто "де
+    // ми на годиннику", не оцінка), тому лишається трикутником-вказівником, а не безликою лінією.
+    val nowFraction = (dayLengthMinutes.toFloat() / daySpanMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
 
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val markerX = maxWidth * markerFraction
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(16.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            segments.forEach { segment ->
+        val nowX = maxWidth * nowFraction
+        Column {
+            Box(Modifier.fillMaxWidth()) {
+                Text(
+                    "▼",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.offset(x = (nowX - 8.dp).coerceAtLeast(0.dp))
+                )
+            }
+            Box(Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    segments.forEach { segment ->
+                        Box(
+                            modifier = Modifier
+                                .weight(segment.minutes.coerceAtLeast(1).toFloat())
+                                .fillMaxHeight()
+                                .background(segment.color)
+                        )
+                    }
+                }
                 Box(
                     modifier = Modifier
-                        .weight(segment.minutes.coerceAtLeast(1).toFloat())
-                        .fillMaxHeight()
-                        .background(segment.color)
+                        .offset(x = markerX)
+                        .width(1.dp)
+                        .height(16.dp)
+                        .background(Color.Black.copy(alpha = 0.3f))
                 )
             }
         }
-        Box(
-            modifier = Modifier
-                .offset(x = markerX)
-                .width(1.dp)
-                .height(16.dp)
-                .background(Color.Black.copy(alpha = 0.3f))
-        )
     }
 }
 
