@@ -319,9 +319,14 @@ private fun DayStructureRow(
 // (лише рівний розподіл) — на відміну від BalanceCard у застосунку (Compose Canvas), тому
 // шкалу тут імітуємо решіткою з фіксованої кількості РІВНИХ за вагою сегментів, кожен пофарбований
 // залежно від того, у яку смугу дня (Online/категорія/Решта дня) він потрапляє за часовою часткою.
-// 20 сегментів дають ~5% роздільної здатності, достатньо для розміру віджета. Заввишки 8dp —
-// суттєво тихіша за 48-56dp кнопки категорій над нею (FR-4.1).
-private const val BALANCE_BAR_SEGMENTS = 20
+// Заввишки 8dp — суттєво тихіша за 48-56dp кнопки категорій над нею (FR-4.1).
+//
+// БАГ Microsoft Launcher (перевірено вживу на Samsung S23): попередня версія з 20 сегментами +
+// 19 окремими Spacer-ами між ними (39 дітей одного Row) рендерилась як ~5 великих суцільних
+// блоків замість дрібної решітки — RemoteViews-хост цього лаунчера, судячи з усього, згортає/
+// зливає надто багато дрібних дітей одного Row. Фікс: менше сегментів (10) і БЕЗ окремих
+// Spacer-дітей — проміжки між сегментами через .padding() на самому Box, а не через сусідній View.
+private const val BALANCE_BAR_SEGMENTS = 10
 
 /** FR-3.10: та сама формула засічки орієнтиру, що на Home (BalanceCard.DayStructureBar). */
 @Composable
@@ -345,10 +350,8 @@ private fun GlanceDayStructureBar(
         modifier = GlanceModifier
             .fillMaxWidth()
             .height(8.dp)
-            .cornerRadius(4.dp)
     ) {
         for (index in 0 until BALANCE_BAR_SEGMENTS) {
-            if (index > 0) Spacer(modifier = GlanceModifier.width(1.dp))
             val segmentColor = if (index == markerIndex) {
                 markerColor
             } else {
@@ -359,11 +362,16 @@ private fun GlanceDayStructureBar(
                 val color = colorForFraction(segments, daySpanMinutes, fraction)
                 if (color != null) ColorProvider(day = color, night = color) else transparentColor
             }
+            // Проміжок між сегментами — через .padding() НА самому Box (звужує зафарбовану
+            // площу всередину), а не через сусідній Spacer-View. Порядок модифікаторів важливий:
+            // .padding() до .background() інсетить заливку в межах уже звуженого Box.
             Box(
                 modifier = GlanceModifier
                     .defaultWeight()
                     .fillMaxHeight()
+                    .padding(horizontal = 0.5.dp)
                     .background(segmentColor)
+                    .cornerRadius(2.dp)
             ) {}
         }
     }
