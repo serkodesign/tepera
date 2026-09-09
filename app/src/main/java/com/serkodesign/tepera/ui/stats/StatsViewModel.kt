@@ -20,15 +20,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 private const val MS_PER_DAY = 24 * 60 * 60 * 1000L
-private const val MINUTES_PER_DAY = 24 * 60
 
 /** FR-5.2: період для стовпчикової діаграми розподілу офлайн-часу по категоріях. */
 enum class StatsPeriod { DAY, WEEK, MONTH }
 
 data class CategoryBreakdownItem(val category: CategoryEntity, val minutes: Int)
 
-/** FR-5.3: одна точка тижневого тренду — доба + співвідношення Online/Offline на неї. */
-data class DailyBalancePoint(val dayStartMillis: Long, val onlineRatio: Float)
+/**
+ * FR-5.3: одна точка тижневого тренду — доба + абсолютні Online-хвилини на неї.
+ * FR-P.6 (SRS v2.5): свідомо НЕ частка/відсоток від знаменника Grace Period Buffer — голий %
+ * без контексту читається як оцінка, а не факт. Абсолютний час порівнюється сам із собою день
+ * до дня, без прихованого "буфера справедливості", який мав сенс лише для Home-шкали сьогодні.
+ */
+data class DailyBalancePoint(val dayStartMillis: Long, val onlineMinutes: Int)
 
 data class StatsUiState(
     val period: StatsPeriod = StatsPeriod.WEEK,
@@ -109,19 +113,17 @@ class StatsViewModel(
             val sleepWindowEndHour = settingsStore.sleepWindowEndHour.first()
             val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
             val points = (6 downTo 0).map { daysAgo ->
-                // Для сьогодні (daysAgo == 0) день ще не завершився — Grace Period Buffer з
-                // BalanceRepository, як на Home (точка старту дня, не північ). Для минулих
-                // завершених діб межі — календарна доба [північ, наступна північ), знаменник —
-                // повна доба (1440 хв), Grace Buffer тут не застосовний.
+                // Для сьогодні (daysAgo == 0) день ще не завершився — межа старту та сама точка
+                // старту дня, що на Home, не північ. Для минулих завершених діб — календарна доба
+                // [північ, наступна північ). Без ділення на знаменник (FR-P.6 вище) — просто
+                // абсолютні хвилини Online за цю добу.
                 val dayStart = if (daysAgo == 0) todayDayStart else todayStart - daysAgo * MS_PER_DAY
                 val dayEnd = if (daysAgo == 0) System.currentTimeMillis() else dayStart + MS_PER_DAY
-                val denominator =
-                    if (daysAgo == 0) balanceRepository.calculateDenominatorMinutes(todayDayStart) else MINUTES_PER_DAY
                 val onlineMinutes = balanceRepository.getOnlineMinutes(dayStart, dayEnd)
                 // Точка на графіку лишається прив'язана до календарного дня (todayStart - daysAgo
                 // * MS_PER_DAY), не до фактичної точки старту дня — інакше вісь X "тижневого
                 // тренду" сьогоднішньої точки зсувалась би вбік від решти днів.
-                DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes / denominator.toFloat())
+                DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes)
             }
             weeklyTrend.value = points
         }

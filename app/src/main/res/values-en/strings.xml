@@ -15,14 +15,14 @@
     <string name="add_entry_button">Add activity</string>
     <string name="home_today_summary">Today</string>
     <string name="tile_quick_add">Add activity</string>
-    <string name="usage_access_prompt_title">See your balance</string>
-    <string name="usage_access_prompt_body">To show your screen-time vs real-life ratio, enable usage access in system settings</string>
+    <string name="usage_access_prompt_title">See your day\'s structure</string>
+    <string name="usage_access_prompt_body">To show the structure of your day, enable app usage access in system settings</string>
     <string name="usage_access_open_settings">Open settings</string>
     <string name="usage_access_learn_more">Why is this needed?</string>
 
     <!-- Home -->
     <string name="home_screen_title">Today</string>
-    <string name="home_no_entries_today">No entries logged today yet</string>
+    <string name="home_no_entries_today">Nothing here yet</string>
     <string name="minutes_short_format">%d min</string>
     <string name="hours_short_format">%d h</string>
     <string name="hours_minutes_short_format">%1$dh %2$dm</string>
@@ -88,7 +88,7 @@
     <string name="backup_import_success">Data imported</string>
     <string name="backup_import_failure">Failed to import data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
-    <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the target with the data from the file. This cannot be undone.</string>
+    <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the reference with the data from the file. This cannot be undone.</string>
     <string name="backup_import_confirm_action">Import</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -145,6 +145,6 @@
     <string name="stats_period_week">Week</string>
     <string name="stats_period_month">Month</string>
     <string name="stats_category_breakdown_title">Offline time by category</string>
-    <string name="stats_weekly_trend_title">Weekly Online/Offline trend</string>
+    <string name="stats_weekly_trend_title">Weekly Online-time trend</string>
     <string name="stats_no_data">No data for this period</string>
 </resources>

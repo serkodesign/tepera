@@ -18,14 +18,14 @@
     <string name="add_entry_button">Додати активність</string>
     <string name="home_today_summary">Сьогодні</string>
     <string name="tile_quick_add">Додати активність</string>
-    <string name="usage_access_prompt_title">Дозвольте побачити баланс</string>
-    <string name="usage_access_prompt_body">Щоб показати співвідношення екранного й реального часу, увімкніть доступ до статистики використання в системних налаштуваннях</string>
+    <string name="usage_access_prompt_title">Дозвольте побачити структуру дня</string>
+    <string name="usage_access_prompt_body">Щоб показати структуру твого дня, увімкніть доступ до статистики використання застосунків у системних налаштуваннях</string>
     <string name="usage_access_open_settings">Відкрити налаштування</string>
     <string name="usage_access_learn_more">Чому це потрібно?</string>
 
     <!-- Home -->
     <string name="home_screen_title">Сьогодні</string>
-    <string name="home_no_entries_today">Сьогодні ще немає записів</string>
+    <string name="home_no_entries_today">Поки порожньо</string>
     <string name="minutes_short_format">%d хв</string>
     <string name="hours_short_format">%d год</string>
     <string name="hours_minutes_short_format">%1$d год %2$d хв</string>
@@ -93,7 +93,7 @@
     <string name="backup_import_success">Дані імпортовано</string>
     <string name="backup_import_failure">Не вдалося імпортувати дані — перевірте файл</string>
     <string name="backup_import_confirm_title">Замінити всі дані?</string>
-    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й таргет поточними даними з файлу. Це не можна скасувати.</string>
+    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й орієнтир поточними даними з файлу. Це не можна скасувати.</string>
     <string name="backup_import_confirm_action">Імпортувати</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -150,6 +150,6 @@
     <string name="stats_period_week">Тиждень</string>
     <string name="stats_period_month">Місяць</string>
     <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
-    <string name="stats_weekly_trend_title">Тижневий тренд Online/Offline</string>
+    <string name="stats_weekly_trend_title">Тижневий тренд Online-часу</string>
     <string name="stats_no_data">Немає даних за цей період</string>
 </resources>

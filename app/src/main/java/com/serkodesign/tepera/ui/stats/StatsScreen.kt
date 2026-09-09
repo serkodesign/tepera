@@ -176,13 +176,17 @@ private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>) {
     }
 }
 
-/** FR-5.3: тижневий тренд Online-ratio (частка Online-хвилин від знаменника Grace Period Buffer). */
+/**
+ * FR-5.3: тижневий тренд Online-часу за днями — абсолютні години (FR-P.6, SRS v2.5: голий %
+ * без контексту читається як оцінка, не факт), не частка від знаменника Grace Period Buffer.
+ */
 @Composable
 private fun WeeklyTrendCard(
     points: List<DailyBalancePoint>,
     hasUsageAccess: Boolean,
     onOpenUsageAccessSettings: () -> Unit
 ) {
+    val hoursFormat = stringResource(R.string.hours_short_format)
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.stats_weekly_trend_title), style = MaterialTheme.typography.titleMedium)
@@ -203,7 +207,7 @@ private fun WeeklyTrendCard(
                 val modelProducer = remember { CartesianChartModelProducer() }
                 LaunchedEffect(points) {
                     modelProducer.runTransaction {
-                        lineModel { series(points.map { it.onlineRatio }) }
+                        lineModel { series(points.map { it.onlineMinutes }) }
                         extras { it[dayLabelKey] = dayLabels }
                     }
                 }
@@ -213,7 +217,7 @@ private fun WeeklyTrendCard(
                             rememberLineCartesianLayer(),
                             startAxis = VerticalAxis.rememberStart(
                                 valueFormatter = CartesianValueFormatter { _, y, _ ->
-                                    "${(y * 100).roundToInt()}%"
+                                    String.format(hoursFormat, (y / 60.0).roundToInt())
                                 }
                             ),
                             bottomAxis = HorizontalAxis.rememberBottom(
