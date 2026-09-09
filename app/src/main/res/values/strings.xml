@@ -55,6 +55,19 @@
     <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях. Без нього офлайн-логування лишається повністю робочим.</string>
     <string name="onboarding_skip">Пропустити</string>
 
+    <!-- Онбординг про цінності (FR-P.2) -->
+    <string name="values_onboarding_title">Що ти хотів би робити більше?</string>
+
+    <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
+    <string name="weekly_reflection_question">Скільки, на твою думку, ти був онлайн цього тижня?</string>
+    <string name="weekly_reflection_range_under_10">До 10 год</string>
+    <string name="weekly_reflection_range_10_20">10–20 год</string>
+    <string name="weekly_reflection_range_over_20">Понад 20 год</string>
+    <string name="weekly_reflection_skip">Можна пропустити</string>
+    <string name="weekly_reflection_your_guess_format">Твоя оцінка: %1$s</string>
+    <string name="weekly_reflection_actual_format">Насправді: %1$s</string>
+    <string name="weekly_reflection_done">Гаразд</string>
+
     <!-- Налаштування (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Налаштування</string>
     <string name="settings_target_label">Орієнтир Online-часу</string>

@@ -53,6 +53,7 @@ import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
@@ -66,6 +67,7 @@ private object Routes {
     const val ADD_ENTRY_WITH_CATEGORY = "add_entry?categoryId={categoryId}"
     const val CATEGORIES = "categories"
     const val ONBOARDING = "onboarding"
+    const val VALUES_ONBOARDING = "values_onboarding"
     const val SETTINGS = "settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
@@ -159,7 +161,8 @@ fun TeperaNavHost(
                     activeTimerStore = activeTimerStore,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
-                    onShowOnboarding = { navController.navigate(Routes.ONBOARDING) }
+                    onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
+                    onShowValuesOnboarding = { navController.navigate(Routes.VALUES_ONBOARDING) }
                 )
             }
             composable(Routes.STATS) {
@@ -197,6 +200,13 @@ fun TeperaNavHost(
             }
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
+                    settingsStore = settingsStore,
+                    onDone = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.VALUES_ONBOARDING) {
+                ValuesOnboardingScreen(
+                    categoryRepository = categoryRepository,
                     settingsStore = settingsStore,
                     onDone = { navController.popBackStack() }
                 )

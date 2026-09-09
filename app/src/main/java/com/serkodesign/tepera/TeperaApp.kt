@@ -71,6 +71,9 @@ class TeperaApp : Application() {
             // Ідемпотентно (archive() лише виставляє isHidden=true), безпечно викликати щозапуску;
             // не чіпає вже існуючі записи цієї категорії, лише ховає її з активного списку.
             categoryRepository.archive(DefaultCategories.LEGACY_SLEEP_ID)
+            // FR-P.1: точка відліку тижневої рефлексії — перший запуск, не "0/ніколи" (інакше
+            // картка з'явилась би одразу, коли ще нема тижня даних для порівняння).
+            settingsStore.seedLastReflectionHandledAtIfUnset()
         }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)

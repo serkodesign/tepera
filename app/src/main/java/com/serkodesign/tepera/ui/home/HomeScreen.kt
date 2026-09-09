@@ -79,7 +79,8 @@ fun HomeScreen(
     activeTimerStore: ActiveTimerStore,
     onOpenSettings: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
-    onShowOnboarding: () -> Unit
+    onShowOnboarding: () -> Unit,
+    onShowValuesOnboarding: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
@@ -91,6 +92,11 @@ fun HomeScreen(
     )
     val balanceState by balanceViewModel.uiState.collectAsState()
 
+    val weeklyReflectionViewModel: WeeklyReflectionViewModel = viewModel(
+        factory = WeeklyReflectionViewModel.Factory(settingsStore, balanceRepository)
+    )
+    val weeklyReflectionState by weeklyReflectionViewModel.uiState.collectAsState()
+
     // Доступ до статистики використання надається в системних Налаштуваннях, поза застосунком —
     // без цього ефекту повернення з Налаштувань не оновило б картку без ручного перезаходу на Home.
     LifecycleResumeEffect(Unit) {
@@ -98,9 +104,21 @@ fun HomeScreen(
         onPauseOrDispose { }
     }
 
+    // FR-P.2: питання про цінності ЗАВЖДИ показується першим при першому запуску — окремий
+    // ефект, що не залежить від стану доступу до статистики.
+    val valuesOnboardingSeen by settingsStore.valuesOnboardingSeen.collectAsState(initial = true)
+    LaunchedEffect(valuesOnboardingSeen) {
+        if (!valuesOnboardingSeen) {
+            onShowValuesOnboarding()
+        }
+    }
+
+    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як питання про цінності вже
+    // показане (valuesOnboardingSeen у прапорці нижче), інакше обидва могли б спробувати
+    // навігувати одночасно на першому запуску.
     val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen) {
-        if (balanceState.hasUsageAccess == false && !onboardingSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen) {
+        if (valuesOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
             onShowOnboarding()
         }
     }
@@ -112,6 +130,14 @@ fun HomeScreen(
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             HomeHeader(onOpenSettings = onOpenSettings)
+
+            // FR-P.1: інлайн на Home, над карткою "Мій день" — з'являється лише коли настав час
+            // (раз на тиждень), сама картка рендерить null, коли не due.
+            WeeklyReflectionCard(
+                state = weeklyReflectionState,
+                onSelectGuess = weeklyReflectionViewModel::selectGuess,
+                onDismiss = weeklyReflectionViewModel::dismiss
+            )
 
             // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
             // разом), а не окремий заголовок над секцією без фону, як було раніше.

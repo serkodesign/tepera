@@ -4,17 +4,24 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val TARGET_MINUTES_KEY = intPreferencesKey("target_minutes")
 private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
 private val SLEEP_WINDOW_END_HOUR_KEY = intPreferencesKey("sleep_window_end_hour")
+private val VALUES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("values_onboarding_seen")
+private val VALUED_CATEGORY_ID_KEY = stringPreferencesKey("valued_category_id")
+private val LAST_REFLECTION_HANDLED_AT_KEY = longPreferencesKey("last_reflection_handled_at")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 private const val DEFAULT_SLEEP_WINDOW_END_HOUR = 6 // FR-3.2
+private const val REFLECTION_INTERVAL_MILLIS = 7 * 24 * 60 * 60 * 1000L // FR-P.1: раз на тиждень
 
 /**
  * FR-3.10 (орієнтир Online-часу), FR-7.1 (чи вже показаний онбординг доступу до статистики)
@@ -47,4 +54,44 @@ class SettingsStore(private val context: Context) {
     suspend fun setSleepWindowEndHour(hour: Int) {
         context.settingsDataStore.edit { it[SLEEP_WINDOW_END_HOUR_KEY] = hour.coerceIn(0, 11) }
     }
+
+    /**
+     * FR-P.2: чи вже показане одноразове онбординг-питання про цінності ("Що ти хотів би
+     * робити більше?"). Показується ЗАВЖДИ першим при першому запуску — HomeScreen перевіряє
+     * цей прапорець РАНІШЕ за onboardingUsageAccessSeen (FR-7.1).
+     */
+    val valuesOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[VALUES_ONBOARDING_SEEN_KEY] ?: false }
+
+    /** [categoryId] null, якщо користувач пропустив питання — це теж валідний вибір. */
+    suspend fun setValuesOnboardingAnswer(categoryId: String?) {
+        context.settingsDataStore.edit {
+            it[VALUES_ONBOARDING_SEEN_KEY] = true
+            if (categoryId != null) it[VALUED_CATEGORY_ID_KEY] = categoryId
+        }
+    }
+
+    val valuedCategoryId: Flow<String?> = context.settingsDataStore.data
+        .map { it[VALUED_CATEGORY_ID_KEY] }
+
+    /**
+     * FR-P.1: тижнева рефлексія "оцінка → реальність" — раз на 7 днів, необов'язково.
+     * Перше значення НЕ 0/"ніколи" (це показало б картку одразу після встановлення, коли ще
+     * нема тижня даних) — [seedIfUnset] виставляє точку відліку на момент першого запуску,
+     * викликається з TeperaApp.onCreate() поруч з іншим одноразовим сідінгом.
+     */
+    val lastReflectionHandledAtMillis: Flow<Long> = context.settingsDataStore.data
+        .map { it[LAST_REFLECTION_HANDLED_AT_KEY] ?: 0L }
+
+    suspend fun setLastReflectionHandledAtMillis(millis: Long) {
+        context.settingsDataStore.edit { it[LAST_REFLECTION_HANDLED_AT_KEY] = millis }
+    }
+
+    suspend fun seedLastReflectionHandledAtIfUnset() {
+        val alreadySet = context.settingsDataStore.data.first()[LAST_REFLECTION_HANDLED_AT_KEY] != null
+        if (!alreadySet) setLastReflectionHandledAtMillis(System.currentTimeMillis())
+    }
+
+    fun isReflectionDue(lastHandledMillis: Long, nowMillis: Long = System.currentTimeMillis()): Boolean =
+        nowMillis - lastHandledMillis >= REFLECTION_INTERVAL_MILLIS
 }
