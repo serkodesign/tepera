@@ -5,12 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -256,10 +259,16 @@ fun TeperaNavHost(
  */
 @Composable
 private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostController) {
+    // enableEdgeToEdge() (MainActivity) малює контент ПІД системними барами — без урахування
+    // WindowInsets.navigationBars "таблетка" на фіксованому bottom-відступі ховалась під
+    // системним навбаром на пристроях з високим 3-кнопковим навбаром (підтверджено на Huawei
+    // P9, EMUI) — на Samsung S23 із жестовою навігацією (тонша смуга) цього не було помітно.
+    // 8.dp зверху системного інсету — той самий подих, що раніше давав фіксований 24.dp.
+    val navigationBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 24.dp)
+            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillDark)
