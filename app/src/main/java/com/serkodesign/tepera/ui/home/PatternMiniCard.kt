@@ -22,9 +22,10 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  * FR-D.8/D.9, компактна версія для стеку контекстних карток на Home (FR-D.11: 1-2 рядки, без
  * коментаря поверх патерну — лише заголовок + смужка). Повна версія з годинними позначками —
  * `PatternCard` на Stats (StatsScreen.kt), той самий `HourlyHeatStrip`, просто вищий.
+ * "×" у заголовку — закриття, якщо прочитав (не в SRS, за запитом користувача), до наступної доби.
  */
 @Composable
-fun PatternMiniCard(state: PatternUiState) {
+fun PatternMiniCard(state: PatternUiState, onDismiss: () -> Unit) {
     if (!state.visible) return
 
     Column(
@@ -36,7 +37,7 @@ fun PatternMiniCard(state: PatternUiState) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(stringResource(R.string.pattern_card_title), style = MaterialTheme.typography.bodyMedium)
+        ContextCardHeader(title = stringResource(R.string.pattern_card_title), onDismiss = onDismiss)
         if (state.hasEnoughData) {
             HourlyHeatStrip(hourlyMinutes = state.hourlyMinutes, height = 20.dp)
         } else {

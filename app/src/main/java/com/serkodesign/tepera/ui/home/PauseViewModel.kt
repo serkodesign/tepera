@@ -50,6 +50,12 @@ class PauseViewModel(
     private val _uiState = MutableStateFlow(PauseCardUiState())
     val uiState: StateFlow<PauseCardUiState> = _uiState.asStateFlow()
 
+    // "Закрити картку, якщо прочитав" (за прямим запитом користувача, не в SRS) — ключ анкера
+    // конкретного вікна опитування (todayDayStart/yesterdayDayStart), НЕ просто дата: сьогоднішній
+    // вечір і вчорашній ранок стосуються різних даних (FR-D.3), тож закриття одного не повинно
+    // ховати інший, навіть якщо обидва трапляються в межах одного календарного дня.
+    private var currentDismissKey: Long = -1L
+
     init {
         refresh()
     }
@@ -86,6 +92,11 @@ class PauseViewModel(
 
             when (mode) {
                 PauseCardMode.TODAY_EVENING -> {
+                    currentDismissKey = todayDayStart
+                    if (settingsStore.pauseCardDismissedKey.first() == todayDayStart) {
+                        _uiState.value = PauseCardUiState()
+                        return@launch
+                    }
                     val now = System.currentTimeMillis()
                     val scan = pauseRepository.scan(todayDayStart, now)
                     pauseRepository.persist(scan.gaps)
@@ -108,6 +119,11 @@ class PauseViewModel(
                         _uiState.value = PauseCardUiState()
                         return@launch
                     }
+                    currentDismissKey = yesterdayDayStart
+                    if (settingsStore.pauseCardDismissedKey.first() == yesterdayDayStart) {
+                        _uiState.value = PauseCardUiState()
+                        return@launch
+                    }
                     val scan = pauseRepository.scan(yesterdayDayStart, todayDayStart)
                     pauseRepository.persist(scan.gaps)
                     val gaps = pauseRepository.getUnresolvedGaps(yesterdayDayStart, todayDayStart)
@@ -126,6 +142,18 @@ class PauseViewModel(
                     )
                 }
             }
+        }
+    }
+
+    /**
+     * Закрити ВСЮ картку (на відміну від [dismissGap] — пропуск однієї паузи назавжди) до
+     * наступного вікна опитування (FR-D.3) — `currentDismissKey` завжди відповідає останньому
+     * [refresh]. Непозначені паузи лишаються в БД, доступні пізніше через Історію (FR-D.5).
+     */
+    fun dismissCard() {
+        viewModelScope.launch {
+            settingsStore.setPauseCardDismissedKey(currentDismissKey)
+            _uiState.value = PauseCardUiState()
         }
     }
 

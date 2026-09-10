@@ -75,6 +75,15 @@
     <string name="pattern_card_title">Daily pattern</string>
     <string name="pattern_empty_state">Your pattern will show up here once a week of data builds up</string>
 
+    <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
+    <string name="weekly_digest_card_title">This week</string>
+    <string name="weekly_digest_reading_format">%1$d · %2$s</string>
+    <string name="weekly_digest_count_format">%1$d</string>
+    <string name="weekly_digest_day_start_label">Day usually starts</string>
+
+    <!-- Dismissing context cards once read (user-requested, not in the SRS) -->
+    <string name="context_card_dismiss_action">Dismiss this card</string>
+
     <!-- Settings (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Settings</string>
     <string name="settings_target_label">Online-time reference</string>
@@ -91,6 +100,13 @@
     <string name="settings_sleep_window_label">End of sleep window</string>
     <string name="settings_sleep_window_info">Before this hour, a brief nighttime phone check doesn\'t count as the start of your day — only a longer session, or anything after this hour, does. Adjust it if you work nights.</string>
     <string name="settings_sleep_window_hour_format">Until %d:00</string>
+
+    <!-- "Suggest a feature" (FR-6.4–6.6, SRS v2.7) -->
+    <string name="settings_suggest_feature_action">Suggest a feature</string>
+    <string name="settings_suggest_feature_confirm_title">Open the form in your browser?</string>
+    <string name="settings_suggest_feature_confirm_body">This opens a Google Form in your browser. The form is handled by Google, not Tepera.</string>
+    <string name="settings_suggest_feature_confirm_action">Open</string>
+    <string name="settings_suggest_feature_no_browser">Couldn\'t find a browser to open the form</string>
 
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>

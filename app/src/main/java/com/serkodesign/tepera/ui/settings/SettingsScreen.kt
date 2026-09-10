@@ -1,6 +1,12 @@
 package com.serkodesign.tepera.ui.settings
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -42,6 +49,7 @@ import com.serkodesign.tepera.ui.theme.HourRangeSlider
 import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.util.FeedbackForm
 import com.serkodesign.tepera.util.LocaleStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -90,6 +98,9 @@ fun SettingsScreen(
     // Samsung S23: вибір "English" позначався, але текст лишався українською).
     var selectedLanguageTag by remember { mutableStateOf(LocaleStore.getLanguageTag(context)) }
 
+    // FR-6.4: чесне попередження перед відкриттям браузера — тап не веде туди одразу.
+    var showSuggestFeatureConfirm by remember { mutableStateOf(false) }
+
     if (showTargetInfo) {
         AlertDialog(
             onDismissRequest = { showTargetInfo = false },
@@ -108,13 +119,42 @@ fun SettingsScreen(
             text = { Text(stringResource(R.string.settings_sleep_window_info)) }
         )
     }
+    // FR-6.4/6.5: чесне попередження, що зараз відкриється браузер (форму приймає Google),
+    // перш ніж передати намір системі — і спокійна обробка відсутності браузера (FR-6.5).
+    if (showSuggestFeatureConfirm) {
+        AlertDialog(
+            onDismissRequest = { showSuggestFeatureConfirm = false },
+            title = { Text(stringResource(R.string.settings_suggest_feature_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_suggest_feature_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSuggestFeatureConfirm = false
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(context, context.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text(stringResource(R.string.settings_suggest_feature_confirm_action)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSuggestFeatureConfirm = false }) { Text(stringResource(R.string.dialog_cancel)) }
+            }
+        )
+    }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             GlassScreenHeader(title = stringResource(R.string.settings_screen_title), onBack = onBack)
 
+            // verticalScroll: без нього нижні рядки ("Резервне копіювання", "Запропонувати
+            // функцію") виходять за межі екрана й лишаються недосяжними для дотику на пристроях
+            // з високою щільністю контенту (підтверджено на Samsung S23) — Column сам по собі
+            // не скролиться.
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 // Таргет Online-часу: слайдер по цілих годинах 1-8 (за запитом користувача,
@@ -218,6 +258,14 @@ fun SettingsScreen(
                         label = stringResource(R.string.settings_backup_restore_action),
                         onClick = onOpenBackupRestore,
                         leading = { TeperaIconCircle(Icons.Filled.Archive) },
+                        trailing = { NavChevron() }
+                    )
+                    // FR-6.4: розміщується безпосередньо під резервним копіюванням. Свідомо без
+                    // бейджа й без самостійного нагадування (FR-6.6) — лежить тут і чекає.
+                    GlassRow(
+                        label = stringResource(R.string.settings_suggest_feature_action),
+                        onClick = { showSuggestFeatureConfirm = true },
+                        leading = { TeperaIconCircle(Icons.Filled.Feedback) },
                         trailing = { NavChevron() }
                     )
                 }

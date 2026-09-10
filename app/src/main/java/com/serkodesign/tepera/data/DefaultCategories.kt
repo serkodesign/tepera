@@ -64,4 +64,9 @@ object DefaultCategories {
 
     /** Дефолтна категорія, прибрана з v2.4 — archive(), не видалення (FR-2.3). */
     const val LEGACY_SLEEP_ID = "default-sleep"
+
+    // Іменовані константи для WeeklyDigestViewModel (картка "Цей тиждень") — щоб не дублювати
+    // рядкові літерали id категорій у логіці підрахунку.
+    const val READING_ID = "default-reading"
+    const val MOVEMENT_ID = "default-movement"
 }

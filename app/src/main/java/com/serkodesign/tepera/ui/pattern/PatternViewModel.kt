@@ -31,6 +31,10 @@ data class PatternUiState(
  * "Тиждень даних" (FR-D.9) — від ПЕРШОГО ЗАПУСКУ застосунку (`SettingsStore.firstLaunchMillis`),
  * не від першої появи даних у `UsageStatsManager` (системна історія існує незалежно від
  * встановлення Tepera й не є надійним сигналом "користувач уже тиждень з нами").
+ *
+ * **Закриття картки, якщо прочитав (за прямим запитом користувача, не в SRS):** ключ закриття —
+ * `to` (початок сьогоднішньої доби, той самий, що визначає вікно патерну) — закриття діє, доки
+ * не почнеться нова доба, тоді картка повертається з оновленим вікном.
  */
 class PatternViewModel(
     private val patternRepository: PatternRepository,
@@ -40,6 +44,8 @@ class PatternViewModel(
 
     private val _uiState = MutableStateFlow(PatternUiState())
     val uiState: StateFlow<PatternUiState> = _uiState.asStateFlow()
+
+    private var currentDismissKey: Long = -1L
 
     init {
         refresh()
@@ -52,6 +58,17 @@ class PatternViewModel(
                 return@launch
             }
 
+            // Ключ закриття — сьогоднішня доба, той самий і в "ще збираємо дані", і в готовому
+            // патерні нижче: "закрито" діє рівно до завтра, незалежно від того, який зі станів
+            // картка показувала на момент закриття.
+            val to = startOfTodayMillis()
+            currentDismissKey = to
+            val dismissedKey = settingsStore.patternCardDismissedKey.first()
+            if (dismissedKey == to) {
+                _uiState.value = PatternUiState()
+                return@launch
+            }
+
             val firstLaunch = settingsStore.firstLaunchMillis.first()
             val daysSinceFirstLaunch = (System.currentTimeMillis() - firstLaunch) / DAY_MILLIS
             if (daysSinceFirstLaunch < PATTERN_WINDOW_DAYS) {
@@ -59,10 +76,17 @@ class PatternViewModel(
                 return@launch
             }
 
-            val to = startOfTodayMillis() // виключно повні дні — сьогоднішній частковий день не рахується
-            val from = to - PATTERN_WINDOW_DAYS * DAY_MILLIS
+            val from = to - PATTERN_WINDOW_DAYS * DAY_MILLIS // виключно повні дні
             val buckets = patternRepository.hourlyOnlineMinutes(from, to)
             _uiState.value = PatternUiState(visible = true, hasEnoughData = true, hourlyMinutes = buckets)
+        }
+    }
+
+    /** Закрити картку до наступної доби — `currentDismissKey` завжди відповідає останньому [refresh]. */
+    fun dismiss() {
+        viewModelScope.launch {
+            settingsStore.setPatternCardDismissedKey(currentDismissKey)
+            _uiState.value = PatternUiState()
         }
     }
 

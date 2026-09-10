@@ -52,7 +52,8 @@ fun PauseCard(
     state: PauseCardUiState,
     categories: List<CategoryEntity>,
     onLabel: (PauseUiGap, String) -> Unit,
-    onDismissGap: (PauseUiGap) -> Unit
+    onDismissGap: (PauseUiGap) -> Unit,
+    onDismissCard: () -> Unit
 ) {
     if (!state.visible) return
 
@@ -67,6 +68,19 @@ fun PauseCard(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Закриття ЦІЛОЇ картки (за прямим запитом користувача, не в SRS) — окремо від per-gap
+        // "×" нижче, який пропускає лише одну паузу назавжди. Тут — "прочитав, ховай до наступного
+        // вікна опитування" (FR-D.3), непозначені паузи лишаються в БД.
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            IconButton(onClick = onDismissCard, modifier = Modifier.size(24.dp)) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.context_card_dismiss_action),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
         state.dayBounds?.let { bounds ->
             Text(
                 text = stringResource(

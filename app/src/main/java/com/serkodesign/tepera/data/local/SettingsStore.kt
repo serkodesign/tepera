@@ -19,6 +19,9 @@ private val VALUES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("values_onboardin
 private val VALUED_CATEGORY_ID_KEY = stringPreferencesKey("valued_category_id")
 private val LAST_REFLECTION_HANDLED_AT_KEY = longPreferencesKey("last_reflection_handled_at")
 private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
+private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
+private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
+private val PAUSE_CARD_DISMISSED_KEY = longPreferencesKey("pause_card_dismissed_key")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 private const val DEFAULT_SLEEP_WINDOW_END_HOUR = 6 // FR-3.2
@@ -108,5 +111,35 @@ class SettingsStore(private val context: Context) {
     suspend fun seedFirstLaunchMillisIfUnset() {
         val alreadySet = context.settingsDataStore.data.first()[FIRST_LAUNCH_AT_KEY] != null
         if (!alreadySet) context.settingsDataStore.edit { it[FIRST_LAUNCH_AT_KEY] = System.currentTimeMillis() }
+    }
+
+    /**
+     * "Закрити картку, якщо прочитав" — за прямим запитом користувача (не в SRS). Кожна
+     * контекстна картка (`PatternMiniCard`, `WeeklyDigestCard`, `PauseCard`) зберігає ОПАЧНИЙ
+     * ключ "якого саме вікна даних вона стосувалась" при закритті (не просто timestamp) —
+     * `PatternViewModel`/`WeeklyDigestViewModel` порівнюють з ключем сьогоднішнього вікна (доба
+     * змінюється — картка повертається), `PauseViewModel` з якорем конкретного вікна опитування
+     * (FR-D.3: сьогоднішній вечір і вчорашній ранок — різні дані, "закрито" не повинно ховати
+     * ІНШЕ вікно). Значення -1L = ще ніколи не закривали.
+     */
+    val patternCardDismissedKey: Flow<Long> = context.settingsDataStore.data
+        .map { it[PATTERN_CARD_DISMISSED_KEY] ?: -1L }
+
+    suspend fun setPatternCardDismissedKey(key: Long) {
+        context.settingsDataStore.edit { it[PATTERN_CARD_DISMISSED_KEY] = key }
+    }
+
+    val weeklyDigestCardDismissedKey: Flow<Long> = context.settingsDataStore.data
+        .map { it[WEEKLY_DIGEST_CARD_DISMISSED_KEY] ?: -1L }
+
+    suspend fun setWeeklyDigestCardDismissedKey(key: Long) {
+        context.settingsDataStore.edit { it[WEEKLY_DIGEST_CARD_DISMISSED_KEY] = key }
+    }
+
+    val pauseCardDismissedKey: Flow<Long> = context.settingsDataStore.data
+        .map { it[PAUSE_CARD_DISMISSED_KEY] ?: -1L }
+
+    suspend fun setPauseCardDismissedKey(key: Long) {
+        context.settingsDataStore.edit { it[PAUSE_CARD_DISMISSED_KEY] = key }
     }
 }

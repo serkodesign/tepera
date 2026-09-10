@@ -80,6 +80,15 @@
     <string name="pattern_card_title">Патерн доби</string>
     <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається тиждень даних</string>
 
+    <!-- Картка "Цей тиждень" — досліджено з Figma-макета (node 2062:2862), не в SRS буквально -->
+    <string name="weekly_digest_card_title">Цей тиждень</string>
+    <string name="weekly_digest_reading_format">%1$d · %2$s</string>
+    <string name="weekly_digest_count_format">%1$d</string>
+    <string name="weekly_digest_day_start_label">День зазвичай починається</string>
+
+    <!-- Закриття контекстних карток, якщо прочитав (за запитом користувача, не в SRS) -->
+    <string name="context_card_dismiss_action">Приховати цю картку</string>
+
     <!-- Налаштування (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Налаштування</string>
     <string name="settings_target_label">Орієнтир Online-часу</string>
@@ -96,6 +105,13 @@
     <string name="settings_sleep_window_label">Кінець вікна сну</string>
     <string name="settings_sleep_window_info">До цієї години коротка нічна перевірка телефону не рахується початком дня — лише довша сесія або будь-що після цієї межі. Зміни, якщо працюєш ночами.</string>
     <string name="settings_sleep_window_hour_format">До %d:00</string>
+
+    <!-- "Запропонувати функцію" (FR-6.4–6.6, SRS v2.7) -->
+    <string name="settings_suggest_feature_action">Запропонувати функцію</string>
+    <string name="settings_suggest_feature_confirm_title">Відкрити форму в браузері?</string>
+    <string name="settings_suggest_feature_confirm_body">Зараз відкриється браузер із формою Google. Форму приймає Google — не Tepera.</string>
+    <string name="settings_suggest_feature_confirm_action">Відкрити</string>
+    <string name="settings_suggest_feature_no_browser">Не вдалося знайти браузер, щоб відкрити форму</string>
 
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Експортувати дані (JSON)</string>

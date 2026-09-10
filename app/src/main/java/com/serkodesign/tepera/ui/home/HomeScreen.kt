@@ -110,6 +110,13 @@ fun HomeScreen(
     )
     val pauseState by pauseViewModel.uiState.collectAsState()
 
+    // Досліджено з Figma-макета (node 2062:2862, "This week") — тижневий дайджест лічильників,
+    // окрема картка стеку (ContextCardStack.kt), не в SRS буквально.
+    val weeklyDigestViewModel: WeeklyDigestViewModel = viewModel(
+        factory = WeeklyDigestViewModel.Factory(activityRepository, balanceRepository, settingsStore)
+    )
+    val weeklyDigestState by weeklyDigestViewModel.uiState.collectAsState()
+
     // FR-D.8/D.9: тепловий патерн доби — власний інстанс на Home (Stats має свій, з тими самими
     // Repository, але окремим refresh-циклом).
     val patternViewModel: PatternViewModel = viewModel(
@@ -123,6 +130,7 @@ fun HomeScreen(
         balanceViewModel.refresh()
         pauseViewModel.refresh()
         patternViewModel.refresh()
+        weeklyDigestViewModel.refresh()
         onPauseOrDispose { }
     }
 
@@ -160,10 +168,14 @@ fun HomeScreen(
                 categories = summary.map { it.category },
                 onLabelGap = pauseViewModel::labelGap,
                 onDismissGap = pauseViewModel::dismissGap,
+                onDismissPauseCard = pauseViewModel::dismissCard,
                 weeklyState = weeklyReflectionState,
                 onSelectGuess = weeklyReflectionViewModel::selectGuess,
                 onDismissWeekly = weeklyReflectionViewModel::dismiss,
-                patternState = patternState
+                digestState = weeklyDigestState,
+                onDismissDigest = weeklyDigestViewModel::dismiss,
+                patternState = patternState,
+                onDismissPattern = patternViewModel::dismiss
             )
 
             // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
