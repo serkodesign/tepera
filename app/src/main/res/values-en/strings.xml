@@ -63,6 +63,18 @@
     <string name="weekly_reflection_actual_format">Actual: %1$s</string>
     <string name="weekly_reflection_done">Got it</string>
 
+    <!-- Detected pauses card (FR-D.1–D.7, SRS v2.6) -->
+    <string name="pause_day_bounds_format">Your day with the phone spanned %1$s — from %2$s to %3$s</string>
+    <string name="pause_card_title">You can name these pauses, if you want</string>
+    <string name="pause_gap_row_format">%1$s–%2$s · %3$s</string>
+    <string name="pause_gap_dismiss_action">Skip this pause</string>
+    <string name="pause_pick_category_title">What was this?</string>
+    <string name="pause_pick_category_cancel">Cancel</string>
+
+    <!-- Daily time pattern (FR-D.8/D.9, SRS v2.6) -->
+    <string name="pattern_card_title">Daily pattern</string>
+    <string name="pattern_empty_state">Your pattern will show up here once a week of data builds up</string>
+
     <!-- Settings (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Settings</string>
     <string name="settings_target_label">Online-time reference</string>

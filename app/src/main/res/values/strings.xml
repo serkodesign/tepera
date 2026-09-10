@@ -68,6 +68,18 @@
     <string name="weekly_reflection_actual_format">Насправді: %1$s</string>
     <string name="weekly_reflection_done">Гаразд</string>
 
+    <!-- Картка виявлених пауз (FR-D.1–D.7, SRS v2.6) -->
+    <string name="pause_day_bounds_format">Твій день з телефоном тривав %1$s — з %2$s до %3$s</string>
+    <string name="pause_card_title">Можеш назвати ці паузи, якщо хочеш</string>
+    <string name="pause_gap_row_format">%1$s–%2$s · %3$s</string>
+    <string name="pause_gap_dismiss_action">Пропустити цю паузу</string>
+    <string name="pause_pick_category_title">Що це було?</string>
+    <string name="pause_pick_category_cancel">Скасувати</string>
+
+    <!-- Тепловий патерн доби (FR-D.8/D.9, SRS v2.6) -->
+    <string name="pattern_card_title">Патерн доби</string>
+    <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається тиждень даних</string>
+
     <!-- Налаштування (FR-3.10, FR-3.2) -->
     <string name="settings_screen_title">Налаштування</string>
     <string name="settings_target_label">Орієнтир Online-часу</string>
@@ -144,7 +156,7 @@
     <string name="add_entry_overlap_confirm">Зберегти все одно</string>
 
     <!-- Статистика (FR-5.2, FR-5.3) -->
-    <string name="stats_nav_action">Статистика</string>
+    <string name="stats_nav_action">Огляд</string>
     <string name="stats_screen_title">Статистика</string>
     <string name="stats_period_day">День</string>
     <string name="stats_period_week">Тиждень</string>

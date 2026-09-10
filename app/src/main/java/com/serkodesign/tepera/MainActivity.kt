@@ -54,6 +54,8 @@ class MainActivity : ComponentActivity() {
                         balanceRepository = app.balanceRepository,
                         excludedAppRepository = app.excludedAppRepository,
                         installedAppsProvider = app.installedAppsProvider,
+                        pauseRepository = app.pauseRepository,
+                        patternRepository = app.patternRepository,
                         settingsStore = app.settingsStore,
                         activeTimerStore = app.activeTimerStore,
                         backupRepository = app.backupRepository,

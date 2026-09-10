@@ -6,6 +6,7 @@ import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
+import com.serkodesign.tepera.data.local.MIGRATION_1_2
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
@@ -13,6 +14,8 @@ import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
+import com.serkodesign.tepera.data.repository.PatternRepository
+import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
@@ -30,7 +33,9 @@ import kotlinx.coroutines.launch
 class TeperaApp : Application() {
 
     val database: AppDatabase by lazy {
-        Room.databaseBuilder(this, AppDatabase::class.java, "tepera.db").build()
+        Room.databaseBuilder(this, AppDatabase::class.java, "tepera.db")
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     val categoryRepository: CategoryRepository by lazy {
@@ -47,6 +52,14 @@ class TeperaApp : Application() {
 
     val balanceRepository: BalanceRepository by lazy {
         BalanceRepository(this, database.excludedAppDao())
+    }
+
+    val pauseRepository: PauseRepository by lazy {
+        PauseRepository(this, database.detectedGapDao())
+    }
+
+    val patternRepository: PatternRepository by lazy {
+        PatternRepository(this, database.excludedAppDao())
     }
 
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
@@ -74,6 +87,8 @@ class TeperaApp : Application() {
             // FR-P.1: точка відліку тижневої рефлексії — перший запуск, не "0/ніколи" (інакше
             // картка з'явилась би одразу, коли ще нема тижня даних для порівняння).
             settingsStore.seedLastReflectionHandledAtIfUnset()
+            // FR-D.9: окрема точка відліку для порогу готовності теплового патерну доби.
+            settingsStore.seedFirstLaunchMillisIfUnset()
         }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)

@@ -5,6 +5,7 @@ import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,7 +50,11 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.repository.PatternRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.pattern.HourlyHeatStrip
+import com.serkodesign.tepera.ui.pattern.PatternUiState
+import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import java.text.SimpleDateFormat
@@ -66,6 +71,7 @@ fun StatsScreen(
     categoryRepository: CategoryRepository,
     activityRepository: ActivityRepository,
     balanceRepository: BalanceRepository,
+    patternRepository: PatternRepository,
     settingsStore: SettingsStore
 ) {
     val viewModel: StatsViewModel = viewModel(
@@ -74,10 +80,18 @@ fun StatsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // FR-D.8/D.9: власний інстанс, незалежний від PeriodSelector (тепловий патерн завжди за
+    // останні 7 повних днів, не за обраний період День/Тиждень/Місяць).
+    val patternViewModel: PatternViewModel = viewModel(
+        factory = PatternViewModel.Factory(patternRepository, balanceRepository, settingsStore)
+    )
+    val patternState by patternViewModel.uiState.collectAsState()
+
     // Доступ до статистики використання надається поза застосунком — оновлюємо тренд при
     // поверненні з системних Налаштувань, так само як BalanceViewModel.refresh() на Home.
     LifecycleResumeEffect(Unit) {
         viewModel.refreshWeeklyTrend()
+        patternViewModel.refresh()
         onPauseOrDispose { }
     }
 
@@ -115,6 +129,35 @@ fun StatsScreen(
                     context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                 }
             )
+
+            PatternCard(state = patternState)
+        }
+    }
+}
+
+/**
+ * FR-D.8/D.9: повна версія теплового патерну доби — той самий `HourlyHeatStrip`, що компактна
+ * картка на Home (`PatternMiniCard`), лише вищий і з годинними позначками для орієнтиру.
+ * Незалежна від `PeriodSelector` вище (завжди останні 7 повних днів — FR-D.8 не згадує вибір
+ * періоду, а порівнювати "патерн за день" саме з собою не має сенсу).
+ */
+@Composable
+private fun PatternCard(state: PatternUiState) {
+    if (!state.visible) return
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.pattern_card_title), style = MaterialTheme.typography.titleMedium)
+            if (state.hasEnoughData) {
+                HourlyHeatStrip(hourlyMinutes = state.hourlyMinutes, height = 48.dp)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    listOf(0, 6, 12, 18, 23).forEach {
+                        Text(it.toString(), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            } else {
+                Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

@@ -49,6 +49,8 @@ import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
+import com.serkodesign.tepera.data.repository.PatternRepository
+import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
@@ -97,6 +99,8 @@ fun TeperaNavHost(
     balanceRepository: BalanceRepository,
     excludedAppRepository: ExcludedAppRepository,
     installedAppsProvider: InstalledAppsProvider,
+    pauseRepository: PauseRepository,
+    patternRepository: PatternRepository,
     settingsStore: SettingsStore,
     activeTimerStore: ActiveTimerStore,
     backupRepository: BackupRepository,
@@ -157,6 +161,8 @@ fun TeperaNavHost(
                     categoryRepository = categoryRepository,
                     activityRepository = activityRepository,
                     balanceRepository = balanceRepository,
+                    pauseRepository = pauseRepository,
+                    patternRepository = patternRepository,
                     settingsStore = settingsStore,
                     activeTimerStore = activeTimerStore,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
@@ -170,6 +176,7 @@ fun TeperaNavHost(
                     categoryRepository = categoryRepository,
                     activityRepository = activityRepository,
                     balanceRepository = balanceRepository,
+                    patternRepository = patternRepository,
                     settingsStore = settingsStore
                 )
             }
@@ -256,7 +263,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillDark)
-            .padding(6.dp),
+            .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -314,14 +321,14 @@ private fun NavPillTab(
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .padding(vertical = 4.dp)
+            .padding(4.dp)
             .clip(RoundedCornerShape(40.dp))
             .then(if (selected) Modifier.background(TeperaPalette.navPillSelectedHighlight) else Modifier)
             .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp),
+            modifier = Modifier.padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

@@ -3,10 +3,8 @@ package com.serkodesign.tepera.data.repository
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.view.inputmethod.InputMethodManager
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
+import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
@@ -67,7 +65,7 @@ class BalanceRepository(
         // Визначаються динамічно через PackageManager/InputMethodManager, а не жорстко
         // захардкоджені імена пакетів — на тестових пристроях стоять різні лаунчери
         // (One UI Home, Microsoft Launcher, ROADMAP Фаза 3).
-        val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages()
+        val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages(context)
 
         // ВАЖЛИВО: queryUsageStats(INTERVAL_DAILY, from, to) рахує totalTimeInForeground для
         // ЦІЛОГО бакета статистики, а не строго обрізаний на [from, to] — межі бакетів не
@@ -106,25 +104,6 @@ class BalanceRepository(
         } catch (e: SecurityException) {
             0
         }
-    }
-
-    /**
-     * Пакети поточного лаунчера (усіх, хто відповідає на CATEGORY_HOME — на випадок кількох
-     * встановлених лаунчерів, не лише активного за замовчуванням) та ввімкнених клавіатур.
-     * Викликається на кожен запит (не кешується): і лаунчер, і клавіатура можуть змінитись
-     * протягом життя процесу, а сам запит — лише пара дешевих системних викликів.
-     */
-    private fun systemExclusionPackages(): Set<String> {
-        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        val launcherPackages = context.packageManager
-            .queryIntentActivities(launcherIntent, PackageManager.MATCH_DEFAULT_ONLY)
-            .map { it.activityInfo.packageName }
-            .toSet()
-
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val keyboardPackages = imm.enabledInputMethodList.map { it.packageName }.toSet()
-
-        return launcherPackages + keyboardPackages
     }
 
     /** FR-3.9: Grace Period Buffer — знаменник ніколи не менший за 180 хв. */
@@ -171,14 +150,24 @@ class BalanceRepository(
      * будь-якого застосунку, включно з лаунчером) після півночі. Сесія, що починається до
      * [sleepWindowEndHour] (дефолт 6, FR-3.2) і триває коротше 5 хв, ігнорується як нічна
      * перевірка годинника (узгоджено зі стейкхолдером — SRS текстом називав поріг 2-3 хв і
-     * окрему межу 05:00; тут обидва об'єднані в один редагований параметр). Якщо сьогодні ще
-     * не було жодного "суттєвого" розблокування (напр. щойно прокинулись) — день ще не почався,
-     * повертаємо "зараз": знаменник і Online-хвилини тоді коректно виходять ~0.
+     * окрему межу 05:00; тут обидва об'єднані в один редагований параметр). Якщо в межах вікна
+     * пошуку ще не було жодного "суттєвого" розблокування (напр. щойно прокинулись) — повертаємо
+     * [searchEndMillis]: для "сьогодні" (дефолтні параметри) це коректно означає "день ще не
+     * почався" (знаменник і Online-хвилини виходять ~0); для минулих діб (FR-D.6, PauseRepository)
+     * викликач сам звіряє результат із [searchEndMillis], щоб відрізнити "не знайдено".
+     *
+     * [referenceMidnightMillis]/[searchEndMillis] дефолтять на "сьогодні" (поведінка не змінилась
+     * для наявних викликів); FR-D.6 (SRS v2.6, "день з телефоном") передає межі минулої доби, щоб
+     * тим самим алгоритмом знайти точку пробудження вчора.
      */
-    suspend fun calculateDayStartMillis(sleepWindowEndHour: Int): Long = withContext(Dispatchers.IO) {
+    suspend fun calculateDayStartMillis(
+        sleepWindowEndHour: Int,
+        referenceMidnightMillis: Long = startOfTodayMillis(),
+        searchEndMillis: Long = System.currentTimeMillis()
+    ): Long = withContext(Dispatchers.IO) {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val midnight = startOfTodayMillis()
-        val now = System.currentTimeMillis()
+        val midnight = referenceMidnightMillis
+        val now = searchEndMillis
         try {
             val events = usm.queryEvents(midnight, now)
             val event = UsageEvents.Event()

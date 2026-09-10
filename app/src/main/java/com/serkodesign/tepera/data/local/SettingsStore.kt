@@ -18,6 +18,7 @@ private val SLEEP_WINDOW_END_HOUR_KEY = intPreferencesKey("sleep_window_end_hour
 private val VALUES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("values_onboarding_seen")
 private val VALUED_CATEGORY_ID_KEY = stringPreferencesKey("valued_category_id")
 private val LAST_REFLECTION_HANDLED_AT_KEY = longPreferencesKey("last_reflection_handled_at")
+private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 private const val DEFAULT_SLEEP_WINDOW_END_HOUR = 6 // FR-3.2
@@ -94,4 +95,18 @@ class SettingsStore(private val context: Context) {
 
     fun isReflectionDue(lastHandledMillis: Long, nowMillis: Long = System.currentTimeMillis()): Boolean =
         nowMillis - lastHandledMillis >= REFLECTION_INTERVAL_MILLIS
+
+    /**
+     * FR-D.9: коли застосунок вперше запущено — поріг "тиждень даних" для теплового патерну
+     * (FR-D.8/D.9, PatternViewModel). Окремий ключ від lastReflectionHandledAtMillis (та сама
+     * ідея сідингу при першому запуску, але інша семантика — переплутати їх означало б, що
+     * ручна відповідь/skip тижневої рефлексії випадково зсуває й поріг готовності патерну).
+     */
+    val firstLaunchMillis: Flow<Long> = context.settingsDataStore.data
+        .map { it[FIRST_LAUNCH_AT_KEY] ?: 0L }
+
+    suspend fun seedFirstLaunchMillisIfUnset() {
+        val alreadySet = context.settingsDataStore.data.first()[FIRST_LAUNCH_AT_KEY] != null
+        if (!alreadySet) context.settingsDataStore.edit { it[FIRST_LAUNCH_AT_KEY] = System.currentTimeMillis() }
+    }
 }

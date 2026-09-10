@@ -53,9 +53,12 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.repository.PatternRepository
+import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
@@ -75,6 +78,8 @@ fun HomeScreen(
     categoryRepository: CategoryRepository,
     activityRepository: ActivityRepository,
     balanceRepository: BalanceRepository,
+    pauseRepository: PauseRepository,
+    patternRepository: PatternRepository,
     settingsStore: SettingsStore,
     activeTimerStore: ActiveTimerStore,
     onOpenSettings: () -> Unit,
@@ -97,10 +102,27 @@ fun HomeScreen(
     )
     val weeklyReflectionState by weeklyReflectionViewModel.uiState.collectAsState()
 
+    // FR-D.1–D.7 (SRS v2.6): сканування пауз через queryEvents() — on-demand при кожному
+    // відкритті Home (не фонова WorkManager-задача), сам PauseViewModel мовчить поза дозволеним
+    // вікном опитування (FR-D.3), тож зайвого сканування поза ним не відбувається.
+    val pauseViewModel: PauseViewModel = viewModel(
+        factory = PauseViewModel.Factory(pauseRepository, balanceRepository, activityRepository, settingsStore)
+    )
+    val pauseState by pauseViewModel.uiState.collectAsState()
+
+    // FR-D.8/D.9: тепловий патерн доби — власний інстанс на Home (Stats має свій, з тими самими
+    // Repository, але окремим refresh-циклом).
+    val patternViewModel: PatternViewModel = viewModel(
+        factory = PatternViewModel.Factory(patternRepository, balanceRepository, settingsStore)
+    )
+    val patternState by patternViewModel.uiState.collectAsState()
+
     // Доступ до статистики використання надається в системних Налаштуваннях, поза застосунком —
     // без цього ефекту повернення з Налаштувань не оновило б картку без ручного перезаходу на Home.
     LifecycleResumeEffect(Unit) {
         balanceViewModel.refresh()
+        pauseViewModel.refresh()
+        patternViewModel.refresh()
         onPauseOrDispose { }
     }
 
@@ -131,12 +153,17 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             HomeHeader(onOpenSettings = onOpenSettings)
 
-            // FR-P.1: інлайн на Home, над карткою "Мій день" — з'являється лише коли настав час
-            // (раз на тиждень), сама картка рендерить null, коли не due.
-            WeeklyReflectionCard(
-                state = weeklyReflectionState,
+            // FR-D.10/D.11: вертикальний стек до 3 контекстних карток, пріоритизований за
+            // актуальністю — над карткою "Мій день", кожна сама вирішує, чи їй бути видимою.
+            ContextCardStack(
+                pauseState = pauseState,
+                categories = summary.map { it.category },
+                onLabelGap = pauseViewModel::labelGap,
+                onDismissGap = pauseViewModel::dismissGap,
+                weeklyState = weeklyReflectionState,
                 onSelectGuess = weeklyReflectionViewModel::selectGuess,
-                onDismiss = weeklyReflectionViewModel::dismiss
+                onDismissWeekly = weeklyReflectionViewModel::dismiss,
+                patternState = patternState
             )
 
             // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
