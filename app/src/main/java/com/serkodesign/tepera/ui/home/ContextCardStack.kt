@@ -1,5 +1,10 @@
 package com.serkodesign.tepera.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,8 +26,6 @@ import com.serkodesign.tepera.ui.pattern.PatternUiState
 
 private const val MAX_CONTEXT_CARDS = 3 // FR-D.10
 
-private data class StackCard(val priority: Int, val content: @Composable () -> Unit)
-
 /**
  * FR-D.10/D.11 (SRS v2.6): верх Home — вертикальний стек, максимум 3 картки одночасно, за
  * пріоритетом актуальності (не карусель — горизонтальна прокрутка ховає вміст за першою карткою).
@@ -38,6 +41,15 @@ private data class StackCard(val priority: Int, val content: @Composable () -> U
  * ховає картку до наступного релевантного вікна даних (день/вікно опитування), а не назавжди.
  * `WeeklyReflectionCard` вже мала власний "Можна пропустити"/"Гаразд" — окремого "×" не додано,
  * щоб не дублювати той самий жест двома різними кнопками.
+ *
+ * **Артефакт при закритті картки (виправлено, не в SRS):** раніше картка, чий стан ставав
+ * невидимим (напр. після тапу "×"), одразу зникала зі списку `cards` і повністю видалялась із
+ * дерева композиції в той самий кадр — на деяких пристроях (відтворено на Samsung S23, Huawei P9)
+ * різке видалення заокругленої (`clip`+`background`) картки не встигало коректно інвалідувати
+ * область екрана, лишаючи на кадр-два візуальний "привид" картки. Кожна картка тепер ЗАВЖДИ
+ * присутня в дереві композиції, обгорнута в `AnimatedVisibility` — вона сама коректно керує
+ * появою/зникненням (згортання+прозорість) і лише ПІСЛЯ завершення анімації прибирає вміст із
+ * композиції, без різкого "вирізання" LayoutNode.
  */
 @Composable
 fun ContextCardStack(
@@ -54,32 +66,43 @@ fun ContextCardStack(
     patternState: PatternUiState,
     onDismissPattern: () -> Unit
 ) {
-    val cards = listOfNotNull(
-        if (pauseState.visible) {
-            StackCard(0) {
-                PauseCard(
-                    state = pauseState,
-                    categories = categories,
-                    onLabel = onLabelGap,
-                    onDismissGap = onDismissGap,
-                    onDismissCard = onDismissPauseCard
-                )
-            }
-        } else null,
-        if (weeklyState.isDue) {
-            StackCard(1) {
-                WeeklyReflectionCard(state = weeklyState, onSelectGuess = onSelectGuess, onDismiss = onDismissWeekly)
-            }
-        } else null,
-        if (digestState.visible) {
-            StackCard(2) { WeeklyDigestCard(state = digestState, onDismiss = onDismissDigest) }
-        } else null,
-        if (patternState.visible) {
-            StackCard(3) { PatternMiniCard(state = patternState, onDismiss = onDismissPattern) }
-        } else null
-    )
+    // Пріоритет нижче = вищий у стеку (FR-D.10): pause=0, weekly=1, digest=2, pattern=3.
+    val shown = listOfNotNull(
+        0.takeIf { pauseState.visible },
+        1.takeIf { weeklyState.isDue },
+        2.takeIf { digestState.visible },
+        3.takeIf { patternState.visible }
+    ).sorted().take(MAX_CONTEXT_CARDS).toSet()
 
-    cards.sortedBy { it.priority }.take(MAX_CONTEXT_CARDS).forEach { it.content() }
+    ContextCardSlot(visible = 0 in shown) {
+        PauseCard(
+            state = pauseState,
+            categories = categories,
+            onLabel = onLabelGap,
+            onDismissGap = onDismissGap,
+            onDismissCard = onDismissPauseCard
+        )
+    }
+    ContextCardSlot(visible = 1 in shown) {
+        WeeklyReflectionCard(state = weeklyState, onSelectGuess = onSelectGuess, onDismiss = onDismissWeekly)
+    }
+    ContextCardSlot(visible = 2 in shown) {
+        WeeklyDigestCard(state = digestState, onDismiss = onDismissDigest)
+    }
+    ContextCardSlot(visible = 3 in shown) {
+        PatternMiniCard(state = patternState, onDismiss = onDismissPattern)
+    }
+}
+
+@Composable
+private fun ContextCardSlot(visible: Boolean, content: @Composable () -> Unit) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        content()
+    }
 }
 
 /** Заголовок + "×" — спільний для карток, які можна закрити (Pattern/WeeklyDigest/Pause). */

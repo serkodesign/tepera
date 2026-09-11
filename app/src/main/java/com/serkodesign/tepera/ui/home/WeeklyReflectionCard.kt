@@ -29,8 +29,6 @@ import com.serkodesign.tepera.util.roundToQuarterHour
  */
 @Composable
 fun WeeklyReflectionCard(state: WeeklyReflectionUiState, onSelectGuess: (WeeklyOnlineGuess) -> Unit, onDismiss: () -> Unit) {
-    if (!state.isDue) return
-
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)

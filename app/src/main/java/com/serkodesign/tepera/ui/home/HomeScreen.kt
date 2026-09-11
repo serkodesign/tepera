@@ -7,18 +7,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Pause
@@ -158,7 +157,21 @@ fun HomeScreen(
     // Прозорий containerColor: градієнтний фон малює зовнішній Box у TeperaNavHost (а не тут) —
     // інакше він потрапляє під contentPadding зовнішнього Scaffold і не сягає країв екрана.
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+        // Увесь екран скролиться ОДНИМ контейнером (за прямим запитом користувача) — раніше
+        // скролилась лише сітка категорій (Modifier.weight(1f) + LazyVerticalGrid), а заголовок,
+        // контекстні картки й картка "Мій день" лишались фіксованими зверху. На малих екранах
+        // (Samsung S23, Huawei P9) це стискало сітку категорій у замалу область, і остання картка
+        // під час прокрутки візуально "обрізалась" на межі цієї стиснутої області та знову на
+        // межі напівпрозорої навбар-"таблетки" знизу. Один спільний Modifier.verticalScroll
+        // прибирає внутрішню межу зверху (немає окремого фіксованого/скрольованого стику), а
+        // Spacer(100.dp) в самому кінці — той самий запас, що раніше був bottom-паддінгом сітки,
+        // гарантує, що остання картка повністю прокручується НАД "таблеткою", а не впирається в неї.
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
             HomeHeader(onOpenSettings = onOpenSettings)
 
             // FR-D.10/D.11: вертикальний стек до 3 контекстних карток, пріоритизований за
@@ -207,36 +220,48 @@ fun HomeScreen(
 
             if (summary.isEmpty()) {
                 Box(
-                    modifier = Modifier.weight(1f).fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(stringResource(R.string.home_no_entries_today))
                 }
             } else {
-                // 2x3 сітка категорій (було 3x2): до 5 дефолтних + 1 кастомна (FR-2.1/2.2)
-                // точно заповнюють 2 колонки на 3 ряди. Раніше NavHost резервував під навбар-
-                // "таблетку" фіксовану висоту зверху від Scaffold, і ЦЕЙ екран мав ще й власний
-                // Scaffold-inset поверх — подвійний нижній відступ стискав сітку так, що останній
-                // ряд карток обрізався. NavHost більше не резервує нижній відступ для цього
-                // екрана (TeperaNavHost.kt), тож тут потрібен власний bottomNavBarHeight-запас, щоб
-                // картки за замовчуванням лишались НАД "таблеткою" — а якщо не влазять, останній
-                // ряд природно йде під напівпрозору "таблетку" при прокрутці (за запитом користувача).
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                // 2 колонки, побудовані вручну по рядках (замість LazyVerticalGrid) — категорій
+                // завжди небагато (до 5 дефолтних + 1 кастомна, FR-2.1/2.2), а весь екран тепер
+                // скролиться одним Modifier.verticalScroll вище, всередині якого lazy-контейнер
+                // з Modifier.weight() непридатний (батько вимірює дітей з необмеженою висотою).
+                Column(
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                        .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(summary, key = { it.category.id }) { item ->
-                        CategoryCard(
-                            item = item,
-                            onToggleTimer = { viewModel.toggleTimer(item.category.id) },
-                            onAddTime = { onAddEntryForCategory(item.category.id) }
-                        )
+                    summary.chunked(2).forEach { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            rowItems.forEach { item ->
+                                Box(modifier = Modifier.weight(1f)) {
+                                    CategoryCard(
+                                        item = item,
+                                        onToggleTimer = { viewModel.toggleTimer(item.category.id) },
+                                        onAddTime = { onAddEntryForCategory(item.category.id) }
+                                    )
+                                }
+                            }
+                            if (rowItems.size < 2) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
             }
+
+            // Запас під напівпрозору навбар-"таблетку" знизу (той самий 100.dp, що раніше був
+            // bottom-паддінгом сітки) — гарантує, що остання картка прокручується НАД нею, а не
+            // впирається в неї впритул.
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }

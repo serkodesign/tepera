@@ -26,8 +26,6 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  */
 @Composable
 fun PatternMiniCard(state: PatternUiState, onDismiss: () -> Unit) {
-    if (!state.visible) return
-
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)

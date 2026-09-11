@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,9 @@ import java.util.Locale
  * WeeklyReflectionCard. Компактна (FR-D.11): заголовок (+ FR-D.7 межі дня для вчорашньої картки)
  * і по одному рядку на паузу. Категорія обирається в діалозі за тапом на рядок — не окремими
  * іконками в рядку, щоб рядок лишався одним компактним рядком незалежно від кількості категорій.
+ * `.animateContentSize()` на картці — щоб рядок паузи, що зникає (позначено/пропущено), плавно
+ * стискав картку, а не миттєво "вирізав" шматок LayoutNode (той самий артефакт-баг, що й у
+ * ContextCardStack.kt, лише в мініатюрі — на рівні одного рядка всередині картки).
  */
 @Composable
 fun PauseCard(
@@ -55,8 +59,6 @@ fun PauseCard(
     onDismissGap: (PauseUiGap) -> Unit,
     onDismissCard: () -> Unit
 ) {
-    if (!state.visible) return
-
     var gapForPicker by remember { mutableStateOf<PauseUiGap?>(null) }
 
     Column(
@@ -65,7 +67,8 @@ fun PauseCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.cardTranslucentLight)
-            .padding(16.dp),
+            .padding(16.dp)
+            .animateContentSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Закриття ЦІЛОЇ картки (за прямим запитом користувача, не в SRS) — окремо від per-gap

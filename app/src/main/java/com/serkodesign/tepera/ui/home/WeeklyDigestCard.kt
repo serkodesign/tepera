@@ -27,8 +27,6 @@ import com.serkodesign.tepera.util.roundToQuarterHour
  */
 @Composable
 fun WeeklyDigestCard(state: WeeklyDigestUiState, onDismiss: () -> Unit) {
-    if (!state.visible) return
-
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
