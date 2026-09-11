@@ -22,6 +22,7 @@ private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
 private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
 private val PAUSE_CARD_DISMISSED_KEY = longPreferencesKey("pause_card_dismissed_key")
+private val LAST_PHONE_USE_CARD_DISMISSED_KEY = longPreferencesKey("last_phone_use_card_dismissed_key")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 private const val DEFAULT_SLEEP_WINDOW_END_HOUR = 6 // FR-3.2
@@ -141,5 +142,18 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setPauseCardDismissedKey(key: Long) {
         context.settingsDataStore.edit { it[PAUSE_CARD_DISMISSED_KEY] = key }
+    }
+
+    /**
+     * FR-D.7 (SRS v2.8): ключ закриття картки "востаннє брав телефон о HH:MM" — тут це не
+     * початок календарної доби (як у pattern/weeklyDigest), а межа 02:00-зсунутої "доби"
+     * (FR-D.7a), та сама, що визначає, ЯКЕ "вчора" показує метрика. Закриття діє, доки ця
+     * межа не зсунеться на наступну.
+     */
+    val lastPhoneUseCardDismissedKey: Flow<Long> = context.settingsDataStore.data
+        .map { it[LAST_PHONE_USE_CARD_DISMISSED_KEY] ?: -1L }
+
+    suspend fun setLastPhoneUseCardDismissedKey(key: Long) {
+        context.settingsDataStore.edit { it[LAST_PHONE_USE_CARD_DISMISSED_KEY] = key }
     }
 }

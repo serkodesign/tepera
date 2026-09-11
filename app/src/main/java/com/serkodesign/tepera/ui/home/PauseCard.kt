@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
@@ -43,10 +42,14 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * FR-D.1–D.7 (SRS v2.6): картка виявлених пауз, інлайн на Home — той самий "скляний" стиль, що
- * WeeklyReflectionCard. Компактна (FR-D.11): заголовок (+ FR-D.7 межі дня для вчорашньої картки)
- * і по одному рядку на паузу. Категорія обирається в діалозі за тапом на рядок — не окремими
- * іконками в рядку, щоб рядок лишався одним компактним рядком незалежно від кількості категорій.
+ * FR-D.1–D.5 (SRS v2.6): картка виявлених пауз, інлайн на Home — той самий "скляний" стиль, що
+ * WeeklyReflectionCard. Компактна (FR-D.11): заголовок і по одному рядку на паузу. Категорія
+ * обирається в діалозі за тапом на рядок — не окремими іконками в рядку, щоб рядок лишався одним
+ * компактним рядком незалежно від кількості категорій.
+ * **FR-D.6 (SRS v2.8):** метрика "твій день з телефоном" (межі першої/останньої сесії) прибрана —
+ * назва бреше (проміжок читається як час використання, хоча включає й кишеню), число велике без
+ * важеля впливу. Межі дня тепер видно самі собою на тепловому патерні (`PatternMiniCard`/
+ * `HourlyHeatStrip`), без окремого числа.
  * `.animateContentSize()` на картці — щоб рядок паузи, що зникає (позначено/пропущено), плавно
  * стискав картку, а не миттєво "вирізав" шматок LayoutNode (той самий артефакт-баг, що й у
  * ContextCardStack.kt, лише в мініатюрі — на рівні одного рядка всередині картки).
@@ -82,19 +85,6 @@ fun PauseCard(
                     modifier = Modifier.size(16.dp)
                 )
             }
-        }
-
-        state.dayBounds?.let { bounds ->
-            Text(
-                text = stringResource(
-                    R.string.pause_day_bounds_format,
-                    formatDuration(bounds.durationMinutes),
-                    formatTime(bounds.startMillis),
-                    formatTime(bounds.endMillis)
-                ),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
         }
 
         if (state.gaps.isNotEmpty()) {

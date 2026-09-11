@@ -24,21 +24,20 @@ enum class PauseCardMode { TODAY_EVENING, YESTERDAY_MORNING }
 
 data class PauseUiGap(val id: String, val startTime: Long, val durationMinutes: Int)
 
-/** FR-D.6/D.7: "твій день з телефоном тривав X — з HH:MM до HH:MM" — лише для вчорашньої картки. */
-data class DayWithPhoneBounds(val startMillis: Long, val endMillis: Long, val durationMinutes: Int)
-
 data class PauseCardUiState(
     val visible: Boolean = false,
     val mode: PauseCardMode = PauseCardMode.TODAY_EVENING,
-    val dayBounds: DayWithPhoneBounds? = null,
     val gaps: List<PauseUiGap> = emptyList()
 )
 
 /**
- * FR-D.1–D.7 (SRS v2.6): детекція й позначення пауз. Сканування (queryEvents) запускається
+ * FR-D.1–D.5 (SRS v2.6): детекція й позначення пауз. Сканування (queryEvents) запускається
  * on-demand при відкритті Home, а не фоновою задачею (узгоджено зі стейкхолдером) — і так
  * викликається лише у дозволеному вікні опитування (FR-D.3), тож фонового сканування поза
  * ним не потрібно: "жодних push" (FR-D.3) уже виконано самою відсутністю тригера поза вікном.
+ * **FR-D.6 (SRS v2.8):** ця ViewModel більше НЕ обчислює "твій день з телефоном" (межі
+ * першої/останньої сесії) — прибрано як окрема метрика. Час останньої сесії тепер живе в
+ * `LastPhoneUseViewModel` (FR-D.7), межі дня — в тепловому патерні (`PatternViewModel`).
  */
 class PauseViewModel(
     private val pauseRepository: PauseRepository,
@@ -127,17 +126,9 @@ class PauseViewModel(
                     val scan = pauseRepository.scan(yesterdayDayStart, todayDayStart)
                     pauseRepository.persist(scan.gaps)
                     val gaps = pauseRepository.getUnresolvedGaps(yesterdayDayStart, todayDayStart)
-                    val bounds = if (scan.firstSessionStart != null && scan.lastSessionEnd != null) {
-                        DayWithPhoneBounds(
-                            startMillis = scan.firstSessionStart,
-                            endMillis = scan.lastSessionEnd,
-                            durationMinutes = ((scan.lastSessionEnd - scan.firstSessionStart) / 60_000L).toInt()
-                        )
-                    } else null
                     _uiState.value = PauseCardUiState(
-                        visible = gaps.isNotEmpty() || bounds != null,
+                        visible = gaps.isNotEmpty(),
                         mode = mode,
-                        dayBounds = bounds,
                         gaps = gaps.map { PauseUiGap(it.id, it.startTime, it.durationMinutes) }
                     )
                 }

@@ -109,6 +109,14 @@ fun HomeScreen(
     )
     val pauseState by pauseViewModel.uiState.collectAsState()
 
+    // FR-D.7 (SRS v2.8): "востаннє брав телефон о HH:MM" — заміна прибраної метрики "твій день
+    // з телефоном" (FR-D.6). Перевикористовує PauseRepository.scan(), тож той самий запуск
+    // тільки при відкритті Home, без окремого сканування.
+    val lastPhoneUseViewModel: LastPhoneUseViewModel = viewModel(
+        factory = LastPhoneUseViewModel.Factory(pauseRepository, balanceRepository, settingsStore)
+    )
+    val lastPhoneUseState by lastPhoneUseViewModel.uiState.collectAsState()
+
     // Досліджено з Figma-макета (node 2062:2862, "This week") — тижневий дайджест лічильників,
     // окрема картка стеку (ContextCardStack.kt), не в SRS буквально.
     val weeklyDigestViewModel: WeeklyDigestViewModel = viewModel(
@@ -130,6 +138,7 @@ fun HomeScreen(
         pauseViewModel.refresh()
         patternViewModel.refresh()
         weeklyDigestViewModel.refresh()
+        lastPhoneUseViewModel.refresh()
         onPauseOrDispose { }
     }
 
@@ -174,7 +183,7 @@ fun HomeScreen(
         ) {
             HomeHeader(onOpenSettings = onOpenSettings)
 
-            // FR-D.10/D.11: вертикальний стек до 3 контекстних карток, пріоритизований за
+            // FR-D.10/D.10a/D.11: вертикальний стек до 3 контекстних карток, пріоритизований за
             // актуальністю — над карткою "Мій день", кожна сама вирішує, чи їй бути видимою.
             ContextCardStack(
                 pauseState = pauseState,
@@ -185,6 +194,8 @@ fun HomeScreen(
                 weeklyState = weeklyReflectionState,
                 onSelectGuess = weeklyReflectionViewModel::selectGuess,
                 onDismissWeekly = weeklyReflectionViewModel::dismiss,
+                lastPhoneUseState = lastPhoneUseState,
+                onDismissLastPhoneUse = lastPhoneUseViewModel::dismiss,
                 digestState = weeklyDigestState,
                 onDismissDigest = weeklyDigestViewModel::dismiss,
                 patternState = patternState,

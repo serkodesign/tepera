@@ -63,8 +63,7 @@
     <string name="weekly_reflection_actual_format">Actual: %1$s</string>
     <string name="weekly_reflection_done">Got it</string>
 
-    <!-- Detected pauses card (FR-D.1–D.7, SRS v2.6) -->
-    <string name="pause_day_bounds_format">Your day with the phone spanned %1$s — from %2$s to %3$s</string>
+    <!-- Detected pauses card (FR-D.1–D.5, SRS v2.6) -->
     <string name="pause_card_title">You can name these pauses, if you want</string>
     <string name="pause_gap_row_format">%1$s–%2$s · %3$s</string>
     <string name="pause_gap_dismiss_action">Skip this pause</string>
@@ -74,6 +73,9 @@
     <!-- Daily time pattern (FR-D.8/D.9, SRS v2.6) -->
     <string name="pattern_card_title">Daily pattern</string>
     <string name="pattern_empty_state">Your pattern will show up here once a week of data builds up</string>
+
+    <!-- Last phone use time (FR-D.7, SRS v2.8) -->
+    <string name="last_phone_use_format">You last picked up your phone at %1$s</string>
 
     <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
     <string name="weekly_digest_card_title">This week</string>

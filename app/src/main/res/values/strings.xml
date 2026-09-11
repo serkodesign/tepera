@@ -68,8 +68,7 @@
     <string name="weekly_reflection_actual_format">Насправді: %1$s</string>
     <string name="weekly_reflection_done">Гаразд</string>
 
-    <!-- Картка виявлених пауз (FR-D.1–D.7, SRS v2.6) -->
-    <string name="pause_day_bounds_format">Твій день з телефоном тривав %1$s — з %2$s до %3$s</string>
+    <!-- Картка виявлених пауз (FR-D.1–D.5, SRS v2.6) -->
     <string name="pause_card_title">Можеш назвати ці паузи, якщо хочеш</string>
     <string name="pause_gap_row_format">%1$s–%2$s · %3$s</string>
     <string name="pause_gap_dismiss_action">Пропустити цю паузу</string>
@@ -79,6 +78,9 @@
     <!-- Тепловий патерн доби (FR-D.8/D.9, SRS v2.6) -->
     <string name="pattern_card_title">Патерн доби</string>
     <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається тиждень даних</string>
+
+    <!-- Час останнього використання телефону (FR-D.7, SRS v2.8) — буквальне формулювання зі стейкхолдером -->
+    <string name="last_phone_use_format">Востаннє брав телефон о %1$s</string>
 
     <!-- Картка "Цей тиждень" — досліджено з Figma-макета (node 2062:2862), не в SRS буквально -->
     <string name="weekly_digest_card_title">Цей тиждень</string>
