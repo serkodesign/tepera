@@ -79,7 +79,7 @@ Firebase Crashlytics (лише crash-репортинг).
   `ExcludedAppDao`), визначаються динамічно через `PackageManager` (застосунки, що відповідають
   на `CATEGORY_HOME`) і `InputMethodManager` (ввімкнені IME) — не жорстко захардкоджені пакети,
   бо на тестових пристроях різні лаунчери (One UI Home, Microsoft Launcher).
-  **Home:** `BalanceCard.kt` → `MyDaySection` — заголовок "Твій день триває X" (FR-3.7, росте разом
+  **Home:** `BalanceCard.kt` → `MyDaySection` — заголовок "Твій день: X" (FR-3.7, росте разом
   з реальним часом, НЕ фіксовані 24 год), багатосегментна шкала + легенда (кольоровий квадрат +
   назва + час, без відсотків самотужки — FR-P.6). Референс — Figma node 2002:170 (файл
   `UyVsim0I8KSwt6qHakkdxp`, "Everyday_Designs"), розділ 4.4 SRS.

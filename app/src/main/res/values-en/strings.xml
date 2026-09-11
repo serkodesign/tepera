@@ -40,7 +40,7 @@
 
     <!-- Day structure (FR-3.1–3.12) — formerly "Online/Offline balance"; renamed because
          directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
-    <string name="my_day_title_format">Your day so far: %1$s</string>
+    <string name="my_day_title_format">Your day: %1$s</string>
     <string name="balance_online_label">Online</string>
     <string name="balance_rest_of_day_label">Offline life</string>
     <string name="activities_title">Activities</string>

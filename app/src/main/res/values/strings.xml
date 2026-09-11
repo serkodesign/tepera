@@ -45,7 +45,7 @@
          перейменовано у v2.2, бо пряме протиставлення Online/Offline структурно гарантувало
          відчуття провини. Тепер три нейтральні складові: Online, категорії "Ти відмітив",
          "Решта дня" — без окремої відсоткової оцінки (FR-P.6). -->
-    <string name="my_day_title_format">Твій день триває %1$s</string>
+    <string name="my_day_title_format">Твій день: %1$s</string>
     <string name="balance_online_label">Online</string>
     <string name="balance_rest_of_day_label">Офлайн-життя</string>
     <string name="activities_title">Активності</string>
