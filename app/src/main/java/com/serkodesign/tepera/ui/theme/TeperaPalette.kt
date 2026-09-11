@@ -7,7 +7,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
+import com.serkodesign.tepera.R
 
 /**
  * Фаза 6: палітра й типографіка перенесені з Figma-фрейму "Everyday_Designs" (Home screen,
@@ -17,11 +21,14 @@ import androidx.compose.ui.text.font.FontFamily
  * екрани (Налаштування, Категорії, Додати активність) свідомо лишаються на дефолтній Material 3
  * темі, доки для них немає окремого дизайну.
  *
- * Шрифти з фрейму — "Lora" (заголовки) і "Satoshi Variable" (текст) — жоден не додається як
- * реальна залежність: Lora замінена системним FontFamily.Serif (той самий "сериф" характер без
- * Google Fonts Downloadable API — там потрібен сертифікат Google Play Services, копіювати його
- * наосліп з пам'яті занадто ризиковано), Satoshi замінений дефолтним sans (пропрієтарний шрифт,
- * недоступний через Google Fonts).
+ * **Виправлено (за прямим запитом користувача):** заголовки досі рендерились системним
+ * `FontFamily.Serif` — засічковий шрифт, хоча в актуальному Figma-документі заголовки набрані
+ * шрифтом **Golos Text** (без засічок). Помилка сталась через застарілий висновок попередньої
+ * сесії, що фрейм використовує "Lora". `res/font/golos_text.ttf` — офіційний варіативний файл із
+ * репозиторію `google/fonts` (ліцензія OFL, текст — `docs/licenses/golos-text-OFL.txt`), НЕ через
+ * Downloadable Fonts API — той підхід і раніше відхилявся через ризик сертифіката Google Play
+ * Services, а пряме бандлення файлу шрифту цього ризику взагалі не має. "Satoshi" (текст, не
+ * заголовки) лишається дефолтним sans — про це запиту не було.
  */
 object TeperaPalette {
     val backgroundBase = Color(0xFFBEDAC9) // bg-[#bed9c9] у фреймі
@@ -59,7 +66,11 @@ object TeperaPalette {
     val brandAccentSoft = Color(0x1A005E3E) // rgba(0,94,62,0.1) — фон кружка-іконки
     val switchTrackOff = Color(0x80FFFFFF) // той самий "скляний" відтінок, що інші картки
 
-    val headlineFont: FontFamily = FontFamily.Serif
+    val headlineFont: FontFamily = FontFamily(
+        Font(R.font.golos_text, weight = FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
+        Font(R.font.golos_text, weight = FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
+        Font(R.font.golos_text, weight = FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700)))
+    )
 }
 
 /**

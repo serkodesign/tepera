@@ -204,9 +204,13 @@ fun HomeScreen(
 
             // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
             // разом), а не окремий заголовок над секцією без фону, як було раніше.
+            // `vertical = 8.dp` на зовнішньому паддінгу — без нього відступ до сусідніх блоків
+            // (контекстні картки зверху, заголовок "Активності" знизу) виходив 8dp замість
+            // однакового 16dp ритму, яким рознесені решта секцій Home (кожна з них додає власні
+            // 8dp зверху й знизу, тут бракувало пари).
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(32.dp))
                     .background(TeperaPalette.cardTranslucentLight)
@@ -243,7 +247,7 @@ fun HomeScreen(
                 // з Modifier.weight() непридатний (батько вимірює дітей з необмеженою висотою).
                 Column(
                     modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
