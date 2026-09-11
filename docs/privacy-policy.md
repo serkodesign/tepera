@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 04.09.2026*
+*Останнє оновлення / Last updated: 11.09.2026*
 
 ---
 
@@ -34,7 +34,7 @@ title: Privacy Policy — Tepera
 налаштування застосунку. Видалення застосунку видаляє всі локальні дані (крім копії в Android Auto
 Backup, яку можна вимкнути в системних налаштуваннях Android).
 
-**Контакт:** [вказати email підтримки]
+**Контакт:** serkodesign@gmail.com
 
 ---
 
@@ -63,4 +63,4 @@ goes wrong — no user identification, no in-app behavior tracking.
 Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be
 disabled in Android system settings).
 
-**Contact:** [add support email]
+**Contact:** serkodesign@gmail.com

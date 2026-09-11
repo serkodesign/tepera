@@ -7,13 +7,13 @@ import android.content.Context
  * без `INTERNET` у маніфесті (мережею користується браузер зі своїм дозволом, застосунок лише
  * передає намір системі). Дві окремі форми під UA/EN (FR-6.5), без передзаповнення полів.
  *
- * TODO(FR-6.4): [UA_FORM_URL]/[EN_FORM_URL] — плейсхолдери. Замінити на реальні URL Google Forms
- * перед релізом (SettingsScreen.kt їх лише споживає — саму форму в Google Forms ще належить
- * створити й підставити сюди).
+ * TODO(FR-6.4): за прямим запитом користувача обидві мови ТИМЧАСОВО ведуть на ОДНУ й ту саму
+ * форму (стейкхолдер ще не створив окрему англомовну) — замінити [EN_FORM_URL] на окрему форму,
+ * коли вона з'явиться. [UA_FORM_URL] — реальна форма.
  */
 object FeedbackForm {
-    private const val UA_FORM_URL = "https://forms.gle/TODO-tepera-feedback-uk"
-    private const val EN_FORM_URL = "https://forms.gle/TODO-tepera-feedback-en"
+    private const val UA_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSceU-T5fFIcPIHsPBpgmC7s2aWplM8WZMlXArO5ykStnunl8A/viewform?usp=publish-editor"
+    private const val EN_FORM_URL = UA_FORM_URL
 
     /** Мова форми йде за поточною мовою застосунку (LocaleStore), не за системною, якщо обрано вручну. */
     fun urlFor(context: Context): String {
