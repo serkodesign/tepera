@@ -15,6 +15,7 @@ interface ActivityRepository {
     suspend fun addEntry(entry: ActivityEntryEntity, forceOverwrite: Boolean = false): SaveEntryResult
     suspend fun update(entry: ActivityEntryEntity)
     suspend fun delete(entry: ActivityEntryEntity)
+    suspend fun getById(id: String): ActivityEntryEntity?
     suspend fun lastLoggedTime(categoryId: String): Long?
 }
 
@@ -52,6 +53,8 @@ class RoomActivityRepository(
     override suspend fun update(entry: ActivityEntryEntity) = dao.update(entry)
 
     override suspend fun delete(entry: ActivityEntryEntity) = dao.delete(entry)
+
+    override suspend fun getById(id: String): ActivityEntryEntity? = dao.getById(id)
 
     override suspend fun lastLoggedTime(categoryId: String): Long? = dao.lastLoggedTime(categoryId)
 }

@@ -9,6 +9,8 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.SaveEntryResult
 import com.serkodesign.tepera.util.currentMinuteOfDay
+import com.serkodesign.tepera.util.localStartOfDay
+import com.serkodesign.tepera.util.minuteOfDay
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +52,8 @@ data class AddEntryUiState(
 class AddEntryViewModel(
     categoryRepository: CategoryRepository,
     private val activityRepository: ActivityRepository,
-    initialCategoryId: String? = null
+    initialCategoryId: String? = null,
+    private val editingEntryId: String? = null
 ) : ViewModel() {
 
     val categories: StateFlow<List<CategoryEntity>> = categoryRepository.observeActiveCategories()
@@ -58,6 +61,39 @@ class AddEntryViewModel(
 
     private val _uiState = MutableStateFlow(AddEntryUiState(selectedCategoryId = initialCategoryId))
     val uiState: StateFlow<AddEntryUiState> = _uiState.asStateFlow()
+
+    /** Історія на Stats (редагування наявного запису) — визначає заголовок екрана й кнопку "Видалити". */
+    val isEditing: Boolean = editingEntryId != null
+
+    init {
+        // Попереднє заповнення форми даними наявного запису — режим тривалості завжди MANUAL
+        // (найпростіший спосіб показати точну збережену тривалість, не вгадуючи, яким режимом
+        // її колись ввели: пресетами чи інтервалом).
+        if (editingEntryId != null) {
+            viewModelScope.launch {
+                activityRepository.getById(editingEntryId)?.let { entry ->
+                    _uiState.value = _uiState.value.copy(
+                        selectedCategoryId = entry.categoryId,
+                        mode = DurationMode.MANUAL,
+                        manualMinutesText = entry.durationMinutes.toString(),
+                        dateMillis = localStartOfDay(entry.startTime),
+                        startMinuteOfDay = minuteOfDay(entry.startTime),
+                        endMinuteOfDay = minuteOfDay(entry.startTime) + entry.durationMinutes,
+                        note = entry.note.orEmpty()
+                    )
+                }
+            }
+        }
+    }
+
+    /** Видалення наявного запису з екрана редагування (та сама дія, що "×" в історії на Stats). */
+    fun deleteEntry() {
+        val id = editingEntryId ?: return
+        viewModelScope.launch {
+            activityRepository.getById(id)?.let { activityRepository.delete(it) }
+            _uiState.value = _uiState.value.copy(saved = true)
+        }
+    }
 
     fun selectCategory(categoryId: String) {
         _uiState.value = _uiState.value.copy(selectedCategoryId = categoryId, categoryRequiredError = false)
@@ -116,18 +152,29 @@ class AddEntryViewModel(
         val duration = state.durationMinutes.coerceAtLeast(1)
         val startTime = state.dateMillis + state.startMinuteOfDay * 60_000L
 
+        // Редагування — той самий id, що в оригінальному записі: addEntry() вставляє з
+        // OnConflictStrategy.REPLACE, тож це природно замінює саме цей рядок, а перевірка
+        // перекриття (FR-1.3) вже виключає entry.id із власного результату — окремого
+        // "update"-шляху не потрібно, ті самі правила, що для нового запису.
+        val entry = if (editingEntryId != null) {
+            ActivityEntryEntity(
+                id = editingEntryId,
+                categoryId = categoryId,
+                startTime = startTime,
+                durationMinutes = duration,
+                note = state.note.ifBlank { null }
+            )
+        } else {
+            ActivityEntryEntity(
+                categoryId = categoryId,
+                startTime = startTime,
+                durationMinutes = duration,
+                note = state.note.ifBlank { null }
+            )
+        }
+
         viewModelScope.launch {
-            when (
-                val result = activityRepository.addEntry(
-                    ActivityEntryEntity(
-                        categoryId = categoryId,
-                        startTime = startTime,
-                        durationMinutes = duration,
-                        note = state.note.ifBlank { null }
-                    ),
-                    forceOverwrite = forceOverwrite
-                )
-            ) {
+            when (val result = activityRepository.addEntry(entry, forceOverwrite = forceOverwrite)) {
                 is SaveEntryResult.Success ->
                     _uiState.value = _uiState.value.copy(saved = true, overlapEntries = null)
                 is SaveEntryResult.OverlapDetected ->
@@ -139,10 +186,11 @@ class AddEntryViewModel(
     class Factory(
         private val categoryRepository: CategoryRepository,
         private val activityRepository: ActivityRepository,
-        private val initialCategoryId: String? = null
+        private val initialCategoryId: String? = null,
+        private val editingEntryId: String? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddEntryViewModel(categoryRepository, activityRepository, initialCategoryId) as T
+            AddEntryViewModel(categoryRepository, activityRepository, initialCategoryId, editingEntryId) as T
     }
 }

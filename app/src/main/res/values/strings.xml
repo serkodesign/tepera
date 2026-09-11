@@ -152,6 +152,10 @@
 
     <!-- Add entry (FR-1.1–1.4) -->
     <string name="add_entry_screen_title">Нова активність</string>
+    <string name="edit_entry_screen_title">Редагувати запис</string>
+    <string name="edit_entry_delete_action">Видалити</string>
+    <string name="edit_entry_delete_confirm_title">Видалити запис?</string>
+    <string name="edit_entry_delete_confirm_body">Цю дію не можна скасувати.</string>
     <string name="add_entry_category_label">Категорія</string>
     <string name="add_entry_category_empty">Немає активних категорій</string>
     <string name="add_entry_mode_presets">Пресети</string>
@@ -182,4 +186,11 @@
     <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
     <string name="stats_weekly_trend_title">Тижневий тренд Online-часу</string>
     <string name="stats_no_data">Немає даних за цей період</string>
+
+    <!-- Історія активностей на Stats (за прямим запитом користувача, не в SRS) -->
+    <string name="stats_history_title">Історія</string>
+    <string name="stats_history_today">Сьогодні</string>
+    <string name="stats_history_yesterday">Вчора</string>
+    <string name="stats_history_edit_action">Редагувати запис</string>
+    <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 </resources>

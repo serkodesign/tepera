@@ -15,6 +15,10 @@ interface ActivityEntryDao {
     @Query("SELECT * FROM activity_entries WHERE startTime BETWEEN :from AND :to ORDER BY startTime DESC")
     fun observeEntriesInRange(from: Long, to: Long): Flow<List<ActivityEntryEntity>>
 
+    /** Для попереднього заповнення форми редагування (AddEntryScreen, історія на Stats). */
+    @Query("SELECT * FROM activity_entries WHERE id = :id")
+    suspend fun getById(id: String): ActivityEntryEntity?
+
     // FR-6.2: одноразовий зчит УСІХ записів (не лише в діапазоні) для JSON-експорту.
     @Query("SELECT * FROM activity_entries")
     suspend fun getAllOnce(): List<ActivityEntryEntity>

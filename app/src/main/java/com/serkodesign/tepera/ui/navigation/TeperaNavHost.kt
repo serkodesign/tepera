@@ -70,6 +70,7 @@ private object Routes {
     const val HOME = "home"
     const val ADD_ENTRY = "add_entry"
     const val ADD_ENTRY_WITH_CATEGORY = "add_entry?categoryId={categoryId}"
+    const val EDIT_ENTRY = "edit_entry/{entryId}"
     const val CATEGORIES = "categories"
     const val ONBOARDING = "onboarding"
     const val VALUES_ONBOARDING = "values_onboarding"
@@ -93,6 +94,8 @@ private object Routes {
 
     fun addEntry(categoryId: String? = null) =
         if (categoryId != null) "add_entry?categoryId=$categoryId" else ADD_ENTRY
+
+    fun editEntry(entryId: String) = "edit_entry/$entryId"
 }
 
 @Composable
@@ -180,7 +183,8 @@ fun TeperaNavHost(
                     activityRepository = activityRepository,
                     balanceRepository = balanceRepository,
                     patternRepository = patternRepository,
-                    settingsStore = settingsStore
+                    settingsStore = settingsStore,
+                    onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) }
                 )
             }
             composable(Routes.ADD_ENTRY) {
@@ -201,6 +205,18 @@ fun TeperaNavHost(
                     onSaved = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                     initialCategoryId = entry.arguments?.getString("categoryId")
+                )
+            }
+            composable(
+                Routes.EDIT_ENTRY,
+                arguments = listOf(navArgument("entryId") { type = NavType.StringType })
+            ) { entry ->
+                AddEntryScreen(
+                    categoryRepository = categoryRepository,
+                    activityRepository = activityRepository,
+                    onSaved = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                    editingEntryId = entry.arguments?.getString("entryId")
                 )
             }
             composable(Routes.CATEGORIES) {

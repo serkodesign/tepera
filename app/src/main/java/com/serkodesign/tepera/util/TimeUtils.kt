@@ -21,6 +21,23 @@ fun currentMinuteOfDay(): Int {
     return cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
 }
 
+/** Локальна північ доби, якій належить довільний [millis] — для попереднього заповнення форми
+ * редагування наявного запису (AddEntryScreen), на відміну від [startOfTodayMillis] (завжди сьогодні). */
+fun localStartOfDay(millis: Long): Long {
+    val cal = Calendar.getInstance().apply { timeInMillis = millis }
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    return cal.timeInMillis
+}
+
+/** Хвилина від півночі для довільного [millis] — той самий сенс, що [currentMinuteOfDay], для не-"зараз" моменту. */
+fun minuteOfDay(millis: Long): Int {
+    val cal = Calendar.getInstance().apply { timeInMillis = millis }
+    return cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+}
+
 /**
  * Спільний поділ доби на 4 періоди — використовується і для сортування кнопок віджета (FR-4.5,
  * WidgetLogic.sortCategoriesForWidget), і для привітання на Home ("Доброго ранку" тощо, Figma-

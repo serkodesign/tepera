@@ -147,6 +147,10 @@
 
     <!-- Add entry (FR-1.1–1.4) -->
     <string name="add_entry_screen_title">New activity</string>
+    <string name="edit_entry_screen_title">Edit entry</string>
+    <string name="edit_entry_delete_action">Delete</string>
+    <string name="edit_entry_delete_confirm_title">Delete this entry?</string>
+    <string name="edit_entry_delete_confirm_body">This can\'t be undone.</string>
     <string name="add_entry_category_label">Category</string>
     <string name="add_entry_category_empty">No active categories</string>
     <string name="add_entry_mode_presets">Presets</string>
@@ -177,4 +181,11 @@
     <string name="stats_category_breakdown_title">Offline time by category</string>
     <string name="stats_weekly_trend_title">Weekly Online-time trend</string>
     <string name="stats_no_data">No data for this period</string>
+
+    <!-- Activity history on Stats (direct user request, not in SRS) -->
+    <string name="stats_history_title">History</string>
+    <string name="stats_history_today">Today</string>
+    <string name="stats_history_yesterday">Yesterday</string>
+    <string name="stats_history_edit_action">Edit entry</string>
+    <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 </resources>

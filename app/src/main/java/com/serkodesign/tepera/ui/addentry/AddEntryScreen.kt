@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -65,13 +66,15 @@ fun AddEntryScreen(
     activityRepository: ActivityRepository,
     onSaved: () -> Unit,
     onBack: () -> Unit,
-    initialCategoryId: String? = null
+    initialCategoryId: String? = null,
+    editingEntryId: String? = null
 ) {
     val viewModel: AddEntryViewModel = viewModel(
-        factory = AddEntryViewModel.Factory(categoryRepository, activityRepository, initialCategoryId)
+        factory = AddEntryViewModel.Factory(categoryRepository, activityRepository, initialCategoryId, editingEntryId)
     )
     val categories by viewModel.categories.collectAsState()
     val state by viewModel.uiState.collectAsState()
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.saved) {
         if (state.saved) onSaved()
@@ -80,10 +83,27 @@ fun AddEntryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.add_entry_screen_title)) },
+                title = {
+                    Text(
+                        stringResource(
+                            if (viewModel.isEditing) R.string.edit_entry_screen_title
+                            else R.string.add_entry_screen_title
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.nav_back))
+                    }
+                },
+                actions = {
+                    // Видалення наявного запису (Історія на Stats) — лише в режимі редагування,
+                    // з підтвердженням: дія руйнівна й незворотна, на відміну від швидких дій
+                    // (тап-таймер, позначення паузи), де overlap-діалог і так не показується.
+                    if (viewModel.isEditing) {
+                        IconButton(onClick = { showDeleteConfirm = true }) {
+                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.edit_entry_delete_action))
+                        }
                     }
                 }
             )
@@ -183,6 +203,23 @@ fun AddEntryScreen(
                 Text(stringResource(R.string.add_entry_save))
             }
         }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(R.string.edit_entry_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.edit_entry_delete_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    viewModel.deleteEntry()
+                }) { Text(stringResource(R.string.edit_entry_delete_action)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.dialog_cancel)) }
+            }
+        )
     }
 
     if (state.overlapEntries != null) {

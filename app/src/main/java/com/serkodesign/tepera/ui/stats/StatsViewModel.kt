@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -34,11 +35,19 @@ data class CategoryBreakdownItem(val category: CategoryEntity, val minutes: Int)
  */
 data class DailyBalancePoint(val dayStartMillis: Long, val onlineMinutes: Int)
 
+/** Історія на Stats (за прямим запитом користувача, не в SRS) — один запис + резолвлена категорія. */
+data class HistoryEntryItem(val entry: ActivityEntryEntity, val category: CategoryEntity)
+
+/** Один день історії — [dayStartMillis] лишається саме календарною північчю (не точкою старту
+ * дня), бо угруповання "сьогодні"/"вчора" тут про календарний день, у який записана активність. */
+data class HistoryDayGroup(val dayStartMillis: Long, val isToday: Boolean, val items: List<HistoryEntryItem>)
+
 data class StatsUiState(
     val period: StatsPeriod = StatsPeriod.WEEK,
     val categoryBreakdown: List<CategoryBreakdownItem> = emptyList(),
     val weeklyTrend: List<DailyBalancePoint> = emptyList(),
-    val hasUsageAccess: Boolean = true
+    val hasUsageAccess: Boolean = true,
+    val history: List<HistoryDayGroup> = emptyList()
 )
 
 /**
@@ -80,13 +89,41 @@ class StatsViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    // Історія (за прямим запитом користувача, не в SRS): "сьогодні" + "вчора", НЕ прив'язана до
+    // period/PeriodSelector вище — редагування/видалення тижня чи місяця записів одразу створило
+    // б непридатно довгий список, тому завжди рівно ці два дні, як у референсному макеті.
+    // `historyRangeStart` рахується один раз при створенні ViewModel (та сама спрощена
+    // передумова "екран живе недовго", що й у решті застосунку) — якщо екран лишається відкритим
+    // рівно через північ, межа "вчора" не зсунеться сама, доки Stats не перевідкриють.
+    private val historyRangeStart = startOfTodayMillis() - MS_PER_DAY
+
+    private val history: StateFlow<List<HistoryDayGroup>> = combine(
+        activityRepository.observeEntriesInRange(historyRangeStart, Long.MAX_VALUE),
+        categoryRepository.observeAllCategories() // усі, не лише активні — стара запись архівованої категорії й далі має ім'я/іконку
+    ) { entries, categories ->
+        val categoryById = categories.associateBy { it.id }
+        val todayStart = startOfTodayMillis()
+        val (todayEntries, yesterdayEntries) = entries.partition { it.startTime >= todayStart }
+        fun toGroup(dayStart: Long, isToday: Boolean, dayEntries: List<ActivityEntryEntity>) =
+            HistoryDayGroup(
+                dayStartMillis = dayStart,
+                isToday = isToday,
+                items = dayEntries.mapNotNull { e -> categoryById[e.categoryId]?.let { HistoryEntryItem(e, it) } }
+            ).takeIf { it.items.isNotEmpty() }
+        listOfNotNull(
+            toGroup(todayStart, true, todayEntries),
+            toGroup(historyRangeStart, false, yesterdayEntries)
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val uiState: StateFlow<StatsUiState> = combine(
         period,
         categoryBreakdown,
         weeklyTrend,
-        hasUsageAccess
-    ) { p, breakdown, trend, access ->
-        StatsUiState(p, breakdown, trend, access)
+        hasUsageAccess,
+        history
+    ) { p, breakdown, trend, access, historyGroups ->
+        StatsUiState(p, breakdown, trend, access, historyGroups)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatsUiState())
 
     init {
