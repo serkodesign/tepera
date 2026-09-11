@@ -65,7 +65,7 @@ fun MyDaySection(
             text = stringResource(R.string.my_day_title_format, formatBalanceDuration(state.dayLengthMinutes)),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Medium,
                 fontSize = 20.sp
             ),
             modifier = Modifier.weight(1f)

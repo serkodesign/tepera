@@ -212,7 +212,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(32.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(TeperaPalette.cardTranslucentLight)
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -300,7 +300,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit) {
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Medium,
                 fontSize = 27.sp
             )
         )
