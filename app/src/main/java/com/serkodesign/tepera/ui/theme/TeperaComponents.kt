@@ -43,9 +43,18 @@ import kotlin.math.roundToInt
  * TopAppBar, і "скляні" картки-рядки замість Material3 ListItem/Card.
  */
 
-/** Круглий напівпрозорий back-button + заголовок — замінює TopAppBar на цих екранах. */
+/**
+ * Круглий напівпрозорий back-button + заголовок — замінює TopAppBar на цих екранах.
+ * [trailing] — необов'язковий слот праворуч (напр. кнопка видалення на "Редагувати активність",
+ * T-8+ styling pass) — порожній за замовчуванням, існуючі виклики без змін.
+ */
 @Composable
-fun GlassScreenHeader(title: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun GlassScreenHeader(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    trailing: @Composable () -> Unit = {}
+) {
     Row(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -67,8 +76,10 @@ fun GlassScreenHeader(title: String, onBack: () -> Unit, modifier: Modifier = Mo
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium, fontSize = 24.sp)
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium, fontSize = 24.sp),
+            modifier = Modifier.weight(1f)
         )
+        trailing()
     }
 }
 
@@ -229,7 +240,13 @@ fun HourRangeSlider(
                 }
             }
     ) {
-        val fraction = (hours.toFloat() / maxHours).coerceIn(0.05f, 1f)
+        // T-12 (tepera-dev-spec.md): вікно сну ввело слайдери з minHours=0 (0:00 — цілком
+        // звичайне значення початку вікна), де попередня нижня межа 0.05f давала чіп занадто
+        // вузьким для власного підпису ("0:00" переносився на два рядки в капсулі 44dp,
+        // підтверджено на Samsung S23) — попередній єдиний виклик з minHours=1 (таргет
+        // Online-часу) ніколи не діставався до hours=0, тож цей край не проявлявся раніше.
+        // 0.16f — емпіричний мінімум, що вміщує "23:00"/"0:00" в один рядок.
+        val fraction = (hours.toFloat() / maxHours).coerceIn(0.16f, 1f)
         Box(
             modifier = Modifier
                 .fillMaxHeight()
@@ -238,7 +255,7 @@ fun HourRangeSlider(
                 .background(TeperaPalette.cardActive),
             contentAlignment = Alignment.Center
         ) {
-            Text(valueLabel(hours), style = MaterialTheme.typography.bodyMedium)
+            Text(valueLabel(hours), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.serkodesign.tepera.data.GapSensitivity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -14,23 +15,26 @@ import kotlinx.coroutines.flow.map
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val TARGET_MINUTES_KEY = intPreferencesKey("target_minutes")
 private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
-private val SLEEP_WINDOW_END_HOUR_KEY = intPreferencesKey("sleep_window_end_hour")
 private val VALUES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("values_onboarding_seen")
 private val VALUED_CATEGORY_ID_KEY = stringPreferencesKey("valued_category_id")
-private val LAST_REFLECTION_HANDLED_AT_KEY = longPreferencesKey("last_reflection_handled_at")
 private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
 private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
 private val PAUSE_CARD_DISMISSED_KEY = longPreferencesKey("pause_card_dismissed_key")
-private val LAST_PHONE_USE_CARD_DISMISSED_KEY = longPreferencesKey("last_phone_use_card_dismissed_key")
+private val ONLINE_ESTIMATE_ONBOARDING_SEEN_KEY = booleanPreferencesKey("online_estimate_onboarding_seen")
+private val CATEGORY_ONBOARDING_SEEN_KEY = booleanPreferencesKey("category_onboarding_seen")
+private val ONLINE_ESTIMATE_REVEAL_DISMISSED_ID_KEY = stringPreferencesKey("online_estimate_reveal_dismissed_id")
+private val GAP_SENSITIVITY_KEY = stringPreferencesKey("gap_sensitivity")
+private val HISTORY_BACKFILL_COMPLETED_AT_KEY = longPreferencesKey("history_backfill_completed_at")
+private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
+private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
-private const val DEFAULT_SLEEP_WINDOW_END_HOUR = 6 // FR-3.2
-private const val REFLECTION_INTERVAL_MILLIS = 7 * 24 * 60 * 60 * 1000L // FR-P.1: раз на тиждень
 
 /**
- * FR-3.10 (орієнтир Online-часу), FR-7.1 (чи вже показаний онбординг доступу до статистики)
- * і FR-3.2 (редагована межа "вікна сну" — коли починається відлік точки старту дня, SRS v2.5).
+ * FR-3.10 (орієнтир Online-часу), FR-7.1 (чи вже показаний онбординг доступу до статистики).
+ * Вікно сну (T-12, tepera-dev-spec.md) — окремо в `SleepWindowRepository`/`sleep_windows`
+ * (Room, не DataStore — до 2 вікон, кожне зі своїм ввімкненням, це вже не один скаляр).
  */
 class SettingsStore(private val context: Context) {
 
@@ -46,18 +50,6 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setOnboardingUsageAccessSeen() {
         context.settingsDataStore.edit { it[ONBOARDING_USAGE_ACCESS_SEEN_KEY] = true }
-    }
-
-    /**
-     * FR-3.2: година, якою закінчується "вікно сну" (дефолт 6 — 00:00–06:00). До цієї години
-     * BalanceRepository.calculateDayStart() ігнорує розблокування коротші за 5 хв (нічна
-     * перевірка годинника); редагується в Налаштуваннях для нічних змін/сов.
-     */
-    val sleepWindowEndHour: Flow<Int> = context.settingsDataStore.data
-        .map { it[SLEEP_WINDOW_END_HOUR_KEY] ?: DEFAULT_SLEEP_WINDOW_END_HOUR }
-
-    suspend fun setSleepWindowEndHour(hour: Int) {
-        context.settingsDataStore.edit { it[SLEEP_WINDOW_END_HOUR_KEY] = hour.coerceIn(0, 11) }
     }
 
     /**
@@ -80,25 +72,16 @@ class SettingsStore(private val context: Context) {
         .map { it[VALUED_CATEGORY_ID_KEY] }
 
     /**
-     * FR-P.1: тижнева рефлексія "оцінка → реальність" — раз на 7 днів, необов'язково.
-     * Перше значення НЕ 0/"ніколи" (це показало б картку одразу після встановлення, коли ще
-     * нема тижня даних) — [seedIfUnset] виставляє точку відліку на момент першого запуску,
-     * викликається з TeperaApp.onCreate() поруч з іншим одноразовим сідінгом.
+     * T-8 (tepera-dev-spec.md): чи вже показаний одноразовий вибір категорій на онбордингу
+     * (`CategoryOnboardingScreen`) — між питанням про цінності (FR-P.2) і онбординг-оцінкою
+     * Online-часу (T-3), той самий принцип "показано" фіксується одразу при відкритті екрана.
      */
-    val lastReflectionHandledAtMillis: Flow<Long> = context.settingsDataStore.data
-        .map { it[LAST_REFLECTION_HANDLED_AT_KEY] ?: 0L }
+    val categoryOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[CATEGORY_ONBOARDING_SEEN_KEY] ?: false }
 
-    suspend fun setLastReflectionHandledAtMillis(millis: Long) {
-        context.settingsDataStore.edit { it[LAST_REFLECTION_HANDLED_AT_KEY] = millis }
+    suspend fun setCategoryOnboardingSeen() {
+        context.settingsDataStore.edit { it[CATEGORY_ONBOARDING_SEEN_KEY] = true }
     }
-
-    suspend fun seedLastReflectionHandledAtIfUnset() {
-        val alreadySet = context.settingsDataStore.data.first()[LAST_REFLECTION_HANDLED_AT_KEY] != null
-        if (!alreadySet) setLastReflectionHandledAtMillis(System.currentTimeMillis())
-    }
-
-    fun isReflectionDue(lastHandledMillis: Long, nowMillis: Long = System.currentTimeMillis()): Boolean =
-        nowMillis - lastHandledMillis >= REFLECTION_INTERVAL_MILLIS
 
     /**
      * FR-D.9: коли застосунок вперше запущено — поріг "тиждень даних" для теплового патерну
@@ -145,15 +128,84 @@ class SettingsStore(private val context: Context) {
     }
 
     /**
-     * FR-D.7 (SRS v2.8): ключ закриття картки "востаннє брав телефон о HH:MM" — тут це не
-     * початок календарної доби (як у pattern/weeklyDigest), а межа 02:00-зсунутої "доби"
-     * (FR-D.7a), та сама, що визначає, ЯКЕ "вчора" показує метрика. Закриття діє, доки ця
-     * межа не зсунеться на наступну.
+     * T-3 (tepera-dev-spec.md): чи вже показане одноразове онбординг-питання "Скільки, по-твоєму,
+     * ти був онлайн учора?" — між питанням про цінності (FR-P.2) і поясненням дозволу (FR-7.1),
+     * той самий принцип "показано" фіксується одразу при відкритті екрана, незалежно від вибору
+     * діапазону чи "Пропустити".
      */
-    val lastPhoneUseCardDismissedKey: Flow<Long> = context.settingsDataStore.data
-        .map { it[LAST_PHONE_USE_CARD_DISMISSED_KEY] ?: -1L }
+    val onlineEstimateOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[ONLINE_ESTIMATE_ONBOARDING_SEEN_KEY] ?: false }
 
-    suspend fun setLastPhoneUseCardDismissedKey(key: Long) {
-        context.settingsDataStore.edit { it[LAST_PHONE_USE_CARD_DISMISSED_KEY] = key }
+    suspend fun setOnlineEstimateOnboardingSeen() {
+        context.settingsDataStore.edit { it[ONLINE_ESTIMATE_ONBOARDING_SEEN_KEY] = true }
+    }
+
+    /**
+     * T-3: ключ закриття картки-розриву "твоя оцінка / насправді" — id конкретного
+     * `UserEstimateEntity`, той самий принцип, що інші dismissed-ключі вище (опачний ідентифікатор
+     * КОНКРЕТНОГО вікна даних, не просто timestamp). null = ще ніколи не закривали.
+     */
+    val onlineEstimateRevealDismissedId: Flow<String?> = context.settingsDataStore.data
+        .map { it[ONLINE_ESTIMATE_REVEAL_DISMISSED_ID_KEY] }
+
+    suspend fun setOnlineEstimateRevealDismissedId(id: String) {
+        context.settingsDataStore.edit { it[ONLINE_ESTIMATE_REVEAL_DISMISSED_ID_KEY] = id }
+    }
+
+    /**
+     * T-11 (tepera-dev-spec.md): пресет чутливості детекції пауз — Рідше/Звичайно/Частіше, без
+     * числових полів (`GapDetectionConfig.forSensitivity()` перекладає пресет у чинні пороги).
+     * Читається наживо при кожному скануванні (`PauseViewModel.refresh()`), тож зміна пресету
+     * діє з наступного відкриття Home, без перезапуску застосунку.
+     */
+    val gapSensitivity: Flow<GapSensitivity> = context.settingsDataStore.data
+        .map { prefs ->
+            prefs[GAP_SENSITIVITY_KEY]?.let { runCatching { GapSensitivity.valueOf(it) }.getOrNull() }
+                ?: GapSensitivity.NORMAL
+        }
+
+    suspend fun setGapSensitivity(sensitivity: GapSensitivity) {
+        context.settingsDataStore.edit { it[GAP_SENSITIVITY_KEY] = sensitivity.name }
+    }
+
+    /**
+     * T-2 (tepera-dev-spec.md): чи вже виконано одноразовий бекфіл історії пауз одразу після
+     * надання доступу до статистики (`BackfillViewModel`) — 0L = ще ні. Незалежний від
+     * [firstLaunchMillis]: бекфіл прив'язаний до моменту НАДАННЯ ДОЗВОЛУ, не запуску застосунку
+     * (дозвіл часто надається пізніше за перший запуск, через онбординг-крок 3/4).
+     */
+    val historyBackfillCompletedAt: Flow<Long> = context.settingsDataStore.data
+        .map { it[HISTORY_BACKFILL_COMPLETED_AT_KEY] ?: 0L }
+
+    suspend fun setHistoryBackfillCompletedAt(millis: Long) {
+        context.settingsDataStore.edit { it[HISTORY_BACKFILL_COMPLETED_AT_KEY] = millis }
+    }
+
+    /**
+     * T-4 (tepera-dev-spec.md): "тимчасове вимкнення воріт на день" — один тап, без підтвердження
+     * (розділ 2.3 документа "автономія важливіша за ефективність"). Зберігає момент, ДО якого
+     * ворота призупинені (кінець поточної календарної доби, рахує викликач) — 0L = не призупинено.
+     * T-5 (майбутня сесія, екран паузи) звірятиме `System.currentTimeMillis() < gatesPausedUntilMillis`
+     * перед показом паузи; сам перемикач і UI — тут, у T-4, за буквальною вимогою списку "Зробити".
+     */
+    val gatesPausedUntilMillis: Flow<Long> = context.settingsDataStore.data
+        .map { it[GATES_PAUSED_UNTIL_KEY] ?: 0L }
+
+    suspend fun setGatesPausedUntilMillis(millis: Long) {
+        context.settingsDataStore.edit { it[GATES_PAUSED_UNTIL_KEY] = millis }
+    }
+
+    /**
+     * T-13 (tepera-dev-spec.md), "рушій карток": скільки разів поспіль подієва картка (пауза)
+     * витіснила тижневу картку-оцінку зі стеку — `CardEngine`/`CardHistoryRepository` звіряють
+     * це між викликами `selectVisible()` (не лише в межах одного відкриття Home), щоб правило
+     * "не витісняють тижневі більш ніж двічі поспіль" рахувало реальну послідовність днів, а не
+     * скидалось щоразу, коли застосунок перезапускається.
+     */
+    val cardEventDisplacementStreak: Flow<Int> = context.settingsDataStore.data
+        .map { it[CARD_EVENT_DISPLACEMENT_STREAK_KEY] ?: 0 }
+
+    suspend fun setCardEventDisplacementStreak(value: Int) {
+        context.settingsDataStore.edit { it[CARD_EVENT_DISPLACEMENT_STREAK_KEY] = value }
     }
 }

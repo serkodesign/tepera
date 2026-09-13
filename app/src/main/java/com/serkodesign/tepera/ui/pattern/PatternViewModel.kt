@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
 private const val PATTERN_WINDOW_DAYS = 7 // FR-D.8: "тиждень даних"
+private const val MIN_HISTORY_DAYS_FOR_PATTERN = 2 // T-2 (tepera-dev-spec.md): "історії менше 2 днів — FR-D.9"
 
 data class PatternUiState(
     val visible: Boolean = false,
@@ -28,9 +29,18 @@ data class PatternUiState(
  * Спільний для компактної картки на Home (`PatternMiniCard`) і повної картки на Stats — обидва
  * екрани створюють свій власний інстанс через Factory, кожен зі своїм refresh-циклом.
  *
- * "Тиждень даних" (FR-D.9) — від ПЕРШОГО ЗАПУСКУ застосунку (`SettingsStore.firstLaunchMillis`),
- * не від першої появи даних у `UsageStatsManager` (системна історія існує незалежно від
- * встановлення Tepera й не є надійним сигналом "користувач уже тиждень з нами").
+ * **"Тиждень даних" (FR-D.9) — СКАСОВАНО в T-2 (tepera-dev-spec.md, "бекфіл історії при першому
+ * запуску").** Раніше поріг рахувався від ПЕРШОГО ЗАПУСКУ застосунку (`SettingsStore.
+ * firstLaunchMillis`), свідомо НЕ від першої появи даних у `UsageStatsManager` — те рішення
+ * явно обґрунтовувало це так: "системна історія існує незалежно від встановлення Tepera й не є
+ * надійним сигналом 'користувач уже тиждень з нами'". T-2 прямо вимагає протилежного: "одразу
+ * після надання дозволу обробити всю доступну історію... видно патерн, а не порожній стан" —
+ * системна історія ТЕПЕР навмисно вважається достатнім сигналом, бо цінність продукту саме в
+ * тому, щоб показати вже наявний (невидимий людині) патерн, а не змушувати чекати довільний
+ * тиждень, поки БД накопичить власні дані. Поріг тепер — [PatternRepository.availableHistoryDays]
+ * (щонайменше [MIN_HISTORY_DAYS_FOR_PATTERN] дні реальної історії `UsageEvents`, не дні з
+ * інсталяції). `firstLaunchMillis` лишається чинним для інших порогів (`WeeklyDigestViewModel`),
+ * T-2 змінює гейтинг лише тут.
  *
  * **Закриття картки, якщо прочитав (за прямим запитом користувача, не в SRS):** ключ закриття —
  * `to` (початок сьогоднішньої доби, той самий, що визначає вікно патерну) — закриття діє, доки
@@ -69,14 +79,16 @@ class PatternViewModel(
                 return@launch
             }
 
-            val firstLaunch = settingsStore.firstLaunchMillis.first()
-            val daysSinceFirstLaunch = (System.currentTimeMillis() - firstLaunch) / DAY_MILLIS
-            if (daysSinceFirstLaunch < PATTERN_WINDOW_DAYS) {
+            val now = System.currentTimeMillis()
+            val availableDays = patternRepository.availableHistoryDays(now, PATTERN_WINDOW_DAYS)
+            if (availableDays < MIN_HISTORY_DAYS_FOR_PATTERN) {
                 _uiState.value = PatternUiState(visible = true, hasEnoughData = false)
                 return@launch
             }
 
-            val from = to - PATTERN_WINDOW_DAYS * DAY_MILLIS // виключно повні дні
+            // Використовує ВСЮ доступну історію (до PATTERN_WINDOW_DAYS), не завжди рівно 7 днів —
+            // патерн одразу видимий і самопоправляється, як тільки накопичується більше днів.
+            val from = to - availableDays * DAY_MILLIS
             val buckets = patternRepository.hourlyOnlineMinutes(from, to)
             _uiState.value = PatternUiState(visible = true, hasEnoughData = true, hourlyMinutes = buckets)
         }

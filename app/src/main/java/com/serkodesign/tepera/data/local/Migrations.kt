@@ -27,3 +27,113 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         )
     }
 }
+
+/**
+ * v2 → v3: додано `sleep_windows` (SleepWindowEntity, T-12 tepera-dev-spec.md) — до 2 слотів
+ * вікна сну як технічний параметр розрахунку. Таблиця порожня одразу після міграції;
+ * `SleepWindowRepository.seedDefaultsIfUnset()` (TeperaApp.onCreate()) засіює дефолти при
+ * наступному запуску, той самий підхід, що й `ensureDefaultsSeeded()` для категорій.
+ */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `sleep_windows` (" +
+                "`slot` INTEGER NOT NULL, " +
+                "`startMinuteOfDay` INTEGER NOT NULL, " +
+                "`endMinuteOfDay` INTEGER NOT NULL, " +
+                "`enabled` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`slot`))"
+        )
+    }
+}
+
+/**
+ * v3 → v4: додано `user_estimates` (UserEstimateEntity, T-3 tepera-dev-spec.md, розділ 2.2
+ * "принцип пасивного сорому") — оцінка користувача + пізніше дораховане реальне значення.
+ * `forDate` (java.time.LocalDate) зберігається як epoch-day (`Converters.kt`), тому в SQL має
+ * тип INTEGER, не TEXT. SQL звірений з `app/schemas/.../4.json`, як і попередні міграції.
+ */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `user_estimates` (" +
+                "`id` TEXT NOT NULL, " +
+                "`type` TEXT NOT NULL, " +
+                "`estimatedValue` INTEGER NOT NULL, " +
+                "`actualValue` INTEGER, " +
+                "`forDate` INTEGER NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`))"
+        )
+    }
+}
+
+/**
+ * v4 → v5: додано `app_gates` (AppGateEntity, T-4 tepera-dev-spec.md, FR-G частина 1) — застосунки
+ * з паузою перед запуском, обрані користувачем. `packageName` — первинний ключ (не UUID), один
+ * рядок на застосунок. SQL звірений з `app/schemas/.../5.json`, як і попередні міграції.
+ */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `app_gates` (" +
+                "`packageName` TEXT NOT NULL, " +
+                "`delaySeconds` INTEGER NOT NULL, " +
+                "`originalIconHandled` INTEGER NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`packageName`))"
+        )
+    }
+}
+
+/**
+ * v5 → v6: додано `lastProceedAtMillis` до `app_gates` (T-5 tepera-dev-spec.md) — момент
+ * останнього успішного проходження паузи, потрібен для дебаунсу "повторний тап протягом 30 с
+ * не показує паузу вдруге". `DEFAULT 0` — існуючі рядки трактуються як "ще ніколи не проходили".
+ */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE app_gates ADD COLUMN lastProceedAtMillis INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
+/**
+ * v6 → v7: додано `card_show_history` (CardShowEntity, T-13 tepera-dev-spec.md "рушій карток") —
+ * єдина історія показів контекстних карток, замінює розкидані по окремих ViewModel `SettingsStore`
+ * ключі (`lastReflectionHandledAtMillis`/`lastUnlockEstimateHandledMillis`/
+ * `lastPhoneUseEstimateHandledMillis`, усі видалені цим тікетом). Старі значення цих ключів
+ * НЕ переносяться — застосунок ще не опублікований (CLAUDE.md), а найгірший практичний наслідок
+ * "одна картка-оцінка може показатись на день-два раніше очікуваного" одразу після цього
+ * оновлення, не критично.
+ */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `card_show_history` (" +
+                "`id` TEXT NOT NULL, " +
+                "`cardType` TEXT NOT NULL, " +
+                "`isEstimate` INTEGER NOT NULL, " +
+                "`atMillis` INTEGER NOT NULL, " +
+                "`result` TEXT NOT NULL, " +
+                "PRIMARY KEY(`id`))"
+        )
+    }
+}
+
+/**
+ * v7 → v8: додано `gate_events` (GateEventEntity, T-6 tepera-dev-spec.md "події воріт і
+ * свідчення спроможності") — по одному запису на кожне реальне розв'язання екрана паузи воріт
+ * (T-5), годує картку FR-P.3.
+ */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `gate_events` (" +
+                "`id` TEXT NOT NULL, " +
+                "`packageName` TEXT NOT NULL, " +
+                "`result` TEXT NOT NULL, " +
+                "`atMillis` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`))"
+        )
+    }
+}

@@ -24,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 /** FR-7.1: явний онбординг-екран доступу до статистики використання, показується один раз. */
 @Composable
@@ -42,7 +44,7 @@ fun OnboardingScreen(
         settingsStore.setOnboardingUsageAccessSeen()
     }
 
-    Scaffold { padding ->
+    Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -55,7 +57,7 @@ fun OnboardingScreen(
                 imageVector = Icons.Outlined.Balance,
                 contentDescription = null,
                 modifier = Modifier.size(72.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = TeperaPalette.brandAccent
             )
             Spacer(Modifier.padding(top = 16.dp))
             Text(

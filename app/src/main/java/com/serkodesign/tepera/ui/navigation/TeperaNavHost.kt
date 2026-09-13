@@ -44,20 +44,31 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.debug.SpikeT1Screen
 import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
+import com.serkodesign.tepera.data.repository.CardHistoryRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
+import com.serkodesign.tepera.data.repository.GateEventRepository
+import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
 import com.serkodesign.tepera.data.repository.PatternRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.data.repository.UnlockRepository
+import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
+import com.serkodesign.tepera.ui.gates.GatePauseScreen
+import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
@@ -74,10 +85,14 @@ private object Routes {
     const val CATEGORIES = "categories"
     const val ONBOARDING = "onboarding"
     const val VALUES_ONBOARDING = "values_onboarding"
+    const val CATEGORY_ONBOARDING = "category_onboarding"
+    const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
     const val SETTINGS = "settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val STATS = "stats"
+    const val SPIKE_T1 = "spike_t1"
+    const val GATES = "gates"
 
     // Три вкладки нижнього навбару (оновлений Figma-фрейм, node 1951:4017): Home, Статистика,
     // і третя ("pending"-іконка) — за запитом користувача додана як вкладка, але поки що
@@ -87,15 +102,27 @@ private object Routes {
     // Налаштування відкриваються іконкою-шестернею на Home, не вкладкою навбару.
     val BOTTOM_NAV_ROUTES = setOf(HOME, STATS)
 
+    const val GATE_PAUSE = "gate_pause/{packageName}"
+
     // Екрани, для яких уже є Figma-дизайн (сторінка "Tepera", node 1873:2567) — градієнтний фон
-    // малює зовнішній Box у TeperaNavHost для ВСІХ них, не лише для вкладок навбару. Онбординг і
-    // Add Entry свідомо лишаються поза цим списком — для них ще нема окремого фрейму.
-    val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE)
+    // малює зовнішній Box у TeperaNavHost для ВСІХ них, не лише для вкладок навбару. **За прямим
+    // запитом користувача Онбординг/Додати активність/паузу воріт теж переведено на "скляний"
+    // стиль решти застосунку** — раніше вони свідомо лишались на дефолтній Material 3 темі
+    // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
+    // (Налаштування/Категорії), без окремого фрейму для кожного.
+    val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
+        SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES,
+        ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
+        ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
+        GATE_PAUSE
+    )
 
     fun addEntry(categoryId: String? = null) =
         if (categoryId != null) "add_entry?categoryId=$categoryId" else ADD_ENTRY
 
     fun editEntry(entryId: String) = "edit_entry/$entryId"
+
+    fun gatePause(packageName: String) = "gate_pause/$packageName"
 }
 
 @Composable
@@ -108,17 +135,36 @@ fun TeperaNavHost(
     pauseRepository: PauseRepository,
     patternRepository: PatternRepository,
     settingsStore: SettingsStore,
+    sleepWindowRepository: SleepWindowRepository,
+    userEstimateRepository: UserEstimateRepository,
+    unlockRepository: UnlockRepository,
     activeTimerStore: ActiveTimerStore,
     backupRepository: BackupRepository,
+    gateRepository: GateRepository,
+    gateEventRepository: GateEventRepository,
+    cardHistoryRepository: CardHistoryRepository,
     navController: NavHostController = rememberNavController(),
     // FR-4.1/4.4: тап по кнопці категорії на віджеті або по Quick Settings tile відкриває
     // MainActivity з цим "натяком" — обробляється один раз при вході, не при кожній рекомпозиції.
     pendingOpenAddEntry: Boolean = false,
-    pendingCategoryId: String? = null
+    pendingCategoryId: String? = null,
+    // T-5 (tepera-dev-spec.md): тап по закріпленому ярлику воріт (T-4). pendingGateRequestNonce —
+    // ключ LaunchedEffect: на відміну від pendingOpenAddEntry (обробляється раз при вході),
+    // ворота можуть відкриватись повторно з ТИМ САМИМ packageName (MainActivity.onNewIntent()) —
+    // без унікального nonce на кожен тап LaunchedEffect(pendingGateTargetPackage) не перезапустився
+    // б, якщо застосунок збігається з попереднім.
+    pendingGateTargetPackage: String? = null,
+    pendingGateRequestNonce: Long? = null
 ) {
     LaunchedEffect(Unit) {
         if (pendingOpenAddEntry) {
             navController.navigate(Routes.addEntry(pendingCategoryId))
+        }
+    }
+
+    LaunchedEffect(pendingGateRequestNonce) {
+        if (pendingGateTargetPackage != null) {
+            navController.navigate(Routes.gatePause(pendingGateTargetPackage))
         }
     }
 
@@ -170,11 +216,18 @@ fun TeperaNavHost(
                     pauseRepository = pauseRepository,
                     patternRepository = patternRepository,
                     settingsStore = settingsStore,
+                    sleepWindowRepository = sleepWindowRepository,
+                    userEstimateRepository = userEstimateRepository,
+                    unlockRepository = unlockRepository,
                     activeTimerStore = activeTimerStore,
+                    cardHistoryRepository = cardHistoryRepository,
+                    gateEventRepository = gateEventRepository,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
-                    onShowValuesOnboarding = { navController.navigate(Routes.VALUES_ONBOARDING) }
+                    onShowValuesOnboarding = { navController.navigate(Routes.VALUES_ONBOARDING) },
+                    onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
+                    onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) }
                 )
             }
             composable(Routes.STATS) {
@@ -184,6 +237,9 @@ fun TeperaNavHost(
                     balanceRepository = balanceRepository,
                     patternRepository = patternRepository,
                     settingsStore = settingsStore,
+                    sleepWindowRepository = sleepWindowRepository,
+                    unlockRepository = unlockRepository,
+                    pauseRepository = pauseRepository,
                     onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) }
                 )
             }
@@ -238,13 +294,57 @@ fun TeperaNavHost(
                     onDone = { navController.popBackStack() }
                 )
             }
+            composable(Routes.CATEGORY_ONBOARDING) {
+                CategoryOnboardingScreen(
+                    categoryRepository = categoryRepository,
+                    settingsStore = settingsStore,
+                    onDone = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.ONLINE_ESTIMATE_ONBOARDING) {
+                OnlineEstimateOnboardingScreen(
+                    settingsStore = settingsStore,
+                    userEstimateRepository = userEstimateRepository,
+                    onDone = { navController.popBackStack() }
+                )
+            }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     settingsStore = settingsStore,
+                    sleepWindowRepository = sleepWindowRepository,
                     onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
+                    onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.SPIKE_T1) {
+                SpikeT1Screen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.GATES) {
+                GatesScreen(
+                    gateRepository = gateRepository,
+                    installedAppsProvider = installedAppsProvider,
+                    settingsStore = settingsStore,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                Routes.GATE_PAUSE,
+                arguments = listOf(navArgument("packageName") { type = NavType.StringType })
+            ) { entry ->
+                GatePauseScreen(
+                    gateRepository = gateRepository,
+                    gateEventRepository = gateEventRepository,
+                    packageName = entry.arguments?.getString("packageName").orEmpty(),
+                    // popBackStack(HOME, inclusive = false) замість одного кроку назад: якщо
+                    // ворота відкрились, поки застосунок уже стояв на іншому екрані (напр.
+                    // GatesScreen), звичайний одиничний pop повернув би саме туди — а разом із
+                    // moveTaskToBack() у GatePauseScreen це означало б, що НАСТУПНЕ відкриття
+                    // Tepera з лаунчера показує проміжний екран замість Home.
+                    onDone = { navController.popBackStack(Routes.HOME, inclusive = false) }
                 )
             }
             composable(Routes.EXCLUSION_LIST) {

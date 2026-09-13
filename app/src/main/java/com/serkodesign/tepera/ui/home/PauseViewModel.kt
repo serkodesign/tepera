@@ -3,12 +3,15 @@ package com.serkodesign.tepera.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.serkodesign.tepera.data.GapDetectionConfig
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.EntrySource
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.util.SleepWindowCalculator
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,13 +40,15 @@ data class PauseCardUiState(
  * ним не потрібно: "жодних push" (FR-D.3) уже виконано самою відсутністю тригера поза вікном.
  * **FR-D.6 (SRS v2.8):** ця ViewModel більше НЕ обчислює "твій день з телефоном" (межі
  * першої/останньої сесії) — прибрано як окрема метрика. Час останньої сесії тепер живе в
- * `LastPhoneUseViewModel` (FR-D.7), межі дня — в тепловому патерні (`PatternViewModel`).
+ * `PauseRepository.lastPhoneUseForShiftedDay()`/`LastPhoneUseEstimateViewModel` (FR-D.7, T-10),
+ * межі дня — в тепловому патерні (`PatternViewModel`).
  */
 class PauseViewModel(
     private val pauseRepository: PauseRepository,
     private val balanceRepository: BalanceRepository,
     private val activityRepository: ActivityRepository,
-    private val settingsStore: SettingsStore
+    private val settingsStore: SettingsStore,
+    private val sleepWindowRepository: SleepWindowRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PauseCardUiState())
@@ -66,11 +71,15 @@ class PauseViewModel(
                 return@launch
             }
 
-            val sleepWindowEndHour = settingsStore.sleepWindowEndHour.first()
-            // FR-D.4: відоме обмеження нічного графіка — якщо налаштоване вікно сну (00:00 до
-            // sleepWindowEndHour) уже саме по собі сягає 10:00, воно повністю накриває вранішню
-            // половину вікна опитування (00:00–10:00) — картка мовчить, паузи лишаються в БД.
-            if (sleepWindowEndHour >= 10) {
+            val sleepWindows = sleepWindowRepository.getEnabledWindows()
+            // T-11: пресет читається наживо щоразу — зміна в Налаштуваннях діє з наступного
+            // refresh(), без перезапуску застосунку.
+            val config = GapDetectionConfig.forSensitivity(settingsStore.gapSensitivity.first())
+            val todayMidnightForCoverageCheck = startOfTodayMillis()
+            // FR-D.4: відоме обмеження нічного графіка — якщо налаштоване(і) вікно(а) сну
+            // (T-12) ПОВНІСТЮ покривають вранішню половину вікна опитування (00:00–10:00),
+            // картка мовчить, паузи лишаються в БД.
+            if (SleepWindowCalculator.isFullyCovered(sleepWindows, todayMidnightForCoverageCheck, todayMidnightForCoverageCheck + 10 * 60 * 60_000L)) {
                 _uiState.value = PauseCardUiState()
                 return@launch
             }
@@ -87,7 +96,7 @@ class PauseViewModel(
             }
 
             val todayMidnight = startOfTodayMillis()
-            val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindowEndHour, todayMidnight)
+            val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindows, todayMidnight)
 
             when (mode) {
                 PauseCardMode.TODAY_EVENING -> {
@@ -97,8 +106,8 @@ class PauseViewModel(
                         return@launch
                     }
                     val now = System.currentTimeMillis()
-                    val scan = pauseRepository.scan(todayDayStart, now)
-                    pauseRepository.persist(scan.gaps)
+                    val scan = pauseRepository.scan(todayDayStart, now, sleepWindows, config)
+                    pauseRepository.persist(todayDayStart, now, scan.gaps)
                     val gaps = pauseRepository.getUnresolvedGaps(todayDayStart, now)
                     _uiState.value = PauseCardUiState(
                         visible = gaps.isNotEmpty(),
@@ -109,7 +118,7 @@ class PauseViewModel(
                 PauseCardMode.YESTERDAY_MORNING -> {
                     val yesterdayMidnight = todayMidnight - DAY_MILLIS
                     val yesterdayDayStart = balanceRepository.calculateDayStartMillis(
-                        sleepWindowEndHour,
+                        sleepWindows,
                         yesterdayMidnight,
                         todayDayStart
                     )
@@ -123,8 +132,8 @@ class PauseViewModel(
                         _uiState.value = PauseCardUiState()
                         return@launch
                     }
-                    val scan = pauseRepository.scan(yesterdayDayStart, todayDayStart)
-                    pauseRepository.persist(scan.gaps)
+                    val scan = pauseRepository.scan(yesterdayDayStart, todayDayStart, sleepWindows, config)
+                    pauseRepository.persist(yesterdayDayStart, todayDayStart, scan.gaps)
                     val gaps = pauseRepository.getUnresolvedGaps(yesterdayDayStart, todayDayStart)
                     _uiState.value = PauseCardUiState(
                         visible = gaps.isNotEmpty(),
@@ -178,10 +187,11 @@ class PauseViewModel(
         private val pauseRepository: PauseRepository,
         private val balanceRepository: BalanceRepository,
         private val activityRepository: ActivityRepository,
-        private val settingsStore: SettingsStore
+        private val settingsStore: SettingsStore,
+        private val sleepWindowRepository: SleepWindowRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            PauseViewModel(pauseRepository, balanceRepository, activityRepository, settingsStore) as T
+            PauseViewModel(pauseRepository, balanceRepository, activityRepository, settingsStore, sleepWindowRepository) as T
     }
 }

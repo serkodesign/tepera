@@ -7,18 +7,30 @@ import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
 import com.serkodesign.tepera.data.local.MIGRATION_1_2
+import com.serkodesign.tepera.data.local.MIGRATION_2_3
+import com.serkodesign.tepera.data.local.MIGRATION_3_4
+import com.serkodesign.tepera.data.local.MIGRATION_4_5
+import com.serkodesign.tepera.data.local.MIGRATION_5_6
+import com.serkodesign.tepera.data.local.MIGRATION_6_7
+import com.serkodesign.tepera.data.local.MIGRATION_7_8
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
+import com.serkodesign.tepera.data.repository.CardHistoryRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
+import com.serkodesign.tepera.data.repository.GateEventRepository
+import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
 import com.serkodesign.tepera.data.repository.PatternRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.data.repository.UnlockRepository
+import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.widget.WidgetUpdateWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +46,10 @@ class TeperaApp : Application() {
 
     val database: AppDatabase by lazy {
         Room.databaseBuilder(this, AppDatabase::class.java, "tepera.db")
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(
+                MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
+                MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8
+            )
             .build()
     }
 
@@ -62,6 +77,24 @@ class TeperaApp : Application() {
         PatternRepository(this, database.excludedAppDao())
     }
 
+    val sleepWindowRepository: SleepWindowRepository by lazy {
+        SleepWindowRepository(database.sleepWindowDao())
+    }
+
+    val userEstimateRepository: UserEstimateRepository by lazy {
+        UserEstimateRepository(database.userEstimateDao())
+    }
+
+    val unlockRepository: UnlockRepository by lazy { UnlockRepository(this) }
+
+    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore) }
+
+    val cardHistoryRepository: CardHistoryRepository by lazy {
+        CardHistoryRepository(database.cardShowDao(), settingsStore)
+    }
+
+    val gateEventRepository: GateEventRepository by lazy { GateEventRepository(database.gateEventDao()) }
+
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
 
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
@@ -84,11 +117,11 @@ class TeperaApp : Application() {
             // Ідемпотентно (archive() лише виставляє isHidden=true), безпечно викликати щозапуску;
             // не чіпає вже існуючі записи цієї категорії, лише ховає її з активного списку.
             categoryRepository.archive(DefaultCategories.LEGACY_SLEEP_ID)
-            // FR-P.1: точка відліку тижневої рефлексії — перший запуск, не "0/ніколи" (інакше
-            // картка з'явилась би одразу, коли ще нема тижня даних для порівняння).
-            settingsStore.seedLastReflectionHandledAtIfUnset()
             // FR-D.9: окрема точка відліку для порогу готовності теплового патерну доби.
             settingsStore.seedFirstLaunchMillisIfUnset()
+            // T-12: дефолт SRS "вікно сну (00:00-06:00)" — слот 1 ввімкнений, слот 2 (друге
+            // вікно для плаваючого графіка) вимкнений, доки користувач не ввімкне сам.
+            sleepWindowRepository.seedDefaultsIfUnset()
         }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)

@@ -38,9 +38,10 @@ interface CategoryDao {
     @Update
     suspend fun update(category: CategoryEntity)
 
-    // FR-2.4: жодного справжнього delete-запиту — "видалення" це update isHidden = true
-    // через update() вище. Метод нижче лишається лише для потенційного майбутнього
-    // адмін/debug-функціоналу, з UI MVP не викликається.
+    // FR-2.4 для дефолтних категорій — лише update isHidden = true через update() вище.
+    // За прямим запитом користувача тепер ТАКОЖ викликається для КАСТОМНИХ категорій
+    // (CategoryRepository.deleteCustomCategory()) — справжнє видалення звільняє слот ліміту
+    // (T-8: до двох), чого архівація навмисно не робить.
     @Query("DELETE FROM categories WHERE id = :id")
     suspend fun hardDeleteNotUsedInMvpUi(id: String)
 

@@ -20,8 +20,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -69,6 +71,7 @@ fun CategoriesScreen(
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var limitReachedNotice by remember { mutableStateOf(false) }
+    var pendingDelete by remember { mutableStateOf<CategoryEntity?>(null) }
 
     LaunchedEffect(createResult) {
         when (createResult) {
@@ -86,7 +89,9 @@ fun CategoriesScreen(
 
     val active = categories.filter { !it.isHidden }.sortedBy { it.sortOrder }
     val archived = categories.filter { it.isHidden }.sortedBy { it.sortOrder }
-    val hasCustomCategoryEver = categories.any { it.isCustom }
+    // T-8 (tepera-dev-spec.md): ліміт кастомних категорій — 2, не 1 — рядок "Додати" лишається,
+    // доки не зайняті обидва слоти (архівовані кастомні категорії й далі займають слот, FR-2.3).
+    val customCategorySlotAvailable = categories.count { it.isCustom } < CategoryViewModel.MAX_CUSTOM_CATEGORIES
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -102,10 +107,11 @@ fun CategoriesScreen(
                     CategoryRow(
                         category = category,
                         isArchived = false,
-                        onToggleArchive = { viewModel.archive(category.id) }
+                        onToggleArchive = { viewModel.archive(category.id) },
+                        onDelete = { pendingDelete = category }
                     )
                 }
-                if (!hasCustomCategoryEver) {
+                if (customCategorySlotAvailable) {
                     item {
                         GlassRow(
                             label = stringResource(R.string.category_add_custom),
@@ -121,7 +127,8 @@ fun CategoriesScreen(
                         CategoryRow(
                             category = category,
                             isArchived = true,
-                            onToggleArchive = { viewModel.unarchive(category.id) }
+                            onToggleArchive = { viewModel.unarchive(category.id) },
+                            onDelete = { pendingDelete = category }
                         )
                     }
                 }
@@ -145,10 +152,32 @@ fun CategoriesScreen(
             text = { Text(stringResource(R.string.category_custom_limit_reached)) }
         )
     }
+
+    pendingDelete?.let { category ->
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text(stringResource(R.string.category_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.category_delete_confirm_body, categoryDisplayName(category))) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteCustomCategory(category.id)
+                    pendingDelete = null
+                }) { Text(stringResource(R.string.category_delete_action)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.dialog_cancel)) }
+            }
+        )
+    }
 }
 
 @Composable
-private fun CategoryRow(category: CategoryEntity, isArchived: Boolean, onToggleArchive: () -> Unit) {
+private fun CategoryRow(
+    category: CategoryEntity,
+    isArchived: Boolean,
+    onToggleArchive: () -> Unit,
+    onDelete: () -> Unit
+) {
     GlassRow(
         label = categoryDisplayName(category),
         leading = {
@@ -159,11 +188,24 @@ private fun CategoryRow(category: CategoryEntity, isArchived: Boolean, onToggleA
             )
         },
         trailing = {
-            Switch(
-                checked = !isArchived,
-                onCheckedChange = { onToggleArchive() },
-                colors = teperaSwitchColors()
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // За прямим запитом користувача: справжнє видалення — лише для кастомних
+                // категорій (звільняє слот ліміту T-8), дефолтні лишаються архів/розархівувати-
+                // only (пересіваються щозапуску за фіксованим id, "видалення" воскресло б).
+                if (category.isCustom) {
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            Icons.Filled.DeleteOutline,
+                            contentDescription = stringResource(R.string.category_delete_action)
+                        )
+                    }
+                }
+                Switch(
+                    checked = !isArchived,
+                    onCheckedChange = { onToggleArchive() },
+                    colors = teperaSwitchColors()
+                )
+            }
         }
     )
 }

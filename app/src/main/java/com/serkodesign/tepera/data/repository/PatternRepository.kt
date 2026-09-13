@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
+private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
+
 /**
  * FR-D.8 (SRS v2.6): "тепловий" патерн доби — Online-хвилини по кожній годині доби (0–23),
  * підсумовані за кілька календарних днів. Та сама Online-семантика, що BalanceRepository
@@ -47,6 +49,33 @@ class PatternRepository(
             // buckets лишаються нульовими — PatternViewModel трактує це як "нема доступу" вище по стеку.
         }
         buckets.toList()
+    }
+
+    /**
+     * T-2 (tepera-dev-spec.md): скільки ПОВНИХ днів реальної історії `UsageEvents` фактично
+     * доступно перед [nowMillis], обмежено [maxDays] — НЕ "днів з моменту встановлення Tepera"
+     * (`SettingsStore.firstLaunchMillis`, чинний до T-2 сигнал готовності патерну). Системна
+     * історія використання існує незалежно від того, коли встановлено Tepera — щойно доступ до
+     * статистики надано, її вже можна показати, не чекаючи штучний тиждень. Шукає
+     * найдавнішу подію в [nowMillis - maxDays*DAY_MILLIS, nowMillis); 0, якщо подій нема взагалі
+     * (свіжий пристрій/немає доступу).
+     */
+    suspend fun availableHistoryDays(nowMillis: Long, maxDays: Int): Int = withContext(Dispatchers.IO) {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        try {
+            val from = nowMillis - maxDays * DAY_MILLIS
+            val events = usm.queryEvents(from, nowMillis)
+            val event = UsageEvents.Event()
+            var earliest: Long? = null
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (earliest == null || event.timeStamp < earliest) earliest = event.timeStamp
+            }
+            val earliestFound = earliest ?: return@withContext 0
+            ((nowMillis - earliestFound) / DAY_MILLIS).toInt().coerceIn(0, maxDays)
+        } catch (e: SecurityException) {
+            0
+        }
     }
 
     /** Ділить [startMillis, endMillis) по межах годин доби й додає хвилини у відповідні бакети. */

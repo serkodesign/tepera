@@ -11,8 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -25,14 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -44,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -54,6 +50,8 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.theme.GlassScreenHeader
+import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.util.utcMidnightToLocalStartOfDay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -80,43 +78,32 @@ fun AddEntryScreen(
         if (state.saved) onSaved()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(
-                            if (viewModel.isEditing) R.string.edit_entry_screen_title
-                            else R.string.add_entry_screen_title
-                        )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.nav_back))
-                    }
-                },
-                actions = {
+    Scaffold(containerColor = Color.Transparent) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            GlassScreenHeader(
+                title = stringResource(
+                    if (viewModel.isEditing) R.string.edit_entry_screen_title
+                    else R.string.add_entry_screen_title
+                ),
+                onBack = onBack,
+                trailing = {
                     // Видалення наявного запису (Історія на Stats) — лише в режимі редагування,
                     // з підтвердженням: дія руйнівна й незворотна, на відміну від швидких дій
                     // (тап-таймер, позначення паузи), де overlap-діалог і так не показується.
                     if (viewModel.isEditing) {
                         IconButton(onClick = { showDeleteConfirm = true }) {
-                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.edit_entry_delete_action))
+                            Icon(Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.edit_entry_delete_action))
                         }
                     }
                 }
             )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     stringResource(R.string.add_entry_category_label),
@@ -149,17 +136,11 @@ fun AddEntryScreen(
 
             DateField(dateMillis = state.dateMillis, onDateSelected = viewModel::setDate)
 
-            SingleChoiceSegmentedButtonRow {
-                DurationMode.entries.forEachIndexed { index, mode ->
-                    SegmentedButton(
-                        selected = state.mode == mode,
-                        onClick = { viewModel.selectMode(mode) },
-                        shape = SegmentedButtonDefaults.itemShape(index, DurationMode.entries.size)
-                    ) {
-                        Text(modeLabel(mode))
-                    }
-                }
-            }
+            PillSegmentedControl(
+                options = DurationMode.entries.map { it to modeLabel(it) },
+                selected = state.mode,
+                onSelect = viewModel::selectMode
+            )
 
             when (state.mode) {
                 DurationMode.PRESETS -> PresetDurationSection(
@@ -201,6 +182,7 @@ fun AddEntryScreen(
 
             Button(onClick = { viewModel.save() }, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.add_entry_save))
+            }
             }
         }
     }

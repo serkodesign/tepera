@@ -14,14 +14,19 @@ import kotlinx.coroutines.launch
 
 sealed class CreateCategoryResult {
     data object Success : CreateCategoryResult()
-    // FR-2.2: рівно одна кастомна категорія — і назавжди, бо архівація не звільняє слот
-    // (жодного справжнього видалення з UI, FR-2.3).
+    // FR-2.2 (ліміт піднято з 1 до 2 у T-8, tepera-dev-spec.md) — і назавжди в цій кількості,
+    // бо архівація не звільняє слот (жодного справжнього видалення з UI, FR-2.3).
     data object LimitReached : CreateCategoryResult()
 }
 
 class CategoryViewModel(
     private val repository: CategoryRepository
 ) : ViewModel() {
+
+    companion object {
+        // T-8 (tepera-dev-spec.md): "ліміт кастомних — дві" — буквальне число з документа.
+        const val MAX_CUSTOM_CATEGORIES = 2
+    }
 
     val allCategories: StateFlow<List<CategoryEntity>> = repository.observeAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -37,9 +42,14 @@ class CategoryViewModel(
         viewModelScope.launch { repository.unarchive(categoryId) }
     }
 
+    /** За прямим запитом користувача: справжнє видалення, лише для кастомних категорій. */
+    fun deleteCustomCategory(categoryId: String) {
+        viewModelScope.launch { repository.deleteCustomCategory(categoryId) }
+    }
+
     fun createCustomCategory(name: String, iconName: String, colorHex: String) {
         viewModelScope.launch {
-            if (allCategories.value.any { it.isCustom }) {
+            if (allCategories.value.count { it.isCustom } >= MAX_CUSTOM_CATEGORIES) {
                 _createResult.value = CreateCategoryResult.LimitReached
                 return@launch
             }

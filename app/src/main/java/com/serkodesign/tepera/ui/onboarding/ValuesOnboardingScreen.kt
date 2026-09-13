@@ -5,10 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,6 +22,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +32,8 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.theme.TeperaPalette
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -43,7 +48,12 @@ fun ValuesOnboardingScreen(
     settingsStore: SettingsStore,
     onDone: () -> Unit
 ) {
-    val categories by categoryRepository.observeActiveCategories().collectAsState(initial = emptyList())
+    // T-8 (tepera-dev-spec.md): "Справи" — нейтральний катч-ол для роботи/дороги/побуту, не
+    // прагнення ("хотів би робити більше" хатніх справ не має сенсу як відповідь на це питання) —
+    // єдиний виняток з переліку активних категорій тут, лишається звичайним вибором на Home.
+    val categories by categoryRepository.observeActiveCategories()
+        .map { list -> list.filterNot { it.nameKey == "errands" } }
+        .collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
 
     fun answer(categoryId: String?) {
@@ -53,7 +63,7 @@ fun ValuesOnboardingScreen(
         }
     }
 
-    Scaffold { padding ->
+    Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -75,19 +85,22 @@ fun ValuesOnboardingScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(categories, key = { it.id }) { category ->
-                        Card(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(TeperaPalette.cardTranslucent)
                                 .clickable { answer(category.id) }
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(categoryIcon(category.iconName), contentDescription = null)
-                                Text(categoryDisplayName(category), textAlign = TextAlign.Center)
-                            }
+                            Icon(
+                                categoryIcon(category.iconName),
+                                contentDescription = null,
+                                tint = TeperaPalette.brandAccent
+                            )
+                            Text(categoryDisplayName(category), textAlign = TextAlign.Center)
                         }
                     }
                 }

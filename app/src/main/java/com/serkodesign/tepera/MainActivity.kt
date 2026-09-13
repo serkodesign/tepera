@@ -10,7 +10,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.ui.navigation.TeperaNavHost
 import com.serkodesign.tepera.ui.theme.TeperaTheme
 import com.serkodesign.tepera.util.LocaleStore
@@ -22,6 +26,19 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_OPEN_ADD_ENTRY = "open_add_entry"
         const val EXTRA_CATEGORY_ID = "category_id"
     }
+
+    /**
+     * T-5 (tepera-dev-spec.md): тап по закріпленому ярлику воріт (T-4) запускає ту саму
+     * MainActivity, що вже, як правило, живе у фоні — без `onNewIntent()` система лише виносить
+     * наявний інстанс наперед ("Warning: Activity not started, its current task has been brought
+     * to the front", підтверджено на S23), а нові extras з intent НЕ доходять до вже
+     * скомпонованого Compose-дерева. `nonce` — не сам packageName — бо той самий застосунок
+     * можна відкрити воротами кілька разів поспіль; без унікального ключа повторний тап з тим
+     * самим packageName не перезапустив би LaunchedEffect у TeperaNavHost.
+     */
+    data class GateRequest(val packageName: String, val nonce: Long)
+
+    private var pendingGateRequest by mutableStateOf<GateRequest?>(null)
 
     // Застосовує збережений вибір мови (Налаштування → Мова застосунку) ДО того, як
     // з'явиться будь-який ресурс/рядок цієї Activity — LocaleStore.kt пояснює, чому це
@@ -45,6 +62,7 @@ class MainActivity : ComponentActivity() {
         val app = application as TeperaApp
         val categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID)
         val openAddEntry = intent.getBooleanExtra(EXTRA_OPEN_ADD_ENTRY, false) || categoryId != null
+        pendingGateRequest = gateRequestFromIntent(intent)
         setContent {
             TeperaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -57,13 +75,31 @@ class MainActivity : ComponentActivity() {
                         pauseRepository = app.pauseRepository,
                         patternRepository = app.patternRepository,
                         settingsStore = app.settingsStore,
+                        sleepWindowRepository = app.sleepWindowRepository,
+                        userEstimateRepository = app.userEstimateRepository,
+                        unlockRepository = app.unlockRepository,
                         activeTimerStore = app.activeTimerStore,
                         backupRepository = app.backupRepository,
+                        gateRepository = app.gateRepository,
+                        gateEventRepository = app.gateEventRepository,
+                        cardHistoryRepository = app.cardHistoryRepository,
                         pendingOpenAddEntry = openAddEntry,
-                        pendingCategoryId = categoryId
+                        pendingCategoryId = categoryId,
+                        pendingGateTargetPackage = pendingGateRequest?.packageName,
+                        pendingGateRequestNonce = pendingGateRequest?.nonce
                     )
                 }
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingGateRequest = gateRequestFromIntent(intent)
+    }
+
+    private fun gateRequestFromIntent(intent: Intent): GateRequest? =
+        intent.getStringExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA)
+            ?.let { GateRequest(it, System.nanoTime()) }
 }

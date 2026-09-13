@@ -2,14 +2,25 @@ package com.serkodesign.tepera.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.serkodesign.tepera.data.local.dao.ActivityEntryDao
+import com.serkodesign.tepera.data.local.dao.AppGateDao
+import com.serkodesign.tepera.data.local.dao.CardShowDao
 import com.serkodesign.tepera.data.local.dao.CategoryDao
 import com.serkodesign.tepera.data.local.dao.DetectedGapDao
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
+import com.serkodesign.tepera.data.local.dao.GateEventDao
+import com.serkodesign.tepera.data.local.dao.SleepWindowDao
+import com.serkodesign.tepera.data.local.dao.UserEstimateDao
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
+import com.serkodesign.tepera.data.local.entity.AppGateEntity
+import com.serkodesign.tepera.data.local.entity.CardShowEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
 import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
+import com.serkodesign.tepera.data.local.entity.GateEventEntity
+import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
+import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
 
 /**
  * NFR-5.3: явна стратегія міграцій з першої версії — НІКОЛИ не fallbackToDestructiveMigration().
@@ -31,20 +42,45 @@ import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
  * встановлення на тестові пристрої, тому без наслідків).
  * v2.6: додано DetectedGapEntity (FR-D.1/D.5 — виявлені паузи й їх позначення) — версія 2,
  * `MIGRATION_1_2` (`Migrations.kt`).
+ * T-12 (tepera-dev-spec.md): додано SleepWindowEntity (вікно сну як технічний параметр
+ * розрахунку, до 2 слотів) — версія 3, `MIGRATION_2_3` (`Migrations.kt`).
+ * T-3 (tepera-dev-spec.md): додано UserEstimateEntity (принцип пасивного сорому — оцінка
+ * користувача поруч із реальним числом, замість пасивного показу) — версія 4, `MIGRATION_3_4`
+ * (`Migrations.kt`).
+ * T-4 (tepera-dev-spec.md): додано AppGateEntity (FR-G частина 1 — застосунки з паузою перед
+ * запуском) — версія 5, `MIGRATION_4_5` (`Migrations.kt`).
+ * T-5 (tepera-dev-spec.md): додано `lastProceedAtMillis` до AppGateEntity (FR-G частина 2 —
+ * дебаунс повторного тапу) — версія 6, `MIGRATION_5_6` (`Migrations.kt`).
+ * T-13 (tepera-dev-spec.md): додано CardShowEntity (рушій карток — єдина історія показів,
+ * замінює розкидані по ViewModel `SettingsStore`-ключі) — версія 7, `MIGRATION_6_7`
+ * (`Migrations.kt`).
+ * T-6 (tepera-dev-spec.md): додано GateEventEntity (події воріт — годує картку FR-P.3
+ * "свідчення спроможності") — версія 8, `MIGRATION_7_8` (`Migrations.kt`).
  */
 @Database(
     entities = [
         CategoryEntity::class,
         ActivityEntryEntity::class,
         ExcludedAppEntity::class,
-        DetectedGapEntity::class
+        DetectedGapEntity::class,
+        SleepWindowEntity::class,
+        UserEstimateEntity::class,
+        AppGateEntity::class,
+        CardShowEntity::class,
+        GateEventEntity::class
     ],
-    version = 2,
+    version = 8,
     exportSchema = true
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun activityEntryDao(): ActivityEntryDao
     abstract fun excludedAppDao(): ExcludedAppDao
     abstract fun detectedGapDao(): DetectedGapDao
+    abstract fun sleepWindowDao(): SleepWindowDao
+    abstract fun userEstimateDao(): UserEstimateDao
+    abstract fun appGateDao(): AppGateDao
+    abstract fun cardShowDao(): CardShowDao
+    abstract fun gateEventDao(): GateEventDao
 }

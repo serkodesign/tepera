@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.Brush
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Coffee
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Groups
@@ -22,7 +23,7 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 
 /**
- * FR-2.1/FR-2.2: спільний каталог іконок для 5 дефолтних категорій і для вибору іконки
+ * FR-2.1/FR-2.2: спільний каталог іконок для 6 дефолтних категорій (T-8: "Справи" додано) і для вибору іконки
  * кастомної категорії — той самий набір, той самий iconName -> ImageVector резолвер.
  */
 private val iconCatalog: Map<String, ImageVector> = mapOf(
@@ -31,6 +32,7 @@ private val iconCatalog: Map<String, ImageVector> = mapOf(
     "hobby" to Icons.Outlined.Palette,
     "movement" to Icons.AutoMirrored.Outlined.DirectionsRun,
     "social" to Icons.Outlined.Groups,
+    "errands" to Icons.Outlined.Checklist, // T-8 (tepera-dev-spec.md): нейтральна 6-та дефолтна категорія
     "sleep" to Icons.Outlined.Bedtime, // legacy, лише для вже заархівованих записів (v2.4)
     "star" to Icons.Outlined.Star,
     "favorite" to Icons.Outlined.Favorite,
@@ -76,6 +78,7 @@ private inline fun categoryDisplayName(category: CategoryEntity, resolve: (Int) 
         "hobby" -> resolve(R.string.category_hobby)
         "movement" -> resolve(R.string.category_movement)
         "social" -> resolve(R.string.category_social)
+        "errands" -> resolve(R.string.category_errands)
         "sleep" -> resolve(R.string.category_sleep) // legacy, вже заархівовані записи (v2.4)
         else -> category.name
     }

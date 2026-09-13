@@ -13,6 +13,8 @@
     <string name="category_hobby">Хобі/творчість</string>
     <string name="category_movement">Рух/спорт</string>
     <string name="category_social">Живе спілкування</string>
+    <!-- T-8 (tepera-dev-spec.md): 6-та, нейтральна дефолтна категорія -->
+    <string name="category_errands">Справи</string>
     <string name="category_sleep">Сон</string>
 
     <string name="add_entry_button">Додати активність</string>
@@ -52,11 +54,42 @@
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
     <string name="onboarding_screen_title">Структура твого дня</string>
-    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях. Без нього офлайн-логування лишається повністю робочим.</string>
+    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього офлайн-логування лишається повністю робочим.</string>
     <string name="onboarding_skip">Пропустити</string>
 
     <!-- Онбординг про цінності (FR-P.2) -->
     <string name="values_onboarding_title">Що ти хотів би робити більше?</string>
+
+    <!-- T-8 (tepera-dev-spec.md): вибір категорій на онбордингу, одразу після питання про цінності -->
+    <string name="category_onboarding_title">Що з цього про твій день?</string>
+    <string name="category_onboarding_subtitle">Увімкни те, що хочеш відмічати. Можна змінити будь-коли в Налаштуваннях.</string>
+    <string name="category_onboarding_continue">Продовжити</string>
+
+    <!-- T-3 (tepera-dev-spec.md): онбординг-оцінка Online-часу перед поясненням дозволу -->
+    <string name="online_estimate_onboarding_title">Скільки, по-твоєму, ти був онлайн учора?</string>
+    <string name="online_estimate_range_under_1h">До 1 год</string>
+    <string name="online_estimate_range_1_3h">1–3 год</string>
+    <string name="online_estimate_range_over_3h">Понад 3 год</string>
+    <string name="online_estimate_reveal_title">Твоя вчорашня оцінка</string>
+
+    <!-- T-14 (tepera-dev-spec.md): онбординг-оцінка кількості розблокувань -->
+    <string name="unlock_estimate_question">Скільки разів, по-твоєму, ти вчора розблоковував телефон?</string>
+    <string name="unlock_estimate_range_under_30">До 30</string>
+    <string name="unlock_estimate_range_30_70">30–70</string>
+    <string name="unlock_estimate_range_over_70">Понад 70</string>
+    <string name="stats_unlock_count_today_format">Розблокувань сьогодні: %1$d</string>
+    <string name="stats_unlock_count_yesterday_format">Розблокувань учора: %1$d</string>
+    <string name="stats_unlock_count_week_format">Розблокувань за тиждень: %1$d</string>
+
+    <!-- T-10 (tepera-dev-spec.md): онбординг-оцінка часу останнього дотику до телефону -->
+    <string name="last_phone_use_estimate_question">О котрій ти вчора востаннє брав телефон?</string>
+    <string name="last_phone_use_estimate_range_before_22">До 22:00</string>
+    <string name="last_phone_use_estimate_range_22_23">22:00–23:00</string>
+    <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
+    <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
+    <string name="last_phone_use_estimate_range_after_01">Після 01:00</string>
+    <string name="stats_last_phone_use_yesterday_format">Востаннє брав телефон учора: %1$s</string>
+    <string name="stats_last_phone_use_week_format">Медіана часу останнього дотику за тиждень: %1$s</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
     <string name="weekly_reflection_question">Скільки, на твою думку, ти був онлайн цього тижня?</string>
@@ -79,14 +112,20 @@
     <string name="pattern_card_title">Патерн доби</string>
     <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається тиждень даних</string>
 
-    <!-- Час останнього використання телефону (FR-D.7, SRS v2.8) — буквальне формулювання зі стейкхолдером -->
-    <string name="last_phone_use_format">Востаннє брав телефон о %1$s</string>
-
     <!-- Картка "Цей тиждень" — досліджено з Figma-макета (node 2062:2862), не в SRS буквально -->
     <string name="weekly_digest_card_title">Цей тиждень</string>
     <string name="weekly_digest_reading_format">%1$d · %2$s</string>
     <string name="weekly_digest_count_format">%1$d</string>
     <string name="weekly_digest_day_start_label">День зазвичай починається</string>
+
+    <!-- T-6 (tepera-dev-spec.md), FR-P.3: "свідчення спроможності" — тихий факт про ворота -->
+    <string name="gate_events_summary_card_title">Цей місяць</string>
+    <plurals name="gate_events_summary_text">
+        <item quantity="one">Цього місяця %d раз ти вирішив не зараз</item>
+        <item quantity="few">Цього місяця %d рази ти вирішив не зараз</item>
+        <item quantity="many">Цього місяця %d разів ти вирішив не зараз</item>
+        <item quantity="other">Цього місяця %d раза ти вирішив не зараз</item>
+    </plurals>
 
     <!-- Закриття контекстних карток, якщо прочитав (за запитом користувача, не в SRS) -->
     <string name="context_card_dismiss_action">Приховати цю картку</string>
@@ -104,9 +143,20 @@
     <string name="settings_other_section">Інше</string>
     <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, без оцінки перевищення.</string>
     <string name="settings_target_hours_format">%d год</string>
-    <string name="settings_sleep_window_label">Кінець вікна сну</string>
-    <string name="settings_sleep_window_info">До цієї години коротка нічна перевірка телефону не рахується початком дня — лише довша сесія або будь-що після цієї межі. Зміни, якщо працюєш ночами.</string>
-    <string name="settings_sleep_window_hour_format">До %d:00</string>
+    <string name="settings_sleep_window_label">Вікно сну</string>
+    <string name="settings_sleep_window_info">Час у цьому вікні не входить у розрахунок структури доби і не породжує пауз — це технічний параметр, не показаний на шкалі. Онови межі, якщо працюєш ночами.</string>
+    <string name="settings_sleep_window_hour_format">%d:00</string>
+    <string name="settings_sleep_window_start_label">Початок</string>
+    <string name="settings_sleep_window_end_label">Кінець</string>
+    <string name="settings_sleep_window_second_label">Друге вікно</string>
+    <string name="settings_sleep_window_second_hint">Для плаваючого графіка — за замовчуванням вимкнене.</string>
+
+    <!-- T-11 (tepera-dev-spec.md): пресет чутливості детекції пауз -->
+    <string name="settings_gap_sensitivity_label">Чутливість детекції пауз</string>
+    <string name="settings_gap_sensitivity_info">Наскільки часто застосунок пропонує позначити перерву в користуванні телефоном. Не впливає на записану активність — лише на те, скільки пауз він пропонує позначити.</string>
+    <string name="settings_gap_sensitivity_rare">Рідше</string>
+    <string name="settings_gap_sensitivity_normal">Звичайно</string>
+    <string name="settings_gap_sensitivity_frequent">Частіше</string>
 
     <!-- "Запропонувати функцію" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Запропонувати функцію</string>
@@ -133,6 +183,28 @@
     <string name="exclusion_list_section_excluded">Виключені</string>
     <string name="exclusion_list_section_all">Усі</string>
 
+    <!-- T-4 (tepera-dev-spec.md, FR-G частина 1): ворота — застосунки з паузою перед запуском -->
+    <string name="settings_gates_action">Застосунки з затримкою</string>
+    <string name="gates_screen_title">Застосунки з затримкою</string>
+    <string name="gates_hint">Обрані застосунки відкриваються лише через новий ярлик, з паузою перед запуском</string>
+    <string name="gates_pause_today_label">Вимкнути ворота на сьогодні</string>
+    <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — ворота недоступні на цьому пристрої</string>
+    <string name="gates_section_active">Ворота</string>
+    <string name="gates_section_add">Додати застосунок</string>
+    <string name="gates_empty">Ще немає жодних воріт</string>
+    <string name="gates_delay_format">%d с</string>
+    <string name="gates_icon_not_handled">Оригінальна іконка ще на екрані — тапни, коли приховаєш</string>
+    <string name="gates_remove_action">Прибрати ворота</string>
+    <string name="gates_delay_picker_title">Тривалість паузи</string>
+    <string name="gates_delay_picker_confirm">Створити ворота</string>
+    <string name="gates_delay_picker_cancel">Скасувати</string>
+    <string name="gates_pin_failed">Не вдалося створити ярлик — спробуй ще раз</string>
+    <string name="gates_instruction_title">Ярлик створено</string>
+    <string name="gates_instruction_body">Android не дозволяє нам прибрати оригінальну іконку %1$s за тебе. Зроби це вручну: затримай іконку на робочому столі й перетягни у "Видалити".</string>
+    <string name="gates_instruction_done">Готово</string>
+    <string name="gates_instruction_later">Зроблю пізніше</string>
+    <string name="gate_pause_not_now">Не зараз</string>
+
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>
     <string name="categories_section_active">Активні</string>
@@ -140,7 +212,10 @@
     <string name="category_archive_action">Архівувати</string>
     <string name="category_unarchive_action">Повернути з архіву</string>
     <string name="category_add_custom">Додати свою категорію</string>
-    <string name="category_custom_limit_reached">Можна мати лише одну власну категорію</string>
+    <string name="category_custom_limit_reached">Можна мати не більше двох власних категорій</string>
+    <string name="category_delete_action">Видалити</string>
+    <string name="category_delete_confirm_title">Видалити категорію?</string>
+    <string name="category_delete_confirm_body">"%1$s" і всі записи активностей у ній буде видалено назавжди. Цю дію не можна скасувати.</string>
     <string name="category_dialog_title">Нова категорія</string>
     <string name="category_name_label">Назва</string>
     <string name="category_name_required">Введіть назву</string>
@@ -186,6 +261,9 @@
     <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
     <string name="stats_weekly_trend_title">Тижневий тренд Online-часу</string>
     <string name="stats_no_data">Немає даних за цей період</string>
+
+    <!-- T-2 (tepera-dev-spec.md): бекфіл історії пауз одразу після надання дозволу -->
+    <string name="home_backfill_processing">Обробляємо історію…</string>
 
     <!-- Історія активностей на Stats (за прямим запитом користувача, не в SRS) -->
     <string name="stats_history_title">Історія</string>

@@ -3,12 +3,14 @@ package com.serkodesign.tepera.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.repository.PauseRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,12 +44,41 @@ data class HistoryEntryItem(val entry: ActivityEntryEntity, val category: Catego
  * дня), бо угруповання "сьогодні"/"вчора" тут про календарний день, у який записана активність. */
 data class HistoryDayGroup(val dayStartMillis: Long, val isToday: Boolean, val items: List<HistoryEntryItem>)
 
+/**
+ * T-14 (tepera-dev-spec.md): "доступне в деталях дня і в тижневому огляді — звичайним рядком,
+ * без виділення" — НЕ на Home (де UnlockEstimateCard і йде через власну картку "оцінка →
+ * реальність"), а саме тут, на Stats. `null` — нема доступу до статистики використання АБО
+ * API < 28 (`UnlockRepository.isSupported()` == false, документ: фіча приховується, не
+ * апроксимується); поле відсутнє в UI, а не показане як "0" (0 читалось би як підтверджений факт,
+ * не "нема даних").
+ */
+data class UnlockStatsUiState(
+    val todayCount: Int? = null,
+    val yesterdayCount: Int? = null,
+    val weekCount: Int? = null
+)
+
+/**
+ * T-10 (tepera-dev-spec.md): те саме "доступне в деталях дня і в тижневому огляді", що
+ * [UnlockStatsUiState], для часу останнього використання (FR-D.7). Лише "вчора" (не "сьогодні" —
+ * доба, що ще триває, не має завершеного, добре визначеного "останнього" використання, той самий
+ * принцип, що обґрунтовує "метрику вчорашнього дня" в самій картці-оцінці). "Тижневий огляд" —
+ * медіана за 7 днів, той самий розрахунок, що другий рядок картки (`PauseRepository.
+ * medianLastPhoneUseMillis()`). `null` полів — нема доступу/даних, рядок відсутній, не "00:00".
+ */
+data class LastPhoneUseStatsUiState(
+    val yesterdayMillis: Long? = null,
+    val weekMedianMillis: Long? = null
+)
+
 data class StatsUiState(
     val period: StatsPeriod = StatsPeriod.WEEK,
     val categoryBreakdown: List<CategoryBreakdownItem> = emptyList(),
     val weeklyTrend: List<DailyBalancePoint> = emptyList(),
     val hasUsageAccess: Boolean = true,
-    val history: List<HistoryDayGroup> = emptyList()
+    val history: List<HistoryDayGroup> = emptyList(),
+    val unlockStats: UnlockStatsUiState = UnlockStatsUiState(),
+    val lastPhoneUseStats: LastPhoneUseStatsUiState = LastPhoneUseStatsUiState()
 )
 
 /**
@@ -60,12 +91,23 @@ class StatsViewModel(
     private val categoryRepository: CategoryRepository,
     private val activityRepository: ActivityRepository,
     private val balanceRepository: BalanceRepository,
-    private val settingsStore: SettingsStore
+    private val sleepWindowRepository: SleepWindowRepository,
+    private val unlockRepository: UnlockRepository,
+    private val pauseRepository: PauseRepository
 ) : ViewModel() {
 
     private val period = MutableStateFlow(StatsPeriod.WEEK)
     private val weeklyTrend = MutableStateFlow<List<DailyBalancePoint>>(emptyList())
     private val hasUsageAccess = MutableStateFlow(true)
+    private val unlockStats = MutableStateFlow(UnlockStatsUiState())
+    private val lastPhoneUseStats = MutableStateFlow(LastPhoneUseStatsUiState())
+
+    // combine() підтримує щонайбільше 5 потоків з типізованою лямбдою (BalanceViewModel.kt —
+    // той самий прийом) — усі три рахуються разом у refreshWeeklyTrend(), тож об'єднані в один
+    // потік заздалегідь.
+    private val trendAndUnlockStats = combine(weeklyTrend, unlockStats, lastPhoneUseStats) { trend, unlock, lastPhoneUse ->
+        Triple(trend, unlock, lastPhoneUse)
+    }
 
     // "Тиждень"/"Місяць" — ковзне вікно останніх 7/30 днів, не календарний тиждень/місяць
     // (спрощення MVP, узгоджується з відомим timezone/календарним обмеженням SRS розділ 11).
@@ -119,11 +161,11 @@ class StatsViewModel(
     val uiState: StateFlow<StatsUiState> = combine(
         period,
         categoryBreakdown,
-        weeklyTrend,
+        trendAndUnlockStats,
         hasUsageAccess,
         history
-    ) { p, breakdown, trend, access, historyGroups ->
-        StatsUiState(p, breakdown, trend, access, historyGroups)
+    ) { p, breakdown, (trend, unlock, lastPhoneUse), access, historyGroups ->
+        StatsUiState(p, breakdown, trend, access, historyGroups, unlock, lastPhoneUse)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatsUiState())
 
     init {
@@ -141,14 +183,16 @@ class StatsViewModel(
             hasUsageAccess.value = access
             if (!access) {
                 weeklyTrend.value = emptyList()
+                unlockStats.value = UnlockStatsUiState()
+                lastPhoneUseStats.value = LastPhoneUseStatsUiState()
                 return@launch
             }
             val todayStart = startOfTodayMillis()
             // FR-3.5 (SRS v2.5): та сама точка старту дня, що на Home (BalanceViewModel.refresh())
             // — перше суттєве розблокування після вікна сну, не локальна північ. Рахується один
             // раз тут, бо стосується лише сьогоднішньої (daysAgo == 0) точки тренду.
-            val sleepWindowEndHour = settingsStore.sleepWindowEndHour.first()
-            val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
+            val sleepWindows = sleepWindowRepository.getEnabledWindows()
+            val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindows)
             val points = (6 downTo 0).map { daysAgo ->
                 // Для сьогодні (daysAgo == 0) день ще не завершився — межа старту та сама точка
                 // старту дня, що на Home, не північ. Для минулих завершених діб — календарна доба
@@ -163,6 +207,27 @@ class StatsViewModel(
                 DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes)
             }
             weeklyTrend.value = points
+
+            // T-14: "деталі дня" (сьогодні/вчора) і "тижневий огляд" — звичайним рядком, не на
+            // Home. API < 28 → isSupported() == false → лишається UnlockStatsUiState() (усі null).
+            unlockStats.value = if (unlockRepository.isSupported()) {
+                UnlockStatsUiState(
+                    todayCount = unlockRepository.countUnlocks(todayStart, System.currentTimeMillis(), sleepWindows),
+                    yesterdayCount = unlockRepository.countUnlocks(todayStart - MS_PER_DAY, todayStart, sleepWindows),
+                    weekCount = unlockRepository.countUnlocks(todayStart - 6 * MS_PER_DAY, System.currentTimeMillis(), sleepWindows)
+                )
+            } else {
+                UnlockStatsUiState()
+            }
+
+            // T-10: "деталі дня" (лише вчора — сьогодні ще не має завершеного останнього
+            // використання) і "тижневий огляд" (медіана за 7 днів, той самий розрахунок, що
+            // другий рядок LastPhoneUseEstimateCard).
+            val now = System.currentTimeMillis()
+            lastPhoneUseStats.value = LastPhoneUseStatsUiState(
+                yesterdayMillis = pauseRepository.lastPhoneUseForShiftedDay(now, daysBack = 0).lastUseMillis,
+                weekMedianMillis = pauseRepository.medianLastPhoneUseMillis(now)
+            )
         }
     }
 
@@ -170,10 +235,12 @@ class StatsViewModel(
         private val categoryRepository: CategoryRepository,
         private val activityRepository: ActivityRepository,
         private val balanceRepository: BalanceRepository,
-        private val settingsStore: SettingsStore
+        private val sleepWindowRepository: SleepWindowRepository,
+        private val unlockRepository: UnlockRepository,
+        private val pauseRepository: PauseRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            StatsViewModel(categoryRepository, activityRepository, balanceRepository, settingsStore) as T
+            StatsViewModel(categoryRepository, activityRepository, balanceRepository, sleepWindowRepository, unlockRepository, pauseRepository) as T
     }
 }

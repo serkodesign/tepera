@@ -7,6 +7,7 @@ import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +52,8 @@ data class WeeklyDigestUiState(
 class WeeklyDigestViewModel(
     private val activityRepository: ActivityRepository,
     private val balanceRepository: BalanceRepository,
-    private val settingsStore: SettingsStore
+    private val settingsStore: SettingsStore,
+    private val sleepWindowRepository: SleepWindowRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WeeklyDigestUiState())
@@ -120,13 +122,13 @@ class WeeklyDigestViewModel(
      */
     private suspend fun averageDayStartMinuteOfDay(): Int? {
         if (!balanceRepository.hasUsageAccess()) return null
-        val sleepWindowEndHour = settingsStore.sleepWindowEndHour.first()
+        val sleepWindows = sleepWindowRepository.getEnabledWindows()
         val todayStart = startOfTodayMillis()
 
         val minutesOfDay = (1..DIGEST_WINDOW_DAYS).mapNotNull { daysAgo ->
             val midnight = todayStart - daysAgo * DAY_MILLIS
             val nextMidnight = midnight + DAY_MILLIS
-            val dayStart = balanceRepository.calculateDayStartMillis(sleepWindowEndHour, midnight, nextMidnight)
+            val dayStart = balanceRepository.calculateDayStartMillis(sleepWindows, midnight, nextMidnight)
             if (dayStart >= nextMidnight) return@mapNotNull null // нічого не знайдено цього дня
             ((dayStart - midnight) / 60_000L).toInt()
         }
@@ -137,10 +139,11 @@ class WeeklyDigestViewModel(
     class Factory(
         private val activityRepository: ActivityRepository,
         private val balanceRepository: BalanceRepository,
-        private val settingsStore: SettingsStore
+        private val settingsStore: SettingsStore,
+        private val sleepWindowRepository: SleepWindowRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            WeeklyDigestViewModel(activityRepository, balanceRepository, settingsStore) as T
+            WeeklyDigestViewModel(activityRepository, balanceRepository, settingsStore, sleepWindowRepository) as T
     }
 }

@@ -18,6 +18,18 @@ interface CategoryRepository {
     suspend fun unarchive(categoryId: String) // повернення з архіву — зворотна дія до archive()
     suspend fun update(category: CategoryEntity)
     suspend fun ensureDefaultsSeeded(defaults: List<CategoryEntity>)
+
+    /**
+     * За прямим запитом користувача: справжнє видалення, не архівація — лише для КАСТОМНИХ
+     * категорій (`isCustom`). Дефолтні категорії свідомо виключені: `TeperaApp.onCreate()`
+     * повторно засіває дефолти щозапуску (`ensureDefaultsSeeded()`,
+     * `OnConflictStrategy.IGNORE` за фіксованим id) — реальне видалення дефолтної категорії
+     * непомітно "воскресло" б на наступному запуску, архівація для них лишається єдиним
+     * коректним способом сховати. Для кастомної категорії видалення звільняє слот ліміту
+     * (T-8: до двох), чого архівація не робить (`FK onDelete = CASCADE` прибирає й записи
+     * активностей цієї категорії — про це попереджає діалог підтвердження в UI).
+     */
+    suspend fun deleteCustomCategory(categoryId: String)
 }
 
 class RoomCategoryRepository(
@@ -48,4 +60,10 @@ class RoomCategoryRepository(
 
     override suspend fun ensureDefaultsSeeded(defaults: List<CategoryEntity>) =
         dao.insertDefaults(defaults)
+
+    override suspend fun deleteCustomCategory(categoryId: String) {
+        val category = dao.getById(categoryId) ?: return
+        if (!category.isCustom) return
+        dao.hardDeleteNotUsedInMvpUi(categoryId)
+    }
 }

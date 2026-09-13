@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T-8 (tepera-dev-spec.md): "Справи" — простий чекліст для віджета, тонується категорійним
+     кольором (Glance ColorFilter.tint()), базовий fillColor значення не має. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,15h2v-2H3V15z M3,19h2v-2H3V19z M3,11h2V9H3V11z M7,15h14v-2H7V15z M7,19h14v-2H7V19z M7,9v2h14V9H7z" />
+</vector>

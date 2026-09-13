@@ -114,4 +114,10 @@ dependencies {
     // (CLAUDE.md: жодної usage-аналітики в MVP, тільки crash-репорти).
     implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
     implementation("com.google.firebase:firebase-crashlytics")
+
+    // T-13 (tepera-dev-spec.md): перший юніт-тест у проєкті — "рушій карток" навмисно спроєктований
+    // як чиста Kotlin-логіка без Android-залежностей (CardEngine + CardHistorySource), тому досить
+    // звичайного JUnit4 на JVM, без Robolectric/instrumented-тестів (CLAUDE.md: "поза обсягом MVP —
+    // повне тест-покриття, лише smoke-тести" — цей тест саме такий: одна ціла підсистема, не все підряд).
+    testImplementation("junit:junit:4.13.2")
 }

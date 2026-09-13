@@ -61,6 +61,9 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.PatternRepository
+import com.serkodesign.tepera.data.repository.PauseRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
@@ -86,10 +89,13 @@ fun StatsScreen(
     balanceRepository: BalanceRepository,
     patternRepository: PatternRepository,
     settingsStore: SettingsStore,
+    sleepWindowRepository: SleepWindowRepository,
+    unlockRepository: UnlockRepository,
+    pauseRepository: PauseRepository,
     onEditEntry: (String) -> Unit
 ) {
     val viewModel: StatsViewModel = viewModel(
-        factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository, settingsStore)
+        factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository, sleepWindowRepository, unlockRepository, pauseRepository)
     )
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -134,6 +140,28 @@ fun StatsScreen(
         ) {
             PeriodSelector(selected = state.period, onSelect = viewModel::selectPeriod)
 
+            // T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком,
+            // без виділення" — саме тут (Stats, period == WEEK), НЕ на Home (розділ 2.2 забороняє
+            // пасивний показ на головному екрані). null = нема доступу/API < 28 — рядок відсутній,
+            // не "0".
+            if (state.period == StatsPeriod.WEEK) {
+                state.unlockStats.weekCount?.let { count ->
+                    Text(
+                        stringResource(R.string.stats_unlock_count_week_format, count),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard — тут
+                // звичайним підписаним рядком, бо це самостійний факт серед інших рядків Stats,
+                // не другорядна деталь під двома щойно показаними числами.
+                state.lastPhoneUseStats.weekMedianMillis?.let { millis ->
+                    Text(
+                        stringResource(R.string.stats_last_phone_use_week_format, formatClockTime(millis)),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
             CategoryBreakdownCard(items = state.categoryBreakdown)
 
             WeeklyTrendCard(
@@ -152,28 +180,68 @@ fun StatsScreen(
             // хто прокрутив далі. НЕ прив'язана до PeriodSelector (завжди "сьогодні"+"вчора",
             // як у референсному макеті) — редагування записів за тиждень/місяць створило б
             // непридатно довгий список.
-            HistoryCard(groups = state.history, onEditEntry = onEditEntry)
+            HistoryCard(
+                groups = state.history,
+                unlockCountToday = state.unlockStats.todayCount,
+                unlockCountYesterday = state.unlockStats.yesterdayCount,
+                lastPhoneUseYesterdayMillis = state.lastPhoneUseStats.yesterdayMillis,
+                onEditEntry = onEditEntry
+            )
         }
     }
 }
 
-/** Історія активностей — картки з можливістю редагування (тап/олівець відкриває AddEntryScreen
- * у режимі редагування, звідки доступне й видалення) — за прямим запитом користувача, не в SRS. */
+/**
+ * Історія активностей — картки з можливістю редагування (тап/олівець відкриває AddEntryScreen
+ * у режимі редагування, звідки доступне й видалення) — за прямим запитом користувача, не в SRS.
+ * T-14: кількість розблокувань за сьогодні/вчора — звичайний рядок над записами дня, "деталі
+ * дня". T-10: час останнього використання — лише "вчора" (сьогоднішня доба ще не завершена, тож
+ * ще не має добре визначеного "останнього" використання). Обидва показуються незалежно від того,
+ * чи є в той день ручні записи (на відміну від [groups], які приховані повністю для дня без
+ * жодного запису) — інакше день без ручного логування взагалі не мав би де показати ці цифри.
+ */
 @Composable
-private fun HistoryCard(groups: List<HistoryDayGroup>, onEditEntry: (String) -> Unit) {
-    if (groups.isEmpty()) return
+private fun HistoryCard(
+    groups: List<HistoryDayGroup>,
+    unlockCountToday: Int?,
+    unlockCountYesterday: Int?,
+    lastPhoneUseYesterdayMillis: Long?,
+    onEditEntry: (String) -> Unit
+) {
+    if (groups.isEmpty() && unlockCountToday == null && unlockCountYesterday == null && lastPhoneUseYesterdayMillis == null) return
+
+    val groupsByToday = groups.associateBy { it.isToday }
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(stringResource(R.string.stats_history_title), style = MaterialTheme.typography.titleMedium)
-            groups.forEach { group ->
+            listOf(true, false).forEach { isToday ->
+                val group = groupsByToday[isToday]
+                val unlockCount = if (isToday) unlockCountToday else unlockCountYesterday
+                val lastPhoneUseMillis = if (isToday) null else lastPhoneUseYesterdayMillis
+                if (group == null && unlockCount == null && lastPhoneUseMillis == null) return@forEach
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        stringResource(if (group.isToday) R.string.stats_history_today else R.string.stats_history_yesterday),
+                        stringResource(if (isToday) R.string.stats_history_today else R.string.stats_history_yesterday),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
                     )
-                    group.items.forEach { item ->
+                    unlockCount?.let { count ->
+                        Text(
+                            stringResource(
+                                if (isToday) R.string.stats_unlock_count_today_format else R.string.stats_unlock_count_yesterday_format,
+                                count
+                            ),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    lastPhoneUseMillis?.let { millis ->
+                        Text(
+                            stringResource(R.string.stats_last_phone_use_yesterday_format, formatClockTime(millis)),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    group?.items?.forEach { item ->
                         HistoryEntryRow(item = item, onEdit = { onEditEntry(item.entry.id) })
                     }
                 }
@@ -181,6 +249,9 @@ private fun HistoryCard(groups: List<HistoryDayGroup>, onEditEntry: (String) -> 
         }
     }
 }
+
+private fun formatClockTime(millis: Long): String =
+    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))
 
 @Composable
 private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
@@ -216,6 +287,17 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
                 ),
                 style = MaterialTheme.typography.bodySmall
             )
+            // За прямим запитом користувача: нотатка (AddEntryScreen, FR-1.1) вводилась, але
+            // ніде не виводилась — єдине місце, де окремий запис узагалі відображається як
+            // рядок, це саме тут.
+            if (!item.entry.note.isNullOrBlank()) {
+                Text(
+                    text = item.entry.note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
+                )
+            }
         }
         IconButton(onClick = onEdit) {
             Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.stats_history_edit_action))

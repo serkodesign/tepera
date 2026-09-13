@@ -47,13 +47,20 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.data.cards.CardSource
+import com.serkodesign.tepera.data.cards.CardType
 import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
+import com.serkodesign.tepera.data.repository.CardHistoryRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.repository.GateEventRepository
 import com.serkodesign.tepera.data.repository.PatternRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.data.repository.UnlockRepository
+import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
@@ -80,11 +87,18 @@ fun HomeScreen(
     pauseRepository: PauseRepository,
     patternRepository: PatternRepository,
     settingsStore: SettingsStore,
+    sleepWindowRepository: SleepWindowRepository,
+    userEstimateRepository: UserEstimateRepository,
+    unlockRepository: UnlockRepository,
     activeTimerStore: ActiveTimerStore,
+    cardHistoryRepository: CardHistoryRepository,
+    gateEventRepository: GateEventRepository,
     onOpenSettings: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
     onShowOnboarding: () -> Unit,
-    onShowValuesOnboarding: () -> Unit
+    onShowValuesOnboarding: () -> Unit,
+    onShowCategoryOnboarding: () -> Unit,
+    onShowOnlineEstimateOnboarding: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
@@ -92,12 +106,12 @@ fun HomeScreen(
     val summary by viewModel.todaySummary.collectAsState()
 
     val balanceViewModel: BalanceViewModel = viewModel(
-        factory = BalanceViewModel.Factory(balanceRepository, activityRepository, categoryRepository, settingsStore)
+        factory = BalanceViewModel.Factory(balanceRepository, activityRepository, categoryRepository, settingsStore, sleepWindowRepository)
     )
     val balanceState by balanceViewModel.uiState.collectAsState()
 
     val weeklyReflectionViewModel: WeeklyReflectionViewModel = viewModel(
-        factory = WeeklyReflectionViewModel.Factory(settingsStore, balanceRepository)
+        factory = WeeklyReflectionViewModel.Factory(settingsStore, balanceRepository, cardHistoryRepository)
     )
     val weeklyReflectionState by weeklyReflectionViewModel.uiState.collectAsState()
 
@@ -105,22 +119,14 @@ fun HomeScreen(
     // відкритті Home (не фонова WorkManager-задача), сам PauseViewModel мовчить поза дозволеним
     // вікном опитування (FR-D.3), тож зайвого сканування поза ним не відбувається.
     val pauseViewModel: PauseViewModel = viewModel(
-        factory = PauseViewModel.Factory(pauseRepository, balanceRepository, activityRepository, settingsStore)
+        factory = PauseViewModel.Factory(pauseRepository, balanceRepository, activityRepository, settingsStore, sleepWindowRepository)
     )
     val pauseState by pauseViewModel.uiState.collectAsState()
-
-    // FR-D.7 (SRS v2.8): "востаннє брав телефон о HH:MM" — заміна прибраної метрики "твій день
-    // з телефоном" (FR-D.6). Перевикористовує PauseRepository.scan(), тож той самий запуск
-    // тільки при відкритті Home, без окремого сканування.
-    val lastPhoneUseViewModel: LastPhoneUseViewModel = viewModel(
-        factory = LastPhoneUseViewModel.Factory(pauseRepository, balanceRepository, settingsStore)
-    )
-    val lastPhoneUseState by lastPhoneUseViewModel.uiState.collectAsState()
 
     // Досліджено з Figma-макета (node 2062:2862, "This week") — тижневий дайджест лічильників,
     // окрема картка стеку (ContextCardStack.kt), не в SRS буквально.
     val weeklyDigestViewModel: WeeklyDigestViewModel = viewModel(
-        factory = WeeklyDigestViewModel.Factory(activityRepository, balanceRepository, settingsStore)
+        factory = WeeklyDigestViewModel.Factory(activityRepository, balanceRepository, settingsStore, sleepWindowRepository)
     )
     val weeklyDigestState by weeklyDigestViewModel.uiState.collectAsState()
 
@@ -131,6 +137,60 @@ fun HomeScreen(
     )
     val patternState by patternViewModel.uiState.collectAsState()
 
+    // T-3 (tepera-dev-spec.md), крок 5 "Повернення → реальне число поруч із оцінкою": один
+    // механізм покриває і негайне повернення з системних Налаштувань, і випадок "дозвіл з'явився
+    // набагато пізніше" (акцептанс-критерій) — refresh() шукає найновішу нерозв'язану оцінку
+    // щоразу, коли відкривається Home.
+    val onlineEstimateRevealViewModel: OnlineEstimateRevealViewModel = viewModel(
+        factory = OnlineEstimateRevealViewModel.Factory(userEstimateRepository, balanceRepository, settingsStore)
+    )
+    val onlineEstimateRevealState by onlineEstimateRevealViewModel.uiState.collectAsState()
+
+    // T-14 (tepera-dev-spec.md): "Скільки разів, по-твоєму, ти вчора розблоковував телефон?" —
+    // той самий одноразовий init-check, що WeeklyReflectionViewModel (не в LifecycleResumeEffect
+    // нижче, той самий свідомий вибір, що вже застосований до weeklyReflectionViewModel).
+    val unlockEstimateViewModel: UnlockEstimateViewModel = viewModel(
+        factory = UnlockEstimateViewModel.Factory(
+            unlockRepository, balanceRepository, sleepWindowRepository,
+            userEstimateRepository, settingsStore, cardHistoryRepository
+        )
+    )
+    val unlockEstimateState by unlockEstimateViewModel.uiState.collectAsState()
+
+    // T-10 (tepera-dev-spec.md): "О котрій ти вчора востаннє брав телефон?" — замінює прибраний
+    // ПОСТІЙНИЙ показ (LastPhoneUseCard, FR-D.7, видалено). Той самий одноразовий init-check, що
+    // weeklyReflectionViewModel/unlockEstimateViewModel вище.
+    val lastPhoneUseEstimateViewModel: LastPhoneUseEstimateViewModel = viewModel(
+        factory = LastPhoneUseEstimateViewModel.Factory(
+            pauseRepository, balanceRepository, userEstimateRepository, settingsStore, cardHistoryRepository
+        )
+    )
+    val lastPhoneUseEstimateState by lastPhoneUseEstimateViewModel.uiState.collectAsState()
+
+    // T-6 (tepera-dev-spec.md), FR-P.3: "цього місяця N разів ти вирішив не зараз" (ворота, T-5).
+    // Той самий одноразовий init-check, що решта карток вище.
+    val gateEventsSummaryViewModel: GateEventsSummaryViewModel = viewModel(
+        factory = GateEventsSummaryViewModel.Factory(gateEventRepository, cardHistoryRepository)
+    )
+    val gateEventsSummaryState by gateEventsSummaryViewModel.uiState.collectAsState()
+
+    // T-13 (tepera-dev-spec.md): "рушій карток" — вирішує, яку саме множину з готових-до-показу
+    // карток (isDue/visible нижче) реально видно на екрані, застосовуючи глобальний бюджет
+    // (не більше 1 картки-оцінки на тиждень, максимум 3 картки одночасно, "подієві не витісняють
+    // тижневі більш ніж двічі поспіль"). Кожна ViewModel і далі рахує лише ГОТОВНІСТЬ ДАНИХ
+    // (isDue/visible), не саму появу — appear-рішення повністю тут.
+    val cardStackViewModel: CardStackViewModel = viewModel(
+        factory = CardStackViewModel.Factory(cardHistoryRepository)
+    )
+    val visibleCards by cardStackViewModel.visibleCards.collectAsState()
+
+    // T-2 (tepera-dev-spec.md): "одразу після надання дозволу обробити всю доступну історію" —
+    // одноразовий бекфіл DetectedGapEntity за минулі дні, щойно доступ підтверджено вперше.
+    val backfillViewModel: BackfillViewModel = viewModel(
+        factory = BackfillViewModel.Factory(balanceRepository, pauseRepository, sleepWindowRepository, settingsStore)
+    )
+    val backfillState by backfillViewModel.uiState.collectAsState()
+
     // Доступ до статистики використання надається в системних Налаштуваннях, поза застосунком —
     // без цього ефекту повернення з Налаштувань не оновило б картку без ручного перезаходу на Home.
     LifecycleResumeEffect(Unit) {
@@ -138,8 +198,30 @@ fun HomeScreen(
         pauseViewModel.refresh()
         patternViewModel.refresh()
         weeklyDigestViewModel.refresh()
-        lastPhoneUseViewModel.refresh()
+        onlineEstimateRevealViewModel.refresh()
+        backfillViewModel.runIfNeeded()
         onPauseOrDispose { }
+    }
+
+    // T-13: перерахунок видимої множини карток щоразу, коли готовність БУДЬ-ЯКОЇ з них
+    // змінюється (не лише при відкритті Home — напр. "Гаразд"/"×" на картці одразу звільняє
+    // місце для наступної в черзі, без очікування наступного LifecycleResumeEffect).
+    LaunchedEffect(
+        onlineEstimateRevealState, pauseState, weeklyReflectionState, unlockEstimateState,
+        lastPhoneUseEstimateState, weeklyDigestState, patternState, gateEventsSummaryState
+    ) {
+        cardStackViewModel.evaluate(
+            listOf(
+                CardSource(CardType.ONLINE_ESTIMATE_REVEAL, priority = 0, minIntervalDays = null, dataReady = onlineEstimateRevealState.visible),
+                CardSource(CardType.PAUSE, priority = 1, minIntervalDays = null, dataReady = pauseState.visible),
+                CardSource(CardType.WEEKLY_REFLECTION, priority = 2, minIntervalDays = 7, dataReady = weeklyReflectionState.isDue),
+                CardSource(CardType.UNLOCK_ESTIMATE, priority = 3, minIntervalDays = 14, dataReady = unlockEstimateState.isDue),
+                CardSource(CardType.LAST_PHONE_USE_ESTIMATE, priority = 4, minIntervalDays = 14, dataReady = lastPhoneUseEstimateState.isDue),
+                CardSource(CardType.WEEKLY_DIGEST, priority = 5, minIntervalDays = null, dataReady = weeklyDigestState.visible),
+                CardSource(CardType.PATTERN, priority = 6, minIntervalDays = null, dataReady = patternState.visible),
+                CardSource(CardType.GATE_EVENTS_SUMMARY, priority = 7, minIntervalDays = 30, dataReady = gateEventsSummaryState.isDue)
+            )
+        )
     }
 
     // FR-P.2: питання про цінності ЗАВЖДИ показується першим при першому запуску — окремий
@@ -151,12 +233,31 @@ fun HomeScreen(
         }
     }
 
-    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як питання про цінності вже
-    // показане (valuesOnboardingSeen у прапорці нижче), інакше обидва могли б спробувати
-    // навігувати одночасно на першому запуску.
+    // T-8 (tepera-dev-spec.md), крок 2 "Порядку першого запуску": одразу після питання про
+    // цінності, перед онбординг-оцінкою Online-часу — логічне продовження "що ти цінуєш" у
+    // "що саме відмічатимеш" (документ: попередні 5 категорій самі по собі норма, FR-P.5).
+    val categoryOnboardingSeen by settingsStore.categoryOnboardingSeen.collectAsState(initial = true)
+    LaunchedEffect(valuesOnboardingSeen, categoryOnboardingSeen) {
+        if (valuesOnboardingSeen && !categoryOnboardingSeen) {
+            onShowCategoryOnboarding()
+        }
+    }
+
+    // T-3, крок 3 "Порядку першого запуску": одразу після вибору категорій (T-8), ще до
+    // пояснення дозволу нижче — не залежить від стану доступу до статистики, той самий принцип.
+    val onlineEstimateOnboardingSeen by settingsStore.onlineEstimateOnboardingSeen.collectAsState(initial = true)
+    LaunchedEffect(valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
+        if (valuesOnboardingSeen && categoryOnboardingSeen && !onlineEstimateOnboardingSeen) {
+            onShowOnlineEstimateOnboarding()
+        }
+    }
+
+    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як питання про цінності, вибір
+    // категорій (T-8) і онбординг-оцінка Online-часу (T-3) вже показані, інакше кілька ефектів
+    // могли б спробувати навігувати одночасно на першому запуску.
     val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen) {
-        if (valuesOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
+        if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
             onShowOnboarding()
         }
     }
@@ -183,9 +284,23 @@ fun HomeScreen(
         ) {
             HomeHeader(onOpenSettings = onOpenSettings)
 
+            // T-2 (tepera-dev-spec.md): "обробка... з індикатором" — короткий тихий рядок, доки
+            // триває одноразовий бекфіл історії пауз (BackfillViewModel), зазвичай зникає
+            // за долі секунди.
+            if (backfillState.isProcessing) {
+                Text(
+                    text = stringResource(R.string.home_backfill_processing),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
+
             // FR-D.10/D.10a/D.11: вертикальний стек до 3 контекстних карток, пріоритизований за
             // актуальністю — над карткою "Мій день", кожна сама вирішує, чи їй бути видимою.
             ContextCardStack(
+                visibleCards = visibleCards,
+                onlineEstimateRevealState = onlineEstimateRevealState,
+                onDismissOnlineEstimateReveal = onlineEstimateRevealViewModel::dismiss,
                 pauseState = pauseState,
                 categories = summary.map { it.category },
                 onLabelGap = pauseViewModel::labelGap,
@@ -194,12 +309,18 @@ fun HomeScreen(
                 weeklyState = weeklyReflectionState,
                 onSelectGuess = weeklyReflectionViewModel::selectGuess,
                 onDismissWeekly = weeklyReflectionViewModel::dismiss,
-                lastPhoneUseState = lastPhoneUseState,
-                onDismissLastPhoneUse = lastPhoneUseViewModel::dismiss,
+                unlockEstimateState = unlockEstimateState,
+                onSelectUnlockGuess = unlockEstimateViewModel::selectGuess,
+                onDismissUnlockEstimate = unlockEstimateViewModel::dismiss,
+                lastPhoneUseEstimateState = lastPhoneUseEstimateState,
+                onSelectLastPhoneUseGuess = lastPhoneUseEstimateViewModel::selectGuess,
+                onDismissLastPhoneUseEstimate = lastPhoneUseEstimateViewModel::dismiss,
                 digestState = weeklyDigestState,
                 onDismissDigest = weeklyDigestViewModel::dismiss,
                 patternState = patternState,
-                onDismissPattern = patternViewModel::dismiss
+                onDismissPattern = patternViewModel::dismiss,
+                gateEventsSummaryState = gateEventsSummaryState,
+                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss
             )
 
             // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
@@ -242,7 +363,8 @@ fun HomeScreen(
                 }
             } else {
                 // 2 колонки, побудовані вручну по рядках (замість LazyVerticalGrid) — категорій
-                // завжди небагато (до 5 дефолтних + 1 кастомна, FR-2.1/2.2), а весь екран тепер
+                // завжди небагато (до 6 дефолтних + 2 кастомні, FR-2.1/2.2, ліміт піднято в T-8),
+                // а весь екран тепер
                 // скролиться одним Modifier.verticalScroll вище, всередині якого lazy-контейнер
                 // з Modifier.weight() непридатний (батько вимірює дітей з необмеженою висотою).
                 Column(

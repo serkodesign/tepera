@@ -54,8 +54,10 @@ import kotlinx.coroutines.flow.first
  * RemoteViews (тобто й Glance) не вміє відобразити androidx.compose.material ImageVector
  * напряму — потрібен реальний drawable-ресурс. Тому для віджета — окремий, спрощений набір
  * vector drawable (drawable/ic_widget_*), а не той самий catalog, що categoryIcon() в застосунку
- * (ui/category/CategoryVisuals.kt). Лише 5 дефолтних категорій: CategoryButtonsRow бере
- * take(5), кастомна (6-та) категорія на віджеті ніколи не показується.
+ * (ui/category/CategoryVisuals.kt). **CategoryButtonsRow бере take(5)** — з 6 дефолтних (T-8,
+ * tepera-dev-spec.md, додано "Справи") і кастомними категоріями на віджеті завжди видно лише
+ * перші 5 активних за sortOrder; яка саме це п'ятірка, залежить від того, що людина вимкнула
+ * онбордингом T-8 чи пізніше в Налаштуваннях — не завжди буквально "5 початкових".
  */
 private fun widgetIconRes(iconName: String): Int = when (iconName) {
     "nature" -> R.drawable.ic_widget_nature
@@ -63,6 +65,7 @@ private fun widgetIconRes(iconName: String): Int = when (iconName) {
     "hobby" -> R.drawable.ic_widget_hobby
     "movement" -> R.drawable.ic_widget_movement
     "social" -> R.drawable.ic_widget_social
+    "errands" -> R.drawable.ic_widget_errands // T-8 (tepera-dev-spec.md)
     "sleep" -> R.drawable.ic_widget_sleep // legacy, вже заархівована категорія (v2.4)
     else -> R.drawable.ic_widget_generic
 }
@@ -74,6 +77,15 @@ private fun widgetIconRes(iconName: String): Int = when (iconName) {
  * (FR-4.2 лишається чинним для самого віджета): активний стан позначається лише статичним
  * кільцем навколо кнопки, оновлюється одразу після тапу (ToggleCategoryTimerAction викликає
  * update()) або періодично через WidgetUpdateWorker ~30 хв.
+ *
+ * **T-7 (tepera-dev-spec.md) — перерозподіл ваги 4x2, закриває SRS розділ 12, відкрите питання
+ * №5** ("чи заслуговують 5 кнопок категорій на головне місце, чи віддати більше простору
+ * межам/структурі дня — обговорення відкладено свідомо"). Відповідь T-7: структурі дня. У
+ * розширеному 4x2 шкала тепер ВЕРХНІЙ ряд (раніше — нижній, під кнопками), кнопки — нижній.
+ * 4x1 лишається без змін (лише кнопки, як і раніше). Шкала також вища (`BALANCE_BAR_HEIGHT`,
+ * 8dp→20dp) — "читається з відстані витягнутої руки" (документ), лишаючись при цьому тихішою за
+ * кнопки категорій (FR-4.1/розділ 4.3 SRS — це НЕ скасовано, лише зроблено бар вищим, не
+ * яскравішим чи з текстом).
  */
 class TeperaWidget : GlanceAppWidget() {
 
@@ -100,14 +112,14 @@ class TeperaWidget : GlanceAppWidget() {
         // SRS v2.5, FR-3.5: точка старту дня замінює локальну північ — та сама логіка, що на
         // Home (BalanceViewModel.refresh()).
         val hasUsageAccess = app.balanceRepository.hasUsageAccess()
-        val sleepWindowEndHour = app.settingsStore.sleepWindowEndHour.first()
-        val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindowEndHour)
+        val sleepWindows = app.sleepWindowRepository.getEnabledWindows()
+        val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindows)
         val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday(dayStartMillis) else 0
-        val dayLengthMinutes = app.balanceRepository.calculateDayLengthMinutes(dayStartMillis)
+        val dayLengthMinutes = app.balanceRepository.calculateDayLengthMinutes(dayStartMillis, sleepWindows)
         // Шкала охоплює весь день — від пробудження до 00:00 (за запитом користувача), але
         // "Офлайн-життя" заповнює лише до "зараз" — те, що ще не сталося, лишається порожньою
         // ділянкою шкали (colorForFraction нижче), не зафарбованою "Офлайн-життя".
-        val daySpanMinutes = app.balanceRepository.calculateDaySpanMinutes(dayStartMillis)
+        val daySpanMinutes = app.balanceRepository.calculateDaySpanMinutes(dayStartMillis, sleepWindows)
         val targetMinutes = app.settingsStore.targetMinutes.first()
 
         // FR-4.1: та сама тришарова структура доби, що на Home (Online + категорії з часом
@@ -146,14 +158,9 @@ class TeperaWidget : GlanceAppWidget() {
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CategoryButtonsRow(
-                        categories = sorted.take(5),
-                        neglectedCategoryId = neglectedCategoryId,
-                        activeTimers = activeTimers,
-                        context = context
-                    )
+                    // T-7: у 4x2 структура доби тепер ВЕРХНІЙ ряд, кнопки — нижній (раніше
+                    // навпаки). 4x1 (isExtended == false) не змінюється — лише кнопки.
                     if (isExtended) {
-                        Spacer(modifier = GlanceModifier.height(8.dp))
                         DayStructureRow(
                             hasUsageAccess = hasUsageAccess,
                             segments = daySegments,
@@ -161,7 +168,14 @@ class TeperaWidget : GlanceAppWidget() {
                             targetMinutes = targetMinutes,
                             context = context
                         )
+                        Spacer(modifier = GlanceModifier.height(8.dp))
                     }
+                    CategoryButtonsRow(
+                        categories = sorted.take(5),
+                        neglectedCategoryId = neglectedCategoryId,
+                        activeTimers = activeTimers,
+                        context = context
+                    )
                 }
             }
         }
@@ -172,6 +186,13 @@ class TeperaWidget : GlanceAppWidget() {
 // >=48x48dp, а не стелю в 48dp; попередня стеля не давала кнопкам вирости, навіть коли
 // ширина/висота віджета дозволяли, через що іконки виглядали дрібними в 4x1.
 private val MAX_BUTTON_SIZE = 56.dp
+
+// T-7 (tepera-dev-spec.md): "кнопки лишаються ≥48×48dp" — явна нижня межа. Раніше нижньою межею
+// coerceIn() був 1.dp (лише верхня стеля мала сенс, коли ряд кнопок був єдиним вмістом рядка й
+// завжди мав повну ширину віджета) — на вузькому реальному launcher-гриді кнопки теоретично
+// могли стиснутись нижче touch-target мінімуму. FR-4.1 сам вимагає ≥48dp hit-box, тож це радше
+// виправлення прихованого невідповідності вимозі, ніж нова поведінка.
+private val MIN_BUTTON_SIZE = 48.dp
 private val BUTTON_GAP = 4.dp
 private val RING_INSET = 4.dp // зазор між зовнішнім кільцем і внутрішньою карткою
 private val ICON_PADDING = 6.dp // відступ від картки до самої іконки
@@ -189,7 +210,7 @@ private fun CategoryButtonsRow(
     // по 48dp можуть не влізти й обрізатись праворуч замість акуратного зменшення.
     val count = categories.size.coerceAtLeast(1)
     val availableWidth = LocalSize.current.width - BUTTON_GAP * (count - 1)
-    val buttonSize = (availableWidth / count).coerceIn(1.dp, MAX_BUTTON_SIZE)
+    val buttonSize = (availableWidth / count).coerceIn(MIN_BUTTON_SIZE, MAX_BUTTON_SIZE)
 
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
@@ -319,7 +340,6 @@ private fun DayStructureRow(
 // (лише рівний розподіл) — на відміну від BalanceCard у застосунку (Compose Canvas), тому
 // шкалу тут імітуємо решіткою з фіксованої кількості РІВНИХ за вагою сегментів, кожен пофарбований
 // залежно від того, у яку смугу дня (Online/категорія/Решта дня) він потрапляє за часовою часткою.
-// Заввишки 8dp — суттєво тихіша за 48-56dp кнопки категорій над нею (FR-4.1).
 //
 // БАГ Microsoft Launcher (перевірено вживу на Samsung S23): попередня версія з 20 сегментами +
 // 19 окремими Spacer-ами між ними (39 дітей одного Row) рендерилась як ~5 великих суцільних
@@ -328,7 +348,22 @@ private fun DayStructureRow(
 // Spacer-дітей — проміжки між сегментами через .padding() на самому Box, а не через сусідній View.
 private const val BALANCE_BAR_SEGMENTS = 10
 
+// T-7 (tepera-dev-spec.md): 8dp→20dp — "читається з відстані витягнутої руки" (документ). Бар
+// тепер верхній ряд 4x2 (головний елемент цього режиму, SRS розділ 12 відкрите питання №5), тож
+// вищий за попередній, але й далі помітно тихіший за 48-56dp кнопки категорій під ним (FR-4.1/
+// розділ 4.3 SRS — кольори/відсутність тексту не змінились, тільки висота).
+private val BALANCE_BAR_HEIGHT = 20.dp
+
 /** FR-3.10: та сама формула засічки орієнтиру, що на Home (BalanceCard.DayStructureBar). */
+// T-7 (за прямим спостереженням користувача на реальному пристрої, не в документі): маркер
+// орієнтиру раніше замінював ЦІЛИЙ сегмент (1/10 ширини бару) суцільним чорним кольором — при
+// 8dp це було непомітною дрібницею, але після T-7 (бар 8dp→20dp) той самий квадрат став явно
+// впадати в очі як суцільна чорна "діра" в шкалі, а не "тиха вертикальна лінія БЕЗ підпису"
+// (FR-3.10). Фікс: маркер — окремий тонкий (MARKER_WIDTH) прошарок ПОВЕРХ сегментів (другий Row
+// у Box, а не заміна кольору одного із сегментів) — під ним і далі видно реальний колір дня,
+// сама лінія лишається вузькою незалежно від висоти бару.
+private val MARKER_WIDTH = 2.dp
+
 @Composable
 private fun GlanceDayStructureBar(
     segments: List<Pair<Color, Int>>,
@@ -336,42 +371,58 @@ private fun GlanceDayStructureBar(
     targetMinutes: Int
 ) {
     val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
-    val markerIndex = ((targetMinutes.toFloat() / referenceMinutes) * (BALANCE_BAR_SEGMENTS - 1))
-        .toInt()
-        .coerceIn(0, BALANCE_BAR_SEGMENTS - 1)
+    val markerFraction = (targetMinutes.toFloat() / referenceMinutes).coerceIn(0f, 1f)
     // Тиха нейтральна риска — НЕ error/тривожний колір (FR-4.3: жодного trafic-light кодування,
     // засічка ніколи не змінює колір при перевищенні).
-    val markerColor = ColorProvider(day = Color.Black.copy(alpha = 0.3f), night = Color.Black.copy(alpha = 0.3f))
+    val markerColor = ColorProvider(day = Color.Black.copy(alpha = 0.35f), night = Color.Black.copy(alpha = 0.35f))
     // "Те, що ще не сталося" (від "Now" до півночі, за запитом користувача) — прозоре, крізь
     // Row проглядає фон віджета (TeperaPalette.navPill), а не дофарбоване кольором сегмента.
     val transparentColor = ColorProvider(day = Color.Transparent, night = Color.Transparent)
 
-    Row(
+    // GlanceModifier.defaultWeight() у цій версії Glance не приймає Float (лише рівний розподіл,
+    // на відміну від Compose Modifier.weight()) — довільну вагу для позиції маркера підробити
+    // нею не можна. Позиція рахується явно через ширину контейнера (той самий принцип
+    // наближення, що вже приймає CategoryButtonsRow нижче через LocalSize.current.width).
+    val barWidth = LocalSize.current.width
+    val markerOffset = ((barWidth - MARKER_WIDTH) * markerFraction).coerceAtLeast(0.dp)
+
+    Box(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .height(8.dp)
+            .height(BALANCE_BAR_HEIGHT)
     ) {
-        for (index in 0 until BALANCE_BAR_SEGMENTS) {
-            val segmentColor = if (index == markerIndex) {
-                markerColor
-            } else {
+        Row(modifier = GlanceModifier.fillMaxSize()) {
+            for (index in 0 until BALANCE_BAR_SEGMENTS) {
                 val fraction = (index + 0.5f) / BALANCE_BAR_SEGMENTS
                 // null = "ще не сталося" (за межами реальних сегментів, від "Now" до півночі) —
                 // прозорий, не дофарбований кольором останнього сегмента (за запитом користувача:
                 // "Офлайн-життя" заповнює лише до "Now", не до кінця шкали).
                 val color = colorForFraction(segments, daySpanMinutes, fraction)
-                if (color != null) ColorProvider(day = color, night = color) else transparentColor
+                val segmentColor = if (color != null) ColorProvider(day = color, night = color) else transparentColor
+                // Проміжок між сегментами — через .padding() НА самому Box (звужує зафарбовану
+                // площу всередину), а не через сусідній Spacer-View. Порядок модифікаторів
+                // важливий: .padding() до .background() інсетить заливку в межах уже звуженого Box.
+                Box(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .fillMaxHeight()
+                        .padding(horizontal = 0.5.dp)
+                        .background(segmentColor)
+                        .cornerRadius(2.dp)
+                ) {}
             }
-            // Проміжок між сегментами — через .padding() НА самому Box (звужує зафарбовану
-            // площу всередину), а не через сусідній Spacer-View. Порядок модифікаторів важливий:
-            // .padding() до .background() інсетить заливку в межах уже звуженого Box.
+        }
+        // Маркер поверх сегментів — розпірка фіксованої ширини (markerOffset) ліворуч від
+        // MARKER_WIDTH-лінії імітує абсолютне позиціювання, якого в Glance/RemoteViews нема
+        // (немає offset()/Canvas). Праворуч від лінії нічого малювати не треба — порожній
+        // залишок Row просто не займає місця понад дітей.
+        Row(modifier = GlanceModifier.fillMaxSize()) {
+            Box(modifier = GlanceModifier.width(markerOffset)) {}
             Box(
                 modifier = GlanceModifier
-                    .defaultWeight()
+                    .width(MARKER_WIDTH)
                     .fillMaxHeight()
-                    .padding(horizontal = 0.5.dp)
-                    .background(segmentColor)
-                    .cornerRadius(2.dp)
+                    .background(markerColor)
             ) {}
         }
     }

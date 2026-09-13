@@ -4,6 +4,8 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
+import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
+import com.serkodesign.tepera.util.SleepWindowCalculator
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -106,22 +108,34 @@ class BalanceRepository(
         }
     }
 
-    /** FR-3.9: Grace Period Buffer — знаменник ніколи не менший за 180 хв. */
-    fun calculateDenominatorMinutes(dayStartMillis: Long): Int =
-        maxOf(180, minutesSince(dayStartMillis))
+    /**
+     * FR-3.9: Grace Period Buffer — знаменник ніколи не менший за 180 хв. [sleepWindows] (T-12):
+     * час, що потрапляє у ввімкнене вікно сну між [dayStartMillis] і "зараз", віднімається —
+     * вікно сну не входить у знаменник структури доби.
+     */
+    fun calculateDenominatorMinutes(dayStartMillis: Long, sleepWindows: List<SleepWindowEntity> = emptyList()): Int =
+        maxOf(180, calculateDayLengthMinutes(dayStartMillis, sleepWindows))
 
-    /** FR-3.7: скільки хвилин уже триває сьогоднішній день (для "Твій день триває X"). */
-    fun calculateDayLengthMinutes(dayStartMillis: Long): Int =
-        minutesSince(dayStartMillis).coerceAtLeast(0)
+    /**
+     * FR-3.7: скільки хвилин уже триває сьогоднішній день (для "Твій день триває X"), за
+     * вирахуванням часу у ввімкнених вікнах сну (T-12) між [dayStartMillis] і "зараз".
+     */
+    fun calculateDayLengthMinutes(dayStartMillis: Long, sleepWindows: List<SleepWindowEntity> = emptyList()): Int {
+        val now = System.currentTimeMillis()
+        val rawMinutes = minutesSince(dayStartMillis).coerceAtLeast(0)
+        val sleepMinutes = SleepWindowCalculator.minutesInWindows(sleepWindows, dayStartMillis, now)
+        return (rawMinutes - sleepMinutes).coerceAtLeast(0)
+    }
 
     /**
      * Повний діапазон шкали "Мій день" (за запитом користувача) — від точки старту дня
      * (пробудження) до найближчої півночі (00:00), НЕ лише до "зараз". "Твій день триває X"
      * (calculateDayLengthMinutes) лишається зростаючою величиною для заголовка — цей діапазон
      * лише для розрахунку часток сегментів шкали, щоб "Решта дня" сягала кінця шкали (півночі),
-     * а не обривалась на "зараз".
+     * а не обривалась на "зараз". [sleepWindows] (T-12) віднімаються так само, як у
+     * [calculateDayLengthMinutes] — інакше сума сегментів шкали не збігалася б із довжиною дня.
      */
-    fun calculateDaySpanMinutes(dayStartMillis: Long): Int {
+    fun calculateDaySpanMinutes(dayStartMillis: Long, sleepWindows: List<SleepWindowEntity> = emptyList()): Int {
         val cal = Calendar.getInstance()
         cal.add(Calendar.DAY_OF_YEAR, 1)
         cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -129,7 +143,9 @@ class BalanceRepository(
         cal.set(Calendar.SECOND, 0)
         cal.set(Calendar.MILLISECOND, 0)
         val nextMidnight = cal.timeInMillis
-        return ((nextMidnight - dayStartMillis) / 60_000L).toInt().coerceAtLeast(1)
+        val rawMinutes = ((nextMidnight - dayStartMillis) / 60_000L).toInt()
+        val sleepMinutes = SleepWindowCalculator.minutesInWindows(sleepWindows, dayStartMillis, nextMidnight)
+        return (rawMinutes - sleepMinutes).coerceAtLeast(1)
     }
 
     private fun minutesSince(millis: Long): Int =
@@ -147,21 +163,24 @@ class BalanceRepository(
 
     /**
      * FR-3.2, FR-3.5: точка старту дня — перше "суттєве" розблокування (перший MOVE_TO_FOREGROUND
-     * будь-якого застосунку, включно з лаунчером) після півночі. Сесія, що починається до
-     * [sleepWindowEndHour] (дефолт 6, FR-3.2) і триває коротше 5 хв, ігнорується як нічна
-     * перевірка годинника (узгоджено зі стейкхолдером — SRS текстом називав поріг 2-3 хв і
-     * окрему межу 05:00; тут обидва об'єднані в один редагований параметр). Якщо в межах вікна
-     * пошуку ще не було жодного "суттєвого" розблокування (напр. щойно прокинулись) — повертаємо
-     * [searchEndMillis]: для "сьогодні" (дефолтні параметри) це коректно означає "день ще не
-     * почався" (знаменник і Online-хвилини виходять ~0); для минулих діб (FR-D.6, PauseRepository)
-     * викликач сам звіряє результат із [searchEndMillis], щоб відрізнити "не знайдено".
+     * будь-якого застосунку, включно з лаунчером) після півночі. Сесія, що починається УСЕРЕДИНІ
+     * ввімкненого [sleepWindows] (T-12, tepera-dev-spec.md — до 2 вікон, кожне може перетинати
+     * північ або лежати цілком у денному часі, напр. нічна зміна 09:00-16:00) і триває коротше
+     * 5 хв, ігнорується як нічна перевірка годинника (узгоджено зі стейкхолдером — SRS текстом
+     * називав поріг 2-3 хв і окрему межу 05:00; тепер це узагальнено до довільного вікна, а не
+     * єдиної години). Розблокування ПОЗА вікном сну завжди значуще, незалежно від тривалості.
+     * Якщо в межах вікна пошуку ще не було жодного "суттєвого" розблокування (напр. щойно
+     * прокинулись) — повертаємо [searchEndMillis]: для "сьогодні" (дефолтні параметри) це коректно
+     * означає "день ще не почався" (знаменник і Online-хвилини виходять ~0); для минулих діб
+     * (FR-D.6, PauseRepository) викликач сам звіряє результат із [searchEndMillis], щоб відрізнити
+     * "не знайдено".
      *
      * [referenceMidnightMillis]/[searchEndMillis] дефолтять на "сьогодні" (поведінка не змінилась
      * для наявних викликів); FR-D.6 (SRS v2.6, "день з телефоном") передає межі минулої доби, щоб
      * тим самим алгоритмом знайти точку пробудження вчора.
      */
     suspend fun calculateDayStartMillis(
-        sleepWindowEndHour: Int,
+        sleepWindows: List<SleepWindowEntity>,
         referenceMidnightMillis: Long = startOfTodayMillis(),
         searchEndMillis: Long = System.currentTimeMillis()
     ): Long = withContext(Dispatchers.IO) {
@@ -181,7 +200,7 @@ class BalanceRepository(
                     UsageEvents.Event.MOVE_TO_BACKGROUND -> {
                         val start = pendingStart
                         pendingStart = null
-                        if (start != null && isSignificantUnlock(start, event.timeStamp, sleepWindowEndHour)) {
+                        if (start != null && isSignificantUnlock(start, event.timeStamp, sleepWindows)) {
                             return@withContext start
                         }
                     }
@@ -189,7 +208,7 @@ class BalanceRepository(
             }
             // Останнє розблокування ще триває (нема завершального MOVE_TO_BACKGROUND у вибірці).
             val start = pendingStart
-            if (start != null && isSignificantUnlock(start, now, sleepWindowEndHour)) {
+            if (start != null && isSignificantUnlock(start, now, sleepWindows)) {
                 return@withContext start
             }
             now // ще жодного суттєвого розблокування сьогодні — день ще не почався
@@ -198,9 +217,8 @@ class BalanceRepository(
         }
     }
 
-    private fun isSignificantUnlock(startMillis: Long, endMillis: Long, sleepWindowEndHour: Int): Boolean {
-        val hour = Calendar.getInstance().apply { timeInMillis = startMillis }.get(Calendar.HOUR_OF_DAY)
-        if (hour >= sleepWindowEndHour) return true
+    private fun isSignificantUnlock(startMillis: Long, endMillis: Long, sleepWindows: List<SleepWindowEntity>): Boolean {
+        if (!SleepWindowCalculator.isInsideWindow(sleepWindows, startMillis)) return true
         val durationMinutes = (endMillis - startMillis) / 60_000L
         return durationMinutes >= 5
     }
