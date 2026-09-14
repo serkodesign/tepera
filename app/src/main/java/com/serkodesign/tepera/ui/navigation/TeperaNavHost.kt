@@ -256,7 +256,8 @@ fun TeperaNavHost(
                     sleepWindowRepository = sleepWindowRepository,
                     unlockRepository = unlockRepository,
                     pauseRepository = pauseRepository,
-                    onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) }
+                    onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
+                    onAddEntry = { navController.navigate(Routes.addEntry()) }
                 )
             }
             composable(Routes.ADD_ENTRY) {

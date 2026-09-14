@@ -37,6 +37,7 @@
          "History" moved here from the Stats screen at the user's request) -->
     <string name="diary_nav_action">Overview</string>
     <string name="diary_screen_title">Diary</string>
+    <string name="diary_add_entry_action">Add activity</string>
 
     <!-- Time-of-day greeting on Home (Figma frame Everyday_Designs) -->
     <string name="greeting_morning">Good morning</string>

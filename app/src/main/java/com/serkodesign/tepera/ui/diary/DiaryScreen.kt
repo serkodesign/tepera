@@ -14,9 +14,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +60,13 @@ import java.util.Locale
  * яка замінила неактивну заглушку "Незабаром". Сам зміст не змінився — "сьогодні"+"вчора",
  * лічильники розблокувань, час останнього використання (лише вчора), список записів з
  * редагуванням/видаленням через `AddEntryScreen` у режимі редагування.
+ *
+ * Кругла кнопка "+" (за прямим запитом користувача) — єдиний вхід на Щоденнику для ЗАГАЛЬНОГО
+ * додавання активності (без попередньо обраної категорії, на відміну від кнопки "додати час"
+ * на картці категорії на Home). Позиціонована окремим Box-оверлеєм поверх Scaffold, не через
+ * стандартний `floatingActionButton`-слот Scaffold: той дає лише 16dp відступу від краю екрана
+ * і кнопка опинилась би під напівпрозорою навбар-"таблеткою" (та сама причина, з якої скрольований
+ * контент нижче отримує запас 100.dp знизу).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +77,8 @@ fun DiaryScreen(
     sleepWindowRepository: SleepWindowRepository,
     unlockRepository: UnlockRepository,
     pauseRepository: PauseRepository,
-    onEditEntry: (String) -> Unit
+    onEditEntry: (String) -> Unit,
+    onAddEntry: () -> Unit
 ) {
     val viewModel: DiaryViewModel = viewModel(
         factory = DiaryViewModel.Factory(
@@ -83,30 +93,44 @@ fun DiaryScreen(
         onPauseOrDispose { }
     }
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.diary_screen_title)) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.diary_screen_title)) },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                HistoryCard(
+                    groups = state.history,
+                    unlockCountToday = state.unlockCountToday,
+                    unlockCountYesterday = state.unlockCountYesterday,
+                    lastPhoneUseYesterdayMillis = state.lastPhoneUseYesterdayMillis,
+                    onEditEntry = onEditEntry
+                )
+            }
         }
-    ) { padding ->
-        Column(
+
+        FloatingActionButton(
+            onClick = onAddEntry,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shape = CircleShape,
             modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 96.dp)
         ) {
-            HistoryCard(
-                groups = state.history,
-                unlockCountToday = state.unlockCountToday,
-                unlockCountYesterday = state.unlockCountYesterday,
-                lastPhoneUseYesterdayMillis = state.lastPhoneUseYesterdayMillis,
-                onEditEntry = onEditEntry
-            )
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.diary_add_entry_action))
         }
     }
 }
