@@ -31,12 +31,29 @@ class GateRepository(
     fun isPinShortcutSupported(): Boolean =
         ShortcutManagerCompat.isRequestPinShortcutSupported(context)
 
-    /** @return true, якщо `requestPinShortcut()` реально надіслано (не якщо запит не підтримано). */
+    /**
+     * @return true, якщо ворота реально створено (закріплено новий ярлик АБО повернуто раніше
+     * вимкнений — див. нижче); false, якщо `requestPinShortcut()` не підтримується.
+     *
+     * **Реальний краш, знайдений і виправлений живим тестуванням (Samsung S23):** `shortcutIdFor()`
+     * — детермінований ID (`gate_$packageName`), тож повторне створення воріт для застосунку, чиї
+     * попередні ворота видаляли (`removeGate()` нижче лише ВИМИКАЄ ярлик — Android не дає
+     * застосунку самостійно зняти закріплений ярлик), намагається запросити пін для ID, який уже
+     * існує в системі, лише вимкненим. `ShortcutManager.requestPinShortcut()` для такого ID кидає
+     * `IllegalArgumentException` ("already exists but disabled") аж до краху застосунку — без
+     * жодного власного try/catch тут це валило весь процес (відтворено: створення воріт для
+     * Instagram, чиї ворота існували й були видалені в попередній сесії T-4/T-5, крашило Tepera
+     * щоразу). Фікс: якщо ярлик із таким ID уже закріплений, але вимкнений — не пінити заново
+     * (сам факт закріплення не зникає з видаленням рядка в `app_gates`), а ввімкнути й оновити
+     * наявний. Виклик `requestPinShortcut()` для решти випадків лишається обгорнутим у try/catch
+     * як запобіжник від інших системних відмов того самого роду.
+     */
     suspend fun createGate(packageName: String, label: String, delaySeconds: Int): Boolean =
         withContext(Dispatchers.IO) {
             if (!isPinShortcutSupported()) return@withContext false
 
-            val shortcut = ShortcutInfoCompat.Builder(context, shortcutIdFor(packageName))
+            val id = shortcutIdFor(packageName)
+            val shortcut = ShortcutInfoCompat.Builder(context, id)
                 .setShortLabel(label)
                 .setIcon(buildGateShortcutIcon(context, packageName))
                 .setIntent(
@@ -46,7 +63,20 @@ class GateRepository(
                 )
                 .build()
 
-            val requested = ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+            val requested = try {
+                val shortcutManager = context.getSystemService(ShortcutManager::class.java)
+                val existingDisabled = shortcutManager?.pinnedShortcuts
+                    ?.any { it.id == id && !it.isEnabled } == true
+                if (existingDisabled && shortcutManager != null) {
+                    shortcutManager.enableShortcuts(listOf(id))
+                    shortcutManager.updateShortcuts(listOf(shortcut.toShortcutInfo()))
+                    true
+                } else {
+                    ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+                }
+            } catch (e: Exception) {
+                false
+            }
             if (requested) {
                 dao.insert(
                     AppGateEntity(
