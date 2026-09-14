@@ -1,0 +1,287 @@
+package com.serkodesign.tepera.ui.settings
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.R
+import com.serkodesign.tepera.data.GapSensitivity
+import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.ui.theme.GlassScreenHeader
+import com.serkodesign.tepera.ui.theme.HourRangeSlider
+import com.serkodesign.tepera.ui.theme.PillSegmentedControl
+import com.serkodesign.tepera.ui.theme.teperaSwitchColors
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+
+/**
+ * "Відстеження" — за прямим запитом користувача виокремлено з головного екрана Налаштувань в
+ * окремий під-екран (той самий патерн навігації, що Категорії/Виключені застосунки/Ворота —
+ * рядок з ">" веде сюди, не інлайн-блок на головній сторінці). Зміст не змінився: орієнтир
+ * Online-часу, вікно сну (T-12), чутливість детекції пауз (T-11) — лише переїхали з
+ * `SettingsScreen` без зміни власної логіки/копірайтингу.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TrackingSettingsScreen(
+    settingsStore: SettingsStore,
+    sleepWindowRepository: SleepWindowRepository,
+    onBack: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    var targetHours by remember { mutableStateOf(3) }
+    var showTargetInfo by remember { mutableStateOf(false) }
+    var window1StartHour by remember { mutableStateOf(0) }
+    var window1EndHour by remember { mutableStateOf(6) }
+    var window2Enabled by remember { mutableStateOf(false) }
+    var window2StartHour by remember { mutableStateOf(0) }
+    var window2EndHour by remember { mutableStateOf(6) }
+    var showSleepWindowInfo by remember { mutableStateOf(false) }
+    var gapSensitivity by remember { mutableStateOf(GapSensitivity.NORMAL) }
+    var showGapSensitivityInfo by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        targetHours = (settingsStore.targetMinutes.first() / 60f).roundToInt().coerceIn(1, 8)
+        val windows = sleepWindowRepository.getWindows()
+        windows.find { it.slot == 1 }?.let {
+            window1StartHour = (it.startMinuteOfDay / 60).coerceIn(0, 23)
+            window1EndHour = (it.endMinuteOfDay / 60).coerceIn(0, 23)
+        }
+        windows.find { it.slot == 2 }?.let {
+            window2Enabled = it.enabled
+            window2StartHour = (it.startMinuteOfDay / 60).coerceIn(0, 23)
+            window2EndHour = (it.endMinuteOfDay / 60).coerceIn(0, 23)
+        }
+        gapSensitivity = settingsStore.gapSensitivity.first()
+    }
+
+    if (showTargetInfo) {
+        AlertDialog(
+            onDismissRequest = { showTargetInfo = false },
+            confirmButton = {
+                TextButton(onClick = { showTargetInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+            },
+            text = { Text(stringResource(R.string.settings_target_info)) }
+        )
+    }
+    if (showSleepWindowInfo) {
+        AlertDialog(
+            onDismissRequest = { showSleepWindowInfo = false },
+            confirmButton = {
+                TextButton(onClick = { showSleepWindowInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+            },
+            text = { Text(stringResource(R.string.settings_sleep_window_info)) }
+        )
+    }
+    if (showGapSensitivityInfo) {
+        AlertDialog(
+            onDismissRequest = { showGapSensitivityInfo = false },
+            confirmButton = {
+                TextButton(onClick = { showGapSensitivityInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+            },
+            text = { Text(stringResource(R.string.settings_gap_sensitivity_info)) }
+        )
+    }
+
+    Scaffold(containerColor = Color.Transparent) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            GlassScreenHeader(title = stringResource(R.string.settings_tracking_screen_title), onBack = onBack)
+
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(32.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.settings_target_label),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        IconButton(onClick = { showTargetInfo = true }, modifier = Modifier.size(20.dp)) {
+                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_target_info))
+                        }
+                    }
+                    HourRangeSlider(
+                        hours = targetHours,
+                        onHoursChange = { hours ->
+                            targetHours = hours
+                            scope.launch { settingsStore.setTargetMinutes(hours * 60) }
+                        },
+                        valueLabel = { hours -> stringResource(R.string.settings_target_hours_format, hours) },
+                        minHours = 1,
+                        maxHours = 8
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.settings_sleep_window_label),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        IconButton(onClick = { showSleepWindowInfo = true }, modifier = Modifier.size(20.dp)) {
+                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_sleep_window_info))
+                        }
+                    }
+                    Text(
+                        stringResource(R.string.settings_sleep_window_start_label),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    HourRangeSlider(
+                        hours = window1StartHour,
+                        onHoursChange = { hour ->
+                            window1StartHour = hour
+                            scope.launch { sleepWindowRepository.setWindow(1, hour * 60, window1EndHour * 60, enabled = true) }
+                        },
+                        valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
+                        minHours = 0,
+                        maxHours = 23
+                    )
+                    Text(
+                        stringResource(R.string.settings_sleep_window_end_label),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    HourRangeSlider(
+                        hours = window1EndHour,
+                        onHoursChange = { hour ->
+                            window1EndHour = hour
+                            scope.launch { sleepWindowRepository.setWindow(1, window1StartHour * 60, hour * 60, enabled = true) }
+                        },
+                        valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
+                        minHours = 0,
+                        maxHours = 23
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                            Text(stringResource(R.string.settings_sleep_window_second_label), style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                stringResource(R.string.settings_sleep_window_second_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = window2Enabled,
+                            onCheckedChange = { enabled ->
+                                window2Enabled = enabled
+                                scope.launch { sleepWindowRepository.setWindow(2, window2StartHour * 60, window2EndHour * 60, enabled) }
+                            },
+                            colors = teperaSwitchColors()
+                        )
+                    }
+                    if (window2Enabled) {
+                        Text(
+                            stringResource(R.string.settings_sleep_window_start_label),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        HourRangeSlider(
+                            hours = window2StartHour,
+                            onHoursChange = { hour ->
+                                window2StartHour = hour
+                                scope.launch { sleepWindowRepository.setWindow(2, hour * 60, window2EndHour * 60, enabled = true) }
+                            },
+                            valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
+                            minHours = 0,
+                            maxHours = 23
+                        )
+                        Text(
+                            stringResource(R.string.settings_sleep_window_end_label),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        HourRangeSlider(
+                            hours = window2EndHour,
+                            onHoursChange = { hour ->
+                                window2EndHour = hour
+                                scope.launch { sleepWindowRepository.setWindow(2, window2StartHour * 60, hour * 60, enabled = true) }
+                            },
+                            valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
+                            minHours = 0,
+                            maxHours = 23
+                        )
+                    }
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            stringResource(R.string.settings_gap_sensitivity_label),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        IconButton(onClick = { showGapSensitivityInfo = true }, modifier = Modifier.size(20.dp)) {
+                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_gap_sensitivity_info))
+                        }
+                    }
+                    val sensitivityOptions = listOf(
+                        GapSensitivity.RARE to stringResource(R.string.settings_gap_sensitivity_rare),
+                        GapSensitivity.NORMAL to stringResource(R.string.settings_gap_sensitivity_normal),
+                        GapSensitivity.FREQUENT to stringResource(R.string.settings_gap_sensitivity_frequent)
+                    )
+                    PillSegmentedControl(
+                        options = sensitivityOptions,
+                        selected = gapSensitivity,
+                        onSelect = { sensitivity ->
+                            gapSensitivity = sensitivity
+                            scope.launch { settingsStore.setGapSensitivity(sensitivity) }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

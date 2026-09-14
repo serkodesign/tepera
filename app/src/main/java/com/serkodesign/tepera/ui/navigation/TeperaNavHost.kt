@@ -16,10 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Pending
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -63,6 +61,7 @@ import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
+import com.serkodesign.tepera.ui.diary.DiaryScreen
 import com.serkodesign.tepera.ui.gates.GatePauseScreen
 import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
@@ -72,8 +71,11 @@ import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
+import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
+import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
+import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaGradientBackground
 
@@ -88,19 +90,23 @@ private object Routes {
     const val CATEGORY_ONBOARDING = "category_onboarding"
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
     const val SETTINGS = "settings"
+    const val TRACKING_SETTINGS = "tracking_settings"
+    const val LANGUAGE_SETTINGS = "language_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val STATS = "stats"
+    const val DIARY = "diary"
     const val SPIKE_T1 = "spike_t1"
     const val GATES = "gates"
 
-    // Три вкладки нижнього навбару (оновлений Figma-фрейм, node 1951:4017): Home, Статистика,
-    // і третя ("pending"-іконка) — за запитом користувача додана як вкладка, але поки що
-    // НЕактивна (немає екрана в фреймі, який вона мала б відкривати). Кнопки "+" в навбарі
-    // більше нема: додавання часу тепер per-категорійне (see CategoryCard.onAddTime у
-    // HomeScreen.kt) через ADD_ENTRY_WITH_CATEGORY, а не через загальний вибір категорії.
-    // Налаштування відкриваються іконкою-шестернею на Home, не вкладкою навбару.
-    val BOTTOM_NAV_ROUTES = setOf(HOME, STATS)
+    // Три вкладки нижнього навбару, node 2146:320 (Figma, замінив попередній фрейм 1951:4017,
+    // де третя вкладка була "pending"-іконкою без екрана) — Home, Diary, Stats, у цьому порядку
+    // (Diary — посередині, не праворуч). За прямим запитом користувача заглушку "Незабаром"
+    // прибрано, замість неї — повноцінна вкладка "Щоденник" (колишня `HistoryCard` зі Статистики).
+    // Кнопки "+" в навбарі нема: додавання часу — per-категорійне (CategoryCard.onAddTime у
+    // HomeScreen.kt) через ADD_ENTRY_WITH_CATEGORY. Налаштування відкриваються іконкою-шестернею
+    // на Home, не вкладкою навбару.
+    val BOTTOM_NAV_ROUTES = setOf(HOME, DIARY, STATS)
 
     const val GATE_PAUSE = "gate_pause/{packageName}"
 
@@ -111,7 +117,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES,
+        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
         GATE_PAUSE
@@ -239,6 +245,16 @@ fun TeperaNavHost(
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
                     unlockRepository = unlockRepository,
+                    pauseRepository = pauseRepository
+                )
+            }
+            composable(Routes.DIARY) {
+                DiaryScreen(
+                    activityRepository = activityRepository,
+                    categoryRepository = categoryRepository,
+                    balanceRepository = balanceRepository,
+                    sleepWindowRepository = sleepWindowRepository,
+                    unlockRepository = unlockRepository,
                     pauseRepository = pauseRepository,
                     onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) }
                 )
@@ -310,8 +326,8 @@ fun TeperaNavHost(
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    settingsStore = settingsStore,
-                    sleepWindowRepository = sleepWindowRepository,
+                    onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
+                    onOpenLanguage = { navController.navigate(Routes.LANGUAGE_SETTINGS) },
                     onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
@@ -319,6 +335,16 @@ fun TeperaNavHost(
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onBack = { navController.popBackStack() }
                 )
+            }
+            composable(Routes.TRACKING_SETTINGS) {
+                TrackingSettingsScreen(
+                    settingsStore = settingsStore,
+                    sleepWindowRepository = sleepWindowRepository,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.LANGUAGE_SETTINGS) {
+                LanguageSettingsScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.SPIKE_T1) {
                 SpikeT1Screen(onBack = { navController.popBackStack() })
@@ -366,12 +392,16 @@ fun TeperaNavHost(
 }
 
 /**
- * "Таблетка" нижнього навбару з оновленого Figma-фрейму (Home screen, node 1951:4017): суцільна
- * темно-зелена напівпрозора підложка (не біла, як раніше), 3 РІВНОВЕЛИКІ вкладки — вибрана
- * показує іконку+підпис на світлішій підсвітці, невибрані лишень іконку. Кнопки "+" по центру
- * більше нема (за запитом користувача — додавання часу тепер per-категорійне, див.
- * HomeScreen.CategoryCard). Третя вкладка ("pending", кружок із трьома крапками) поки що НЕ
- * веде нікуди — у фреймі немає екрана для неї; додана як вкладка, але неактивна (за запитом).
+ * "Таблетка" нижнього навбару — точна відповідність Figma-фрейму "Everyday_Designs", node
+ * 2146:320 (get_design_context + get_variable_defs): біла картка (Surface/surface-card,
+ * замінила попередню суцільну темно-зелену з node 1951:4017 — `TeperaPalette.navPillDark`
+ * лишений у палітрі як історія рішення), 3 РІВНОВЕЛИКІ вкладки Home/Diary/Stats (у цьому
+ * порядку — Diary посередині, не праворуч). Вибрана вкладка — м'ятна підсвітка (Brand/200) з
+ * текстом і темно-зеленою іконкою (Brand/800), невибрані — лише сіра іконка (Text/text-
+ * secondary), без підпису. Іконки — `TeperaIcons` (SVG-точні вектори з того самого фрейму, не
+ * найближчі глифи material-icons-extended). Кнопки "+"/"Незабаром" по центру більше нема —
+ * заглушку прибрано (за запитом користувача), додавання часу лишається per-категорійним
+ * (HomeScreen.CategoryCard).
  */
 @Composable
 private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostController) {
@@ -387,13 +417,13 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
-            .background(TeperaPalette.navPillDark)
-            .padding(4.dp),
+            .background(TeperaPalette.navPillCard)
+            .padding(6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavPillTab(
-            icon = Icons.Filled.Home,
+            icon = TeperaIcons.Home,
             label = stringResource(R.string.home_screen_title),
             selected = currentRoute == Routes.HOME,
             modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -408,7 +438,22 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             }
         )
         NavPillTab(
-            icon = Icons.Filled.BarChart,
+            icon = TeperaIcons.Ballot,
+            label = stringResource(R.string.diary_nav_action),
+            selected = currentRoute == Routes.DIARY,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            onClick = {
+                if (currentRoute != Routes.DIARY) {
+                    navController.navigate(Routes.DIARY) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+        )
+        NavPillTab(
+            icon = TeperaIcons.Leaderboard,
             label = stringResource(R.string.stats_nav_action),
             selected = currentRoute == Routes.STATS,
             modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -422,14 +467,6 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
                 }
             }
         )
-        NavPillTab(
-            icon = Icons.Filled.Pending,
-            label = stringResource(R.string.nav_more_placeholder),
-            selected = false,
-            enabled = false,
-            modifier = Modifier.weight(1f).fillMaxHeight(),
-            onClick = { }
-        )
     }
 }
 
@@ -439,27 +476,43 @@ private fun NavPillTab(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    modifier: Modifier = Modifier
 ) {
-    val contentColor = Color.White.copy(alpha = if (enabled) 1f else 0.4f)
+    val contentColor = if (selected) TeperaPalette.navPillSelectedContent else TeperaPalette.navPillUnselectedIcon
+    val shape = RoundedCornerShape(40.dp)
     Box(
         modifier = modifier
             .fillMaxHeight()
             .padding(4.dp)
-            .clip(RoundedCornerShape(40.dp))
-            .then(if (selected) Modifier.background(TeperaPalette.navPillSelectedHighlight) else Modifier)
-            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
+            // Тінь вибраної вкладки (drop-shadow з фрейму) прибрана за прямим запитом користувача.
+            .clip(shape)
+            .then(if (selected) Modifier.background(TeperaPalette.navPillSelected) else Modifier)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier.padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            // Відстань іконка-підпис зменшена з 4.dp до 2.dp за прямим запитом користувача.
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(icon, contentDescription = if (selected) null else label, tint = contentColor)
             if (selected) {
-                Text(label, color = contentColor, style = MaterialTheme.typography.bodyMedium)
+                // maxLines/softWrap: "Щоденник" (9 символів) ледь не влазить у третину ширини
+                // навбару поруч з іконкою й переносився на 2 рядки, ламаючи висоту "таблетки"
+                // (перевірено живцем на Huawei P9) — коротші "Сьогодні"/"Огляд" цього не показали,
+                // тому в макеті це не було видно. Один рядок, з "…" як крайній запобіжник.
+                Text(
+                    label,
+                    color = contentColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    softWrap = false,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = TeperaPalette.headlineFont,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
             }
         }
     }

@@ -35,7 +35,13 @@
     <string name="add_time_action_format">Додати час: %1$s</string>
     <string name="category_start_action">Почати</string>
     <string name="category_stop_action">Зупинити</string>
-    <string name="nav_more_placeholder">Незабаром</string>
+
+    <!-- Щоденник (нова вкладка навбару, node 2146:320 — замінила неактивну заглушку "Незабаром";
+         "Історія" переїхала сюди з екрана Статистики за запитом користувача) -->
+    <!-- За прямим запитом користувача підпис вкладки навбару відрізняється від заголовка
+         самого екрана (заголовок лишається "Щоденник" — перейменовано лише в навбарі). -->
+    <string name="diary_nav_action">Огляд</string>
+    <string name="diary_screen_title">Щоденник</string>
 
     <!-- Привітання на Home, за часом доби (Figma-фрейм Everyday_Designs) -->
     <string name="greeting_morning">Доброго ранку</string>
@@ -141,6 +147,13 @@
     <string name="settings_language_en">English</string>
     <string name="settings_backup_restore_action">Резервне копіювання</string>
     <string name="settings_other_section">Інше</string>
+
+    <!-- Згруповано в окремі під-екрани за прямим запитом користувача (той самий патерн, що
+         Категорії/Виключені застосунки/Ворота — рядок з ">" веде на новий екран). -->
+    <string name="settings_tracking_action">Відстеження</string>
+    <string name="settings_tracking_screen_title">Відстеження</string>
+    <string name="settings_language_action">Мова</string>
+    <string name="settings_language_screen_title">Мова</string>
     <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, без оцінки перевищення.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_sleep_window_label">Вікно сну</string>
@@ -253,13 +266,15 @@
     <string name="add_entry_overlap_confirm">Зберегти все одно</string>
 
     <!-- Статистика (FR-5.2, FR-5.3) -->
-    <string name="stats_nav_action">Огляд</string>
+    <!-- За прямим запитом користувача підпис вкладки навбару відрізняється від заголовка
+         самого екрана (заголовок лишається "Статистика" — перейменовано лише в навбарі). -->
+    <string name="stats_nav_action">Дані</string>
     <string name="stats_screen_title">Статистика</string>
     <string name="stats_period_day">День</string>
     <string name="stats_period_week">Тиждень</string>
     <string name="stats_period_month">Місяць</string>
     <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
-    <string name="stats_weekly_trend_title">Тижневий тренд Online-часу</string>
+    <string name="stats_weekly_trend_title">Тренд Online-часу</string>
     <string name="stats_no_data">Немає даних за цей період</string>
 
     <!-- T-2 (tepera-dev-spec.md): бекфіл історії пауз одразу після надання дозволу -->

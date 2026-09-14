@@ -53,10 +53,17 @@ object TeperaPalette {
     val navPill = Color(0x80FFFFFF)
     val addButtonBackground = offlineCard // за запитом: той самий зелений, що й Offline-блок балансу
 
-    // Оновлений нижній навбар (Home screen, node 1951:4017): суцільна темно-зелена "таблетка"
-    // замість напівпрозорої білої, вибрана вкладка підсвічена світлішим напівпрозорим кружком.
-    val navPillDark = Color(0xB2073634) // rgba(7,54,52,0.7)
-    val navPillSelectedHighlight = Color(0x40FFFFFF) // rgba(255,255,255,0.25)
+    // Навбар (Home/Diary/Stats), node 2146:320 — заміна попередньої темно-зеленої "таблетки"
+    // (node 1951:4017, `navPillDark`/`navPillSelectedHighlight` нижче, лишені як історія
+    // рішення на випадок відкату) на білу картку з вибраною вкладкою на м'якому м'ятному
+    // фоні — точні токени фрейму (get_variable_defs): Surface/surface-card, Brand/200, Brand/800.
+    val navPillCard = Color(0xFFFFFFFF)
+    val navPillSelected = Color(0xFFB2E5D3) // Brand/200
+    val navPillSelectedContent = Color(0xFF003926) // Brand/800 — текст+іконка вибраної вкладки
+    val navPillUnselectedIcon = Color(0xFF505050) // Text/text-secondary — іконка невибраної вкладки
+
+    val navPillDark = Color(0xB2073634) // rgba(7,54,52,0.7) — попередній варіант, не використовується
+    val navPillSelectedHighlight = Color(0x40FFFFFF) // rgba(255,255,255,0.25) — попередній варіант
 
     // Фрейми Settings/Categories/Excluded apps/Backup and restore (node 1951:909 сторінка) —
     // фірмовий темно-зелений для іконок-навігаторів у Налаштуваннях (Категорії/Виключені

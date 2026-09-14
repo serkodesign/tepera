@@ -32,7 +32,11 @@
     <string name="add_time_action_format">Add time: %1$s</string>
     <string name="category_start_action">Start</string>
     <string name="category_stop_action">Stop</string>
-    <string name="nav_more_placeholder">Coming soon</string>
+
+    <!-- Diary (new navbar tab, node 2146:320 — replaced the inactive "Coming soon" placeholder;
+         "History" moved here from the Stats screen at the user's request) -->
+    <string name="diary_nav_action">Overview</string>
+    <string name="diary_screen_title">Diary</string>
 
     <!-- Time-of-day greeting on Home (Figma frame Everyday_Designs) -->
     <string name="greeting_morning">Good morning</string>
@@ -134,6 +138,13 @@
     <string name="settings_language_en">English</string>
     <string name="settings_backup_restore_action">Backup and restore</string>
     <string name="settings_other_section">Other</string>
+
+    <!-- Grouped into their own sub-screens at the user's request (same pattern as Categories/
+         Excluded apps/Gates — a row with ">" opens a new screen). -->
+    <string name="settings_tracking_action">Tracking</string>
+    <string name="settings_tracking_screen_title">Tracking</string>
+    <string name="settings_language_action">Language</string>
+    <string name="settings_language_screen_title">Language</string>
     <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment for going over.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_sleep_window_label">Sleep window</string>
@@ -246,13 +257,13 @@
     <string name="add_entry_overlap_confirm">Save anyway</string>
 
     <!-- Stats (FR-5.2, FR-5.3) -->
-    <string name="stats_nav_action">Stats</string>
+    <string name="stats_nav_action">Data</string>
     <string name="stats_screen_title">Stats</string>
     <string name="stats_period_day">Day</string>
     <string name="stats_period_week">Week</string>
     <string name="stats_period_month">Month</string>
     <string name="stats_category_breakdown_title">Offline time by category</string>
-    <string name="stats_weekly_trend_title">Weekly Online-time trend</string>
+    <string name="stats_weekly_trend_title">Online-time trend</string>
     <string name="stats_no_data">No data for this period</string>
 
     <!-- T-2 (tepera-dev-spec.md): pause-history backfill right after usage access is granted -->

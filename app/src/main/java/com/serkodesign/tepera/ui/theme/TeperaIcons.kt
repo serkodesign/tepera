@@ -1,0 +1,53 @@
+package com.serkodesign.tepera.ui.theme
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.unit.dp
+
+/**
+ * Іконки нижнього навбару — точні векторні копії Figma-фрейму "Everyday_Designs", node 2146:320
+ * (home/ballot/leaderboard, 24×24, path напряму зі SVG-експорту MCP), а не найближчі глифи з
+ * androidx.compose.material.icons-extended: ні "Ballot", ні "Leaderboard" з бібліотеки не
+ * збігаються геометрично з цим фреймом (там інший, старіший стиль Material Icons, тут —
+ * Material Symbols Outlined). `PathParser` розбирає SVG-рядок "d" один в один, без ручного
+ * переписування команд — гарантія піксель-в-піксель відповідності, яку інакше легко зламати
+ * одруком.
+ */
+private fun vectorOf(name: String, svgPath: String): ImageVector =
+    ImageVector.Builder(
+        name = name,
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).addPath(
+        pathData = PathParser().parsePathString(svgPath).toNodes(),
+        fill = SolidColor(Color.Black),
+        pathFillType = PathFillType.NonZero
+    ).build()
+
+object TeperaIcons {
+    val Home: ImageVector by lazy {
+        vectorOf(
+            "TeperaHome",
+            "M6 19H9.69225V13.1155H14.3077V19H18V10L12 5.4615L6 10V19ZM5 20V9.5L12 4.2115L19 9.5V20H13.3077V14.1155H10.6923V20H5Z"
+        )
+    }
+
+    val Ballot: ImageVector by lazy {
+        vectorOf(
+            "TeperaBallot",
+            "M12 10H16.6155V9H12V10ZM12 15H16.6155V14H12V15ZM9.874 10.374C10.1118 10.1362 10.2308 9.84483 10.2308 9.5C10.2308 9.15517 10.1118 8.86383 9.874 8.626C9.63617 8.38817 9.34483 8.26925 9 8.26925C8.65517 8.26925 8.36383 8.38817 8.126 8.626C7.88817 8.86383 7.76925 9.15517 7.76925 9.5C7.76925 9.84483 7.88817 10.1362 8.126 10.374C8.36383 10.6118 8.65517 10.7307 9 10.7307C9.34483 10.7307 9.63617 10.6118 9.874 10.374ZM9.874 15.374C10.1118 15.1362 10.2308 14.8448 10.2308 14.5C10.2308 14.1552 10.1118 13.8638 9.874 13.626C9.63617 13.3882 9.34483 13.2692 9 13.2692C8.65517 13.2692 8.36383 13.3882 8.126 13.626C7.88817 13.8638 7.76925 14.1552 7.76925 14.5C7.76925 14.8448 7.88817 15.1362 8.126 15.374C8.36383 15.6118 8.65517 15.7308 9 15.7308C9.34483 15.7308 9.63617 15.6118 9.874 15.374ZM5.6155 20C5.15517 20 4.77083 19.8458 4.4625 19.5375C4.15417 19.2292 4 18.8448 4 18.3845V5.6155C4 5.15517 4.15417 4.77083 4.4625 4.4625C4.77083 4.15417 5.15517 4 5.6155 4H18.3845C18.8448 4 19.2292 4.15417 19.5375 4.4625C19.8458 4.77083 20 5.15517 20 5.6155V18.3845C20 18.8448 19.8458 19.2292 19.5375 19.5375C19.2292 19.8458 18.8448 20 18.3845 20H5.6155Z"
+        )
+    }
+
+    val Leaderboard: ImageVector by lazy {
+        vectorOf(
+            "TeperaLeaderboard",
+            "M4 19H8.673V11H4V19ZM9.673 19H14.327V5H9.673V19ZM15.327 19H20V13H15.327V19ZM3 20V10H8.673V4H15.327V12H21V20H3Z"
+        )
+    }
+}

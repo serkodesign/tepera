@@ -3,7 +3,6 @@ package com.serkodesign.tepera.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -17,7 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -37,46 +35,28 @@ data class CategoryBreakdownItem(val category: CategoryEntity, val minutes: Int)
  */
 data class DailyBalancePoint(val dayStartMillis: Long, val onlineMinutes: Int)
 
-/** Історія на Stats (за прямим запитом користувача, не в SRS) — один запис + резолвлена категорія. */
-data class HistoryEntryItem(val entry: ActivityEntryEntity, val category: CategoryEntity)
-
-/** Один день історії — [dayStartMillis] лишається саме календарною північчю (не точкою старту
- * дня), бо угруповання "сьогодні"/"вчора" тут про календарний день, у який записана активність. */
-data class HistoryDayGroup(val dayStartMillis: Long, val isToday: Boolean, val items: List<HistoryEntryItem>)
+/**
+ * T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком, без
+ * виділення" — НЕ на Home (де UnlockEstimateCard іде через власну картку "оцінка →
+ * реальність"), а саме тут, на Stats, лише при period == WEEK. "Деталі дня" (сьогодні/вчора)
+ * переїхали в `DiaryViewModel` разом з `HistoryCard` (за прямим запитом користувача, Щоденник —
+ * нова вкладка навбару). `null` — нема доступу до статистики використання АБО API < 28
+ * (`UnlockRepository.isSupported()` == false, документ: фіча приховується, не апроксимується).
+ */
+data class UnlockStatsUiState(val weekCount: Int? = null)
 
 /**
- * T-14 (tepera-dev-spec.md): "доступне в деталях дня і в тижневому огляді — звичайним рядком,
- * без виділення" — НЕ на Home (де UnlockEstimateCard і йде через власну картку "оцінка →
- * реальність"), а саме тут, на Stats. `null` — нема доступу до статистики використання АБО
- * API < 28 (`UnlockRepository.isSupported()` == false, документ: фіча приховується, не
- * апроксимується); поле відсутнє в UI, а не показане як "0" (0 читалось би як підтверджений факт,
- * не "нема даних").
+ * Те саме, що [UnlockStatsUiState], для часу останнього використання (FR-D.7, T-10) — медіана
+ * за 7 днів, той самий розрахунок, що другий рядок `LastPhoneUseEstimateCard`. "Вчора" (деталі
+ * дня) — тепер у `DiaryViewModel`.
  */
-data class UnlockStatsUiState(
-    val todayCount: Int? = null,
-    val yesterdayCount: Int? = null,
-    val weekCount: Int? = null
-)
-
-/**
- * T-10 (tepera-dev-spec.md): те саме "доступне в деталях дня і в тижневому огляді", що
- * [UnlockStatsUiState], для часу останнього використання (FR-D.7). Лише "вчора" (не "сьогодні" —
- * доба, що ще триває, не має завершеного, добре визначеного "останнього" використання, той самий
- * принцип, що обґрунтовує "метрику вчорашнього дня" в самій картці-оцінці). "Тижневий огляд" —
- * медіана за 7 днів, той самий розрахунок, що другий рядок картки (`PauseRepository.
- * medianLastPhoneUseMillis()`). `null` полів — нема доступу/даних, рядок відсутній, не "00:00".
- */
-data class LastPhoneUseStatsUiState(
-    val yesterdayMillis: Long? = null,
-    val weekMedianMillis: Long? = null
-)
+data class LastPhoneUseStatsUiState(val weekMedianMillis: Long? = null)
 
 data class StatsUiState(
     val period: StatsPeriod = StatsPeriod.WEEK,
     val categoryBreakdown: List<CategoryBreakdownItem> = emptyList(),
     val weeklyTrend: List<DailyBalancePoint> = emptyList(),
     val hasUsageAccess: Boolean = true,
-    val history: List<HistoryDayGroup> = emptyList(),
     val unlockStats: UnlockStatsUiState = UnlockStatsUiState(),
     val lastPhoneUseStats: LastPhoneUseStatsUiState = LastPhoneUseStatsUiState()
 )
@@ -131,49 +111,56 @@ class StatsViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    // Історія (за прямим запитом користувача, не в SRS): "сьогодні" + "вчора", НЕ прив'язана до
-    // period/PeriodSelector вище — редагування/видалення тижня чи місяця записів одразу створило
-    // б непридатно довгий список, тому завжди рівно ці два дні, як у референсному макеті.
-    // `historyRangeStart` рахується один раз при створенні ViewModel (та сама спрощена
-    // передумова "екран живе недовго", що й у решті застосунку) — якщо екран лишається відкритим
-    // рівно через північ, межа "вчора" не зсунеться сама, доки Stats не перевідкриють.
-    private val historyRangeStart = startOfTodayMillis() - MS_PER_DAY
-
-    private val history: StateFlow<List<HistoryDayGroup>> = combine(
-        activityRepository.observeEntriesInRange(historyRangeStart, Long.MAX_VALUE),
-        categoryRepository.observeAllCategories() // усі, не лише активні — стара запись архівованої категорії й далі має ім'я/іконку
-    ) { entries, categories ->
-        val categoryById = categories.associateBy { it.id }
-        val todayStart = startOfTodayMillis()
-        val (todayEntries, yesterdayEntries) = entries.partition { it.startTime >= todayStart }
-        fun toGroup(dayStart: Long, isToday: Boolean, dayEntries: List<ActivityEntryEntity>) =
-            HistoryDayGroup(
-                dayStartMillis = dayStart,
-                isToday = isToday,
-                items = dayEntries.mapNotNull { e -> categoryById[e.categoryId]?.let { HistoryEntryItem(e, it) } }
-            ).takeIf { it.items.isNotEmpty() }
-        listOfNotNull(
-            toGroup(todayStart, true, todayEntries),
-            toGroup(historyRangeStart, false, yesterdayEntries)
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
     val uiState: StateFlow<StatsUiState> = combine(
         period,
         categoryBreakdown,
         trendAndUnlockStats,
-        hasUsageAccess,
-        history
-    ) { p, breakdown, (trend, unlock, lastPhoneUse), access, historyGroups ->
-        StatsUiState(p, breakdown, trend, access, historyGroups, unlock, lastPhoneUse)
+        hasUsageAccess
+    ) { p, breakdown, (trend, unlock, lastPhoneUse), access ->
+        StatsUiState(p, breakdown, trend, access, unlock, lastPhoneUse)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatsUiState())
 
     init {
         refreshWeeklyTrend()
     }
 
+    // Довжина тренду Online-часу мала бути прив'язана до PeriodSelector так само, як
+    // categoryBreakdown вище — до цього фіксу графік завжди показував ті самі 7 днів під
+    // заголовком "Тижневий тренд" незалежно від обраного Дня/Тижня/Місяця (знайдено живим
+    // тестуванням: перемикання на "Місяць" не міняло ні дані, ні підпис графіка).
+    private fun daysForPeriod(p: StatsPeriod): Int = when (p) {
+        StatsPeriod.DAY -> 1
+        StatsPeriod.WEEK -> 7
+        StatsPeriod.MONTH -> 30
+    }
+
+    private suspend fun computeTrend(p: StatsPeriod): List<DailyBalancePoint> {
+        val todayStart = startOfTodayMillis()
+        // FR-3.5 (SRS v2.5): та сама точка старту дня, що на Home (BalanceViewModel.refresh())
+        // — перше суттєве розблокування після вікна сну, не локальна північ. Рахується один
+        // раз тут, бо стосується лише сьогоднішньої (daysAgo == 0) точки тренду.
+        val sleepWindows = sleepWindowRepository.getEnabledWindows()
+        val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindows)
+        return (daysForPeriod(p) - 1 downTo 0).map { daysAgo ->
+            // Для сьогодні (daysAgo == 0) день ще не завершився — межа старту та сама точка
+            // старту дня, що на Home, не північ. Для минулих завершених діб — календарна доба
+            // [північ, наступна північ). Без ділення на знаменник (FR-P.6 вище) — просто
+            // абсолютні хвилини Online за цю добу.
+            val dayStart = if (daysAgo == 0) todayDayStart else todayStart - daysAgo * MS_PER_DAY
+            val dayEnd = if (daysAgo == 0) System.currentTimeMillis() else dayStart + MS_PER_DAY
+            val onlineMinutes = balanceRepository.getOnlineMinutes(dayStart, dayEnd)
+            // Точка на графіку лишається прив'язана до календарного дня (todayStart - daysAgo
+            // * MS_PER_DAY), не до фактичної точки старту дня — інакше вісь X тренду
+            // сьогоднішньої точки зсувалась би вбік від решти днів.
+            DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes)
+        }
+    }
+
     fun selectPeriod(p: StatsPeriod) {
         period.value = p
+        if (hasUsageAccess.value) {
+            viewModelScope.launch { weeklyTrend.value = computeTrend(p) }
+        }
     }
 
     /** Викликається при вході на екран і при поверненні з системних Налаштувань. */
@@ -187,46 +174,25 @@ class StatsViewModel(
                 lastPhoneUseStats.value = LastPhoneUseStatsUiState()
                 return@launch
             }
-            val todayStart = startOfTodayMillis()
-            // FR-3.5 (SRS v2.5): та сама точка старту дня, що на Home (BalanceViewModel.refresh())
-            // — перше суттєве розблокування після вікна сну, не локальна північ. Рахується один
-            // раз тут, бо стосується лише сьогоднішньої (daysAgo == 0) точки тренду.
-            val sleepWindows = sleepWindowRepository.getEnabledWindows()
-            val todayDayStart = balanceRepository.calculateDayStartMillis(sleepWindows)
-            val points = (6 downTo 0).map { daysAgo ->
-                // Для сьогодні (daysAgo == 0) день ще не завершився — межа старту та сама точка
-                // старту дня, що на Home, не північ. Для минулих завершених діб — календарна доба
-                // [північ, наступна північ). Без ділення на знаменник (FR-P.6 вище) — просто
-                // абсолютні хвилини Online за цю добу.
-                val dayStart = if (daysAgo == 0) todayDayStart else todayStart - daysAgo * MS_PER_DAY
-                val dayEnd = if (daysAgo == 0) System.currentTimeMillis() else dayStart + MS_PER_DAY
-                val onlineMinutes = balanceRepository.getOnlineMinutes(dayStart, dayEnd)
-                // Точка на графіку лишається прив'язана до календарного дня (todayStart - daysAgo
-                // * MS_PER_DAY), не до фактичної точки старту дня — інакше вісь X "тижневого
-                // тренду" сьогоднішньої точки зсувалась би вбік від решти днів.
-                DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes)
-            }
-            weeklyTrend.value = points
+            weeklyTrend.value = computeTrend(period.value)
 
-            // T-14: "деталі дня" (сьогодні/вчора) і "тижневий огляд" — звичайним рядком, не на
-            // Home. API < 28 → isSupported() == false → лишається UnlockStatsUiState() (усі null).
+            // T-14: "тижневий огляд" — звичайним рядком, не на Home. API < 28 →
+            // isSupported() == false → лишається UnlockStatsUiState() (null).
             unlockStats.value = if (unlockRepository.isSupported()) {
+                val sleepWindows = sleepWindowRepository.getEnabledWindows()
                 UnlockStatsUiState(
-                    todayCount = unlockRepository.countUnlocks(todayStart, System.currentTimeMillis(), sleepWindows),
-                    yesterdayCount = unlockRepository.countUnlocks(todayStart - MS_PER_DAY, todayStart, sleepWindows),
-                    weekCount = unlockRepository.countUnlocks(todayStart - 6 * MS_PER_DAY, System.currentTimeMillis(), sleepWindows)
+                    weekCount = unlockRepository.countUnlocks(
+                        startOfTodayMillis() - 6 * MS_PER_DAY, System.currentTimeMillis(), sleepWindows
+                    )
                 )
             } else {
                 UnlockStatsUiState()
             }
 
-            // T-10: "деталі дня" (лише вчора — сьогодні ще не має завершеного останнього
-            // використання) і "тижневий огляд" (медіана за 7 днів, той самий розрахунок, що
-            // другий рядок LastPhoneUseEstimateCard).
-            val now = System.currentTimeMillis()
+            // T-10: "тижневий огляд" — медіана за 7 днів, той самий розрахунок, що другий рядок
+            // LastPhoneUseEstimateCard.
             lastPhoneUseStats.value = LastPhoneUseStatsUiState(
-                yesterdayMillis = pauseRepository.lastPhoneUseForShiftedDay(now, daysBack = 0).lastUseMillis,
-                weekMedianMillis = pauseRepository.medianLastPhoneUseMillis(now)
+                weekMedianMillis = pauseRepository.medianLastPhoneUseMillis(System.currentTimeMillis())
             )
         }
     }

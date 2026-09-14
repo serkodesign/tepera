@@ -32,7 +32,7 @@ fun OnlineEstimateRevealCard(state: OnlineEstimateRevealUiState, onDismiss: () -
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(32.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucentLight)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
