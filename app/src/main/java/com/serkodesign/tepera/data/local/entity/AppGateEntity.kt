@@ -17,6 +17,11 @@ import androidx.room.PrimaryKey
  * [lastProceedAtMillis] — T-5 (tepera-dev-spec.md, FR-G частина 2): момент останнього успішного
  * проходження паузи для цього застосунку. `GatePauseViewModel` звіряє з ним "повторний тап
  * протягом 30 с після успішного проходу не показує паузу вдруге" — 0L = ще ніколи не проходив.
+ *
+ * [shortcutId] — реальний баг, знайдений користувачем на Samsung S23 (версія 9, `MIGRATION_8_9`):
+ * ID закріпленого ярлика тепер зберігається в рядку, а не обчислюється наживо з [packageName] —
+ * кожне створення воріт генерує СВІЖИЙ унікальний ID, щоб система завжди показувала справжній
+ * діалог розміщення на робочому столі. Деталі — `GateRepository.createGate()`.
  */
 @Entity(tableName = "app_gates")
 data class AppGateEntity(
@@ -24,5 +29,6 @@ data class AppGateEntity(
     val delaySeconds: Int,
     val originalIconHandled: Boolean,
     val createdAt: Long = System.currentTimeMillis(),
-    val lastProceedAtMillis: Long = 0L
+    val lastProceedAtMillis: Long = 0L,
+    val shortcutId: String = "gate_$packageName"
 )

@@ -56,6 +56,11 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * (`Migrations.kt`).
  * T-6 (tepera-dev-spec.md): додано GateEventEntity (події воріт — годує картку FR-P.3
  * "свідчення спроможності") — версія 8, `MIGRATION_7_8` (`Migrations.kt`).
+ * Реальний баг, знайдений користувачем на Samsung S23: додано `shortcutId` до AppGateEntity —
+ * ID закріпленого ярлика тепер зберігається в рядку замість обчислення наживо з packageName,
+ * інакше повторне створення воріт для того самого застосунку мовчки "успішно" перевикористовувало
+ * старий вимкнений ярлик без показу системного діалогу розміщення — версія 9, `MIGRATION_8_9`
+ * (`Migrations.kt`).
  */
 @Database(
     entities = [
@@ -69,7 +74,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         CardShowEntity::class,
         GateEventEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

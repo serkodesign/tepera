@@ -32,62 +32,71 @@ class GateRepository(
         ShortcutManagerCompat.isRequestPinShortcutSupported(context)
 
     /**
-     * @return true, якщо ворота реально створено (закріплено новий ярлик АБО повернуто раніше
-     * вимкнений — див. нижче); false, якщо `requestPinShortcut()` не підтримується.
+     * @return true, якщо ворота реально створено; false, якщо `requestPinShortcut()` не
+     * підтримується або сам запит відмовив.
      *
-     * **Реальний краш, знайдений і виправлений живим тестуванням (Samsung S23):** `shortcutIdFor()`
-     * — детермінований ID (`gate_$packageName`), тож повторне створення воріт для застосунку, чиї
-     * попередні ворота видаляли (`removeGate()` нижче лише ВИМИКАЄ ярлик — Android не дає
-     * застосунку самостійно зняти закріплений ярлик), намагається запросити пін для ID, який уже
-     * існує в системі, лише вимкненим. `ShortcutManager.requestPinShortcut()` для такого ID кидає
-     * `IllegalArgumentException` ("already exists but disabled") аж до краху застосунку — без
-     * жодного власного try/catch тут це валило весь процес (відтворено: створення воріт для
-     * Instagram, чиї ворота існували й були видалені в попередній сесії T-4/T-5, крашило Tepera
-     * щоразу). Фікс: якщо ярлик із таким ID уже закріплений, але вимкнений — не пінити заново
-     * (сам факт закріплення не зникає з видаленням рядка в `app_gates`), а ввімкнути й оновити
-     * наявний. Виклик `requestPinShortcut()` для решти випадків лишається обгорнутим у try/catch
-     * як запобіжник від інших системних відмов того самого роду.
+     * **Другий реальний баг, знайдений користувачем на Samsung S23 (версія 9, `MIGRATION_8_9`):**
+     * попередня версія рахувала ID ярлика наживо, детерміновано з `packageName`
+     * (`"gate_" + packageName`) — тож ПОВТОРНЕ створення воріт для застосунку, чиї попередні
+     * ворота видаляли (`removeGate()` нижче лише ВИМИКАЄ ярлик — Android не дає застосунку
+     * самостійно зняти закріплений ярлик, той ID і далі "існує" в системі), завжди намагалось
+     * перевикористати ТОЙ САМИЙ ID. Раніше тут була гілка "якщо ярлик з таким ID уже закріплений,
+     * але вимкнений — не пінити заново, а ввімкнути й оновити наявний" (щоб уникнути
+     * `IllegalArgumentException`, яку `requestPinShortcut()` кидає для вже існуючого вимкненого
+     * ID). Та `enableShortcuts()` НЕ показує системний діалог розміщення на робочому столі —
+     * просто знімає прапорець "вимкнено" з запису, який лишається де й був (іноді взагалі не на
+     * видимому лаунчері — `dumpsys shortcut` підтвердив: один і той самий детермінований ID міг
+     * "прилипнути" до невидимого лаунчера типу `com.google.android.as`/`com.microsoft.launcher`
+     * ще з першої спроби). Наслідок: застосунок рапортував "Ярлик створено", а іконка ніде не
+     * з'являлась — відтворено буквально (Instagram: видалив ворота, створив заново, жодного
+     * системного діалогу, `enableShortcuts()` мовчки "оживив" старий невидимий запис).
+     * Фікс — кожне створення генерує СВІЖИЙ унікальний ID ([shortcutId], `AppGateEntity`), якого
+     * система ще НІКОЛИ не бачила: `requestPinShortcut()` тоді гарантовано трактує запит як новий
+     * і показує справжній діалог розміщення. Стара гілка "увімкнути вимкнений" прибрана
+     * повністю — вона більше не потрібна (і не може кинути ту саму виключну ситуацію, яку раніше
+     * запобігала, бо ID більше ніколи не повторюється). try/catch лишається як запобіжник від
+     * інших системних відмов.
+     *
+     * **Перший реальний баг (диспетчер виклику):** `requestPinShortcut()` має виконуватись одразу
+     * услід за дією користувача (тап "Створити ворота") на диспетчері виклику (Main, з
+     * `rememberCoroutineScope()` у GatesScreen) — лаунчер перевіряє, чи застосунок справді щойно
+     * на передньому плані, перш ніж показати діалог; перемикання на IO раніше додавало
+     * непередбачувану затримку, через яку деякі лаунчери мовчки відмовлялись показати діалог.
+     * Лише вставка в Room явно йде на IO — єдина частина, що справді потребує фонового потоку.
      */
-    suspend fun createGate(packageName: String, label: String, delaySeconds: Int): Boolean =
-        withContext(Dispatchers.IO) {
-            if (!isPinShortcutSupported()) return@withContext false
+    suspend fun createGate(packageName: String, label: String, delaySeconds: Int): Boolean {
+        if (!isPinShortcutSupported()) return false
 
-            val id = shortcutIdFor(packageName)
-            val shortcut = ShortcutInfoCompat.Builder(context, id)
-                .setShortLabel(label)
-                .setIcon(buildGateShortcutIcon(context, packageName))
-                .setIntent(
-                    Intent(context, MainActivity::class.java)
-                        .setAction(Intent.ACTION_VIEW)
-                        .putExtra(GATE_TARGET_PACKAGE_EXTRA, packageName)
-                )
-                .build()
+        val id = "gate_${packageName}_${System.currentTimeMillis()}"
+        val shortcut = ShortcutInfoCompat.Builder(context, id)
+            .setShortLabel(label)
+            .setIcon(buildGateShortcutIcon(context, packageName))
+            .setIntent(
+                Intent(context, MainActivity::class.java)
+                    .setAction(Intent.ACTION_VIEW)
+                    .putExtra(GATE_TARGET_PACKAGE_EXTRA, packageName)
+            )
+            .build()
 
-            val requested = try {
-                val shortcutManager = context.getSystemService(ShortcutManager::class.java)
-                val existingDisabled = shortcutManager?.pinnedShortcuts
-                    ?.any { it.id == id && !it.isEnabled } == true
-                if (existingDisabled && shortcutManager != null) {
-                    shortcutManager.enableShortcuts(listOf(id))
-                    shortcutManager.updateShortcuts(listOf(shortcut.toShortcutInfo()))
-                    true
-                } else {
-                    ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
-                }
-            } catch (e: Exception) {
-                false
-            }
-            if (requested) {
+        val requested = try {
+            ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
+        } catch (e: Exception) {
+            false
+        }
+        if (requested) {
+            withContext(Dispatchers.IO) {
                 dao.insert(
                     AppGateEntity(
                         packageName = packageName,
                         delaySeconds = delaySeconds,
-                        originalIconHandled = false
+                        originalIconHandled = false,
+                        shortcutId = id
                     )
                 )
             }
-            requested
         }
+        return requested
+    }
 
     /**
      * Android не дає застосунку самостійно зняти вже закріплений ярлик з робочого столу —
@@ -95,8 +104,10 @@ class GateRepository(
      * тап по ньому більше нічого не відкриває (ShortcutManager сам показує системне пояснення).
      */
     suspend fun removeGate(packageName: String) = withContext(Dispatchers.IO) {
-        val shortcutManager = context.getSystemService(ShortcutManager::class.java)
-        shortcutManager?.disableShortcuts(listOf(shortcutIdFor(packageName)))
+        val shortcutId = dao.getByPackageName(packageName)?.shortcutId
+        if (shortcutId != null) {
+            context.getSystemService(ShortcutManager::class.java)?.disableShortcuts(listOf(shortcutId))
+        }
         dao.deleteByPackageName(packageName)
     }
 
@@ -117,7 +128,7 @@ class GateRepository(
         val shortcutManager = context.getSystemService(ShortcutManager::class.java) ?: return@withContext
         val pinnedIds = shortcutManager.pinnedShortcuts.map { it.id }.toSet()
         dao.getAllOnce().forEach { gate ->
-            if (shortcutIdFor(gate.packageName) !in pinnedIds) {
+            if (gate.shortcutId !in pinnedIds) {
                 dao.deleteByPackageName(gate.packageName)
             }
         }
@@ -151,8 +162,6 @@ class GateRepository(
     fun getLaunchIntent(packageName: String): Intent? =
         context.packageManager.getLaunchIntentForPackage(packageName)
             ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-    private fun shortcutIdFor(packageName: String) = "gate_$packageName"
 
     companion object {
         const val GATE_TARGET_PACKAGE_EXTRA = "gate_target_package"
