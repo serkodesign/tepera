@@ -424,7 +424,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavPillTab(
-            icon = TeperaIcons.Home,
+            icon = if (currentRoute == Routes.HOME) TeperaIcons.HomeFilled else TeperaIcons.HomeOutlined,
             label = stringResource(R.string.home_screen_title),
             selected = currentRoute == Routes.HOME,
             modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -439,7 +439,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             }
         )
         NavPillTab(
-            icon = TeperaIcons.Ballot,
+            icon = if (currentRoute == Routes.DIARY) TeperaIcons.BallotFilled else TeperaIcons.BallotOutlined,
             label = stringResource(R.string.diary_nav_action),
             selected = currentRoute == Routes.DIARY,
             modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -454,7 +454,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             }
         )
         NavPillTab(
-            icon = TeperaIcons.Leaderboard,
+            icon = if (currentRoute == Routes.STATS) TeperaIcons.LeaderboardFilled else TeperaIcons.LeaderboardOutlined,
             label = stringResource(R.string.stats_nav_action),
             selected = currentRoute == Routes.STATS,
             modifier = Modifier.weight(1f).fillMaxHeight(),
