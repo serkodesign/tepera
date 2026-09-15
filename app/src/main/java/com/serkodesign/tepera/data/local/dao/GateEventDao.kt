@@ -15,4 +15,10 @@ interface GateEventDao {
             "AND atMillis >= :fromMillis AND atMillis < :toMillis"
     )
     suspend fun countByResultInRange(result: String, fromMillis: Long, toMillis: Long): Int
+
+    @Query(
+        "SELECT COUNT(*) FROM gate_events WHERE packageName = :packageName " +
+            "AND atMillis >= :fromMillis AND atMillis < :toMillis"
+    )
+    suspend fun countByPackageInRange(packageName: String, fromMillis: Long, toMillis: Long): Int
 }

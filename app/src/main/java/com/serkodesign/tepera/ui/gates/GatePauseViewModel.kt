@@ -18,8 +18,11 @@ import kotlinx.coroutines.launch
 data class GatePauseUiState(
     val loading: Boolean = true,
     val appLabel: String = "",
-    val delaySeconds: Int = 1,
-    val remainingSeconds: Int = 1,
+    val attemptsToday: Int = 1,
+    // null = очікування завершилось (канонічний "нема чого рахувати" стан) — цифра ховається
+    // (за прямим запитом користувача).
+    val remainingSeconds: Int? = null,
+    val canContinue: Boolean = false,
     val finished: Boolean = false
 )
 
@@ -30,12 +33,27 @@ data class GatePauseUiState(
  *
  * **Дебаунс і "вимкнено на сьогодні" перевіряються ДО першого кадру UI** (`GateRepository.
  * shouldSkipPause()`) — доки перевірка не завершилась, `uiState.loading = true` й екран не
- * малює нічого (буквальна вимога приймання: "нічого, крім назви застосунку, лічильника і
- * кнопки" — під час перевірки немає жодного з цього, тож порожній кадр її не порушує).
+ * малює нічого.
  *
  * **T-6 (tepera-dev-spec.md): [GateEventRepository.record] пишеться ЛИШЕ коли пауза реально
  * була показана** ([screenShown]) — шлях "пропустити паузу" (дебаунс/вимкнено на сьогодні) не
  * створює події: там не було моменту вибору, нема що фіксувати як "рішення" людини.
+ *
+ * **Редизайн за прямим запитом користувача (не T-5/T-6, свідома зміна попередньо задокументованої
+ * вимоги приймання "нічого, крім назви застосунку, лічильника й кнопки"):**
+ * 1. [remainingSeconds] рахує ГОЛОВНИЙ таймер очікування (5/10/20 с, обране в GatesScreen)
+ *    щосекунди вниз, доки не стане активною кнопка "Продовжити" — тоді ховається (`null`).
+ *    **Дихальна анімація "квітки" (ріст/стиск) — суто візуальна, живе цілком у `GatePauseScreen`
+ *    (Compose `Animatable`), ніяк не пов'язана з цим лічильником** — за прямим запитом
+ *    користувача (раніше число саме й було "дихальним циклом", крутилось по колу незалежно від
+ *    таймера очікування; тепер навпаки — число рахує ОЧІКУВАННЯ, а дихання крутиться само по
+ *    собі, безперервно, з першого кадру екрана).
+ * 2. "Ти намагався відкрити цей застосунок N разів" ([attemptsToday],
+ *    `GateEventRepository.countAttemptsToday()` + 1 за поточну спробу, що ще не записана).
+ * 3. Автозапуск цільового застосунку по завершенню очікування ПРИБРАНО — таймер лише знімає
+ *    [canContinue] у false→true, а сам перехід відбувається виключно по тапу "Продовжити"
+ *    ([continueToApp]), кнопка неактивна (і напівпрозора — `GatePauseScreen`), доки очікування
+ *    не мине.
  */
 class GatePauseViewModel(
     private val context: Context,
@@ -47,7 +65,7 @@ class GatePauseViewModel(
     private val _uiState = MutableStateFlow(GatePauseUiState())
     val uiState: StateFlow<GatePauseUiState> = _uiState.asStateFlow()
 
-    private var countdownJob: Job? = null
+    private var waitJob: Job? = null
     private var screenShown = false
 
     init {
@@ -65,29 +83,44 @@ class GatePauseViewModel(
             return
         }
         screenShown = true
+        val attemptsToday = gateEventRepository.countAttemptsToday(packageName) + 1
         _uiState.value = GatePauseUiState(
             loading = false,
             appLabel = resolveLabel(packageName),
-            delaySeconds = delaySeconds,
+            attemptsToday = attemptsToday,
             remainingSeconds = delaySeconds
         )
-        countdownJob = viewModelScope.launch {
-            for (remaining in delaySeconds - 1 downTo 0) {
+
+        // Показує delaySeconds..1 (ніколи 0) — по секунді на значення, і лише ПІСЛЯ останньої
+        // секунди вмикає "Продовжити" й ховає число.
+        waitJob = viewModelScope.launch {
+            for (remaining in delaySeconds - 1 downTo 1) {
                 delay(1000)
                 _uiState.value = _uiState.value.copy(remainingSeconds = remaining)
             }
-            proceed()
+            delay(1000)
+            _uiState.value = _uiState.value.copy(canContinue = true, remainingSeconds = null)
         }
     }
 
     /**
-     * "Не зараз" — і кнопка, і системна кнопка "назад" (`GatePauseScreen` перехоплює `BackHandler`
+     * "Продовжити" — активна лише коли [GatePauseUiState.canContinue]; заміняє попередній
+     * автозапуск по завершенню таймера (за прямим запитом користувача).
+     */
+    fun continueToApp() {
+        if (!_uiState.value.canContinue) return
+        waitJob?.cancel()
+        viewModelScope.launch { proceed() }
+    }
+
+    /**
+     * "Вийти" — і кнопка, і системна кнопка "назад" (`GatePauseScreen` перехоплює `BackHandler`
      * і викликає САМЕ цей метод, не покладається на дефолтне згортання `NavBackStackEntry`): без
      * цього подія T-6 фіксувалась би лише для тапу по кнопці, а вихід "назад" лишався б
-     * непорахованим "рішенням", хоча продуктово це те саме "не зараз".
+     * непорахованим "рішенням", хоча продуктово це те саме скасування.
      */
     fun cancel() {
-        countdownJob?.cancel()
+        waitJob?.cancel()
         if (screenShown) {
             viewModelScope.launch { gateEventRepository.record(packageName, GateEventResult.CANCELLED) }
         }

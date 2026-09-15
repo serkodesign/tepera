@@ -202,9 +202,9 @@
     <string name="settings_gates_action">Застосунки з затримкою</string>
     <string name="gates_screen_title">Застосунки з затримкою</string>
     <string name="gates_hint">Обрані застосунки відкриваються лише через новий ярлик, з паузою перед запуском</string>
-    <string name="gates_pause_today_label">Вимкнути ворота на сьогодні</string>
+    <string name="gates_pause_today_label">Вимкнути затримку на сьогодні</string>
     <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — ворота недоступні на цьому пристрої</string>
-    <string name="gates_section_active">Ворота</string>
+    <string name="gates_section_active">Застосунки з затримкою</string>
     <string name="gates_section_add">Додати застосунок</string>
     <string name="gates_empty">Ще немає жодних воріт</string>
     <string name="gates_delay_format">%d с</string>
@@ -218,7 +218,17 @@
     <string name="gates_instruction_body">Android не дозволяє нам прибрати оригінальну іконку %1$s за тебе. Зроби це вручну: затримай іконку на робочому столі й перетягни у "Видалити".</string>
     <string name="gates_instruction_done">Готово</string>
     <string name="gates_instruction_later">Зроблю пізніше</string>
-    <string name="gate_pause_not_now">Не зараз</string>
+    <!-- Редизайн екрана паузи за наданим макетом (за прямим запитом користувача, не T-5) -->
+    <string name="gate_pause_inhale">Вдих….</string>
+    <string name="gate_pause_exhale">Видих…</string>
+    <string name="gate_pause_continue_action">Продовжити</string>
+    <string name="gate_pause_exit_action">Вийти</string>
+    <plurals name="gate_pause_attempts_text">
+        <item quantity="one">Ти намагався відкрити цей застосунок %d раз</item>
+        <item quantity="few">Ти намагався відкрити цей застосунок %d рази</item>
+        <item quantity="many">Ти намагався відкрити цей застосунок %d разів</item>
+        <item quantity="other">Ти намагався відкрити цей застосунок %d раза</item>
+    </plurals>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>
