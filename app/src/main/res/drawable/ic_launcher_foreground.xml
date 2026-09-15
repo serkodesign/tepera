@@ -1,11 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ЗАГЛУШКА: замінюється справжньою іконкою з Figma у Фазі 6 (CLAUDE.md). -->
+<!-- Концепт "B. Два хребти": ближній темний хребет і дальній світліший, сонце визирає між ними —
+     обрано користувачем із 4 варіантів (артефакт "Гірський світанок"). Координати 1:1 з тим
+     артефактом (viewBox/viewport 108×108, той самий формат, що Android adaptive-icon canvas).
+     Головні форми лишаються в межах центрального кола safe zone (⌀66dp), хребти навмисно
+     "заземлені" — торкаються нижнього краю полотна, як і в оригінальному прев'ю.
+     Сонце — СУЦІЛЬНА заливка (#FFB58A, бренд-персиковий), за прямим запитом користувача, а не
+     радіальний градієнт, як у початковому ескізі; м'яке розмиття-"сяйво" довкола сонця з
+     ескізу (SVG feGaussianBlur) тут не відтворено — VectorDrawable фільтрів розмиття не
+     підтримує, тому сонце лишається чистим колом без гало. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Сонце — суцільна заливка, без градієнта. Малюється ПЕРШИМ (під хребтами), щоб дальній
+         і ближній хребет коректно перекривали його нижню частину — той самий порядок шарів,
+         що в оригінальному SVG-ескізі (концепт B). -->
     <path
-        android:fillColor="#F4EFE6"
-        android:pathData="M54,30 A24,24 0 1,0 54.01,30 Z M54,42 A12,12 0 1,1 53.99,42 Z" />
+        android:pathData="M51,50 A13,13 0 1 1 77,50 A13,13 0 1 1 51,50 Z"
+        android:fillColor="#FFB58A" />
+
+    <!-- Дальній (світліший) хребет -->
+    <path android:pathData="M0,108 L0,80 Q36,46 72,80 Q90,96 108,86 L108,108 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54" android:startY="46"
+                android:endX="54" android:endY="108">
+                <item android:offset="0" android:color="#6FBE94" />
+                <item android:offset="1" android:color="#2E8F63" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Ближній (темніший) хребет -->
+    <path android:pathData="M0,108 L0,94 Q66,44 108,94 L108,108 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54" android:startY="44"
+                android:endX="54" android:endY="108">
+                <item android:offset="0" android:color="#0B5A3C" />
+                <item android:offset="1" android:color="#00301F" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>
