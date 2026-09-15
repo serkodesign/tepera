@@ -50,6 +50,10 @@ import com.serkodesign.tepera.util.FeedbackForm
  * "Чутливість детекції пауз" згруповано в окремий під-екран "Відстеження", "Мова застосунку" —
  * у свій під-екран "Мова" (`TrackingSettingsScreen`/`LanguageSettingsScreen`) — той самий патерн
  * навігації, що вже був у Категорій/Виключених застосунків/Воріт, замість інлайн-блоків тут.
+ * **Два розділи (за прямим запитом користувача, звіряючись із Figma node 2156:84):** "Активності"
+ * (Відстеження, Категорії, Виключені застосунки, Ворота) і "Загальні" (Мова, Резервне
+ * копіювання, Запропонувати функцію, debug-only T-1 спайк) — замість єдиного "Інше". Порядок
+ * розділів (Активності вище Загальних) — окремий прямий запит користувача.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,17 +110,15 @@ fun SettingsScreen(
                     .padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                GlassSectionHeader(stringResource(R.string.settings_other_section))
+                // Згруповано за прямим запитом користувача: "Активності" (Відстеження,
+                // Категорії, Виключені застосунки, Ворота) — над "Загальні" (Мова, Резервне
+                // копіювання, Запропонувати функцію, T-1 спайк) — порядок розділів поміняно
+                // місцями за прямим запитом користувача.
+                GlassSectionHeader(stringResource(R.string.settings_activities_section))
                 GlassRow(
                     label = stringResource(R.string.settings_tracking_action),
                     onClick = onOpenTracking,
                     leading = { TeperaIconCircle(Icons.Filled.TrackChanges) },
-                    trailing = { NavChevron() }
-                )
-                GlassRow(
-                    label = stringResource(R.string.settings_language_action),
-                    onClick = onOpenLanguage,
-                    leading = { TeperaIconCircle(Icons.Filled.Language) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
@@ -137,14 +139,22 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(Icons.Filled.Timer) },
                     trailing = { NavChevron() }
                 )
+
+                GlassSectionHeader(stringResource(R.string.settings_general_section))
+                GlassRow(
+                    label = stringResource(R.string.settings_language_action),
+                    onClick = onOpenLanguage,
+                    leading = { TeperaIconCircle(Icons.Filled.Language) },
+                    trailing = { NavChevron() }
+                )
                 GlassRow(
                     label = stringResource(R.string.settings_backup_restore_action),
                     onClick = onOpenBackupRestore,
                     leading = { TeperaIconCircle(Icons.Filled.Archive) },
                     trailing = { NavChevron() }
                 )
-                // FR-6.4: розміщується безпосередньо під резервним копіюванням. Свідомо без
-                // бейджа й без самостійного нагадування (FR-6.6) — лежить тут і чекає.
+                // FR-6.4: чесне попередження перед відкриттям браузера. Свідомо без бейджа й без
+                // самостійного нагадування (FR-6.6) — лежить тут і чекає.
                 GlassRow(
                     label = stringResource(R.string.settings_suggest_feature_action),
                     onClick = { showSuggestFeatureConfirm = true },

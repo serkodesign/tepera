@@ -138,7 +138,8 @@
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
     <string name="settings_backup_restore_action">Backup and restore</string>
-    <string name="settings_other_section">Other</string>
+    <string name="settings_general_section">General</string>
+    <string name="settings_activities_section">Activities</string>
 
     <!-- Grouped into their own sub-screens at the user's request (same pattern as Categories/
          Excluded apps/Gates — a row with ">" opens a new screen). -->

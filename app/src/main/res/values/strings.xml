@@ -147,7 +147,8 @@
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
     <string name="settings_backup_restore_action">Резервне копіювання</string>
-    <string name="settings_other_section">Інше</string>
+    <string name="settings_general_section">Загальні</string>
+    <string name="settings_activities_section">Активності</string>
 
     <!-- Згруповано в окремі під-екрани за прямим запитом користувача (той самий патерн, що
          Категорії/Виключені застосунки/Ворота — рядок з ">" веде на новий екран). -->
