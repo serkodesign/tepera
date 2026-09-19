@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,92 +15,105 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
+import java.time.Instant
+import java.time.ZoneId
 
 /**
- * FR-3.1–3.12, FR-5.1 (SRS v2.5): "Мій день" — стиль з референсного макета (розділ 4.4,
- * Figma node 2002:170): заголовок "Твій день триває X" (FR-3.7, росте разом з реальним часом,
- * НЕ фіксована доба), тиха багатосегментна шкала (Online + кожна залогована сьогодні категорія
- * своїм кольором + нейтральна "Решта дня") з тихою засічкою орієнтиру БЕЗ підпису (FR-3.10),
- * і легенда під шкалою — кольоровий квадрат + назва + час, без відсотків (FR-P.6). Свідомо НЕ
- * протиставлення Online/Offline на одній шкалі (FR-3.8 — різні джерела, різна природа підрахунку).
+ * FR-3.1–3.12, FR-5.1 (SRS v2.5): "Мій день" — перша сторінка горизонтального пейджера Home
+ * (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726, "My day"). Замість заголовка "Твій
+ * день: X" (FR-3.7, росте разом з реальним часом) — дві білі плашки: "Перше розблокування HH:MM" і
+ * "День триває X" (той самий FR-3.7-показник). Далі тиха багатосегментна шкала (Online + кожна
+ * залогована сьогодні категорія своїм кольором + нейтральна "Решта дня", суцільна смуга без
+ * проміжків, біла "доріжка" для ще не прожитого часу) з тихою засічкою орієнтиру БЕЗ підпису
+ * (FR-3.10) і трикутниками-вказівниками "зараз" зверху й знизу, та легенда: квадрат 8dp + назва +
+ * час у форматі `Г:ХХ`, без відсотків (FR-P.6). Свідомо НЕ протиставлення Online/Offline на одній
+ * шкалі (FR-3.8 — різні джерела, різна природа підрахунку).
+ *
+ * Заголовка й ⓘ у стані "доступ є" більше нема (макет їх не містить); fallback без доступу лишає
+ * власне пояснення з кнопкою "Чому це потрібно?".
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun MyDaySection(
+fun MyDayCard(
     state: BalanceUiState,
     onOpenUsageAccessSettings: () -> Unit,
     onLearnMore: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // FR-3.7: заголовок росте разом з реальним часом — не показуємо "24 год" чи будь-яку
-        // фіксовану абстракцію доби, лише скільки дня вже сталося.
-        Text(
-            text = stringResource(R.string.my_day_title_format, formatBalanceDuration(state.dayLengthMinutes)),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Medium,
-                fontSize = 20.sp
-            ),
-            modifier = Modifier.weight(1f)
-        )
-        IconButton(onClick = onLearnMore, modifier = Modifier.size(20.dp)) {
-            Icon(Icons.Outlined.Info, contentDescription = stringResource(R.string.usage_access_learn_more))
-        }
-    }
-
-    when (state.hasUsageAccess) {
-        null -> Unit // перевірка ще триває, секція мовчить, щоб не блимати fallback-текстом
-        false -> {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.usage_access_prompt_title), style = MaterialTheme.typography.bodyLarge)
-                    Text(stringResource(R.string.usage_access_prompt_body), style = MaterialTheme.typography.bodyMedium)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = onLearnMore) { Text(stringResource(R.string.usage_access_learn_more)) }
-                        Button(onClick = onOpenUsageAccessSettings) { Text(stringResource(R.string.usage_access_open_settings)) }
+    HomeCardSurface(modifier = modifier, containerColor = TeperaPalette.homeCardFillMyDay) {
+        when (state.hasUsageAccess) {
+            null -> Unit // перевірка ще триває, картка мовчить, щоб не блимати fallback-текстом
+            false -> {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.usage_access_prompt_title), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.usage_access_prompt_body), style = MaterialTheme.typography.bodyMedium)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TeperaButton(
+                                text = stringResource(R.string.usage_access_learn_more),
+                                onClick = onLearnMore,
+                                size = TeperaButtonSize.Medium,
+                                type = TeperaButtonType.Tertiary
+                            )
+                            TeperaButton(
+                                text = stringResource(R.string.usage_access_open_settings),
+                                onClick = onOpenUsageAccessSettings,
+                                size = TeperaButtonSize.Medium,
+                                type = TeperaButtonType.Primary
+                            )
+                        }
                     }
                 }
             }
-        }
-        true -> {
-            val segments = daySegments(state)
-            if (segments.isNotEmpty()) {
-                DayStructureBar(
-                    segments = segments,
-                    targetMinutes = state.targetMinutes,
-                    daySpanMinutes = state.daySpanMinutes,
-                    dayLengthMinutes = state.dayLengthMinutes
-                )
-                DayStructureLegend(segments = segments)
+            true -> {
+                val segments = daySegments(state)
+                if (segments.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        // FlowRow: на вузьких екранах (напр. 360dp) плашки переносяться, а не обрізаються.
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (state.dayStartMillis > 0L) {
+                                HomeLabelValueChip(
+                                    label = stringResource(R.string.home_card_first_unlock_label),
+                                    value = formatClock(state.dayStartMillis)
+                                )
+                            }
+                            HomeLabelValueChip(
+                                label = stringResource(R.string.home_card_day_last_label),
+                                value = formatBalanceDuration(state.dayLengthMinutes)
+                            )
+                        }
+                        DayStructureBar(
+                            segments = segments,
+                            targetMinutes = state.targetMinutes,
+                            daySpanMinutes = state.daySpanMinutes,
+                            dayLengthMinutes = state.dayLengthMinutes
+                        )
+                    }
+                    DayStructureLegend(segments = segments)
+                }
             }
         }
     }
@@ -138,30 +153,26 @@ private fun DayStructureBar(
     val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
     val markerFraction = (targetMinutes.toFloat() / referenceMinutes).coerceIn(0f, 1f)
 
-    // Позначка "Now" (референсний макет, розділ 4.4 SRS, Figma node 2002:170) — де саме "зараз"
-    // на шкалі "пробудження → 00:00" (за запитом користувача). На відміну від засічки орієнтиру
-    // вище, ця позначка РУХАЄТЬСЯ разом із часом — по своїй природі не evaluативна (просто "де
-    // ми на годиннику", не оцінка), тому лишається трикутником-вказівником, а не безликою лінією.
+    // Позначка "Now" — де саме "зараз" на шкалі "пробудження → 00:00". На відміну від засічки
+    // орієнтиру вище, ця позначка РУХАЄТЬСЯ разом із часом — по своїй природі не евалюативна
+    // (просто "де ми на годиннику", не оцінка), тож лишається трикутниками-вказівниками: ▼ зверху
+    // й ▲ знизу шкали (Figma node 192:726).
     val nowFraction = (dayLengthMinutes.toFloat() / daySpanMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
 
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val markerX = maxWidth * markerFraction
         val nowX = maxWidth * nowFraction
         Column {
+            NowPointer("▼", nowX)
             Box(Modifier.fillMaxWidth()) {
-                Text(
-                    "▼",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.offset(x = (nowX - 8.dp).coerceAtLeast(0.dp))
-                )
-            }
-            Box(Modifier.fillMaxWidth()) {
+                // Біла "доріжка" (Figma): те, що ще не сталося (від "Now" до півночі), лишається
+                // незафарбованим — "Офлайн-життя" заповнює лише до позначки "Now".
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(16.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.White)
                 ) {
                     segments.forEach { segment ->
                         Box(
@@ -171,10 +182,6 @@ private fun DayStructureBar(
                                 .background(segment.color)
                         )
                     }
-                    // Те, що ще не сталося (від "Now" до півночі) — за запитом користувача НЕ
-                    // зафарбоване: "Офлайн-життя" заповнює лише до позначки "Now" (вище), а не
-                    // до кінця шкали. Порожній Box без .background() — крізь заокруглений Row
-                    // проглядає фон картки, як недомальована частина прогрес-бару.
                     val futureMinutes = (daySpanMinutes - dayLengthMinutes).coerceAtLeast(0)
                     if (futureMinutes > 0) {
                         Box(modifier = Modifier.weight(futureMinutes.toFloat()).fillMaxHeight())
@@ -188,13 +195,30 @@ private fun DayStructureBar(
                         .background(Color.Black.copy(alpha = 0.3f))
                 )
             }
+            NowPointer("▲", nowX)
         }
     }
 }
 
 @Composable
+private fun NowPointer(glyph: String, x: androidx.compose.ui.unit.Dp) {
+    Box(Modifier.fillMaxWidth()) {
+        Text(
+            glyph,
+            color = TeperaPalette.buttonBrandDark,
+            fontSize = 10.sp,
+            lineHeight = 12.sp,
+            modifier = Modifier.offset(x = (x - 5.dp).coerceAtLeast(0.dp))
+        )
+    }
+}
+
+@Composable
 private fun DayStructureLegend(segments: List<DaySegment>) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(
+        modifier = Modifier.padding(horizontal = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
         segments.forEach { segment ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -202,14 +226,26 @@ private fun DayStructureLegend(segments: List<DaySegment>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.size(8.dp).clip(CircleShape).background(segment.color))
-                    Text(segment.label, style = MaterialTheme.typography.bodyMedium)
+                    Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(segment.color))
+                    Text(segment.label, fontSize = 12.sp, color = HomeCardTextPrimary)
                 }
                 // FR-P.6: час завжди поруч із назвою, ніколи голий відсоток самотужки.
-                Text(formatBalanceDuration(segment.minutes), style = MaterialTheme.typography.bodyMedium)
+                Text(formatClockDuration(segment.minutes), fontSize = 11.sp, color = HomeCardTextPrimary)
             }
         }
     }
+}
+
+/** HH:MM локального часу з epoch-мілісекунд. */
+private fun formatClock(millis: Long): String {
+    val time = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalTime()
+    return "%02d:%02d".format(time.hour, time.minute)
+}
+
+/** Час у форматі `Г:ХХ` (Figma "2:45"), округлений до 15 хв — та сама логіка, що [formatBalanceDuration]. */
+private fun formatClockDuration(minutes: Int): String {
+    val (hours, remainder) = roundToQuarterHour(minutes)
+    return "%d:%02d".format(hours, remainder)
 }
 
 /**

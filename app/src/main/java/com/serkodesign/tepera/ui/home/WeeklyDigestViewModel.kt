@@ -24,6 +24,8 @@ data class WeeklyDigestUiState(
     val readingCount: Int = 0,
     val readingMinutes: Int = 0,
     val movementCount: Int = 0,
+    /** Скільки різних днів за тиждень мали запис Хобі (плитка "Хобі: N з 7 днів"). */
+    val hobbyDays: Int = 0,
     /** Хвилини від півночі, null — якщо за тиждень жодного дня не вдалось визначити точку старту. */
     val dayUsuallyStartsMinuteOfDay: Int? = null
 )
@@ -87,11 +89,18 @@ class WeeklyDigestViewModel(
             val readingEntries = entries.filter { it.categoryId == DefaultCategories.READING_ID }
             val movementCount = entries.count { it.categoryId == DefaultCategories.MOVEMENT_ID }
 
+            // Різні календарні дні з записом Хобі (не кількість записів) — плитка "N з 7 днів".
+            val hobbyDays = entries
+                .filter { it.categoryId == DefaultCategories.HOBBY_ID }
+                .map { java.time.Instant.ofEpochMilli(it.startTime).atZone(java.time.ZoneId.systemDefault()).toLocalDate() }
+                .distinct()
+                .size
+
             val dayStart = averageDayStartMinuteOfDay()
 
             val readingCount = readingEntries.size
             val readingMinutes = readingEntries.sumOf { it.durationMinutes }
-            val hasAnyMetric = readingCount > 0 || movementCount > 0 || dayStart != null
+            val hasAnyMetric = readingCount > 0 || movementCount > 0 || hobbyDays > 0 || dayStart != null
 
             // Якщо буквально нічого не сталось за тиждень — картка мовчить, а не показує нулі
             // (FR-3.4-подібний принцип: незалогованість ніколи не подається як докір).
@@ -100,6 +109,7 @@ class WeeklyDigestViewModel(
                 readingCount = readingCount,
                 readingMinutes = readingMinutes,
                 movementCount = movementCount,
+                hobbyDays = hobbyDays,
                 dayUsuallyStartsMinuteOfDay = dayStart
             )
         }

@@ -31,7 +31,9 @@ data class BalanceUiState(
     val dayLengthMinutes: Int = 0,
     val daySpanMinutes: Int = 1,
     val targetMinutes: Int = 180,
-    val denominatorMinutes: Int = 180
+    val denominatorMinutes: Int = 180,
+    /** Точка старту дня (перше суттєве розблокування) — для плашки "Перше розблокування" на Home. */
+    val dayStartMillis: Long = 0L
 )
 
 /**
@@ -102,7 +104,8 @@ class BalanceViewModel(
             dayLengthMinutes = dayLength,
             daySpanMinutes = daySpan,
             targetMinutes = target,
-            denominatorMinutes = balanceRepository.calculateDenominatorMinutes(dayStart, windows)
+            denominatorMinutes = balanceRepository.calculateDenominatorMinutes(dayStart, windows),
+            dayStartMillis = dayStart
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BalanceUiState())
 

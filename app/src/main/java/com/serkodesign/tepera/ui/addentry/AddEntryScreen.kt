@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.addentry
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -67,6 +68,7 @@ import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import com.serkodesign.tepera.util.utcMidnightToLocalStartOfDay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -369,10 +371,14 @@ private fun CategoryTile(
 ) {
     val accentColor = categoryColor(category.colorHex)
     val lineArtRes = categoryLineArtIconRes(category.iconName)
+    val tileColor by animateColorAsState(
+        if (selected) accentColor.copy(alpha = 0.35f) else TeperaPalette.cardTranslucentLight,
+        TeperaSpecs.effects(), label = "categoryTile"
+    )
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) accentColor.copy(alpha = 0.35f) else TeperaPalette.cardTranslucentLight)
+            .background(tileColor)
             .clickable(onClick = onClick)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,

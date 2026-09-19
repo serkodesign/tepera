@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.PatternRepository
+import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +21,9 @@ private const val MIN_HISTORY_DAYS_FOR_PATTERN = 2 // T-2 (tepera-dev-spec.md): 
 data class PatternUiState(
     val visible: Boolean = false,
     val hasEnoughData: Boolean = false,
-    val hourlyMinutes: List<Int> = List(24) { 0 }
+    val hourlyMinutes: List<Int> = List(24) { 0 },
+    /** Час першого розблокування ВЧОРАШНЬОЇ доби (хвилини від півночі) — лише для періоду "День" на Home. */
+    val firstUnlockMinuteOfDay: Int? = null
 )
 
 /**
@@ -70,7 +73,9 @@ class PatternViewModel(
     private val settingsStore: SettingsStore,
     initialPeriodDays: Int = PATTERN_WINDOW_DAYS_DEFAULT,
     // false на Stats: "×" є лише на картці Home і не має ховати повну картку Stats.
-    private val respectDismissal: Boolean = true
+    private val respectDismissal: Boolean = true,
+    // Потрібен лише Home (плашка "Перше розблокування" вчорашньої доби); на Stats — null.
+    private val sleepWindowRepository: SleepWindowRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PatternUiState())
@@ -110,7 +115,14 @@ class PatternViewModel(
                 // (див. коментар класу): усі нулі тут так само валідний результат, як і ненульовий.
                 val from = to - DAY_MILLIS
                 val totals = patternRepository.hourlyOnlineMinutes(from, to)
-                _uiState.value = PatternUiState(visible = true, hasEnoughData = true, hourlyMinutes = totals)
+                val firstUnlock = sleepWindowRepository?.let { windows ->
+                    val dayStart = balanceRepository.calculateDayStartMillis(windows.getEnabledWindows(), from, to)
+                    // Сентинел: нічого не знайдено — результат == кінець вікна пошуку.
+                    if (dayStart >= to) null else ((dayStart - from) / 60_000L).toInt()
+                }
+                _uiState.value = PatternUiState(
+                    visible = true, hasEnoughData = true, hourlyMinutes = totals, firstUnlockMinuteOfDay = firstUnlock
+                )
                 return@launch
             }
 
@@ -145,10 +157,13 @@ class PatternViewModel(
         private val balanceRepository: BalanceRepository,
         private val settingsStore: SettingsStore,
         private val initialPeriodDays: Int = PATTERN_WINDOW_DAYS_DEFAULT,
-        private val respectDismissal: Boolean = true
+        private val respectDismissal: Boolean = true,
+        private val sleepWindowRepository: SleepWindowRepository? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            PatternViewModel(patternRepository, balanceRepository, settingsStore, initialPeriodDays, respectDismissal) as T
+            PatternViewModel(
+                patternRepository, balanceRepository, settingsStore, initialPeriodDays, respectDismissal, sleepWindowRepository
+            ) as T
     }
 }

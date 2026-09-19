@@ -31,9 +31,9 @@ import com.serkodesign.tepera.R
  * заголовки) лишається дефолтним sans — про це запиту не було.
  */
 object TeperaPalette {
-    val backgroundBase = Color(0xFFBEDAC9) // bg-[#bed9c9] у фреймі
-    val backgroundPeachBlob = Color(0xFFFFB58A)
-    val backgroundLavenderBlob = Color(0xFFC7BFE8)
+    val backgroundBase = Color(0xFFC5E2CB) // Figma "App concept", node 192:726 — база фону
+    val backgroundCreamBlob = Color(0xFFFFFFEA) // Ellipse 6
+    val backgroundGreenBlob = Color(0xFF005122) // Ellipse 7
 
     val offlineCard = Color(0x8000C567) // rgba(0,197,103,0.5) — лишається лише для addButtonBackground
     val onlineCard = Color(0x80FF9162) // rgba(255,145,98,0.5)
@@ -79,6 +79,16 @@ object TeperaPalette {
     val buttonBrand = Color(0xFF006944)
     val buttonBrandDark = Color(0xFF003926)
 
+    // Home (Figma "App concept", node 192:726): картка категорії й кнопки в шапці.
+    val activityCardIdle = Color(0xFFEBFAE6)
+    val activityCardActive = Color(0xFF006944)
+    val activityMoreTime = Color(0xFFC5E2CB)
+    val headerButtonFill = Color(0xCCFFFFFF) // rgba(255,255,255,0.8)
+    val navTabIdleFill = Color(0xFFF0F3F4) // Surface/surface-background — невибрана вкладка навбару
+    val navTabSelectedContent = Color(0xFFDCF6ED) // Surface/surface-brand-light — текст/іконка вибраної
+    val homeCardFill = Color(0xA6FFFFFF) // rgba(255,255,255,0.65) — Day usage / This week
+    val homeCardFillMyDay = Color(0x80FFFFFF) // rgba(255,255,255,0.5) — My day
+
     // "Новий екран додавання активності" (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node
     // 61:3516) — фіолетовий акцент лише для чіпів часу (Початок/Фініш, підсумок тривалості),
     // точні токени фрейму (#220d99 текст/рамка, rgba(34,13,153,0.05) фон, rgba(34,13,153,0.3)
@@ -107,26 +117,54 @@ object TeperaPalette {
 }
 
 /**
- * Три м'які радіальні "плями" поверх базового кольору — наближення до трьох розмитих еліпсів
- * фрейму (Ellipse3/4/5), без імпорту важких blurred PNG-асетів: для декоративного фону градієнта
- * такого наближення досить, точна відповідність пікселя тут не критична.
+ * Фон застосунку — Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726 (Home screen): база
+ * `#C5E2CB` і два розмиті кола (Ellipse 6 — кремове `#FFFFEA` @50%, зверху праворуч; Ellipse 7 —
+ * темно-зелене `#005122` @15%, знизу ліворуч; радіус 302, розмиття σ = 97.55). Положення взято з
+ * кадру 375x812, 1px = 1dp: центр кремового кола — 6dp від правого й 20dp від верхнього краю,
+ * темно-зеленого — 9dp від лівого й 31dp від нижнього. Гауссове розмиття наближено радіальним
+ * градієнтом ([drawBlurredBlob]) — працює однаково на всіх API-рівнях (26+), без RenderEffect.
+ * Замінює попередній градієнт (персикова й лавандова плями) на ВЕСЬ застосунок за запитом користувача.
  */
 fun Modifier.teperaGradientBackground(): Modifier = this
     .fillMaxSize()
     .background(TeperaPalette.backgroundBase)
     .drawBehind {
-        drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(TeperaPalette.backgroundPeachBlob.copy(alpha = 0.55f), Color.Transparent),
-                center = Offset(size.width * 0.75f, size.height * 0.1f),
-                radius = size.width * 0.95f
-            )
+        val d = density
+        drawBlurredBlob(
+            center = Offset(size.width - 6f * d, 20f * d),
+            radius = 302f * d, sigma = 97.55f * d,
+            color = TeperaPalette.backgroundCreamBlob.copy(alpha = 0.5f)
         )
-        drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(TeperaPalette.backgroundLavenderBlob.copy(alpha = 0.6f), Color.Transparent),
-                center = Offset(size.width * 0.05f, size.height * 0.68f),
-                radius = size.width * 1.15f
-            )
+        drawBlurredBlob(
+            center = Offset(9f * d, size.height - 31f * d),
+            radius = 302f * d, sigma = 97.55f * d,
+            color = TeperaPalette.backgroundGreenBlob.copy(alpha = 0.15f)
         )
     }
+
+/**
+ * Наближення гауссово розмитого диска: повна непрозорість до `radius - σ`, половина на самому
+ * краї диска, нуль на `radius + 2σ` (за цією межею гаусс уже майже нульовий).
+ */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBlurredBlob(
+    center: Offset,
+    radius: Float,
+    sigma: Float,
+    color: Color
+) {
+    val outer = radius + 2f * sigma
+    drawCircle(
+        brush = Brush.radialGradient(
+            colorStops = arrayOf(
+                0f to color,
+                ((radius - sigma) / outer) to color,
+                (radius / outer) to color.copy(alpha = color.alpha * 0.5f),
+                1f to Color.Transparent
+            ),
+            center = center,
+            radius = outer
+        ),
+        radius = outer,
+        center = center
+    )
+}

@@ -41,6 +41,7 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.repository.GateEventRepository
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.util.findActivity
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -85,7 +86,7 @@ fun GatePauseScreen(
     LaunchedEffect(state.finished) {
         if (state.finished) {
             onDone()
-            (context as? Activity)?.moveTaskToBack(true)
+            context.findActivity()?.moveTaskToBack(true)
         }
     }
 

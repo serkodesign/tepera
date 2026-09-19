@@ -86,4 +86,5 @@ object DefaultCategories {
     // рядкові літерали id категорій у логіці підрахунку.
     const val READING_ID = "default-reading"
     const val MOVEMENT_ID = "default-movement"
+    const val HOBBY_ID = "default-hobby"
 }

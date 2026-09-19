@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -132,15 +133,22 @@ fun StatsScreen(
         // відступ під навбар-"таблетку" (TeperaNavHost.kt, той самий фікс, що й для Home), тож без
         // прокрутки й запасу знизу графік тижневого тренду обрізався б під напівпрозорою
         // "таблеткою" на екранах, де вміст не влазить.
+        // Перемикач День/Тиждень — sticky (за запитом користувача): стоїть ПОЗА прокручуваним
+        // Column, тож лишається на місці, коли решта екрана гортається.
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+        PeriodSelector(
+            selected = state.period,
+            onSelect = viewModel::selectPeriod,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
+        )
         Column(
             modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            PeriodSelector(selected = state.period, onSelect = viewModel::selectPeriod)
 
             // T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком,
             // без виділення" — саме тут (Stats, period == WEEK), НЕ на Home (розділ 2.2 забороняє
@@ -177,6 +185,7 @@ fun StatsScreen(
 
             PatternCard(state = patternState, period = state.period)
         }
+        }
     }
 }
 
@@ -202,7 +211,10 @@ private fun formatClockTime(millis: Long): String =
 private fun PatternCard(state: PatternUiState, period: StatsPeriod) {
     if (!state.visible) return
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val titleRes = if (period == StatsPeriod.DAY) {
                 R.string.pattern_card_title
@@ -229,7 +241,7 @@ private fun periodLabelRes(period: StatsPeriod): Int = when (period) {
 }
 
 @Composable
-private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Unit) {
+private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Unit, modifier: Modifier = Modifier) {
     val options = listOf(
         StatsPeriod.DAY to stringResource(R.string.stats_period_day),
         StatsPeriod.WEEK to stringResource(R.string.stats_period_week)
@@ -238,7 +250,7 @@ private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Uni
         options = options,
         selected = selected,
         onSelect = onSelect,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     )
 }
 
@@ -247,7 +259,10 @@ private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Uni
 private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>) {
     val labels = items.map { categoryDisplayName(it.category) }
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.stats_category_breakdown_title), style = MaterialTheme.typography.titleMedium)
 
@@ -296,7 +311,10 @@ private fun WeeklyTrendCard(
     onOpenUsageAccessSettings: () -> Unit
 ) {
     val hoursFormat = stringResource(R.string.hours_short_format)
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.stats_weekly_trend_title), style = MaterialTheme.typography.titleMedium)
 

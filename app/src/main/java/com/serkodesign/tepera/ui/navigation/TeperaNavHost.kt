@@ -1,5 +1,19 @@
 package com.serkodesign.tepera.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +41,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.navigation.NavBackStackEntry
+import com.serkodesign.tepera.ui.theme.TeperaMotion
+import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -213,6 +232,10 @@ fun TeperaNavHost(
             // запитом користувача просто заходить під напівпрозору "таблетку" навбару (вона
             // малюється поверх контенту, бо bottomBar розміщується останнім у Scaffold).
             val layoutDirection = LocalLayoutDirection.current
+            // Переходи між екранами за патернами M3: між вкладками навбару — "fade through"
+            // (зникнення + поява зі збільшенням 92% -> 100%), для решти — "shared axis X" (зсув на
+            // 30dp разом із fade вперед/назад). Тривалість/криві — з [TeperaMotion].
+            val slidePx = with(LocalDensity.current) { 30.dp.roundToPx() }
             NavHost(
                 navController = navController,
                 startDestination = Routes.HOME,
@@ -220,7 +243,39 @@ fun TeperaNavHost(
                     top = scaffoldPadding.calculateTopPadding(),
                     start = scaffoldPadding.calculateStartPadding(layoutDirection),
                     end = scaffoldPadding.calculateEndPadding(layoutDirection)
-                )
+                ),
+                enterTransition = {
+                    if (isTopLevelSwitch()) {
+                        fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing)) +
+                            scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized), initialScale = 0.92f)
+                    } else {
+                        slideInHorizontally(TeperaSpecs.spatial()) { slidePx } +
+                            fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing))
+                    }
+                },
+                exitTransition = {
+                    if (isTopLevelSwitch()) {
+                        fadeOut(tween(90, easing = LinearEasing))
+                    } else {
+                        slideOutHorizontally(TeperaSpecs.spatial()) { -slidePx } + fadeOut(tween(90, easing = LinearEasing))
+                    }
+                },
+                popEnterTransition = {
+                    if (isTopLevelSwitch()) {
+                        fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing)) +
+                            scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized), initialScale = 0.92f)
+                    } else {
+                        slideInHorizontally(TeperaSpecs.spatial()) { -slidePx } +
+                            fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing))
+                    }
+                },
+                popExitTransition = {
+                    if (isTopLevelSwitch()) {
+                        fadeOut(tween(90, easing = LinearEasing))
+                    } else {
+                        slideOutHorizontally(TeperaSpecs.spatial()) { slidePx } + fadeOut(tween(90, easing = LinearEasing))
+                    }
+                }
             ) {
             composable(Routes.HOME) {
                 HomeScreen(
@@ -237,6 +292,7 @@ fun TeperaNavHost(
                     cardHistoryRepository = cardHistoryRepository,
                     gateEventRepository = gateEventRepository,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
@@ -365,7 +421,6 @@ fun TeperaNavHost(
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
-                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onBack = { navController.popBackStack() }
                 )
@@ -453,13 +508,15 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillCard)
             .padding(6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        // Figma "App concept" node 192:726: проміжок 6dp між вкладками, тримаються рівними частками.
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavPillTab(
             icon = if (currentRoute == Routes.HOME) TeperaIcons.HomeFilled else TeperaIcons.HomeOutlined,
             label = stringResource(R.string.home_screen_title),
             selected = currentRoute == Routes.HOME,
+            idleCorners = NavTabCorners(topStart = 40.dp, bottomStart = 40.dp, topEnd = 16.dp, bottomEnd = 16.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.HOME) {
@@ -475,6 +532,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             icon = if (currentRoute == Routes.DIARY) TeperaIcons.BallotFilled else TeperaIcons.BallotOutlined,
             label = stringResource(R.string.diary_nav_action),
             selected = currentRoute == Routes.DIARY,
+            idleCorners = NavTabCorners(16.dp, 16.dp, 16.dp, 16.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.DIARY) {
@@ -490,6 +548,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             icon = if (currentRoute == Routes.STATS) TeperaIcons.LeaderboardFilled else TeperaIcons.LeaderboardOutlined,
             label = stringResource(R.string.stats_nav_action),
             selected = currentRoute == Routes.STATS,
+            idleCorners = NavTabCorners(topStart = 16.dp, bottomStart = 16.dp, topEnd = 40.dp, bottomEnd = 40.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.STATS) {
@@ -509,29 +568,50 @@ private fun NavPillTab(
     icon: ImageVector,
     label: String,
     selected: Boolean,
+    idleCorners: NavTabCorners,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val contentColor = if (selected) TeperaPalette.navPillSelectedContent else TeperaPalette.navPillUnselectedIcon
-    val shape = RoundedCornerShape(40.dp)
+    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726 (підписи й іконки —
+    // ті самі, змінено лише оформлення): вибрана — суцільний #006944 з світлим текстом/іконкою
+    // (#DCF6ED), радіус 40; невибрана — сіра пілюля #F0F3F4 з сірою іконкою, радіус залежить від
+    // позиції (крайні вкладки мають 40 із зовнішнього боку, 16 — із внутрішнього).
+    // Анімація M3 (emphasized): колір заливки й вмісту, чотири кути (форма пілюлі "перетікає" між
+    // 16 і 40dp) і поява/зникнення підпису — розтягування по ширині + fade.
+    val contentColor by animateColorAsState(
+        if (selected) TeperaPalette.navTabSelectedContent else TeperaPalette.navPillUnselectedIcon,
+        TeperaSpecs.effects(), label = "navTabContent"
+    )
+    val fill by animateColorAsState(
+        if (selected) TeperaPalette.buttonBrand else TeperaPalette.navTabIdleFill,
+        TeperaSpecs.effects(), label = "navTabFill"
+    )
+    val topStart by animateDpAsState(if (selected) 40.dp else idleCorners.topStart, TeperaSpecs.spatial(), label = "navTabTS")
+    val topEnd by animateDpAsState(if (selected) 40.dp else idleCorners.topEnd, TeperaSpecs.spatial(), label = "navTabTE")
+    val bottomEnd by animateDpAsState(if (selected) 40.dp else idleCorners.bottomEnd, TeperaSpecs.spatial(), label = "navTabBE")
+    val bottomStart by animateDpAsState(if (selected) 40.dp else idleCorners.bottomStart, TeperaSpecs.spatial(), label = "navTabBS")
+    val shape = RoundedCornerShape(topStart = topStart, topEnd = topEnd, bottomEnd = bottomEnd, bottomStart = bottomStart)
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .padding(4.dp)
-            // Тінь вибраної вкладки (drop-shadow з фрейму) прибрана за прямим запитом користувача.
             .clip(shape)
-            .then(if (selected) Modifier.background(TeperaPalette.navPillSelected) else Modifier)
+            .background(fill)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier.padding(4.dp),
-            // Відстань іконка-підпис зменшена з 4.dp до 2.dp за прямим запитом користувача.
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(icon, contentDescription = if (selected) null else label, tint = contentColor)
-            if (selected) {
+            AnimatedVisibility(
+                visible = selected,
+                enter = fadeIn(tween(TeperaMotion.SHORT4, easing = TeperaMotion.EmphasizedDecelerate)) +
+                    expandHorizontally(TeperaSpecs.spatial()),
+                exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
+                    shrinkHorizontally(TeperaSpecs.spatial())
+            ) {
                 // maxLines/softWrap: "Щоденник" (9 символів) ледь не влазить у третину ширини
                 // навбару поруч з іконкою й переносився на 2 рядки, ламаючи висоту "таблетки"
                 // (перевірено живцем на Huawei P9) — коротші "Сьогодні"/"Огляд" цього не показали,
@@ -551,3 +631,10 @@ private fun NavPillTab(
         }
     }
 }
+
+/** Радіуси кутів невибраної вкладки навбару (у вибраному стані всі чотири анімуються до 40dp). */
+private data class NavTabCorners(val topStart: Dp, val bottomStart: Dp, val topEnd: Dp, val bottomEnd: Dp)
+
+/** Перехід між двома вкладками навбару (Home/Diary/Stats) — для них M3 "fade through". */
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.isTopLevelSwitch(): Boolean =
+    initialState.destination.route in Routes.BOTTOM_NAV_ROUTES && targetState.destination.route in Routes.BOTTOM_NAV_ROUTES

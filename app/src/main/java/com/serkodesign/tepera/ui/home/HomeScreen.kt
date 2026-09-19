@@ -6,7 +6,16 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +36,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,8 +53,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,7 +83,10 @@ import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
+import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
@@ -99,6 +116,7 @@ fun HomeScreen(
     cardHistoryRepository: CardHistoryRepository,
     gateEventRepository: GateEventRepository,
     onOpenSettings: () -> Unit,
+    onOpenKnowledgeBase: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
     onOpenCategoryHistory: (String) -> Unit,
     onShowOnboarding: () -> Unit,
@@ -141,7 +159,10 @@ fun HomeScreen(
     // Repository, але окремим refresh-циклом).
     val patternViewModel: PatternViewModel = viewModel(
         // Home показує патерн ВЧОРАШНЬОЇ доби (1 день), не середнє за тиждень.
-        factory = PatternViewModel.Factory(patternRepository, balanceRepository, settingsStore, initialPeriodDays = 1)
+        factory = PatternViewModel.Factory(
+            patternRepository, balanceRepository, settingsStore, initialPeriodDays = 1,
+            sleepWindowRepository = sleepWindowRepository
+        )
     )
     val patternState by patternViewModel.uiState.collectAsState()
 
@@ -345,7 +366,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            HomeHeader(onOpenSettings = onOpenSettings)
+            HomeHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
 
             // T-2 (tepera-dev-spec.md): "обробка... з індикатором" — короткий тихий рядок, доки
             // триває одноразовий бекфіл історії пауз (BackfillViewModel), зазвичай зникає
@@ -358,8 +379,31 @@ fun HomeScreen(
                 )
             }
 
-            // FR-D.10/D.10a/D.11: вертикальний стек до 3 контекстних карток, пріоритизований за
-            // актуальністю — над карткою "Мій день", кожна сама вирішує, чи їй бути видимою.
+            // Горизонтальний слайдер (Figma "App concept" node 192:726): "Мій день" → "Патерн
+            // вчора" → "Цей тиждень". Сторінки з даними додаються за тим самим рушієм карток
+            // (`visibleCards`), що й раніше, коли ці картки були в вертикальному стеку.
+            HomeCardsPager(
+                pages = buildList<@Composable () -> Unit> {
+                    add {
+                        MyDayCard(
+                            state = balanceState,
+                            onOpenUsageAccessSettings = {
+                                context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                            },
+                            onLearnMore = onShowOnboarding
+                        )
+                    }
+                    if (CardType.PATTERN in visibleCards) {
+                        add { PatternMiniCard(state = patternState, onDismiss = patternViewModel::dismiss) }
+                    }
+                    if (CardType.WEEKLY_DIGEST in visibleCards) {
+                        add { WeeklyDigestCard(state = weeklyDigestState, onDismiss = weeklyDigestViewModel::dismiss) }
+                    }
+                }
+            )
+
+            // FR-D.10/D.10a/D.11: вертикальний стек контекстних карток під слайдером,
+            // пріоритизований за актуальністю — кожна сама вирішує, чи їй бути видимою.
             ContextCardStack(
                 visibleCards = visibleCards,
                 onlineEstimateRevealState = onlineEstimateRevealState,
@@ -378,43 +422,17 @@ fun HomeScreen(
                 lastPhoneUseEstimateState = lastPhoneUseEstimateState,
                 onSelectLastPhoneUseGuess = lastPhoneUseEstimateViewModel::selectGuess,
                 onDismissLastPhoneUseEstimate = lastPhoneUseEstimateViewModel::dismiss,
-                digestState = weeklyDigestState,
-                onDismissDigest = weeklyDigestViewModel::dismiss,
-                patternState = patternState,
-                onDismissPattern = patternViewModel::dismiss,
                 gateEventsSummaryState = gateEventsSummaryState,
                 onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss
             )
 
-            // "My day" (SRS v2.5, розділ 4.4) — ОДНА картка-обгортка (заголовок+шкала+легенда
-            // разом), а не окремий заголовок над секцією без фону, як було раніше.
-            // `vertical = 8.dp` на зовнішньому паддінгу — без нього відступ до сусідніх блоків
-            // (контекстні картки зверху, заголовок "Активності" знизу) виходив 8dp замість
-            // однакового 16dp ритму, яким рознесені решта секцій Home (кожна з них додає власні
-            // 8dp зверху й знизу, тут бракувало пари).
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(TeperaPalette.cardTranslucentLight)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                MyDaySection(
-                    state = balanceState,
-                    onOpenUsageAccessSettings = {
-                        context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                    },
-                    onLearnMore = onShowOnboarding
-                )
-            }
-
             Text(
                 text = stringResource(R.string.activities_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                fontFamily = TeperaPalette.headlineFont,
+                fontWeight = FontWeight.Medium,
+                fontSize = 22.sp,
+                color = TeperaPalette.buttonBrandDark,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp)
             )
 
             if (summary.isEmpty()) {
@@ -434,12 +452,12 @@ fun HomeScreen(
                     modifier = Modifier
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                         .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     summary.chunked(2).forEach { rowItems ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             rowItems.forEach { item ->
                                 Box(modifier = Modifier.weight(1f)) {
@@ -468,7 +486,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(onOpenSettings: () -> Unit) {
+private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Unit) {
     val period = remember { currentDayPeriod() }
     val greetingRes = when (period) {
         DayPeriod.MORNING -> R.string.greeting_morning
@@ -490,17 +508,44 @@ private fun HomeHeader(onOpenSettings: () -> Unit) {
                 fontSize = 27.sp
             )
         )
-        IconButton(onClick = onOpenSettings) {
-            Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.settings_nav_action))
+        // Figma "App concept" node 192:726: дві кнопки 44dp з асиметричними радіусами (ліва —
+        // закруглена зліва 22/справа 8, права навпаки), біла заливка 80%, проміжок 4dp. Книга
+        // відкриває "Базу знань" (перенесено з Налаштувань за запитом користувача).
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TeperaIconButton(
+                icon = Icons.AutoMirrored.Outlined.MenuBook,
+                contentDescription = stringResource(R.string.settings_knowledge_base_action),
+                onClick = onOpenKnowledgeBase,
+                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                containerColor = TeperaPalette.headerButtonFill,
+                contentColor = TeperaPalette.buttonBrandDark
+            )
+            TeperaIconButton(
+                icon = Icons.Outlined.Settings,
+                contentDescription = stringResource(R.string.settings_nav_action),
+                onClick = onOpenSettings,
+                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
+                containerColor = TeperaPalette.headerButtonFill,
+                contentColor = TeperaPalette.buttonBrandDark
+            )
         }
     }
 }
 
 /**
- * Картка категорії (Home screen, node 1951:4017): іконка+назва зверху, ДВІ кнопки знизу —
- * широка play/pause (тап-таймер, HomeViewModel.toggleTimer) і окрема "add time" (Icons.Filled.
- * MoreTime — той самий глиф, що "more_time" у фреймі) для ручного додавання часу САМЕ цій
- * категорії (AddEntryScreen з попередньо вибраною категорією, ADD_ENTRY_WITH_CATEGORY).
+ * Картка категорії (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726, "Activities").
+ * Кружок-іконка й назва зверху, знизу кнопка play/pause (тап-таймер, HomeViewModel.toggleTimer) і
+ * окрема "more_time" (ручне додавання часу САМЕ цій категорії, AddEntryScreen з попередньо
+ * вибраною категорією).
+ *
+ * **Стан таймера (за запитом користувача):** коли таймер активний, картка стає суцільною
+ * `#006944` з білим текстом 18sp, кнопка паузи розтягується на всю ширину, а "more_time"
+ * зникає. Усі переходи — анімації Material 3 ([TeperaMotion]): колір/розмір тексту 500 мс по
+ * "emphasized" кривій, вхід/вихід кнопки "more_time" — розширення/стиснення по ширині (500 мс)
+ * плюс fade (декелерація на вході 200 мс, акселерація на виході 150 мс).
+ * Тап по тілу картки (іконка/назва) відкриває повну історію категорії. Кастомна категорія в
+ * неактивному стані — прозора з білою рамкою 50% (як "Custom" у макеті). Іконки — ті самі
+ * Figma-гліфи, що на віджеті й екрані додавання (`categoryLineArtIconRes`), кастомні — Material.
  */
 @Composable
 private fun CategoryCard(
@@ -511,82 +556,98 @@ private fun CategoryCard(
 ) {
     val isTracking = item.trackingStartTime != null
     val accentColor = categoryColor(item.category.colorHex)
-    val containerColor = if (isTracking) TeperaPalette.cardActive else TeperaPalette.cardTranslucent
     val displayName = categoryDisplayName(item.category)
+    val shape = RoundedCornerShape(28.dp)
+
+    val colorSpec = tween<Color>(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized)
+    val containerColor by animateColorAsState(
+        targetValue = when {
+            isTracking -> TeperaPalette.activityCardActive
+            item.category.isCustom -> Color.Transparent
+            else -> TeperaPalette.activityCardIdle
+        },
+        animationSpec = colorSpec, label = "cardContainer"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (item.category.isCustom && !isTracking) Color.White.copy(alpha = 0.5f) else Color.Transparent,
+        animationSpec = colorSpec, label = "cardBorder"
+    )
+    val nameColor by animateColorAsState(if (isTracking) Color.White else Color.Black, colorSpec, label = "cardName")
+    val badgeColor by animateColorAsState(
+        if (isTracking) Color.White.copy(alpha = 0.3f) else accentColor.copy(alpha = 0.3f), colorSpec, label = "cardBadge"
+    )
+    val glyphColor by animateColorAsState(if (isTracking) Color.White else accentColor, colorSpec, label = "cardGlyph")
+    val nameSize by animateFloatAsState(
+        targetValue = if (isTracking) 18f else 16f,
+        animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), label = "cardNameSize"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(132.dp)
-            .clip(RoundedCornerShape(28.dp))
+            .shadow(
+                8.dp, shape,
+                ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f)
+            )
+            .clip(shape)
             .background(containerColor)
+            .border(1.dp, borderColor, shape)
             .padding(8.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Тап по тілу картки (іконка/назва, не кнопки таймера/додавання часу) відкриває повну
-        // історію записів цієї категорії (Figma user-flow k6s4prQ9oK9x2uUvzHRghR, node 14:791) —
-        // окремо від play/pause і "MoreTime" нижче, які лишаються незмінними.
         Column(
             modifier = Modifier.padding(4.dp).clickable(onClick = onOpenHistory),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.2f)),
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(badgeColor),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = categoryIcon(item.category.iconName),
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(18.dp)
-                )
+                val lineArt = categoryLineArtIconRes(item.category.iconName)
+                if (lineArt != null) {
+                    Icon(painterResource(lineArt), contentDescription = null, tint = glyphColor, modifier = Modifier.size(16.dp))
+                } else {
+                    Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = glyphColor, modifier = Modifier.size(16.dp))
+                }
             }
             Text(
                 text = displayName,
-                style = MaterialTheme.typography.bodyLarge,
+                color = nameColor,
+                fontFamily = TeperaPalette.headlineFont,
+                fontWeight = FontWeight.Medium,
+                fontSize = nameSize.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(if (isTracking) TeperaPalette.brandAccent else TeperaPalette.cardActive)
-                    .clickable(onClick = onToggleTimer),
-                contentAlignment = Alignment.Center
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            TeperaIconButton(
+                icon = if (isTracking) Icons.Filled.Pause else Icons.Outlined.PlayArrow,
+                contentDescription = stringResource(
+                    if (isTracking) R.string.category_stop_action else R.string.category_start_action
+                ),
+                onClick = onToggleTimer,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(32.dp)
+            )
+            AnimatedVisibility(
+                visible = !isTracking,
+                enter = fadeIn(tween(TeperaMotion.SHORT4, easing = TeperaMotion.EmphasizedDecelerate)) +
+                    expandHorizontally(tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), expandFrom = Alignment.Start),
+                exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
+                    shrinkHorizontally(tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), shrinkTowards = Alignment.Start)
             ) {
-                Icon(
-                    imageVector = if (isTracking) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = stringResource(
-                        if (isTracking) R.string.category_stop_action else R.string.category_start_action
-                    ),
-                    tint = if (isTracking) Color.White else Color.Black
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(TeperaPalette.cardActive)
-                    .clickable(onClick = onAddTime),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MoreTime,
-                    contentDescription = stringResource(R.string.add_time_action_format, displayName),
-                    tint = Color.Black
-                )
+                Row {
+                    Spacer(Modifier.width(4.dp))
+                    TeperaIconButton(
+                        icon = Icons.Filled.MoreTime,
+                        contentDescription = stringResource(R.string.add_time_action_format, displayName),
+                        onClick = onAddTime,
+                        containerColor = TeperaPalette.activityMoreTime
+                    )
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.serkodesign.tepera.ui.settings
 
-import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,10 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -21,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
-import com.serkodesign.tepera.util.LocaleStore
+import com.serkodesign.tepera.util.AppLocale
 
 /**
  * "Мова" — за прямим запитом користувача виокремлено з головного екрана Налаштувань в окремий
@@ -36,7 +31,9 @@ fun LanguageSettingsScreen(onBack: () -> Unit) {
     // (через власний attachBaseContext-хук) — MainActivity звичайний ComponentActivity, тож
     // виклик лише запам'ятовував вибір, а UI лишався тою самою мовою (підтверджено на
     // Samsung S23: вибір "English" позначався, але текст лишався українською).
-    var selectedLanguageTag by remember { mutableStateOf(LocaleStore.getLanguageTag(context)) }
+    // Мова застосовується на місці (AppLocale — Compose-state + ProvideAppLocale у MainActivity),
+    // без Activity.recreate(): перезапуск обривав анімацію перемикача й давав мигання.
+    val selectedLanguageTag = AppLocale.tag(context)
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -59,14 +56,7 @@ fun LanguageSettingsScreen(onBack: () -> Unit) {
                 PillSegmentedControl(
                     options = languageOptions,
                     selected = selectedLanguageTag,
-                    onSelect = { tag ->
-                        selectedLanguageTag = tag
-                        LocaleStore.setLanguageTag(context, tag)
-                        // recreate() перезапускає Activity — attachBaseContext() зчитує
-                        // щойно збережений тег і обгортає нові ресурси одразу, без повного
-                        // перезапуску процесу.
-                        (context as? Activity)?.recreate()
-                    }
+                    onSelect = { tag -> AppLocale.set(context, tag) }
                 )
             }
         }

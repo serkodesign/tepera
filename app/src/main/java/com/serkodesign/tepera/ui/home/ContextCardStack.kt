@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import com.serkodesign.tepera.ui.theme.TeperaMotion
+import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.cards.CardType
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
-import com.serkodesign.tepera.ui.pattern.PatternUiState
 
 /**
  * FR-D.10/D.10a/D.11 (SRS v2.6, черга пріоритетів оновлена в v2.8, T-3 tepera-dev-spec.md
@@ -83,10 +85,6 @@ fun ContextCardStack(
     lastPhoneUseEstimateState: LastPhoneUseEstimateUiState,
     onSelectLastPhoneUseGuess: (LastPhoneUseGuess) -> Unit,
     onDismissLastPhoneUseEstimate: () -> Unit,
-    digestState: WeeklyDigestUiState,
-    onDismissDigest: () -> Unit,
-    patternState: PatternUiState,
-    onDismissPattern: () -> Unit,
     gateEventsSummaryState: GateEventsSummaryUiState,
     onDismissGateEventsSummary: () -> Unit
 ) {
@@ -111,12 +109,6 @@ fun ContextCardStack(
     ContextCardSlot(visible = CardType.LAST_PHONE_USE_ESTIMATE in visibleCards) {
         LastPhoneUseEstimateCard(state = lastPhoneUseEstimateState, onSelectGuess = onSelectLastPhoneUseGuess, onDismiss = onDismissLastPhoneUseEstimate)
     }
-    ContextCardSlot(visible = CardType.WEEKLY_DIGEST in visibleCards) {
-        WeeklyDigestCard(state = digestState, onDismiss = onDismissDigest)
-    }
-    ContextCardSlot(visible = CardType.PATTERN in visibleCards) {
-        PatternMiniCard(state = patternState, onDismiss = onDismissPattern)
-    }
     ContextCardSlot(visible = CardType.GATE_EVENTS_SUMMARY in visibleCards) {
         GateEventsSummaryCard(state = gateEventsSummaryState, onDismiss = onDismissGateEventsSummary)
     }
@@ -126,8 +118,10 @@ fun ContextCardStack(
 private fun ContextCardSlot(visible: Boolean, content: @Composable () -> Unit) {
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically()
+        enter = fadeIn(tween(TeperaMotion.SHORT4, easing = TeperaMotion.EmphasizedDecelerate)) +
+            expandVertically(TeperaSpecs.spatial()),
+        exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
+            shrinkVertically(TeperaSpecs.spatial())
     ) {
         content()
     }

@@ -18,6 +18,7 @@ import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.ui.navigation.TeperaNavHost
 import com.serkodesign.tepera.ui.theme.TeperaTheme
 import com.serkodesign.tepera.util.LocaleStore
+import com.serkodesign.tepera.util.ProvideAppLocale
 
 class MainActivity : ComponentActivity() {
 
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
         val openAddEntry = intent.getBooleanExtra(EXTRA_OPEN_ADD_ENTRY, false) || categoryId != null
         pendingGateRequest = gateRequestFromIntent(intent)
         setContent {
+            ProvideAppLocale {
             TeperaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     TeperaNavHost(
@@ -89,6 +91,7 @@ class MainActivity : ComponentActivity() {
                         pendingGateRequestNonce = pendingGateRequest?.nonce
                     )
                 }
+            }
             }
         }
     }

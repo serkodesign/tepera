@@ -1,5 +1,9 @@
 package com.serkodesign.tepera.ui.theme
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,12 +28,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
@@ -182,27 +194,44 @@ fun <T> PillSegmentedControl(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    // Анімація M3: білий "чіп" ковзає від старого варіанта до нового (emphasized, 300 мс), а не
+    // з'являється миттєво на новому місці.
+    val gap = 4.dp
+    val selectedIndex = options.indexOfFirst { it.first == selected }.coerceAtLeast(0)
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp)
             .clip(RoundedCornerShape(100.dp))
             .background(TeperaPalette.cardTranslucent)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(4.dp)
     ) {
-        options.forEach { (value, label) ->
-            val isSelected = value == selected
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(100.dp))
-                    .then(if (isSelected) Modifier.background(TeperaPalette.cardActive) else Modifier)
-                    .clickable { onSelect(value) },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(label, style = MaterialTheme.typography.bodyMedium)
+        val itemWidth = (maxWidth - gap * (options.size - 1)) / options.size
+        val indicatorOffset by animateDpAsState(
+            targetValue = (itemWidth + gap) * selectedIndex,
+            animationSpec = TeperaSpecs.spatial(),
+            label = "segmentIndicator"
+        )
+        Box(
+            modifier = Modifier
+                .offset(x = indicatorOffset)
+                .width(itemWidth)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(100.dp))
+                .background(TeperaPalette.cardActive)
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+            options.forEach { (value, label) ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(100.dp))
+                        .clickable { onSelect(value) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(label, style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
     }
@@ -228,6 +257,10 @@ fun HourRangeSlider(
     fun hoursFromFraction(fraction: Float) =
         (fraction * maxHours).roundToInt().coerceIn(minHours, maxHours)
 
+    // Анімація M3: тап плавно "дотягує" заповнення до нового значення (emphasized, 300 мс);
+    // під час перетягування чіп іде за пальцем миттєво, без відставання.
+    var dragging by remember { mutableStateOf(false) }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -241,7 +274,11 @@ fun HourRangeSlider(
                 }
             }
             .pointerInput(minHours, maxHours) {
-                detectHorizontalDragGestures { change, _ ->
+                detectHorizontalDragGestures(
+                    onDragStart = { dragging = true },
+                    onDragEnd = { dragging = false },
+                    onDragCancel = { dragging = false }
+                ) { change, _ ->
                     change.consume()
                     onHoursChange(hoursFromFraction(change.position.x / size.width.toFloat()))
                 }
@@ -253,7 +290,12 @@ fun HourRangeSlider(
         // підтверджено на Samsung S23) — попередній єдиний виклик з minHours=1 (таргет
         // Online-часу) ніколи не діставався до hours=0, тож цей край не проявлявся раніше.
         // 0.16f — емпіричний мінімум, що вміщує "23:00"/"0:00" в один рядок.
-        val fraction = (hours.toFloat() / maxHours).coerceIn(0.16f, 1f)
+        val targetFraction = (hours.toFloat() / maxHours).coerceIn(0.16f, 1f)
+        val fraction by animateFloatAsState(
+            targetValue = targetFraction,
+            animationSpec = if (dragging) snap() else TeperaSpecs.spatial(),
+            label = "sliderFill"
+        )
         Box(
             modifier = Modifier
                 .fillMaxHeight()
@@ -350,5 +392,35 @@ fun TeperaButton(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+/**
+ * Іконкова кнопка дизайн-системи (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR: play/pause і
+ * "more_time" на картках Home, книга/шестерня в шапці) — висота 44dp, іконка 24dp. Ширину задає
+ * виклик через [modifier] (за замовчуванням квадрат 44dp; `Modifier.weight(1f)` для широкої),
+ * форму — через [shape] (шапка Home має асиметричні радіуси).
+ */
+@Composable
+fun TeperaIconButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier.width(44.dp),
+    shape: Shape = RoundedCornerShape(22.dp),
+    containerColor: Color = Color.White,
+    contentColor: Color = Color.Black,
+    enabled: Boolean = true
+) {
+    Box(
+        modifier = modifier
+            .height(44.dp)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clip(shape)
+            .background(containerColor)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor, modifier = Modifier.size(24.dp))
     }
 }

@@ -337,4 +337,12 @@
     <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>
     <string name="knowledge_base_section_4_body">Tepera не надсилає сповіщень, що кличуть повернутись, не рахує серій днів поспіль і не видає балів чи бейджів за використання. Числа на екранах — це факти про час, який уже минув, не ціль, до якої треба дотягнутись: тому в застосунку немає слова «ціль», лише «орієнтир», і кольори ніколи не стають «тривожними», скільки б часу не минуло. Порівняння — лише з власною історією, ніколи з середніми показниками інших людей.</string>
     <string name="onboarding_learn_more">Дізнатись більше про дані</string>
+    <string name="home_card_first_unlock_label">Перше розблокування</string>
+    <string name="home_card_day_last_label">День триває</string>
+    <string name="home_card_info_action">Про цю картку</string>
+    <string name="home_card_info_close">Зрозуміло</string>
+    <string name="day_usage_info_body">Кожен квадрат — одна година вчорашньої доби; колір показує, скільки хвилин за цю годину телефон був у Online. Це лише картина вчорашнього дня, без оцінки.</string>
+    <string name="weekly_digest_info_body">Короткий підсумок останніх 7 днів: скільки разів ти відмічав активності й коли зазвичай починається твій день. Плитки без даних не показуються.</string>
+    <string name="weekly_digest_hobby_between">з</string>
+    <string name="weekly_digest_hobby_suffix">днів</string>
 </resources>
