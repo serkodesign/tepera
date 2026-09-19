@@ -43,7 +43,7 @@ data class CategoryBreakdownItem(val category: CategoryEntity, val minutes: Int)
  * без контексту читається як оцінка, а не факт. Абсолютний час порівнюється сам із собою день
  * до дня, без прихованого "буфера справедливості", який мав сенс лише для Home-шкали сьогодні.
  */
-data class DailyBalancePoint(val dayStartMillis: Long, val onlineMinutes: Int)
+data class DailyBalancePoint(val dayStartMillis: Long, val onlineMinutes: Int, val dayLengthMinutes: Int = 0)
 
 /**
  * T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком, без
@@ -157,7 +157,14 @@ class StatsViewModel(
             // Точка на графіку лишається прив'язана до календарного дня (todayStart - daysAgo
             // * MS_PER_DAY), не до фактичної точки старту дня — інакше вісь X тренду
             // сьогоднішньої точки зсувалась би вбік від решти днів.
-            DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes)
+            // Довжина доби для "Офлайн" (залишок, як "Офлайн-життя" на Home): сьогодні — від
+            // точки старту дня до "зараз" мінус вікна сну, минулі доби — повні 1440 хв.
+            val dayLength = if (daysAgo == 0) {
+                balanceRepository.calculateDayLengthMinutes(todayDayStart, sleepWindows)
+            } else {
+                1440
+            }
+            DailyBalancePoint(todayStart - daysAgo * MS_PER_DAY, onlineMinutes, dayLength)
         }
     }
 

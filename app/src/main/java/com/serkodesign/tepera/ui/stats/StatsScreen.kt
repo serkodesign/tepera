@@ -183,7 +183,8 @@ fun StatsScreen(
 
             CategoryBreakdownCard(
                 items = state.categoryBreakdown,
-                onlineMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.onlineMinutes } else null
+                onlineMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.onlineMinutes } else null,
+                totalMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.dayLengthMinutes } else null
             )
 
             WeeklyTrendCard(
@@ -275,13 +276,19 @@ private data class BarRow(val label: String, val minutes: Int, val color: Color)
  * зліва й час справа. Контейнер — як картка тренду (білий 80%, радіус 16, padding 12, gap 8).
  */
 @Composable
-private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinutes: Int?) {
+private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinutes: Int?, totalMinutes: Int?) {
     // "Online" — окремий рядок серед категорій (за запитом користувача): Online-хвилини за обраний
     // період (null — нема доступу до статистики), колір — той самий, що на Home (`onlineCard`).
     val onlineLabel = stringResource(R.string.balance_online_label)
     val rows = buildList {
         onlineMinutes?.takeIf { it > 0 }?.let { add(BarRow(onlineLabel, it, TeperaPalette.onlineCard)) }
         items.forEach { add(BarRow(categoryDisplayName(it.category), it.minutes, categoryColor(it.category.colorHex))) }
+        // "Офлайн" — залишок періоду (не Online і не відмічене), як "Офлайн-життя" на Home; ніколи
+        // не від'ємний. Без доступу до статистики (totalMinutes == null) рядка нема.
+        if (totalMinutes != null) {
+            val offline = (totalMinutes - (onlineMinutes ?: 0) - items.sumOf { it.minutes }).coerceAtLeast(0)
+            if (offline > 0) add(BarRow(stringResource(R.string.stats_offline_label), offline, TeperaPalette.restOfDayCard))
+        }
     }
     val visible = rows.filter { it.minutes > 0 }.sortedByDescending { it.minutes }
     val maxMinutes = visible.maxOfOrNull { it.minutes } ?: 0
