@@ -222,4 +222,63 @@ class BalanceRepository(
         val durationMinutes = (endMillis - startMillis) / 60_000L
         return durationMinutes >= 5
     }
+
+    /**
+     * Online-хвилини по [slotCount] слотах шириною [slotMinutes] хв від [fromMillis] — для сітки
+     * доби на віджеті (widget/DailyGridCalculator.kt, Figma node 11:647, "перемалюй віджет").
+     * Та сама бакетизація по сирих UsageEvents, що [getOnlineMinutes] (Exclusion List +
+     * systemExclusionPackages), лише довільна ширина бакета замість одного інтервалу [from, to].
+     * Навмисно не перевикористовує PatternRepository.hourlyOnlineMinutes() — той рахує ІСТОРИЧНИЙ
+     * патерн за 7 днів з фіксованим кроком в 1 годину, тут — СЬОГОДНІШНІ дані з кроком 30 хв для
+     * зовсім іншого UI; ширина кроку й семантика різні настільки, що спільний метод ускладнив би
+     * обидва виклики більше, ніж невелике дублювання цієї функції.
+     */
+    suspend fun getOnlineMinutesPerSlot(fromMillis: Long, slotMinutes: Int, slotCount: Int): IntArray =
+        withContext(Dispatchers.IO) {
+            val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages(context)
+            val slotMillis = slotMinutes * 60_000L
+            val toMillis = fromMillis + slotMillis * slotCount
+            val buckets = IntArray(slotCount)
+            try {
+                val events = usm.queryEvents(fromMillis, toMillis)
+                val event = UsageEvents.Event()
+                val foregroundSince = HashMap<String, Long>()
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(event)
+                    val packageName = event.packageName ?: continue
+                    if (packageName in excluded) continue
+                    when (event.eventType) {
+                        UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
+                        UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                            val start = foregroundSince.remove(packageName)
+                            if (start != null) addToSlotBuckets(buckets, start, event.timeStamp, fromMillis, slotMillis)
+                        }
+                    }
+                }
+                // Застосунок, що й досі на передньому плані на момент запиту — обрізаємо по
+                // "зараз", не по [toMillis] (для сьогоднішньої доби toMillis — завтрашня північ,
+                // тобто в майбутньому; без цього довелось би зарахувати неіснуючі "майбутні" хвилини).
+                val nowCap = minOf(System.currentTimeMillis(), toMillis)
+                for (start in foregroundSince.values) {
+                    addToSlotBuckets(buckets, start, nowCap, fromMillis, slotMillis)
+                }
+            } catch (e: SecurityException) {
+                // buckets лишаються нульовими — викликач (TeperaWidget) трактує це як "нема Online".
+            }
+            buckets
+        }
+
+    /** Ділить [startMillis, endMillis) по межах слотів і додає хвилини у відповідні бакети. */
+    private fun addToSlotBuckets(buckets: IntArray, startMillis: Long, endMillis: Long, fromMillis: Long, slotMillis: Long) {
+        var cursor = startMillis.coerceAtLeast(fromMillis)
+        while (cursor < endMillis) {
+            val slotIndex = ((cursor - fromMillis) / slotMillis).toInt()
+            if (slotIndex >= buckets.size) break
+            val slotEnd = fromMillis + (slotIndex + 1) * slotMillis
+            val segmentEnd = minOf(endMillis, slotEnd)
+            buckets[slotIndex] += ((segmentEnd - cursor) / 60_000L).toInt()
+            cursor = segmentEnd
+        }
+    }
 }

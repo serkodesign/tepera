@@ -29,6 +29,7 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
+import com.serkodesign.tepera.data.createTimerCheckNotificationChannel
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
@@ -126,5 +127,8 @@ class TeperaApp : Application() {
         }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)
+        // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker) — createNotificationChannel()
+        // ідемпотентний, безпечно викликати щозапуску.
+        createTimerCheckNotificationChannel(this)
     }
 }

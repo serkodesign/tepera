@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.cards.CardType
@@ -132,15 +133,24 @@ private fun ContextCardSlot(visible: Boolean, content: @Composable () -> Unit) {
     }
 }
 
-/** Заголовок + "×" — спільний для карток, які можна закрити (Pattern/WeeklyDigest/Pause). */
+/**
+ * Заголовок + "×" — спільний для карток, які можна закрити (Pattern/WeeklyDigest/Pause).
+ * [titleStyle] за замовчуванням лишається попереднім виглядом (`bodyMedium`) для решти карток —
+ * `PatternMiniCard` за прямим запитом користувача передає стиль заголовка "Активності"
+ * (`titleMedium` + Bold), решта карток цей параметр не зачіпає.
+ */
 @Composable
-internal fun ContextCardHeader(title: String, onDismiss: () -> Unit) {
+internal fun ContextCardHeader(
+    title: String,
+    onDismiss: () -> Unit,
+    titleStyle: TextStyle = MaterialTheme.typography.bodyMedium
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, style = MaterialTheme.typography.bodyMedium)
+        Text(title, style = titleStyle)
         IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
             Icon(
                 Icons.Filled.Close,

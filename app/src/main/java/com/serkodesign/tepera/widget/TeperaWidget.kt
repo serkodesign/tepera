@@ -30,14 +30,12 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
-import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.serkodesign.tepera.R
@@ -58,41 +56,64 @@ import kotlinx.coroutines.flow.first
  * tepera-dev-spec.md, додано "Справи") і кастомними категоріями на віджеті завжди видно лише
  * перші 5 активних за sortOrder; яка саме це п'ятірка, залежить від того, що людина вимкнула
  * онбордингом T-8 чи пізніше в Налаштуваннях — не завжди буквально "5 початкових".
+ *
+ * **Figma node 9:609 ("Імпортуй всі ці іконки в проект") — увесь компонент "Activity icons"
+ * (усі 8: Reading/Sport/Hobby/Walk/Sleep/Nature/Time with people/Errands) імпортовано як vector
+ * drawable 1:1 з Figma pathData**, обидва стани кожного, крім Справ (checklist) — там Figma дає
+ * ОДНУ форму на обидва стани (лише колір заливки відрізняється в самому асеті). "Прогулянка"
+ * (footprint, ic_widget_walk*.xml) імпортована для повноти набору, але не підключена в `when`
+ * нижче — у Tepera немає окремої категорії "Прогулянка" (Рух/спорт представлений велосипедом,
+ * "Sport"). Сон підключений (був лише на старому дженерик-гліфі) — категорія архівна (v2.4), не
+ * показується активним слотом на віджеті, але гліф коректний для будь-якого майбутнього виклику.
  */
-private fun widgetIconRes(iconName: String): Int = when (iconName) {
-    "nature" -> R.drawable.ic_widget_nature
-    "reading" -> R.drawable.ic_widget_reading
-    "hobby" -> R.drawable.ic_widget_hobby
-    "movement" -> R.drawable.ic_widget_movement
-    "social" -> R.drawable.ic_widget_social
-    "errands" -> R.drawable.ic_widget_errands // T-8 (tepera-dev-spec.md)
-    "sleep" -> R.drawable.ic_widget_sleep // legacy, вже заархівована категорія (v2.4)
+private fun widgetIconRes(iconName: String, selected: Boolean): Int = when (iconName) {
+    "nature" -> if (selected) R.drawable.ic_widget_nature_selected else R.drawable.ic_widget_nature
+    "reading" -> if (selected) R.drawable.ic_widget_reading_selected else R.drawable.ic_widget_reading
+    "hobby" -> if (selected) R.drawable.ic_widget_hobby_selected else R.drawable.ic_widget_hobby
+    "movement" -> if (selected) R.drawable.ic_widget_movement_selected else R.drawable.ic_widget_movement
+    "social" -> if (selected) R.drawable.ic_widget_social_selected else R.drawable.ic_widget_social
+    "errands" -> R.drawable.ic_widget_errands // T-8 (tepera-dev-spec.md) — та сама форма обидва стани
+    "sleep" -> if (selected) R.drawable.ic_widget_sleep_selected else R.drawable.ic_widget_sleep // legacy, вже заархівована категорія (v2.4)
     else -> R.drawable.ic_widget_generic
 }
 
 /**
- * FR-4.1–4.6: компактна 4x1 (5 кнопок категорій) і розширена 4x2 (+ шкала балансу) через
+ * Figma node 9:609: РІВНО той розмір гліфа, що в компоненті ("size-[24px]"/"size-[25.5px]"),
+ * НЕ підганяється під розмір кнопки — раніше іконка займала майже всю кнопку
+ * (`size - ICON_PADDING - RING_INSET` ≈ 39dp у 48dp колі), Figma ж центрує набагато менший
+ * гліф із великим полем навколо (24-25.5px у 48px колі). Book/content_cut/directions_bike — 24px;
+ * camping/groups/checklist (і legacy sleep) — 25.5px.
+ */
+private fun widgetIconGlyphSize(iconName: String): Dp = when (iconName) {
+    "reading", "hobby", "movement" -> 24.dp
+    else -> 25.5.dp
+}
+
+/**
+ * FR-4.1–4.6: компактна 4x1 (5 кнопок категорій) і розширена 4x3 (кнопки + сітка доби) через
  * SizeMode.Responsive. Кнопки категорій — той самий тап-таймер, що на Home (перший тап починає,
  * другий по тій самій категорії зупиняє й зберігає, toggleCategoryTimer()) — БЕЗ live-лічильника
  * (FR-4.2 лишається чинним для самого віджета): активний стан позначається лише статичним
  * кільцем навколо кнопки, оновлюється одразу після тапу (ToggleCategoryTimerAction викликає
  * update()) або періодично через WidgetUpdateWorker ~30 хв.
  *
- * **T-7 (tepera-dev-spec.md) — перерозподіл ваги 4x2, закриває SRS розділ 12, відкрите питання
- * №5** ("чи заслуговують 5 кнопок категорій на головне місце, чи віддати більше простору
- * межам/структурі дня — обговорення відкладено свідомо"). Відповідь T-7: структурі дня. У
- * розширеному 4x2 шкала тепер ВЕРХНІЙ ряд (раніше — нижній, під кнопками), кнопки — нижній.
- * 4x1 лишається без змін (лише кнопки, як і раніше). Шкала також вища (`BALANCE_BAR_HEIGHT`,
- * 8dp→20dp) — "читається з відстані витягнутої руки" (документ), лишаючись при цьому тихішою за
- * кнопки категорій (FR-4.1/розділ 4.3 SRS — це НЕ скасовано, лише зроблено бар вищим, не
- * яскравішим чи з текстом).
+ * **Figma node 9:421/11:647 ("перемалюй віджет") — повний редизайн поверх T-7.** Замінює
+ * попередню тришарову шкалу "Твій день" (GlanceDayStructureBar, T-7) на сітку доби 12x4
+ * (DailyGridSection, DailyGridCalculator.kt) — за прямим рішенням користувача сітка анкерується
+ * на календарну північ, не на точку старту дня Tepera; кнопки категорій лишаються ВЕРХНІМ рядом,
+ * сітка — нижче. 4x1 не змінився (лише кнопки, як і раніше). Іконки Читання/Хобі/Рух-спорт і
+ * градієнтний фон взято безпосередньо з Figma-асетів (деталі — коментарі біля widgetIconRes()
+ * і widget_gradient_bg.xml); решта категорій лишається на попередньому контурному наборі.
  */
 class TeperaWidget : GlanceAppWidget() {
 
+    // Figma node 11:647 ("перемалюй віджет"): розширений стан піднято зі 120dp (4x2, T-7, тонка
+    // шкала) до 180dp (4x3, сітка доби 12x4 потребує більше висоти). Компактний 4x1 (60dp, лише
+    // кнопки) не змінився.
     override val sizeMode = SizeMode.Responsive(
         setOf(
             DpSize(250.dp, 60.dp),
-            DpSize(250.dp, 120.dp)
+            DpSize(250.dp, 180.dp)
         )
     )
 
@@ -102,45 +123,42 @@ class TeperaWidget : GlanceAppWidget() {
         val activeCategories = app.categoryRepository.observeActiveCategories().first()
         val sorted = sortCategoriesForWidget(activeCategories)
 
-        // FR-4.6: перша занедбана категорія (>3 дні без запису) серед показаних кнопок.
-        val neglectedCategoryId = sorted.take(5).firstOrNull { category ->
-            isNeglected(app.activityRepository.lastLoggedTime(category.id))
-        }?.id
-
         val activeTimers = app.activeTimerStore.activeTimers.first()
 
         // SRS v2.5, FR-3.5: точка старту дня замінює локальну північ — та сама логіка, що на
-        // Home (BalanceViewModel.refresh()).
+        // Home (BalanceViewModel.refresh()). Тут вона позначає лише межу PreUnlock-клітинок
+        // сітки доби (DailyGridCalculator.kt) — сама сітка анкерується на календарну північ
+        // (нижче), за прямим рішенням користувача під час запиту на перемальовку.
         val hasUsageAccess = app.balanceRepository.hasUsageAccess()
         val sleepWindows = app.sleepWindowRepository.getEnabledWindows()
         val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindows)
-        val onlineMinutes = if (hasUsageAccess) app.balanceRepository.getOnlineMinutesToday(dayStartMillis) else 0
-        val dayLengthMinutes = app.balanceRepository.calculateDayLengthMinutes(dayStartMillis, sleepWindows)
-        // Шкала охоплює весь день — від пробудження до 00:00 (за запитом користувача), але
-        // "Офлайн-життя" заповнює лише до "зараз" — те, що ще не сталося, лишається порожньою
-        // ділянкою шкали (colorForFraction нижче), не зафарбованою "Офлайн-життя".
-        val daySpanMinutes = app.balanceRepository.calculateDaySpanMinutes(dayStartMillis, sleepWindows)
-        val targetMinutes = app.settingsStore.targetMinutes.first()
 
-        // FR-4.1: та сама тришарова структура доби, що на Home (Online + категорії з часом
-        // сьогодні + Офлайн-життя) — не окремий Online/Offline підрахунок.
-        val entries = app.activityRepository
-            .observeEntriesInRange(startOfTodayMillis(), Long.MAX_VALUE)
-            .first()
-        val minutesByCategory = entries.groupBy { it.categoryId }
-            .mapValues { (_, categoryEntries) -> categoryEntries.sumOf { it.durationMinutes } }
         val allCategories = app.categoryRepository.observeAllCategories().first()
-        val loggedSegments = allCategories
-            .filter { (minutesByCategory[it.id] ?: 0) > 0 }
-            .sortedBy { it.sortOrder }
-            .map { categoryColor(it.colorHex) to minutesByCategory.getValue(it.id) }
-        val loggedMinutes = loggedSegments.sumOf { it.second }
-        val restOfDayMinutes = (dayLengthMinutes - onlineMinutes - loggedMinutes).coerceAtLeast(0)
-        val daySegments = buildList {
-            if (onlineMinutes > 0) add(TeperaPalette.onlineCard to onlineMinutes)
-            addAll(loggedSegments)
-            if (restOfDayMinutes > 0) add(TeperaPalette.restOfDayCard to restOfDayMinutes)
+        val categoriesById = allCategories.associateBy { it.id }
+
+        // Figma node 11:647: сітка доби замінює колишню тришарову шкалу "Твій день" (T-7,
+        // GlanceDayStructureBar) — 48 клітинок по 30 хв, кожна пофарбована реальним кольором
+        // категорії/Online, а не часткою сумарних хвилин. Деталі алгоритму — DailyGridCalculator.kt.
+        val calendarMidnightMillis = startOfTodayMillis()
+        val entries = app.activityRepository
+            .observeEntriesInRange(calendarMidnightMillis, Long.MAX_VALUE)
+            .first()
+        val onlineMinutesPerSlot = if (hasUsageAccess) {
+            app.balanceRepository.getOnlineMinutesPerSlot(
+                fromMillis = calendarMidnightMillis,
+                slotMinutes = 30,
+                slotCount = DAILY_GRID_SLOT_COUNT
+            )
+        } else {
+            IntArray(DAILY_GRID_SLOT_COUNT)
         }
+        val gridSlots = calculateDailyGridSlots(
+            calendarMidnightMillis = calendarMidnightMillis,
+            dayStartMillis = dayStartMillis,
+            nowMillis = System.currentTimeMillis(),
+            entries = entries,
+            onlineMinutesPerSlot = onlineMinutesPerSlot
+        )
 
         provideContent {
             GlanceTheme {
@@ -149,78 +167,115 @@ class TeperaWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier
                         .fillMaxSize()
-                        // Фіксований TeperaPalette-колір (не GlanceTheme.colors.background,
-                        // яке слідує системній темі) — узгоджується з рішенням "дизайн ЗАВЖДИ
-                        // light" для Home/Статистики (Theme.kt): та сама напівпрозора "скляна"
-                        // картка, що й нижній навбар-"таблетка" в застосунку.
-                        .background(ColorProvider(day = TeperaPalette.navPill, night = TeperaPalette.navPill))
-                        .cornerRadius(24.dp)
-                        .padding(8.dp),
+                        // Figma node 11:647 ("Widget") — темний фон із трьома розмитими кольоровими
+                        // плямами (Group 2, node 11:648), відтворений трьома шарами radial-градієнта
+                        // з ФАКТИЧНИХ координат/кольорів/blur-параметрів вектора (get_design_context +
+                        // download_assets на сам SVG, не скріншот — деталі й точні значення
+                        // Ellipse 4/5/6 — коментар у widget_gradient_bg.xml). shape-drawable, не
+                        // ColorProvider: RemoteViews/Glance не має Canvas/Brush-градієнтів. Кути
+                        // радіуса вже в кожному шарі shape, окремий .cornerRadius() тут не потрібен.
+                        .background(ImageProvider(R.drawable.widget_gradient_bg))
+                        // За прямим запитом користувача зменшено з буквального Figma-паддінга
+                        // (p-[24px]) до 16dp — більше місця для збільшених 56dp-кнопок і сітки.
+                        .padding(WIDGET_CONTENT_PADDING),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // T-7: у 4x2 структура доби тепер ВЕРХНІЙ ряд, кнопки — нижній (раніше
-                    // навпаки). 4x1 (isExtended == false) не змінюється — лише кнопки.
-                    if (isExtended) {
-                        DayStructureRow(
-                            hasUsageAccess = hasUsageAccess,
-                            segments = daySegments,
-                            daySpanMinutes = daySpanMinutes,
-                            targetMinutes = targetMinutes,
-                            context = context
-                        )
-                        Spacer(modifier = GlanceModifier.height(8.dp))
-                    }
+                    // Figma node 11:647: кнопки категорій — ВЕРХНІЙ ряд, сітка доби — нижче
+                    // (порядок протилежний попередній T-7 версії, де бар був зверху, кнопки —
+                    // знизу). 4x1 (isExtended == false) не змінюється — лише кнопки.
                     CategoryButtonsRow(
                         categories = sorted.take(5),
-                        neglectedCategoryId = neglectedCategoryId,
                         activeTimers = activeTimers,
                         context = context
                     )
+                    if (isExtended) {
+                        // Буквальний Figma gap-[24px] між рядом кнопок і сіткою (код фрейму:
+                        // flex-col gap-[24px]) — попередні 10dp були довільним наближенням.
+                        Spacer(modifier = GlanceModifier.height(ROW_TO_GRID_GAP))
+                        DailyGridSection(
+                            hasUsageAccess = hasUsageAccess,
+                            slots = gridSlots,
+                            categoriesById = categoriesById,
+                            context = context
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-// За запитом (новий стиль застосунку) — збільшено з 48dp: FR-4.1 вимагає ЛИШЕ мінімум
-// >=48x48dp, а не стелю в 48dp; попередня стеля не давала кнопкам вирости, навіть коли
-// ширина/висота віджета дозволяли, через що іконки виглядали дрібними в 4x1.
-private val MAX_BUTTON_SIZE = 56.dp
+// За прямим запитом користувача — паддінг по краю всього контенту віджета (Column вище і
+// availableWidth у DailyGridSection нижче), зменшений з буквального Figma-24dp до 16dp.
+private val WIDGET_CONTENT_PADDING = 16.dp
 
-// T-7 (tepera-dev-spec.md): "кнопки лишаються ≥48×48dp" — явна нижня межа. Раніше нижньою межею
-// coerceIn() був 1.dp (лише верхня стеля мала сенс, коли ряд кнопок був єдиним вмістом рядка й
-// завжди мав повну ширину віджета) — на вузькому реальному launcher-гриді кнопки теоретично
-// могли стиснутись нижче touch-target мінімуму. FR-4.1 сам вимагає ≥48dp hit-box, тож це радше
-// виправлення прихованого невідповідності вимозі, ніж нова поведінка.
-private val MIN_BUTTON_SIZE = 48.dp
-private val BUTTON_GAP = 4.dp
-private val RING_INSET = 4.dp // зазор між зовнішнім кільцем і внутрішньою карткою
-private val ICON_PADDING = 6.dp // відступ від картки до самої іконки
+// Figma node 9:421/11:647/9:609 ("перемалюй віджет") — кільцеві кнопки категорій на темному
+// градієнтному фоні. Точний, буквально заданий користувачем spec для двох станів:
+// - НЕ обрано: тло — #FFFFFF @ 0.5 прозорості ("ефект скла", widget_circle_fill_translucent.xml,
+//   крізь яке просвічує кольоровий градієнт фону), символ — #FFFFFF @ 1.0 (повністю непрозорий).
+// - Обрано: тло — #FFFFFF @ 1.0 (TeperaPalette.cardActive), символ — #003926 (фіксований темно-
+//   зелений, ОДНАКОВИЙ для всіх категорій, не categoryColor() — перша версія тонувала вибрану
+//   іконку кольором категорії, користувач прямо скасував це на користь фіксованого #003926,
+//   точно як у вихідних Figma-асетах book_5/content_cut/directions_bike, де filled-варіант мав
+//   буквально fill="#003926").
+// Стан "занедбана категорія" (амбер-обвідна лінія, widget_circle_outline_neglected.xml, FR-4.6)
+// прибрано за прямим запитом користувача — усі неактивні кнопки тепер виглядають однаково
+// (напівпрозоре скляне заповнення), незалежно від того, коли категорію востаннє логували.
+//
+// **Реальний баг, знайдений на Samsung S23 (стосується й нинішньої, і попередньої версії
+// контурної кнопки):** перша спроба — вкладені Box (зовнішній суцільного кольору кільця +
+// внутрішній з `background(Color.Transparent)`) — на пристрої рендерилась як СУЦІЛЬНЕ
+// зафарбоване коло, не контур. Причина: прозорий внутрішній Box не "пробиває діру" до фону
+// віджета — у RemoteViews/Glance composite-порядку пізніший прозорий шар нічого не стирає з
+// того, що вже намальоване під ним. Фікс — реальний shape-drawable-фон одним Box (не вкладена
+// пара), тепер widget_circle_fill_translucent.xml (solid, напівпрозорий) для звичайної неактивної.
+private val WIDGET_ICON_UNSELECTED = Color.White // #FFFFFF @ 1.0 — сам символ завжди непрозорий, прозорість дає лише тло кнопки
+private val WIDGET_ICON_SELECTED = Color(0xFF003926) // фіксований темно-зелений, однаковий для всіх категорій
+
+// Figma node 11:647: сітка доби (DailyGridSection нижче). Кольори підтверджені прямим рішенням
+// користувача під час запиту на перемальовку — не з коду фрейму (той дає лише 2 умовні
+// демо-кольори, #beffb8/#ffecac).
+private val WIDGET_GRID_PRE_UNLOCK_COLOR = Color(0xFFA172FF) // до точки старту дня
+private val WIDGET_GRID_ONLINE_COLOR = Color(0xFFFF9162) // непрозора версія TeperaPalette.onlineCard (той самий відтінок, 100% альфа — на маленькій клітинці 50%-прозорий колір губився б)
+private val WIDGET_GRID_BLANK_PAST = Color.White // минуло, нічого не залоговано (Figma рядки 2-3)
+private val WIDGET_GRID_BLANK_FUTURE = Color(0x80FFFFFF) // rgba(255,255,255,0.5) — ще не настало (Figma рядок 4)
+
+// За прямим запитом користувача — кнопки категорій збільшено з буквального Figma 48dp до 56dp
+// (гліф-символ усередині лишається попереднього розміру, widgetIconGlyphSize()).
+private val CATEGORY_BUTTON_SIZE = 56.dp
+
+// Буквальний Figma gap-[24px] між рядом кнопок і сіткою (винесено в константу — потрібен і в
+// provideGlance() для Spacer, і в DailyGridSection() для розрахунку висоти клітинки, коментар там).
+private val ROW_TO_GRID_GAP = 24.dp
+
+// За прямим запитом користувача — сітка доби тепер розтягується на всю ширину віджета, а розмір
+// клітинки не обмежений зверху (раніше стеля DAILY_GRID_MAX_CELL=16dp, буквальний Figma
+// size-[16px] — прибрано, лишився тільки DAILY_GRID_MIN_CELL як запобіжник від виродження).
+// Gap зменшено з 10dp до 8dp.
+private const val DAILY_GRID_COLUMNS = 12
+private const val DAILY_GRID_ROWS = 4
+private val DAILY_GRID_GAP = 8.dp
+private val DAILY_GRID_MIN_CELL = 10.dp
 
 @Composable
 private fun CategoryButtonsRow(
     categories: List<CategoryEntity>,
-    neglectedCategoryId: String?,
     activeTimers: Map<String, Long>,
     context: Context
 ) {
-    // Реальна ширина, яку дає launcher, не завжди збігається з нашими DpSize-кандидатами
-    // (targetCellWidth залежить від конкретного launcher-а) — тому розмір кнопки рахуємо
-    // від фактичної LocalSize.current.width, а не жорстко фіксуємо 48dp: інакше 5 кнопок
-    // по 48dp можуть не влізти й обрізатись праворуч замість акуратного зменшення.
-    val count = categories.size.coerceAtLeast(1)
-    val availableWidth = LocalSize.current.width - BUTTON_GAP * (count - 1)
-    val buttonSize = (availableWidth / count).coerceIn(MIN_BUTTON_SIZE, MAX_BUTTON_SIZE)
+    // Кнопки — фіксовані 56dp (CATEGORY_BUTTON_SIZE вище), не адаптивні під ширину.
+    val buttonSize = CATEGORY_BUTTON_SIZE
 
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    // Буквальний Figma "justify-between" (код фрейму: flex items-center justify-between) — кнопки
+    // впираються в обидва краї ряду, проміжки МІЖ ними рівні й заповнюють увесь залишок ширини,
+    // а не фіксовані 4dp зліва купчасто. Glance Row не має Arrangement.SpaceBetween — той самий
+    // ефект дає Spacer(defaultWeight()) МІЖ кнопками (не на самих кнопках): порожні розпірки
+    // однаково розтягуються на весь залишок, кнопки лишаються фіксованого розміру.
+    Row(modifier = GlanceModifier.fillMaxWidth()) {
         categories.forEachIndexed { index, category ->
-            if (index > 0) Spacer(modifier = GlanceModifier.width(BUTTON_GAP))
+            if (index > 0) Spacer(modifier = GlanceModifier.defaultWeight())
             CategoryButton(
                 category = category,
-                isNeglected = category.id == neglectedCategoryId,
                 isTracking = activeTimers.containsKey(category.id),
                 context = context,
                 size = buttonSize
@@ -234,68 +289,40 @@ private val CATEGORY_ID_KEY = ActionParameters.Key<String>("category_id")
 @Composable
 private fun CategoryButton(
     category: CategoryEntity,
-    isNeglected: Boolean,
     isTracking: Boolean,
     context: Context,
     size: Dp
 ) {
-    // Пріоритет кільця: активний таймер > занедбана категорія > нічого. Колір кільця для
-    // активного таймера навмисно контрастний (error), а не колір самої категорії — інакше він
-    // зливається з однаково пофарбованою карткою і кільце не видно.
-    //
-    // ВАЖЛИВО: .background() застосовується ЗАВЖДИ, лише колір змінюється (прозорий за
-    // замовчуванням) — а не умовно то є, то немає самого модифікатора. RemoteViews-діфінг у
-    // Glance не завжди коректно ЗНІМАЄ раніше застосований background, коли новий рендер узагалі
-    // не викликає .background(): на реальному пристрої кільце "застрягало" після зупинки
-    // таймера, поки колір лишався той самий модифікатор з іншим значенням.
-    val ringColor = when {
-        isTracking -> GlanceTheme.colors.error
-        isNeglected -> GlanceTheme.colors.primary
-        else -> ColorProvider(day = Color.Transparent, night = Color.Transparent)
+    // Один Box, не вкладена пара (детальний розбір бага — коментар над WIDGET_ICON_UNSELECTED
+    // вище). Активна — суцільне біле коло, іконка тонована фіксованим темно-зеленим. Неактивна —
+    // напівпрозоре біле заповнення (widget_circle_fill_translucent.xml, Figma node 9:421/11:647).
+    val boxModifier = GlanceModifier.size(size).let {
+        if (isTracking) {
+            it.background(ColorProvider(day = TeperaPalette.cardActive, night = TeperaPalette.cardActive))
+                .cornerRadius(size / 2)
+        } else {
+            it.background(ImageProvider(R.drawable.widget_circle_fill_translucent))
+        }
     }
-    // Картка — той самий принцип, що категорійні картки на Home (BalanceCard.kt/HomeScreen.kt):
-    // біла, коли активна, напівпрозора інакше, іконка тонована власним кольором категорії
-    // (не колір-кружок з білою літерою, як було раніше).
-    val cardColor = if (isTracking) TeperaPalette.cardActive else TeperaPalette.cardTranslucent
+    val iconColor = if (isTracking) WIDGET_ICON_SELECTED else WIDGET_ICON_UNSELECTED
+    // Буквальний розмір гліфа з Figma (widgetIconGlyphSize(), коментар там), НЕ підганяється
+    // під розмір кнопки.
+    val iconSize = widgetIconGlyphSize(category.iconName)
 
     Box(
-        modifier = GlanceModifier
-            .size(size)
-            .background(ringColor)
-            .cornerRadius(size / 2)
-            .clickable(
-                actionRunCallback<ToggleCategoryTimerAction>(
-                    actionParametersOf(CATEGORY_ID_KEY to category.id)
-                )
-            ),
+        modifier = boxModifier.clickable(
+            actionRunCallback<ToggleCategoryTimerAction>(
+                actionParametersOf(CATEGORY_ID_KEY to category.id)
+            )
+        ),
         contentAlignment = Alignment.Center
     ) {
-        val innerSize = (size - RING_INSET).coerceAtLeast(1.dp)
-        Box(
-            modifier = GlanceModifier
-                .size(innerSize)
-                .background(ColorProvider(day = cardColor, night = cardColor))
-                .cornerRadius(innerSize / 2),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isTracking) {
-                // "■" — той самий принцип, що іконка "стоп" на Home, без live-лічильника
-                // (FR-4.2 лишається чинним саме для віджета).
-                Text(
-                    text = "■",
-                    style = TextStyle(color = GlanceTheme.colors.error, fontWeight = FontWeight.Bold)
-                )
-            } else {
-                val color = categoryColor(category.colorHex)
-                val iconSize = (innerSize - ICON_PADDING).coerceAtLeast(1.dp)
-                Image(
-                    provider = ImageProvider(widgetIconRes(category.iconName)),
-                    contentDescription = categoryDisplayName(category, context),
-                    colorFilter = ColorFilter.tint(ColorProvider(day = color, night = color)),
-                    modifier = GlanceModifier.size(iconSize)
-                )
-            }
-        }
+        Image(
+            provider = ImageProvider(widgetIconRes(category.iconName, selected = isTracking)),
+            contentDescription = categoryDisplayName(category, context),
+            colorFilter = ColorFilter.tint(ColorProvider(day = iconColor, night = iconColor)),
+            modifier = GlanceModifier.size(iconSize)
+        )
     }
 }
 
@@ -312,16 +339,16 @@ class ToggleCategoryTimerAction : ActionCallback {
 }
 
 /**
- * FR-4.1, FR-3.10 (SRS v2.5): тиха тришарова шкала структури доби — БЕЗ тексту з сумами (шкала
- * має бути "візуально тихішою за кнопки логування", розділ 4.3), лише коли є доступ до
- * статистики використання; без нього — той самий заклик до дії, що на Home.
+ * Figma node 11:647 ("перемалюй віджет") — сітка доби, замінює колишню GlanceDayStructureBar
+ * (T-7). БЕЗ доступу до статистики — той самий текстовий заклик до дії, що раніше показувала
+ * шкала (Online-клітинки тоді просто не з'являться, DailyGridCalculator отримає нульовий
+ * onlineMinutesPerSlot — решта категорійних/PreUnlock-клітинок лишається коректною й без доступу).
  */
 @Composable
-private fun DayStructureRow(
+private fun DailyGridSection(
     hasUsageAccess: Boolean,
-    segments: List<Pair<Color, Int>>,
-    daySpanMinutes: Int,
-    targetMinutes: Int,
+    slots: List<DailyGridSlot>,
+    categoriesById: Map<String, CategoryEntity>,
     context: Context
 ) {
     if (!hasUsageAccess) {
@@ -331,117 +358,83 @@ private fun DayStructureRow(
         )
         return
     }
-    if (daySpanMinutes <= 0 || segments.isEmpty()) return // день щойно почався — ще нема чого показувати
 
-    GlanceDayStructureBar(segments = segments, daySpanMinutes = daySpanMinutes, targetMinutes = targetMinutes)
-}
+    // За прямим запитом користувача — сітка МУСИТЬ розтягуватись на всю фактичну ширину віджета.
+    // LocalSize.current.width НЕ підходить для цього: SizeMode.Responsive тут декларує рівно одне
+    // значення ширини (250dp) для обох розмірів віджета, тож LocalSize завжди повертає це
+    // номінальне число, навіть коли реальний виділений launcher-ом простір значно ширший (саме
+    // тому попередня версія на основі LocalSize.current.width залишала порожній простір праворуч
+    // від сітки — підтверджено пікселями на Samsung S23: ряд кнопок, який рахує свою ширину через
+    // Spacer(defaultWeight()) і РЕАЛЬНЕ layout-обмеження, а не LocalSize, розтягувався коректно,
+    // а сітка — ні). Фікс: ширина кожної клітинки — теж GlanceModifier.defaultWeight() (реальний
+    // layout-розподіл замість Compose-time арифметики), гарантовано заповнює фактичну ширину на
+    // будь-якому пристрої/лаунчері незалежно від того, що каже LocalSize.
+    //
+    // Висота клітинки й далі рахується через LocalSize.current.height (не ширину!) — вертикальний
+    // розмір launcher-грида зазвичай відповідає номінальному значенню значно ближче за
+    // горизонтальний (рядки грида менш гумові за колонки), тож ця арифметика лишається достатньо
+    // точною для того, щоб клітинки виглядали приблизно квадратними.
+    val availableHeight = LocalSize.current.height - WIDGET_CONTENT_PADDING * 2 - CATEGORY_BUTTON_SIZE - ROW_TO_GRID_GAP
+    val cellHeight = ((availableHeight - DAILY_GRID_GAP * (DAILY_GRID_ROWS - 1)) / DAILY_GRID_ROWS)
+        .coerceAtLeast(DAILY_GRID_MIN_CELL)
+    // Буквальний Figma rounded-[6px] на клітинці 16px (6/16=0.375) — той самий коефіцієнт,
+    // застосований до висоти (менший вимір клітинки-прямокутника).
+    val cornerRadius = (cellHeight.value * 0.375f).dp
 
-// Glance/RemoteViews не має Canvas і GlanceModifier.defaultWeight() не приймає довільну вагу
-// (лише рівний розподіл) — на відміну від BalanceCard у застосунку (Compose Canvas), тому
-// шкалу тут імітуємо решіткою з фіксованої кількості РІВНИХ за вагою сегментів, кожен пофарбований
-// залежно від того, у яку смугу дня (Online/категорія/Решта дня) він потрапляє за часовою часткою.
-//
-// БАГ Microsoft Launcher (перевірено вживу на Samsung S23): попередня версія з 20 сегментами +
-// 19 окремими Spacer-ами між ними (39 дітей одного Row) рендерилась як ~5 великих суцільних
-// блоків замість дрібної решітки — RemoteViews-хост цього лаунчера, судячи з усього, згортає/
-// зливає надто багато дрібних дітей одного Row. Фікс: менше сегментів (10) і БЕЗ окремих
-// Spacer-дітей — проміжки між сегментами через .padding() на самому Box, а не через сусідній View.
-private const val BALANCE_BAR_SEGMENTS = 10
-
-// T-7 (tepera-dev-spec.md): 8dp→20dp — "читається з відстані витягнутої руки" (документ). Бар
-// тепер верхній ряд 4x2 (головний елемент цього режиму, SRS розділ 12 відкрите питання №5), тож
-// вищий за попередній, але й далі помітно тихіший за 48-56dp кнопки категорій під ним (FR-4.1/
-// розділ 4.3 SRS — кольори/відсутність тексту не змінились, тільки висота).
-private val BALANCE_BAR_HEIGHT = 20.dp
-
-/** FR-3.10: та сама формула засічки орієнтиру, що на Home (BalanceCard.DayStructureBar). */
-// T-7 (за прямим спостереженням користувача на реальному пристрої, не в документі): маркер
-// орієнтиру раніше замінював ЦІЛИЙ сегмент (1/10 ширини бару) суцільним чорним кольором — при
-// 8dp це було непомітною дрібницею, але після T-7 (бар 8dp→20dp) той самий квадрат став явно
-// впадати в очі як суцільна чорна "діра" в шкалі, а не "тиха вертикальна лінія БЕЗ підпису"
-// (FR-3.10). Фікс: маркер — окремий тонкий (MARKER_WIDTH) прошарок ПОВЕРХ сегментів (другий Row
-// у Box, а не заміна кольору одного із сегментів) — під ним і далі видно реальний колір дня,
-// сама лінія лишається вузькою незалежно від висоти бару.
-private val MARKER_WIDTH = 2.dp
-
-@Composable
-private fun GlanceDayStructureBar(
-    segments: List<Pair<Color, Int>>,
-    daySpanMinutes: Int,
-    targetMinutes: Int
-) {
-    val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
-    val markerFraction = (targetMinutes.toFloat() / referenceMinutes).coerceIn(0f, 1f)
-    // Тиха нейтральна риска — НЕ error/тривожний колір (FR-4.3: жодного trafic-light кодування,
-    // засічка ніколи не змінює колір при перевищенні).
-    val markerColor = ColorProvider(day = Color.Black.copy(alpha = 0.35f), night = Color.Black.copy(alpha = 0.35f))
-    // "Те, що ще не сталося" (від "Now" до півночі, за запитом користувача) — прозоре, крізь
-    // Row проглядає фон віджета (TeperaPalette.navPill), а не дофарбоване кольором сегмента.
-    val transparentColor = ColorProvider(day = Color.Transparent, night = Color.Transparent)
-
-    // GlanceModifier.defaultWeight() у цій версії Glance не приймає Float (лише рівний розподіл,
-    // на відміну від Compose Modifier.weight()) — довільну вагу для позиції маркера підробити
-    // нею не можна. Позиція рахується явно через ширину контейнера (той самий принцип
-    // наближення, що вже приймає CategoryButtonsRow нижче через LocalSize.current.width).
-    val barWidth = LocalSize.current.width
-    val markerOffset = ((barWidth - MARKER_WIDTH) * markerFraction).coerceAtLeast(0.dp)
-
-    Box(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .height(BALANCE_BAR_HEIGHT)
-    ) {
-        Row(modifier = GlanceModifier.fillMaxSize()) {
-            for (index in 0 until BALANCE_BAR_SEGMENTS) {
-                val fraction = (index + 0.5f) / BALANCE_BAR_SEGMENTS
-                // null = "ще не сталося" (за межами реальних сегментів, від "Now" до півночі) —
-                // прозорий, не дофарбований кольором останнього сегмента (за запитом користувача:
-                // "Офлайн-життя" заповнює лише до "Now", не до кінця шкали).
-                val color = colorForFraction(segments, daySpanMinutes, fraction)
-                val segmentColor = if (color != null) ColorProvider(day = color, night = color) else transparentColor
-                // Проміжок між сегментами — через .padding() НА самому Box (звужує зафарбовану
-                // площу всередину), а не через сусідній Spacer-View. Порядок модифікаторів
-                // важливий: .padding() до .background() інсетить заливку в межах уже звуженого Box.
-                Box(
-                    modifier = GlanceModifier
-                        .defaultWeight()
-                        .fillMaxHeight()
-                        .padding(horizontal = 0.5.dp)
-                        .background(segmentColor)
-                        .cornerRadius(2.dp)
-                ) {}
+    // РЕАЛЬНИЙ баг, знайдений на Samsung S23 (той самий клас проблеми, що документований баг
+    // Microsoft Launcher для старої шкали "Твій день" — коментар був у видаленому
+    // colorForFraction/GlanceDayStructureBar): версія з окремим Spacer-дитиною між кожною
+    // клітинкою (12 клітинок + 11 Spacer = 23 дитини в одному Row) рендерилась як лише ~5
+    // видимих клітинок замість 12 — RemoteViews-хост, судячи з усього, згортає/обрізає Row з
+    // надто великою кількістю дітей, і поріг тут НИЖЧИЙ, ніж на Microsoft Launcher (де збій був
+    // при 39). Фікс — той самий принцип: проміжок як .padding(start=) на самій клітинці, а не
+    // окремий Spacer-елемент, це вдвічі скорочує кількість дітей Row (12 замість 23).
+    Column(modifier = GlanceModifier.fillMaxWidth()) {
+        for (row in 0 until DAILY_GRID_ROWS) {
+            Row(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .padding(top = if (row > 0) DAILY_GRID_GAP else 0.dp)
+            ) {
+                for (col in 0 until DAILY_GRID_COLUMNS) {
+                    val slot = slots[row * DAILY_GRID_COLUMNS + col]
+                    val color = colorForGridSlot(slot, categoriesById)
+                    // Паддінг і фон — на РІЗНИХ Box (зовнішній/внутрішній), не на одному й тому
+                    // самому вузлі: реальний баг, знайдений на Samsung S23 — `.padding(start=)`
+                    // разом з `.defaultWeight()` на ОДНОМУ Box без дочірнього контенту не давав
+                    // жодного видимого проміжку (фон малювався на всю виділену вагою ширину,
+                    // паддінг просто ігнорувався, бо йому нема чийого контенту "стискати"). Фікс —
+                    // паддінг+вага на зовнішньому порожньому Box, фон+заокруглення на внутрішньому
+                    // fillMaxSize()-дочірньому — так паддінг зовнішнього справді звужує область,
+                    // яку заповнює внутрішній колір. Кількість прямих дітей Row не змінюється
+                    // (12, коментар про 23-дітей-баг нижче лишається чинним).
+                    Box(
+                        modifier = GlanceModifier
+                            .padding(start = if (col > 0) DAILY_GRID_GAP else 0.dp)
+                            .defaultWeight()
+                            .height(cellHeight)
+                    ) {
+                        Box(
+                            modifier = GlanceModifier
+                                .fillMaxSize()
+                                .background(ColorProvider(day = color, night = color))
+                                .cornerRadius(cornerRadius)
+                        ) {}
+                    }
+                }
             }
         }
-        // Маркер поверх сегментів — розпірка фіксованої ширини (markerOffset) ліворуч від
-        // MARKER_WIDTH-лінії імітує абсолютне позиціювання, якого в Glance/RemoteViews нема
-        // (немає offset()/Canvas). Праворуч від лінії нічого малювати не треба — порожній
-        // залишок Row просто не займає місця понад дітей.
-        Row(modifier = GlanceModifier.fillMaxSize()) {
-            Box(modifier = GlanceModifier.width(markerOffset)) {}
-            Box(
-                modifier = GlanceModifier
-                    .width(MARKER_WIDTH)
-                    .fillMaxHeight()
-                    .background(markerColor)
-            ) {}
-        }
     }
 }
 
-/**
- * Який сегмент дня (Online/категорія/Офлайн-життя) відповідає даній частці ширини шкали.
- * null = частка лежить за межами реальних сегментів (те, що ще не сталося) — викликач малює
- * її прозорою, не дофарбовує кольором останнього сегмента.
- */
-private fun colorForFraction(segments: List<Pair<Color, Int>>, totalMinutes: Int, fraction: Float): Color? {
-    val targetMinute = fraction * totalMinutes
-    var cumulative = 0
-    for ((color, minutes) in segments) {
-        cumulative += minutes
-        if (targetMinute < cumulative) return color
+private fun colorForGridSlot(slot: DailyGridSlot, categoriesById: Map<String, CategoryEntity>): Color =
+    when (slot) {
+        is DailyGridSlot.PreUnlock -> WIDGET_GRID_PRE_UNLOCK_COLOR
+        is DailyGridSlot.Category ->
+            categoriesById[slot.categoryId]?.let { categoryColor(it.colorHex) } ?: WIDGET_GRID_BLANK_PAST
+        is DailyGridSlot.Online -> WIDGET_GRID_ONLINE_COLOR
+        is DailyGridSlot.Blank -> if (slot.isFuture) WIDGET_GRID_BLANK_FUTURE else WIDGET_GRID_BLANK_PAST
     }
-    return null
-}
 
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget()

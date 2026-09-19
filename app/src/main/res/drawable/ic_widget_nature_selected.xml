@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma node 9:609 (повний компонент "Activity icons") — camping, ВИБРАНИЙ стан, точний
+     pathData з експортованого Figma-асета. Genuinely інша форма за unselected-варіант
+     (ic_widget_nature.xml) — не просто інший колір заливки: трикутник входу палатки суцільно
+     залитий, не окреслений. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="25.5"
+    android:viewportHeight="25.5">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M2.65625,23.1094V18.5977L11.759,6.33622L10.2266,4.28878L11.5077,3.33067L12.75,5.00597L14.0024,3.33067L15.2734,4.28878L13.7511,6.33622L22.8437,18.5977V23.1094H2.65625ZM8.55525,21.5156H16.9447L12.75,15.6453L8.55525,21.5156Z" />
+</vector>

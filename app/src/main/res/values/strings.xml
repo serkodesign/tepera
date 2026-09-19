@@ -64,6 +64,20 @@
     <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього офлайн-логування лишається повністю робочим.</string>
     <string name="onboarding_skip">Пропустити</string>
 
+    <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
+         node 14:791), показується обома гілками "доступ надано? так/ні". -->
+    <string name="widget_suggestion_title">Додай віджет на головний екран</string>
+    <string name="widget_suggestion_body">Структура дня й швидкий тап-таймер під рукою, без відкриття застосунку.</string>
+    <string name="widget_suggestion_add_action">Додати віджет</string>
+
+    <!-- Сповіщення "усе ще цим займаєшся?" через 4 год тап-таймера (Figma user-flow
+         k6s4prQ9oK9x2uUvzHRghR, node 14:791) — за прямим рішенням користувача ЛИШЕ сповіщення,
+         таймер не зупиняється автоматично. -->
+    <string name="timer_check_channel_name">Перевірка активного таймера</string>
+    <string name="timer_check_notification_body">Усе ще цим займаєшся?</string>
+    <string name="timer_check_action_yes">Так</string>
+    <string name="timer_check_action_no">Ні</string>
+
     <!-- Онбординг про цінності (FR-P.2) -->
     <string name="values_onboarding_title">Що ти хотів би робити більше?</string>
 
@@ -116,8 +130,10 @@
     <string name="pause_pick_category_cancel">Скасувати</string>
 
     <!-- Тепловий патерн доби (FR-D.8/D.9, SRS v2.6) -->
-    <string name="pattern_card_title">Патерн доби</string>
-    <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається тиждень даних</string>
+    <string name="pattern_card_title">Патерн екрану вчора</string>
+    <string name="pattern_card_title_average">Добовий патерн використання</string>
+    <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається трохи більше даних</string>
+    <string name="pattern_heat_legend_no_data">Без даних</string>
 
     <!-- Картка "Цей тиждень" — досліджено з Figma-макета (node 2062:2862), не в SRS буквально -->
     <string name="weekly_digest_card_title">Цей тиждень</string>
@@ -262,9 +278,12 @@
     <string name="add_entry_mode_manual">Вручну</string>
     <string name="add_entry_mode_interval">Інтервал</string>
     <string name="add_entry_duration_label">Тривалість: %1$d хв</string>
+    <string name="add_entry_duration_word">Тривалість</string>
+    <string name="add_entry_duration_type_label">Тип</string>
     <string name="add_entry_duration_minutes_label">Хвилини</string>
     <string name="add_entry_reset_duration">Скинути</string>
     <string name="add_entry_preset_format">+%d хв</string>
+    <string name="add_entry_preset_hours_format">+%d год</string>
     <string name="add_entry_start_time_label">Початок</string>
     <string name="add_entry_end_time_label">Кінець</string>
     <string name="time_field_format">%1$s: %2$s</string>
@@ -284,7 +303,6 @@
     <string name="stats_screen_title">Статистика</string>
     <string name="stats_period_day">День</string>
     <string name="stats_period_week">Тиждень</string>
-    <string name="stats_period_month">Місяць</string>
     <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
     <string name="stats_weekly_trend_title">Тренд Online-часу</string>
     <string name="stats_no_data">Немає даних за цей період</string>
@@ -298,4 +316,25 @@
     <string name="stats_history_yesterday">Вчора</string>
     <string name="stats_history_edit_action">Редагувати запис</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
+
+    <!-- Тап по тілу картки категорії на Home (Figma user-flow k6s4prQ9oK9x2uUvzHRghR, node
+         14:791) — повна історія записів цієї категорії, без обмеження "сьогодні+вчора". -->
+    <string name="category_history_screen_title_fallback">Історія</string>
+    <string name="category_history_empty">Ще немає записів цієї категорії</string>
+
+    <!-- "База знань" — T-16 частина А (tepera-dev-spec.md), реальний контент. Частина Б
+         (вікі про думскролінг/дофамін) лишається заблокованою рішенням власника — свідомо
+         відсутня тут. -->
+    <string name="settings_knowledge_base_action">База знань</string>
+    <string name="knowledge_base_screen_title">База знань</string>
+    <string name="knowledge_base_intro">Коротко про те, як Tepera рахує час і чому влаштована саме так.</string>
+    <string name="knowledge_base_section_1_title">Звідки беруться дані</string>
+    <string name="knowledge_base_section_1_body">Online-час і структура дня рахуються через системний дозвіл Android «Доступ до статистики використання» (Налаштування → Спеціальний доступ, не спливаюче вікно). Дозвіл дає доступ лише до назв застосунків і моментів, коли вони виходять на передній план чи йдуть у фон. Без нього ручне логування активностей лишається повністю робочим — просто без автоматичного Online-часу.\n\nTepera не бачить зміст екрана: не текст повідомлень, не те, що саме ти читаєш чи дивишся, не скролінг усередині застосунку — хвилина читання виглядає так само, як хвилина гортання стрічки. Усі дані лишаються на телефоні; єдиний вихід у мережу — кнопка «Запропонувати функцію», яка відкриває браузер, не сам застосунок.</string>
+    <string name="knowledge_base_section_2_title">Паузи та ворота</string>
+    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: пропущена пауза нікуди не записується як показник.\n\nВорота (Налаштування → Застосунки із затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож ворота працюють через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути ворота на сьогодні можна одним тапом, без пояснень.</string>
+    <string name="knowledge_base_section_3_title">Вікно сну</string>
+    <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ти спав. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань. Можна задати до двох вікон — друге для плаваючого графіка, вимкнене за замовчуванням.</string>
+    <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>
+    <string name="knowledge_base_section_4_body">Tepera не надсилає сповіщень, що кличуть повернутись, не рахує серій днів поспіль і не видає балів чи бейджів за використання. Числа на екранах — це факти про час, який уже минув, не ціль, до якої треба дотягнутись: тому в застосунку немає слова «ціль», лише «орієнтир», і кольори ніколи не стають «тривожними», скільки б часу не минуло. Порівняння — лише з власною історією, ніколи з середніми показниками інших людей.</string>
+    <string name="onboarding_learn_more">Дізнатись більше про дані</string>
 </resources>

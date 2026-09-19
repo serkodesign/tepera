@@ -14,6 +14,12 @@
 
     <!-- WorkManager для періодичного оновлення віджета (FR-4.3) не потребує окремого дозволу -->
 
+    <!-- Сповіщення "усе ще цим займаєшся?" через 4 год роботи тап-таймера (Figma user-flow
+         k6s4prQ9oK9x2uUvzHRghR, node 14:791, за прямим рішенням користувача — ЛИШЕ сповіщення,
+         без автозупинки). Звичайний runtime-дозвіл (Android 13+), не protected/sensitive —
+         запитується через системний діалог (HomeScreen), не через окремі Налаштування. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Свідомо ВІДСУТНІ: жодні локаційні дозволи (FR-7.2) -->
 
     <!-- FR-3.5, спайк Фази 2 (ROADMAP.md): package visibility filtering (Android 11+) справді
@@ -68,6 +74,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/life_balance_widget_info" />
         </receiver>
+
+        <!-- "Так"/"Ні" на сповіщенні "усе ще цим займаєшся?" (TimerCheckWorker) -->
+        <receiver
+            android:name=".data.TimerCheckNotificationReceiver"
+            android:exported="false" />
 
         <!-- Quick Settings Tile (FR-4.4) -->
         <service

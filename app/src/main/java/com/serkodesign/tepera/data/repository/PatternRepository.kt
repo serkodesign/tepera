@@ -4,6 +4,7 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
+import com.serkodesign.tepera.util.startOfTodayMillis
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,22 +30,31 @@ class PatternRepository(
         val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages(context)
         val buckets = IntArray(24)
         try {
-            val events = usm.queryEvents(from, to)
-            val event = UsageEvents.Event()
-            val foregroundSince = HashMap<String, Long>()
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event)
-                val packageName = event.packageName ?: continue
-                if (packageName in excluded) continue
-                when (event.eventType) {
-                    UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
-                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
-                        val start = foregroundSince.remove(packageName)
-                        if (start != null) addToHourBuckets(buckets, start, event.timeStamp)
+            // Окремий запит на кожну добу: застосунок без завершальної події "у фон" лишається
+            // в foregroundSince до кінця вікна, і для тижня/місяця це розтягувало одну загублену
+            // подію на всі наступні дні, зафарбовуючи всі 24 години (перевірено на Samsung S23:
+            // усі години тижня були 30-60 хв за тренду 1-10 год/добу).
+            var dayStart = from
+            while (dayStart < to) {
+                val dayEnd = minOf(dayStart + DAY_MILLIS, to)
+                val events = usm.queryEvents(dayStart, dayEnd)
+                val event = UsageEvents.Event()
+                val foregroundSince = HashMap<String, Long>()
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(event)
+                    val packageName = event.packageName ?: continue
+                    if (packageName in excluded) continue
+                    when (event.eventType) {
+                        UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
+                        UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                            val start = foregroundSince.remove(packageName)
+                            if (start != null) addToHourBuckets(buckets, start, event.timeStamp)
+                        }
                     }
                 }
+                for (start in foregroundSince.values) addToHourBuckets(buckets, start, dayEnd)
+                dayStart = dayEnd
             }
-            for (start in foregroundSince.values) addToHourBuckets(buckets, start, to)
         } catch (e: SecurityException) {
             // buckets лишаються нульовими — PatternViewModel трактує це як "нема доступу" вище по стеку.
         }
@@ -63,7 +73,12 @@ class PatternRepository(
     suspend fun availableHistoryDays(nowMillis: Long, maxDays: Int): Int = withContext(Dispatchers.IO) {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         try {
-            val from = nowMillis - maxDays * DAY_MILLIS
+            // Рахуємо ПОВНІ календарні доби до початку сьогодні (саме таке вікно потім читає
+            // hourlyOnlineMinutes) і будь-яка подія в добі зараховує її. Раніше було
+            // floor((now - earliest) / доба) від "зараз": найдавніша подія майже завжди трохи
+            // пізніше за now - maxDays, тож тиждень давав 6 днів, а місяць — 29.
+            val todayStart = startOfTodayMillis()
+            val from = todayStart - maxDays * DAY_MILLIS
             val events = usm.queryEvents(from, nowMillis)
             val event = UsageEvents.Event()
             var earliest: Long? = null
@@ -72,7 +87,8 @@ class PatternRepository(
                 if (earliest == null || event.timeStamp < earliest) earliest = event.timeStamp
             }
             val earliestFound = earliest ?: return@withContext 0
-            ((nowMillis - earliestFound) / DAY_MILLIS).toInt().coerceIn(0, maxDays)
+            val fullDays = (todayStart - earliestFound + DAY_MILLIS - 1) / DAY_MILLIS
+            fullDays.toInt().coerceIn(0, maxDays)
         } catch (e: SecurityException) {
             0
         }

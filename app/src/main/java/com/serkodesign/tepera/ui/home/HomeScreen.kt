@@ -1,7 +1,11 @@
 package com.serkodesign.tepera.ui.home
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.cards.CardSource
 import com.serkodesign.tepera.data.cards.CardType
@@ -95,10 +100,12 @@ fun HomeScreen(
     gateEventRepository: GateEventRepository,
     onOpenSettings: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
+    onOpenCategoryHistory: (String) -> Unit,
     onShowOnboarding: () -> Unit,
     onShowValuesOnboarding: () -> Unit,
     onShowCategoryOnboarding: () -> Unit,
-    onShowOnlineEstimateOnboarding: () -> Unit
+    onShowOnlineEstimateOnboarding: () -> Unit,
+    onShowWidgetSuggestion: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
@@ -133,7 +140,8 @@ fun HomeScreen(
     // FR-D.8/D.9: тепловий патерн доби — власний інстанс на Home (Stats має свій, з тими самими
     // Repository, але окремим refresh-циклом).
     val patternViewModel: PatternViewModel = viewModel(
-        factory = PatternViewModel.Factory(patternRepository, balanceRepository, settingsStore)
+        // Home показує патерн ВЧОРАШНЬОЇ доби (1 день), не середнє за тиждень.
+        factory = PatternViewModel.Factory(patternRepository, balanceRepository, settingsStore, initialPeriodDays = 1)
     )
     val patternState by patternViewModel.uiState.collectAsState()
 
@@ -262,6 +270,61 @@ fun HomeScreen(
         }
     }
 
+    // Figma user-flow (k6s4prQ9oK9x2uUvzHRghR, node 14:791): "Пропозиція віджета" — останній
+    // крок онбордингу, ОБИДВІ гілки "доступ надано? так/ні" сходяться сюди. "Крок дозволу
+    // розв'язаний" — доступ уже надано (permissionScreen вище й не показувався) АБО сам
+    // permission-екран уже показувався (onboardingSeen), незалежно від того, чим скінчилось.
+    val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen) {
+        val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
+        if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && !widgetSuggestionSeen) {
+            // Той самий race, що описаний нижче для POST_NOTIFICATIONS: OnboardingScreen
+            // (пояснення дозволу) виставляє onboardingSeen=true у своєму LaunchedEffect(Unit)
+            // ОДРАЗУ при монтуванні, не чекаючи дії користувача — і Home встигає прочитати це
+            // на тому самому короткому "оживанні" між popBackStack()/navigate(), перш ніж
+            // OnboardingScreen встигає реально лишитись на екрані. Без затримки цей ефект
+            // стрибав одразу на WidgetSuggestionScreen, повністю пропускаючи екран пояснення
+            // дозволу (знайдено живим тестом на Samsung S23, T-3 переставав показуватись).
+            delay(1000)
+            onShowWidgetSuggestion()
+        }
+    }
+
+    // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker, за 4 год роботи тап-таймера) потребує
+    // звичайного runtime-дозволу POST_NOTIFICATIONS на Android 13+ — запитується РІВНО раз, без
+    // окремого пояснювального екрана (не protected/sensitive дозвіл, на відміну від статистики
+    // використання застосунків). **Реальний баг, знайдений під час перевірки цієї сесії, у два
+    // заходи:** без gating на онбординг-ланцюжок системний діалог міг з'явитись ПОВЕРХ будь-якого
+    // проміжного екрана онбордингу — Home коротко "прокидається" між кожним `popBackStack()` і
+    // наступним `navigate()` у ланцюжку (кожен крок повертається на Home перед тим, як той одразу
+    // штовхає на наступний), і саме в цю мить встигає прочитати вже оновлений прапорець і
+    // запустити `launch()`. Перший фікс (gating на `widgetSuggestionSeen`) не позбувся проблеми
+    // повністю — той прапорець виставляється в LaunchedEffect(Unit) самого WidgetSuggestionScreen
+    // одразу при монтуванні, тож той самий стан "Home ще встигає це побачити" повторився,
+    // просто зсунувшись на крок пізніше (підтверджено повторним живим тестом). Другий фікс —
+    // невеликий `delay()` ПЕРЕД самим launch(): якщо Home справді покидає композицію (навігація
+    // пішла далі), корутина LaunchedEffect скасовується автоматично й до launch() просто не
+    // доходить; якщо ж Home і справді лишився видимим (реальний фінал онбордингу), затримка
+    // непомітна для користувача.
+    if (Build.VERSION.SDK_INT >= 33) {
+        val notificationPermissionRequested by settingsStore.notificationPermissionRequested.collectAsState(initial = true)
+        val notificationPermissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { }
+        LaunchedEffect(
+            notificationPermissionRequested, valuesOnboardingSeen, categoryOnboardingSeen,
+            onlineEstimateOnboardingSeen, widgetSuggestionSeen
+        ) {
+            if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
+                widgetSuggestionSeen && !notificationPermissionRequested
+            ) {
+                delay(1000)
+                settingsStore.setNotificationPermissionRequested()
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     val context = LocalContext.current
 
     // Прозорий containerColor: градієнтний фон малює зовнішній Box у TeperaNavHost (а не тут) —
@@ -383,7 +446,8 @@ fun HomeScreen(
                                     CategoryCard(
                                         item = item,
                                         onToggleTimer = { viewModel.toggleTimer(item.category.id) },
-                                        onAddTime = { onAddEntryForCategory(item.category.id) }
+                                        onAddTime = { onAddEntryForCategory(item.category.id) },
+                                        onOpenHistory = { onOpenCategoryHistory(item.category.id) }
                                     )
                                 }
                             }
@@ -442,7 +506,8 @@ private fun HomeHeader(onOpenSettings: () -> Unit) {
 private fun CategoryCard(
     item: CategoryTodaySummary,
     onToggleTimer: () -> Unit,
-    onAddTime: () -> Unit
+    onAddTime: () -> Unit,
+    onOpenHistory: () -> Unit
 ) {
     val isTracking = item.trackingStartTime != null
     val accentColor = categoryColor(item.category.colorHex)
@@ -458,7 +523,13 @@ private fun CategoryCard(
             .padding(8.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        // Тап по тілу картки (іконка/назва, не кнопки таймера/додавання часу) відкриває повну
+        // історію записів цієї категорії (Figma user-flow k6s4prQ9oK9x2uUvzHRghR, node 14:791) —
+        // окремо від play/pause і "MoreTime" нижче, які лишаються незмінними.
+        Column(
+            modifier = Modifier.padding(4.dp).clickable(onClick = onOpenHistory),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             Box(
                 modifier = Modifier
                     .size(32.dp)

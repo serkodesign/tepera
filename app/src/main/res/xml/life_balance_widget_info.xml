@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- FR-4.1–4.3: компактна 4x1 (250x60dp) / розширена 4x2 (250x120dp) через
-     SizeMode.Responsive у TeperaWidget.kt. updatePeriodMillis=0, бо оновлення веде
-     WorkManager (WidgetUpdateWorker, ~30 хв), не система. -->
+<!-- FR-4.1–4.3: компактна 4x1 (250x60dp, лише кнопки) / розширена 4x3 (250x180dp, кнопки + сітка
+     доби) через SizeMode.Responsive у TeperaWidget.kt. Розширена висота піднята зі 120dp (4x2,
+     T-7, тонка шкала "Твій день") до 180dp (Figma node 11:647, "перемалюй віджет" — шкалу
+     замінено на сітку 12x4 клітинок по 30 хв, якій потрібно більше вертикального простору).
+     updatePeriodMillis=0, бо оновлення веде WorkManager (WidgetUpdateWorker, ~30 хв), не система. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="60dp"
     android:targetCellWidth="4"
     android:targetCellHeight="1"
-    android:maxResizeHeight="120dp"
+    android:maxResizeHeight="180dp"
     android:updatePeriodMillis="0"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

@@ -28,6 +28,8 @@ private val GAP_SENSITIVITY_KEY = stringPreferencesKey("gap_sensitivity")
 private val HISTORY_BACKFILL_COMPLETED_AT_KEY = longPreferencesKey("history_backfill_completed_at")
 private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
+private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
+private val NOTIFICATION_PERMISSION_REQUESTED_KEY = booleanPreferencesKey("notification_permission_requested")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 
@@ -95,6 +97,31 @@ class SettingsStore(private val context: Context) {
     suspend fun seedFirstLaunchMillisIfUnset() {
         val alreadySet = context.settingsDataStore.data.first()[FIRST_LAUNCH_AT_KEY] != null
         if (!alreadySet) context.settingsDataStore.edit { it[FIRST_LAUNCH_AT_KEY] = System.currentTimeMillis() }
+    }
+
+    /**
+     * Figma user-flow (k6s4prQ9oK9x2uUvzHRghR, node 14:791): "Пропозиція віджета" — останній
+     * крок онбордингу, показується РІВНО раз, ОБОМА гілками "доступ надано?" (так/ні) — HomeScreen
+     * вирішує, коли саме він "розв'язаний" (див. LaunchedEffect у HomeScreen.kt), тут лише прапорець.
+     */
+    val widgetSuggestionSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[WIDGET_SUGGESTION_SEEN_KEY] ?: false }
+
+    suspend fun setWidgetSuggestionSeen() {
+        context.settingsDataStore.edit { it[WIDGET_SUGGESTION_SEEN_KEY] = true }
+    }
+
+    /**
+     * `POST_NOTIFICATIONS` (Android 13+) — потрібен для сповіщення "усе ще цим займаєшся?"
+     * (`TimerCheckWorker`). Запитується РІВНО раз (HomeScreen) незалежно від відповіді
+     * користувача — системний діалог і так не з'явиться вдруге після відмови без цього
+     * прапорця, він лише запобігає повторному виклику `launch()` при кожному відкритті Home.
+     */
+    val notificationPermissionRequested: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[NOTIFICATION_PERMISSION_REQUESTED_KEY] ?: false }
+
+    suspend fun setNotificationPermissionRequested() {
+        context.settingsDataStore.edit { it[NOTIFICATION_PERMISSION_REQUESTED_KEY] = true }
     }
 
     /**

@@ -23,7 +23,17 @@ import kotlinx.coroutines.launch
 private const val MS_PER_DAY = 24 * 60 * 60 * 1000L
 
 /** FR-5.2: період для стовпчикової діаграми розподілу офлайн-часу по категоріях. */
-enum class StatsPeriod { DAY, WEEK, MONTH }
+enum class StatsPeriod { DAY, WEEK }
+
+/**
+ * Скільки днів охоплює кожен період — 1/7/30, ковзне вікно (не календарний тиждень/місяць,
+ * MVP-спрощення). Публічна, бо за прямим запитом користувача той самий перемикач тепер керує
+ * й тепловим патерном доби (`StatsScreen` передає це значення в `PatternViewModel.refresh()`).
+ */
+fun daysForStatsPeriod(p: StatsPeriod): Int = when (p) {
+    StatsPeriod.DAY -> 1
+    StatsPeriod.WEEK -> 7
+}
 
 data class CategoryBreakdownItem(val category: CategoryEntity, val minutes: Int)
 
@@ -94,7 +104,6 @@ class StatsViewModel(
     private fun periodStartMillis(p: StatsPeriod): Long = when (p) {
         StatsPeriod.DAY -> startOfTodayMillis()
         StatsPeriod.WEEK -> startOfTodayMillis() - 6 * MS_PER_DAY
-        StatsPeriod.MONTH -> startOfTodayMillis() - 29 * MS_PER_DAY
     }
 
     private val categoryBreakdown: StateFlow<List<CategoryBreakdownItem>> = period
@@ -128,11 +137,7 @@ class StatsViewModel(
     // categoryBreakdown вище — до цього фіксу графік завжди показував ті самі 7 днів під
     // заголовком "Тижневий тренд" незалежно від обраного Дня/Тижня/Місяця (знайдено живим
     // тестуванням: перемикання на "Місяць" не міняло ні дані, ні підпис графіка).
-    private fun daysForPeriod(p: StatsPeriod): Int = when (p) {
-        StatsPeriod.DAY -> 1
-        StatsPeriod.WEEK -> 7
-        StatsPeriod.MONTH -> 30
-    }
+    private fun daysForPeriod(p: StatsPeriod): Int = daysForStatsPeriod(p)
 
     private suspend fun computeTrend(p: StatsPeriod): List<DailyBalancePoint> {
         val todayStart = startOfTodayMillis()

@@ -3,6 +3,7 @@ package com.serkodesign.tepera.ui.gates
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -31,10 +32,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -170,7 +172,9 @@ private const val BREATH_DIRECTION_MILLIS = 4000
 private const val BREATH_SCALE_SMALL = 0.82f
 private const val BREATH_SCALE_LARGE = 1.18f
 
-private data class BreathState(val scale: Float, val inhaling: Boolean)
+private val BADGE_SIZE = 180.dp
+
+private data class BreathState(val scale: Animatable<Float, AnimationVector1D>, val inhaling: Boolean)
 
 /**
  * Дихальна анімація — чисто UI-стан (`Animatable`, не `ViewModel`): починає рости ВІДРАЗУ з
@@ -178,6 +182,18 @@ private data class BreathState(val scale: Float, val inhaling: Boolean)
  * стояла нерухомо до першої зміни фази) і крутиться безперервно, поки екран видимий, цілком
  * незалежно від таймера очікування `GatePauseViewModel` (раніше було навпаки — саме це число й
  * було "дихальним циклом"; тепер число рахує очікування, а дихання — суто атмосферний фон).
+ *
+ * **Повертає сам [Animatable], НЕ `.value`** — реальний баг, знайдений користувачем на Huawei P9
+ * (Android 8, Kirin 955, значно слабший за Samsung S23): попередня версія читала `scale.value`
+ * ТУТ, у тілі цієї `@Composable`-функції, викликаної прямо зі scope `GatePauseScreen` — кожен
+ * кадр анімації (до 60/с) перечитував це значення й перекомпоновував УВЕСЬ `GatePauseScreen`
+ * (кнопки, текст спроб, усе), а `BreathingBadge` наново рахував 200-точковий тригонометричний
+ * контур квітки щокадру, хоча він ніколи не змінюється. На S23 це губилось у запасі
+ * продуктивності; на P9 перевантажений рекомпозицією рендер губив кадри й виглядав як мигання
+ * ЗАМІСТЬ плавної зміни розміру. Тепер `scale.value` читається лише всередині
+ * `Modifier.graphicsLayer { }` у [BreathingBadge] — це відкладає читання на фазу
+ * layout/draw і НЕ викликає перекомпозицію composable-дерева взагалі, лише дешеве оновлення
+ * трансформації шару.
  */
 @Composable
 private fun rememberBreathState(): BreathState {
@@ -191,24 +207,33 @@ private fun rememberBreathState(): BreathState {
             scale.animateTo(BREATH_SCALE_SMALL, tween(BREATH_DIRECTION_MILLIS, easing = LinearEasing))
         }
     }
-    return BreathState(scale.value, inhaling)
+    return BreathState(scale, inhaling)
 }
 
 /**
  * Дихальний бейдж — м'яка "квіткова" пляма (параметрична крива radius(kut) = R·(1 - w + w·cos(k·kut)),
  * не справжня SVG-графіка) з числом усередині. Форма контуру ЗАВЖДИ однакова (детермінована, без
- * випадковості) — [scale] керується ззовні ([rememberBreathState]). За прямим запитом
- * користувача: [number] — `null`, щойно очікування минає (цифра зникає, дихальна анімація
- * лишається й далі крутиться).
+ * випадковості) — кешується через `remember` (не рахується щокадру, див. [rememberBreathState] —
+ * реальний баг, знайдений на Huawei P9). [scale] керується ззовні через `Modifier.graphicsLayer`,
+ * без перекомпозиції. За прямим запитом користувача: [number] — `null`, щойно очікування минає
+ * (цифра зникає, дихальна анімація лишається й далі крутиться).
  */
 @Composable
-private fun BreathingBadge(scale: Float, number: Int?, modifier: Modifier = Modifier) {
+private fun BreathingBadge(scale: Animatable<Float, AnimationVector1D>, number: Int?, modifier: Modifier = Modifier) {
+    val diameterPx = with(LocalDensity.current) { BADGE_SIZE.toPx() }
+    val path = remember(diameterPx) {
+        scallopedBlobPath(diameter = diameterPx, lobes = 12, wobbleFraction = 0.07f)
+    }
     Box(
-        modifier = modifier.size(180.dp).scale(scale),
+        modifier = modifier
+            .size(BADGE_SIZE)
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+            },
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val path = scallopedBlobPath(diameter = size.minDimension, lobes = 12, wobbleFraction = 0.07f)
             drawPath(path, color = Color.White.copy(alpha = 0.55f))
         }
         if (number != null) {

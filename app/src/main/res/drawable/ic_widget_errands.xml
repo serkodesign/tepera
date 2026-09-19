@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- T-8 (tepera-dev-spec.md): "Справи" — простий чекліст для віджета, тонується категорійним
-     кольором (Glance ColorFilter.tint()), базовий fillColor значення не має. -->
+<!-- Figma node 9:609 (повний компонент "Activity icons", "get code з іконок у Figma... без
+     змін") — checklist, точний pathData з експортованого Figma-асета. Той самий гліф для обох
+     станів (вибрано/ні) — у Figma selected/unselected варіанти checklist відрізняються лише
+     fill-кольором (#003926 vs white), не формою, тому окремого "_selected" файлу не потрібно —
+     на відміну від Природи/Спілкування, де форми genuinely різні. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:viewportWidth="25.5"
+    android:viewportHeight="25.5">
     <path
         android:fillColor="#FF000000"
-        android:pathData="M3,15h2v-2H3V15z M3,19h2v-2H3V19z M3,11h2V9H3V11z M7,15h14v-2H7V15z M7,19h14v-2H7V19z M7,9v2h14V9H7z" />
+        android:pathData="M6.05014,19.6053L2.65625,16.2114L3.76577,15.1018L6.02358,17.3597L10.5392,12.844L11.6487,13.9801L6.05014,19.6053ZM6.05014,11.5138L2.65625,8.11989L3.76577,7.01037L6.02358,9.26819L10.5392,4.75256L11.6487,5.88864L6.05014,11.5138ZM13.8226,17.5926V15.9989H22.8538V17.5926H13.8226ZM13.8226,9.50114V7.90739H22.8538V9.50114H13.8226Z" />
 </vector>

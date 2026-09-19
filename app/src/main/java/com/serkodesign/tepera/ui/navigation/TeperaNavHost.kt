@@ -61,7 +61,9 @@ import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
+import com.serkodesign.tepera.ui.category.CategoryHistoryScreen
 import com.serkodesign.tepera.ui.diary.DiaryScreen
+import com.serkodesign.tepera.ui.knowledge.KnowledgeBaseScreen
 import com.serkodesign.tepera.ui.gates.GatePauseScreen
 import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
@@ -69,6 +71,7 @@ import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
@@ -89,6 +92,7 @@ private object Routes {
     const val VALUES_ONBOARDING = "values_onboarding"
     const val CATEGORY_ONBOARDING = "category_onboarding"
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
+    const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
     const val LANGUAGE_SETTINGS = "language_settings"
@@ -98,6 +102,8 @@ private object Routes {
     const val DIARY = "diary"
     const val SPIKE_T1 = "spike_t1"
     const val GATES = "gates"
+    const val KNOWLEDGE_BASE = "knowledge_base"
+    const val CATEGORY_HISTORY = "category_history/{categoryId}"
 
     // Три вкладки нижнього навбару, node 2146:320 (Figma, замінив попередній фрейм 1951:4017,
     // де третя вкладка була "pending"-іконкою без екрана) — Home, Diary, Stats, у цьому порядку
@@ -120,7 +126,7 @@ private object Routes {
         SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
-        GATE_PAUSE
+        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, CATEGORY_HISTORY
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -129,6 +135,8 @@ private object Routes {
     fun editEntry(entryId: String) = "edit_entry/$entryId"
 
     fun gatePause(packageName: String) = "gate_pause/$packageName"
+
+    fun categoryHistory(categoryId: String) = "category_history/$categoryId"
 }
 
 @Composable
@@ -230,10 +238,12 @@ fun TeperaNavHost(
                     gateEventRepository = gateEventRepository,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
+                    onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
                     onShowValuesOnboarding = { navController.navigate(Routes.VALUES_ONBOARDING) },
                     onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
-                    onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) }
+                    onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
+                    onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) }
                 )
             }
             composable(Routes.STATS) {
@@ -298,10 +308,26 @@ fun TeperaNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(
+                Routes.CATEGORY_HISTORY,
+                arguments = listOf(navArgument("categoryId") { type = NavType.StringType })
+            ) { entry ->
+                CategoryHistoryScreen(
+                    categoryRepository = categoryRepository,
+                    activityRepository = activityRepository,
+                    categoryId = entry.arguments?.getString("categoryId").orEmpty(),
+                    onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.KNOWLEDGE_BASE) {
+                KnowledgeBaseScreen(onBack = { navController.popBackStack() })
+            }
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
                     settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() }
+                    onDone = { navController.popBackStack() },
+                    onLearnMore = { navController.navigate(Routes.KNOWLEDGE_BASE) }
                 )
             }
             composable(Routes.VALUES_ONBOARDING) {
@@ -325,6 +351,12 @@ fun TeperaNavHost(
                     onDone = { navController.popBackStack() }
                 )
             }
+            composable(Routes.WIDGET_SUGGESTION_ONBOARDING) {
+                WidgetSuggestionScreen(
+                    settingsStore = settingsStore,
+                    onDone = { navController.popBackStack() }
+                )
+            }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
@@ -333,6 +365,7 @@ fun TeperaNavHost(
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onBack = { navController.popBackStack() }
                 )

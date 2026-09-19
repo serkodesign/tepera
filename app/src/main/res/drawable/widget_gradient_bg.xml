@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Figma node 11:647 ("Widget"), фон "Group 2" (node 11:648) — три розмиті кольорові кола поверх
+    базового #12171f (bg-[#12171f] у коді фрейму). Замінює попередню версію (один лінійний
+    градієнт зліва направо, кольори зняті пікселями зі скріншота) — ця версія побудована з
+    ФАКТИЧНИХ значень get_design_context/download_assets самого вектора "Group 2"
+    (Ellipse 4/5/6), а не з наближеного скріншота (звірено з кодом, не зі скріншотом):
+      Ellipse 5: центр (224.414, 132.514) у системі координат Group 2, r=66.5135, fill=#65FF93,
+                 fill-opacity=0.3, feGaussianBlur stdDeviation=33.
+      Ellipse 4: центр (137.383, 229.258), r=77.4831, fill=#40A8BA, fill-opacity=0.5,
+                 stdDeviation=29.95.
+      Ellipse 6: центр (376.237, 248.063), r=101.337, fill=#FF1C7E, fill-opacity=0.27,
+                 stdDeviation=31.6.
+    Group 2 сам зміщений на (-3, -92) відносно фрейму Widget (343x214, той самий літеральний
+    px-канвас, з якого вже взято padding-24/gap-24/розмір клітинки-16/gap-10 в TeperaWidget.kt) —
+    центри переведені у координати Widget і далі в частку ширини/висоти (android:centerX/centerY,
+    0..1, у GradientDrawable природно масштabується під реальний розмір віджета; E6 навмисно
+    >1.0 по X — той самий блиск, що на макеті, більшість кола обрізана за правий край).
+    RemoteViews/Glance не має Canvas/Brush для СПРАВЖНЬОГО Gaussian blur — замість трьох плям з
+    розмиттям тут три шари android:type="radial" (кожен — окремий rectangle-shape з тим самим
+    #12171f-заокругленням 24dp, щоб не проступали гострі кути з-під верхніх шарів), радіус
+    градієнта — r + 2.5×stdDeviation (де альфа вихідного кольору вже практично згасає), що дає
+    м'який радіальний перехід замість справжнього блюру, помітно ближчий до макета за єдиний
+    лінійний градієнт. Кути радіуса — у самому shape (не окремий .cornerRadius()): надійніше
+    клипається на різних launcher-хостах RemoteViews (підтверджено раніше, Samsung S23/Microsoft
+    Launcher).
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <solid android:color="#12171F" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:type="radial"
+                android:centerX="0.6455"
+                android:centerY="0.1893"
+                android:gradientRadius="149dp"
+                android:startColor="#4D65FF93"
+                android:endColor="#0065FF93" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:type="radial"
+                android:centerX="0.3918"
+                android:centerY="0.6414"
+                android:gradientRadius="152dp"
+                android:startColor="#8040A8BA"
+                android:endColor="#0040A8BA" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:type="radial"
+                android:centerX="1.0882"
+                android:centerY="0.7293"
+                android:gradientRadius="180dp"
+                android:startColor="#45FF1C7E"
+                android:endColor="#00FF1C7E" />
+        </shape>
+    </item>
+</layer-list>

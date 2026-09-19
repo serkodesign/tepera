@@ -57,6 +57,20 @@
     <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted offline, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings, so it can show a real number next to your estimate. Offline logging stays fully functional without it.</string>
     <string name="onboarding_skip">Skip</string>
 
+    <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
+         node 14:791), shown on both branches of "access granted? yes/no". -->
+    <string name="widget_suggestion_title">Add the widget to your home screen</string>
+    <string name="widget_suggestion_body">Your day structure and a quick tap-timer within reach, without opening the app.</string>
+    <string name="widget_suggestion_add_action">Add widget</string>
+
+    <!-- "Still doing this?" notification after 4h of a running tap-timer (Figma user-flow
+         k6s4prQ9oK9x2uUvzHRghR, node 14:791) — by direct user decision, notification ONLY,
+         the timer is never stopped automatically. -->
+    <string name="timer_check_channel_name">Active timer check-in</string>
+    <string name="timer_check_notification_body">Still doing this?</string>
+    <string name="timer_check_action_yes">Yes</string>
+    <string name="timer_check_action_no">No</string>
+
     <!-- Values onboarding (FR-P.2) -->
     <string name="values_onboarding_title">What would you like to do more of?</string>
 
@@ -109,8 +123,10 @@
     <string name="pause_pick_category_cancel">Cancel</string>
 
     <!-- Daily time pattern (FR-D.8/D.9, SRS v2.6) -->
-    <string name="pattern_card_title">Daily pattern</string>
-    <string name="pattern_empty_state">Your pattern will show up here once a week of data builds up</string>
+    <string name="pattern_card_title">Yesterday\'s screen pattern</string>
+    <string name="pattern_card_title_average">Daily usage pattern</string>
+    <string name="pattern_empty_state">Your pattern will show up here once a bit more data builds up</string>
+    <string name="pattern_heat_legend_no_data">No data</string>
 
     <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
     <string name="weekly_digest_card_title">This week</string>
@@ -251,9 +267,12 @@
     <string name="add_entry_mode_manual">Manual</string>
     <string name="add_entry_mode_interval">Interval</string>
     <string name="add_entry_duration_label">Duration: %1$d min</string>
+    <string name="add_entry_duration_word">Duration</string>
+    <string name="add_entry_duration_type_label">Type</string>
     <string name="add_entry_duration_minutes_label">Minutes</string>
     <string name="add_entry_reset_duration">Reset</string>
     <string name="add_entry_preset_format">+%d min</string>
+    <string name="add_entry_preset_hours_format">+%d h</string>
     <string name="add_entry_start_time_label">Start</string>
     <string name="add_entry_end_time_label">End</string>
     <string name="time_field_format">%1$s: %2$s</string>
@@ -271,7 +290,6 @@
     <string name="stats_screen_title">Stats</string>
     <string name="stats_period_day">Day</string>
     <string name="stats_period_week">Week</string>
-    <string name="stats_period_month">Month</string>
     <string name="stats_category_breakdown_title">Offline time by category</string>
     <string name="stats_weekly_trend_title">Online-time trend</string>
     <string name="stats_no_data">No data for this period</string>
@@ -285,4 +303,25 @@
     <string name="stats_history_yesterday">Yesterday</string>
     <string name="stats_history_edit_action">Edit entry</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
+
+    <!-- Tapping the body of a category card on Home (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
+         node 14:791) — full history of entries for that category, not limited to today/yesterday. -->
+    <string name="category_history_screen_title_fallback">History</string>
+    <string name="category_history_empty">No entries for this category yet</string>
+
+    <!-- "Knowledge base" — T-16 part A (tepera-dev-spec.md), real content. Part B (the
+         doomscrolling/dopamine wiki) stays blocked on the owner's decision — deliberately
+         absent here. -->
+    <string name="settings_knowledge_base_action">Knowledge base</string>
+    <string name="knowledge_base_screen_title">Knowledge base</string>
+    <string name="knowledge_base_intro">A short explanation of how Tepera counts time and why it\'s built this way.</string>
+    <string name="knowledge_base_section_1_title">Where the data comes from</string>
+    <string name="knowledge_base_section_1_body">Online time and the day structure are counted through Android\'s system "Usage access" permission (Settings → Special access, not a pop-up dialog). The permission only grants access to app names and the moments they move to the foreground or background. Without it, manual activity logging keeps working fully — Tepera just won\'t have automatic Online time.\n\nTepera does not see screen content: not message text, not what you\'re actually reading or watching, not scrolling inside an app — a minute of reading looks the same as a minute of scrolling a feed. All data stays on the phone; the only network request is the "Suggest a feature" button, which opens the browser, not Tepera itself.</string>
+    <string name="knowledge_base_section_2_title">Pauses and gates</string>
+    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a skipped pause is never recorded as a metric.\n\nGates (Settings → Apps with a delay) are a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so gates work through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning gates off for the day is one tap, no explanation needed.</string>
+    <string name="knowledge_base_section_3_title">Sleep window</string>
+    <string name="knowledge_base_section_3_body">The sleep window (Settings → Time and day boundaries) doesn\'t show sleep as an activity and says nothing about how much or how well you slept. It\'s only a time range excluded from the calculation: minutes inside the sleep window don\'t count toward the day structure, don\'t become pauses, and don\'t count toward the unlock counter. You can set up to two windows — a second one for a shifting schedule, off by default.</string>
+    <string name="knowledge_base_section_4_title">Why there are no notifications, streaks, or scores</string>
+    <string name="knowledge_base_section_4_body">Tepera doesn\'t send notifications trying to pull you back, doesn\'t count day streaks, and doesn\'t award points or badges for usage. The numbers on screen are facts about time that has already passed, not a goal to reach — that\'s why the app never says "goal," only "reference," and colors never turn "alarming" no matter how much time has passed. Comparisons are only ever against your own history, never against other people\'s averages.</string>
+    <string name="onboarding_learn_more">Learn more about your data</string>
 </resources>

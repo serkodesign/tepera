@@ -73,6 +73,26 @@ object TeperaPalette {
     val brandAccentSoft = Color(0x1A005E3E) // rgba(0,94,62,0.1) — фон кружка-іконки
     val switchTrackOff = Color(0x80FFFFFF) // той самий "скляний" відтінок, що інші картки
 
+    // "Новий екран додавання активності" (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node
+    // 61:3516) — фіолетовий акцент лише для чіпів часу (Початок/Фініш, підсумок тривалості),
+    // точні токени фрейму (#220d99 текст/рамка, rgba(34,13,153,0.05) фон, rgba(34,13,153,0.3)
+    // рамка). Не той самий colorAccent, що фірмовий зелений brandAccent — свідомо інший відтінок
+    // САМЕ для значень часу, за дизайном фрейму.
+    val timeChipText = Color(0xFF220D99)
+    val timeChipBackground = Color(0x0D220D99)
+    val timeChipBorder = Color(0x4D220D99)
+
+    // Тепловий патерн доби, редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR, node
+    // 154:287, "Day usage") — дискретні кошики хвилин/годину замість неперервної альфа-шкали
+    // попередньої версії (яка перевикористовувала onlineCard, інший відтінок). Точний бурштиновий
+    // з фрейму, НЕ той самий колір, що onlineCard (#FF9162) — свідомо інший, за дизайном.
+    val heatmapAmber = Color(0xFFE69D00)
+    // За прямим запитом користувача кошик "0-15" — окремий колір (не найсвітліша альфа amber
+    // з макета), непрозорість 100%.
+    val heatmapLowBucket = Color(0xFFC3C3C3)
+    val heatmapNoDataFill = Color(0xFFF3F3F3)
+    val heatmapNoDataBorder = Color(0xFFD4DADD)
+
     val headlineFont: FontFamily = FontFamily(
         Font(R.font.golos_text, weight = FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
         Font(R.font.golos_text, weight = FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),

@@ -28,12 +28,3 @@ fun sortCategoriesForWidget(
         if (index == -1) Int.MAX_VALUE else index
     }
 }
-
-private const val NEGLECT_THRESHOLD_DAYS = 3
-
-/** FR-4.6: категорію вважаємо занедбаною, якщо в ній не було запису понад 3 дні (або жодного). */
-fun isNeglected(lastLoggedMillis: Long?, nowMillis: Long = System.currentTimeMillis()): Boolean {
-    if (lastLoggedMillis == null) return true
-    val thresholdMillis = NEGLECT_THRESHOLD_DAYS * 24L * 60 * 60 * 1000
-    return nowMillis - lastLoggedMillis > thresholdMillis
-}

@@ -53,6 +53,25 @@ val customCategoryColorChoices: List<String> = listOf(
 
 fun categoryIcon(iconName: String): ImageVector = iconCatalog[iconName] ?: Icons.Outlined.Star
 
+/**
+ * Контурні "widget"-іконки (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, той самий набір book_5/
+ * directions_bike/content_cut/footprint/partly_cloudy_night/camping/groups/checklist, що вже
+ * імпортований для домашнього віджета) — тепер повторно використаний для сітки "Категорія" на
+ * новому екрані додавання активності (node 61:3516), щоб відповідати макету пікселя в піксель.
+ * Кастомні категорії (star/favorite/coffee/music/brush/pets) не мають цього стилю — null,
+ * викликач падає назад на [categoryIcon] (Material-іконки, як і скрізь у застосунку).
+ */
+fun categoryLineArtIconRes(iconName: String): Int? = when (iconName) {
+    "nature" -> com.serkodesign.tepera.R.drawable.ic_widget_nature
+    "reading" -> com.serkodesign.tepera.R.drawable.ic_widget_reading
+    "hobby" -> com.serkodesign.tepera.R.drawable.ic_widget_hobby
+    "movement" -> com.serkodesign.tepera.R.drawable.ic_widget_movement
+    "social" -> com.serkodesign.tepera.R.drawable.ic_widget_social
+    "errands" -> com.serkodesign.tepera.R.drawable.ic_widget_errands
+    "sleep" -> com.serkodesign.tepera.R.drawable.ic_widget_sleep
+    else -> null
+}
+
 fun categoryColor(colorHex: String): Color = runCatching { Color(android.graphics.Color.parseColor(colorHex)) }
     .getOrDefault(Color.Gray)
 

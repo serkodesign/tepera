@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TrackChanges
@@ -64,6 +65,7 @@ fun SettingsScreen(
     onOpenCategories: () -> Unit,
     onOpenBackupRestore: () -> Unit,
     onOpenGates: () -> Unit,
+    onOpenKnowledgeBase: () -> Unit,
     onOpenSpikeT1: () -> Unit = {},
     onBack: () -> Unit
 ) {
@@ -151,6 +153,14 @@ fun SettingsScreen(
                     label = stringResource(R.string.settings_backup_restore_action),
                     onClick = onOpenBackupRestore,
                     leading = { TeperaIconCircle(Icons.Filled.Archive) },
+                    trailing = { NavChevron() }
+                )
+                // Порожній каркас (Figma user-flow k6s4prQ9oK9x2uUvzHRghR, node 14:791) — той
+                // самий екран, що T-16 (tepera-dev-spec.md), досі заблокований рішенням власника.
+                GlassRow(
+                    label = stringResource(R.string.settings_knowledge_base_action),
+                    onClick = onOpenKnowledgeBase,
+                    leading = { TeperaIconCircle(Icons.AutoMirrored.Filled.MenuBook) },
                     trailing = { NavChevron() }
                 )
                 // FR-6.4: чесне попередження перед відкриттям браузера. Свідомо без бейджа й без

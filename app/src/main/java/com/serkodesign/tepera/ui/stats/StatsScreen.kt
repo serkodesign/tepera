@@ -58,7 +58,7 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.pattern.HourlyHeatStrip
+import com.serkodesign.tepera.ui.pattern.HourlyHeatGrid
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
@@ -89,10 +89,16 @@ fun StatsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // FR-D.8/D.9: власний інстанс, незалежний від PeriodSelector (тепловий патерн завжди за
-    // останні 7 повних днів, не за обраний період День/Тиждень/Місяць).
+    // FR-D.8/D.9: власний інстанс (окремий від Home, кожен зі своїм refresh-циклом). За прямим
+    // запитом користувача тепер РЕАГУЄ на PeriodSelector — initialPeriodDays узгоджений із
+    // дефолтним period == WEEK у StatsUiState(), LaunchedEffect(state.period) нижче тримає їх
+    // синхронізованими далі.
     val patternViewModel: PatternViewModel = viewModel(
-        factory = PatternViewModel.Factory(patternRepository, balanceRepository, settingsStore)
+        factory = PatternViewModel.Factory(
+            patternRepository, balanceRepository, settingsStore,
+            initialPeriodDays = daysForStatsPeriod(state.period),
+            respectDismissal = false
+        )
     )
     val patternState by patternViewModel.uiState.collectAsState()
 
@@ -102,6 +108,13 @@ fun StatsScreen(
         viewModel.refreshWeeklyTrend()
         patternViewModel.refresh()
         onPauseOrDispose { }
+    }
+
+    // За прямим запитом користувача: зміна День/Тиждень/Місяць одразу перераховує патерн доби
+    // (середнє Online-хвилин на годину за ВІДПОВІДНЕ вікно — 1/7/30 днів), не лише bar chart і
+    // тренд нижче.
+    LaunchedEffect(state.period) {
+        patternViewModel.refresh(daysForStatsPeriod(state.period))
     }
 
     // Прозорий containerColor: градієнтний фон малює зовнішній Box у TeperaNavHost (а не тут) —
@@ -162,7 +175,7 @@ fun StatsScreen(
                 }
             )
 
-            PatternCard(state = patternState)
+            PatternCard(state = patternState, period = state.period)
         }
     }
 }
@@ -171,38 +184,55 @@ private fun formatClockTime(millis: Long): String =
     SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))
 
 /**
- * FR-D.8/D.9: повна версія теплового патерну доби — той самий `HourlyHeatStrip`, що компактна
- * картка на Home (`PatternMiniCard`), лише вищий і з годинними позначками для орієнтиру.
- * Незалежна від `PeriodSelector` вище (завжди останні 7 повних днів — FR-D.8 не згадує вибір
- * періоду, а порівнювати "патерн за день" саме з собою не має сенсу).
+ * FR-D.8/D.9: повна версія теплового патерну доби — той самий `HourlyHeatGrid`, що компактна
+ * картка на Home (`PatternMiniCard`); за прямим рішенням користувача обидві версії ідентичні
+ * (редизайн за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 154:287) — попередні годинні
+ * підписи (0/6/12/18/23) під смугою прибрано, макет їх не показує.
+ * **За прямим запитом користувача тепер РЕАГУЄ на `PeriodSelector` вище** (`StatsScreen`
+ * передає `daysForStatsPeriod(period)` у `PatternViewModel.refresh()`) — кожен бакет це середнє
+ * Online-хвилин на годину за відповідне вікно (1/7/30 днів), не сума, щоб довші періоди не
+ * виглядали тривіально "гарячішими" лише через довжину вікна. Підпис періоду під заголовком —
+ * щоб було видно, за яке саме вікно показано патерн, коли він відрізняється від дефолтного
+ * тижня.
+ * **Заголовок за прямим запитом користувача залежить від періоду:** `StatsPeriod.DAY` —
+ * буквально вчорашня доба, лишається "Патерн екрану вчора"; `WEEK` — середнє за кілька
+ * днів, не "вчора" — "Добовий патерн використання" (той самий рядок, що тепер завжди на Home).
  */
 @Composable
-private fun PatternCard(state: PatternUiState) {
+private fun PatternCard(state: PatternUiState, period: StatsPeriod) {
     if (!state.visible) return
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.pattern_card_title), style = MaterialTheme.typography.titleMedium)
-            if (state.hasEnoughData) {
-                HourlyHeatStrip(hourlyMinutes = state.hourlyMinutes, height = 48.dp)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    listOf(0, 6, 12, 18, 23).forEach {
-                        Text(it.toString(), style = MaterialTheme.typography.labelSmall)
-                    }
-                }
+            val titleRes = if (period == StatsPeriod.DAY) {
+                R.string.pattern_card_title
             } else {
+                R.string.pattern_card_title_average
+            }
+            Text(stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(periodLabelRes(period)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (!state.hasEnoughData) {
                 Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
             }
+            HourlyHeatGrid(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null)
         }
     }
+}
+
+private fun periodLabelRes(period: StatsPeriod): Int = when (period) {
+    StatsPeriod.DAY -> R.string.stats_period_day
+    StatsPeriod.WEEK -> R.string.stats_period_week
 }
 
 @Composable
 private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Unit) {
     val options = listOf(
         StatsPeriod.DAY to stringResource(R.string.stats_period_day),
-        StatsPeriod.WEEK to stringResource(R.string.stats_period_week),
-        StatsPeriod.MONTH to stringResource(R.string.stats_period_month)
+        StatsPeriod.WEEK to stringResource(R.string.stats_period_week)
     )
     PillSegmentedControl(
         options = options,
@@ -281,10 +311,8 @@ private fun WeeklyTrendCard(
                     Text(stringResource(R.string.stats_no_data))
                 }
             } else {
-                // "Місяць" (30 точок): підпис днем тижня (EEE) повторювався б 4-5 разів і був би
-                // марним — число дня місяця (d) однозначне на цій довжині ряду.
                 val dayFormat = remember(period) {
-                    SimpleDateFormat(if (period == StatsPeriod.MONTH) "d" else "EEE", Locale.getDefault())
+                    SimpleDateFormat("EEE", Locale.getDefault())
                 }
                 val dayLabels = points.map { dayFormat.format(Date(it.dayStartMillis)) }
                 val modelProducer = remember { CartesianChartModelProducer() }

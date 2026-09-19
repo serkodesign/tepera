@@ -12,17 +12,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.ui.pattern.HourlyHeatStrip
+import com.serkodesign.tepera.ui.pattern.HourlyHeatGrid
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 /**
- * FR-D.8/D.9, компактна версія для стеку контекстних карток на Home (FR-D.11: 1-2 рядки, без
- * коментаря поверх патерну — лише заголовок + смужка). Повна версія з годинними позначками —
- * `PatternCard` на Stats (StatsScreen.kt), той самий `HourlyHeatStrip`, просто вищий.
+ * FR-D.8/D.9, компактна версія для стеку контекстних карток на Home (FR-D.11: без коментаря
+ * поверх патерну — лише заголовок + сітка). Повна версія — `PatternCard` на Stats
+ * (StatsScreen.kt), той самий `HourlyHeatGrid` — за прямим рішенням користувача ОБИДВІ версії
+ * ідентичні (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 154:287), без окремого
+ * "стиснутого" варіанта для Home.
  * "×" у заголовку — закриття, якщо прочитав (не в SRS, за запитом користувача), до наступної доби.
+ * Заголовок — "Патерн екрану вчора": за прямим запитом користувача Home показує саме
+ * календарне вчора (`PatternViewModel` з periodDays = 1), не середнє за тиждень. Стилізований
+ * як заголовок секції "Активності" (`titleMedium` + Bold).
  */
 @Composable
 fun PatternMiniCard(state: PatternUiState, onDismiss: () -> Unit) {
@@ -33,13 +39,16 @@ fun PatternMiniCard(state: PatternUiState, onDismiss: () -> Unit) {
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucentLight)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ContextCardHeader(title = stringResource(R.string.pattern_card_title), onDismiss = onDismiss)
-        if (state.hasEnoughData) {
-            HourlyHeatStrip(hourlyMinutes = state.hourlyMinutes, height = 20.dp)
-        } else {
+        ContextCardHeader(
+            title = stringResource(R.string.pattern_card_title),
+            onDismiss = onDismiss,
+            titleStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        )
+        if (!state.hasEnoughData) {
             Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodySmall)
         }
+        HourlyHeatGrid(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null)
     }
 }
