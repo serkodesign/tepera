@@ -3,6 +3,16 @@ package com.serkodesign.tepera.ui.stats
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaScreenTitle
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.text.style.TextOverflow
+import com.serkodesign.tepera.ui.category.categoryColor
+import com.serkodesign.tepera.util.roundToQuarterHour
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +60,8 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -123,10 +135,7 @@ fun StatsScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.stats_screen_title)) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
+            TeperaScreenTitle(stringResource(R.string.stats_screen_title))
         }
     ) { padding ->
         // Прокручуваний Column, а не fillMaxSize() без скролу: NavHost більше не резервує нижній
@@ -172,7 +181,10 @@ fun StatsScreen(
                 }
             }
 
-            CategoryBreakdownCard(items = state.categoryBreakdown)
+            CategoryBreakdownCard(
+                items = state.categoryBreakdown,
+                onlineMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.onlineMinutes } else null
+            )
 
             WeeklyTrendCard(
                 points = state.weeklyTrend,
@@ -254,45 +266,100 @@ private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Uni
     )
 }
 
-/** FR-5.2: стовпчикова діаграма розподілу офлайн-часу по категоріях за обраний період. */
+private data class BarRow(val label: String, val minutes: Int, val color: Color)
+
+/**
+ * FR-5.2: розподіл офлайн-часу по категоріях за обраний період — горизонтальні смуги (за
+ * запитом користувача, замість стовпчиків Vico). Колір смуги — колір категорії з наявної гами
+ * (`categoryColor(colorHex)`), довжина — частка від найбільшої категорії; зверху смуги назва
+ * зліва й час справа. Контейнер — як картка тренду (білий 80%, радіус 16, padding 12, gap 8).
+ */
 @Composable
-private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>) {
-    val labels = items.map { categoryDisplayName(it.category) }
+private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinutes: Int?) {
+    // "Online" — окремий рядок серед категорій (за запитом користувача): Online-хвилини за обраний
+    // період (null — нема доступу до статистики), колір — той самий, що на Home (`onlineCard`).
+    val onlineLabel = stringResource(R.string.balance_online_label)
+    val rows = buildList {
+        onlineMinutes?.takeIf { it > 0 }?.let { add(BarRow(onlineLabel, it, TeperaPalette.onlineCard)) }
+        items.forEach { add(BarRow(categoryDisplayName(it.category), it.minutes, categoryColor(it.category.colorHex))) }
+    }
+    val visible = rows.filter { it.minutes > 0 }.sortedByDescending { it.minutes }
+    val maxMinutes = visible.maxOfOrNull { it.minutes } ?: 0
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.8f))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.stats_category_breakdown_title), style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = stringResource(R.string.stats_category_breakdown_title),
+            color = TeperaPalette.buttonBrandDark,
+            fontFamily = TeperaPalette.headlineFont,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            lineHeight = 20.8.sp,
+            letterSpacing = 0.016.sp
+        )
 
-            if (items.isEmpty() || items.all { it.minutes == 0 }) {
-                Text(
-                    stringResource(R.string.stats_no_data),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            } else {
-                val modelProducer = remember { CartesianChartModelProducer() }
-                LaunchedEffect(items, labels) {
-                    modelProducer.runTransaction {
-                        columnModel { series(items.map { it.minutes }) }
-                        extras { it[categoryLabelKey] = labels }
+        if (visible.isEmpty()) {
+            Text(stringResource(R.string.stats_no_data), style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                visible.forEach { item ->
+                    val (hours, remainderMinutes) = roundToQuarterHour(item.minutes)
+                    val durationText = when {
+                        hours <= 0 -> stringResource(R.string.minutes_short_format, remainderMinutes)
+                        remainderMinutes == 0 -> stringResource(R.string.hours_short_format, hours)
+                        else -> stringResource(R.string.hours_minutes_short_format, hours, remainderMinutes)
                     }
-                }
-                ProvideVicoTheme(rememberM3VicoTheme()) {
-                    CartesianChartHost(
-                        chart = rememberCartesianChart(
-                            rememberColumnCartesianLayer(),
-                            startAxis = VerticalAxis.rememberStart(),
-                            bottomAxis = HorizontalAxis.rememberBottom(
-                                valueFormatter = CartesianValueFormatter { context, x, _ ->
-                                    context.model.extraStore[categoryLabelKey].getOrElse(x.toInt()) { "" }
-                                }
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = item.label,
+                                modifier = Modifier.weight(1f),
+                                color = TeperaPalette.buttonBrandDark,
+                                fontFamily = TeperaPalette.headlineFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 12.sp,
+                                lineHeight = 15.6.sp,
+                                letterSpacing = 0.012.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
-                        ),
-                        modelProducer = modelProducer,
-                        modifier = Modifier.fillMaxWidth().height(220.dp)
-                    )
+                            Text(
+                                text = durationText,
+                                color = TeperaPalette.buttonBrandDark,
+                                fontFamily = TeperaPalette.headlineFont,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 12.sp,
+                                lineHeight = 15.6.sp,
+                                letterSpacing = 0.012.sp,
+                                maxLines = 1
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(12.dp)
+                                .clip(RoundedCornerShape(100.dp))
+                                .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.06f))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(item.minutes.toFloat() / maxMinutes)
+                                    .fillMaxHeight()
+                                    .clip(RoundedCornerShape(100.dp))
+                                    .background(item.color)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -311,55 +378,47 @@ private fun WeeklyTrendCard(
     onOpenUsageAccessSettings: () -> Unit
 ) {
     val hoursFormat = stringResource(R.string.hours_short_format)
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+    // Figma "App concept" node 210:1880: білий 80%, радіус 16, padding 12, gap 8; заголовок —
+    // Golos Text Regular 16sp, line-height 1.3, letter-spacing 0.016, #003926.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.8f))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.stats_weekly_trend_title), style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = stringResource(R.string.stats_weekly_trend_title),
+            color = TeperaPalette.buttonBrandDark,
+            fontFamily = TeperaPalette.headlineFont,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            lineHeight = 20.8.sp,
+            letterSpacing = 0.016.sp
+        )
 
-            if (!hasUsageAccess) {
-                Text(stringResource(R.string.usage_access_prompt_title), style = MaterialTheme.typography.bodyLarge)
-                Text(stringResource(R.string.usage_access_prompt_body), style = MaterialTheme.typography.bodyMedium)
-                Button(onClick = onOpenUsageAccessSettings) {
-                    Text(stringResource(R.string.usage_access_open_settings))
-                }
-            } else if (points.isEmpty()) {
-                Box(modifier = Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.stats_no_data))
-                }
-            } else {
-                val dayFormat = remember(period) {
-                    SimpleDateFormat("EEE", Locale.getDefault())
-                }
-                val dayLabels = points.map { dayFormat.format(Date(it.dayStartMillis)) }
-                val modelProducer = remember { CartesianChartModelProducer() }
-                LaunchedEffect(points) {
-                    modelProducer.runTransaction {
-                        lineModel { series(points.map { it.onlineMinutes }) }
-                        extras { it[dayLabelKey] = dayLabels }
-                    }
-                }
-                ProvideVicoTheme(rememberM3VicoTheme()) {
-                    CartesianChartHost(
-                        chart = rememberCartesianChart(
-                            rememberLineCartesianLayer(),
-                            startAxis = VerticalAxis.rememberStart(
-                                valueFormatter = CartesianValueFormatter { _, y, _ ->
-                                    String.format(hoursFormat, (y / 60.0).roundToInt())
-                                }
-                            ),
-                            bottomAxis = HorizontalAxis.rememberBottom(
-                                valueFormatter = CartesianValueFormatter { context, x, _ ->
-                                    context.model.extraStore[dayLabelKey].getOrElse(x.toInt()) { "" }
-                                }
-                            )
-                        ),
-                        modelProducer = modelProducer,
-                        modifier = Modifier.fillMaxWidth().height(220.dp)
-                    )
-                }
+        if (!hasUsageAccess) {
+            Text(stringResource(R.string.usage_access_prompt_title), style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.usage_access_prompt_body), style = MaterialTheme.typography.bodyMedium)
+            TeperaButton(
+                text = stringResource(R.string.usage_access_open_settings),
+                onClick = onOpenUsageAccessSettings,
+                type = TeperaButtonType.Primary
+            )
+        } else if (points.isEmpty()) {
+            Box(modifier = Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.stats_no_data))
             }
+        } else {
+            val dayFormat = remember(period) {
+                SimpleDateFormat("EEE", Locale.getDefault())
+            }
+            OnlineTrendChart(
+                minutesPerDay = points.map { it.onlineMinutes },
+                dayLabels = points.map { dayFormat.format(Date(it.dayStartMillis)) },
+                hoursFormat = hoursFormat
+            )
         }
     }
 }
