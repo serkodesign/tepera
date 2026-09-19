@@ -23,9 +23,10 @@ import kotlinx.coroutines.launch
 /**
  * [SupportRepository] на RevenueCat: пакети беруться з offering [RevenueCatConfig.OFFERING_SUPPORT].
  * Споживні продукти RevenueCat споживає сам (без ручного `consumePurchase`); сервера й перевірки
- * покупки нема — нічого в застосунку не розблоковується. Запити виконуються лише з екрана підтримки.
+ * покупки нема — нічого в застосунку не розблоковується. SDK налаштовується ліниво лише при першому
+ * [refresh] (відкриття екрана підтримки), тож до цього застосунок не звертається до RevenueCat.
  */
-class RevenueCatSupportRepository(private val configured: Boolean) : SupportRepository {
+class RevenueCatSupportRepository(private val ensureConfigured: () -> Boolean) : SupportRepository {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -38,7 +39,8 @@ class RevenueCatSupportRepository(private val configured: Boolean) : SupportRepo
     private var packagesById: Map<String, Package> = emptyMap()
 
     override fun refresh() {
-        if (!configured || !Purchases.isConfigured) {
+        // Ліниве налаштування SDK: перше відкриття екрана кави (див. TeperaApp.ensureRevenueCatConfigured).
+        if (!ensureConfigured() || !Purchases.isConfigured) {
             _products.value = SupportProductsState.Unavailable
             return
         }
