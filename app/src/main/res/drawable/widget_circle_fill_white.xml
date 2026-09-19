@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Активна кнопка категорії на віджеті — суцільне біле коло (#FFFFFF @ 1.0). Це shape-drawable, а не
+    background(ColorProvider) + cornerRadius(): Glance-модифікатор cornerRadius працює лише з
+    Android 12 (API 31), тож на Huawei P9 (Android 8) кнопка малювалась білим КВАДРАТОМ.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFFFF" />
+</shape>

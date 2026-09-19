@@ -278,8 +278,7 @@ private fun CategoryButton(
     // напівпрозоре біле заповнення (widget_circle_fill_translucent.xml, Figma node 9:421/11:647).
     val boxModifier = GlanceModifier.size(size).let {
         if (isTracking) {
-            it.background(ColorProvider(day = TeperaPalette.cardActive, night = TeperaPalette.cardActive))
-                .cornerRadius(size / 2)
+            it.background(ImageProvider(R.drawable.widget_circle_fill_white))
         } else {
             it.background(ImageProvider(R.drawable.widget_circle_fill_translucent))
         }
