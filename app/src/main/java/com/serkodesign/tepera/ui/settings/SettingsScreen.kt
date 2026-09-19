@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -67,6 +69,8 @@ fun SettingsScreen(
     onOpenCategories: () -> Unit,
     onOpenBackupRestore: () -> Unit,
     onOpenGates: () -> Unit,
+    onOpenSupport: () -> Unit,
+    onOpenPro: () -> Unit,
     onOpenSpikeT1: () -> Unit = {},
     onBack: () -> Unit
 ) {
@@ -162,6 +166,23 @@ fun SettingsScreen(
                     label = stringResource(R.string.settings_suggest_feature_action),
                     onClick = { showSuggestFeatureConfirm = true },
                     leading = { TeperaIconCircle(Icons.Filled.Feedback) },
+                    trailing = { NavChevron() }
+                )
+                // Tepera Pro (RevenueCat entitlement tepera_pro): стан, Paywall, Customer Center — тихий рядок.
+                // Прихований на фазі запуску (RevenueCatConfig.PRO_ENTRY_ENABLED = false).
+                if (com.serkodesign.tepera.data.billing.RevenueCatConfig.PRO_ENTRY_ENABLED) {
+                GlassRow(
+                    label = stringResource(R.string.settings_pro_action),
+                    onClick = onOpenPro,
+                    leading = { TeperaIconCircle(Icons.Filled.WorkspacePremium) },
+                    trailing = { NavChevron() }
+                )
+                }
+                // Добровільна підтримка розробника (RevenueCat) — тихий рядок без бейджа й нагадувань.
+                GlassRow(
+                    label = stringResource(R.string.settings_support_action),
+                    onClick = onOpenSupport,
+                    leading = { TeperaIconCircle(Icons.Filled.Coffee) },
                     trailing = { NavChevron() }
                 )
                 // Debug-only вхід у T-1 (tepera-dev-spec.md) — інструмент спайку, не

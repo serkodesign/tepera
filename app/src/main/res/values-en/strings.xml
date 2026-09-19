@@ -187,6 +187,35 @@
 
     <!-- "Suggest a feature" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Suggest a feature</string>
+    <string name="settings_support_action">Buy the developer a coffee</string>
+    <string name="settings_pro_action">Tepera Pro</string>
+    <string name="pro_screen_title">Tepera Pro</string>
+    <string name="pro_intro">Tepera is free. Pro is an optional subscription or one-time purchase; for now it does not change anything in the app.</string>
+    <string name="pro_status_active">Pro is active</string>
+    <string name="pro_status_active_lifetime">Pro is active forever</string>
+    <string name="pro_status_active_renews">Pro is active · renews %1$s</string>
+    <string name="pro_status_active_ends">Pro is active · valid until %1$s</string>
+    <string name="pro_status_inactive">Pro is not active</string>
+    <string name="pro_status_loading">Checking…</string>
+    <string name="pro_status_load_failed">Could not check. Showing the last known state.</string>
+    <string name="pro_unavailable">Not available yet. Please try again later.</string>
+    <string name="pro_view_action">View Pro</string>
+    <string name="pro_manage_action">Manage subscription</string>
+    <string name="pro_restore_action">Restore purchases</string>
+    <string name="pro_restore_done">Pro restored.</string>
+    <string name="pro_restore_nothing">Nothing to restore.</string>
+    <string name="pro_restore_failed">Could not restore. Please try again later.</string>
+    <string name="support_screen_title">A coffee for the developer</string>
+    <string name="support_intro">Tepera is free and has no ads. If you find it useful, you can buy the developer a coffee. It is entirely optional: nothing is unlocked or changed in the app.</string>
+    <string name="support_tier_small">Small coffee</string>
+    <string name="support_tier_medium">Coffee</string>
+    <string name="support_tier_large">Coffee and dessert</string>
+    <string name="support_action">Support</string>
+    <string name="support_loading">Loading options…</string>
+    <string name="support_unavailable">Not available yet. Please try again later.</string>
+    <string name="support_thanks">Thank you for your support.</string>
+    <string name="support_pending">The payment is waiting for Google Play confirmation.</string>
+    <string name="support_failed">Could not complete. Please try again later.</string>
     <string name="settings_suggest_feature_confirm_title">Open the form in your browser?</string>
     <string name="settings_suggest_feature_confirm_body">This opens a Google Form in your browser. The form is handled by Google, not Tepera.</string>
     <string name="settings_suggest_feature_confirm_action">Open</string>

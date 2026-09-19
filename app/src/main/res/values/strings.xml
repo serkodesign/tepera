@@ -196,6 +196,35 @@
 
     <!-- "Запропонувати функцію" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Запропонувати функцію</string>
+    <string name="settings_support_action">Пригостити розробника кавою</string>
+    <string name="settings_pro_action">Tepera Pro</string>
+    <string name="pro_screen_title">Tepera Pro</string>
+    <string name="pro_intro">Tepera безкоштовна. Pro — необов\'язкова підписка чи разова покупка; поки вона нічого не змінює в застосунку.</string>
+    <string name="pro_status_active">Pro активний</string>
+    <string name="pro_status_active_lifetime">Pro активний назавжди</string>
+    <string name="pro_status_active_renews">Pro активний · поновиться %1$s</string>
+    <string name="pro_status_active_ends">Pro активний · діє до %1$s</string>
+    <string name="pro_status_inactive">Pro не активний</string>
+    <string name="pro_status_loading">Перевіряємо…</string>
+    <string name="pro_status_load_failed">Не вдалося перевірити. Показуємо останній відомий стан.</string>
+    <string name="pro_unavailable">Поки що недоступно. Спробуй пізніше.</string>
+    <string name="pro_view_action">Переглянути Pro</string>
+    <string name="pro_manage_action">Керувати підпискою</string>
+    <string name="pro_restore_action">Відновити покупки</string>
+    <string name="pro_restore_done">Pro відновлено.</string>
+    <string name="pro_restore_nothing">Немає що відновлювати.</string>
+    <string name="pro_restore_failed">Не вдалося відновити. Спробуй пізніше.</string>
+    <string name="support_screen_title">Кава для розробника</string>
+    <string name="support_intro">Tepera безкоштовна й без реклами. Якщо вона тобі корисна, можеш пригостити розробника кавою. Це добровільно: нічого не відкривається й не змінюється в застосунку.</string>
+    <string name="support_tier_small">Маленька кава</string>
+    <string name="support_tier_medium">Кава</string>
+    <string name="support_tier_large">Кава з десертом</string>
+    <string name="support_action">Підтримати</string>
+    <string name="support_loading">Завантажуємо варіанти…</string>
+    <string name="support_unavailable">Поки що недоступно. Спробуй пізніше.</string>
+    <string name="support_thanks">Дякую за підтримку.</string>
+    <string name="support_pending">Оплата очікує підтвердження Google Play.</string>
+    <string name="support_failed">Не вдалося завершити. Спробуй ще раз пізніше.</string>
     <string name="settings_suggest_feature_confirm_title">Відкрити форму в браузері?</string>
     <string name="settings_suggest_feature_confirm_body">Зараз відкриється браузер із формою Google. Форму приймає Google — не Tepera.</string>
     <string name="settings_suggest_feature_confirm_action">Відкрити</string>
