@@ -36,9 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -86,6 +84,7 @@ import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
@@ -501,6 +500,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
     ) {
         Text(
             text = stringResource(greetingRes),
+            color = TeperaPalette.buttonBrandDark,
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontFamily = TeperaPalette.headlineFont,
@@ -513,7 +513,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
         // відкриває "Базу знань" (перенесено з Налаштувань за запитом користувача).
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TeperaIconButton(
-                icon = Icons.AutoMirrored.Outlined.MenuBook,
+                icon = TeperaIcons.Book,
                 contentDescription = stringResource(R.string.settings_knowledge_base_action),
                 onClick = onOpenKnowledgeBase,
                 shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
@@ -521,7 +521,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
                 contentColor = TeperaPalette.buttonBrandDark
             )
             TeperaIconButton(
-                icon = Icons.Outlined.Settings,
+                icon = TeperaIcons.Settings,
                 contentDescription = stringResource(R.string.settings_nav_action),
                 onClick = onOpenSettings,
                 shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
@@ -574,7 +574,7 @@ private fun CategoryCard(
     )
     val nameColor by animateColorAsState(if (isTracking) Color.White else Color.Black, colorSpec, label = "cardName")
     val badgeColor by animateColorAsState(
-        if (isTracking) Color.White.copy(alpha = 0.3f) else accentColor.copy(alpha = 0.3f), colorSpec, label = "cardBadge"
+        if (isTracking) Color.White.copy(alpha = 0.2f) else accentColor.copy(alpha = 0.2f), colorSpec, label = "cardBadge"
     )
     val glyphColor by animateColorAsState(if (isTracking) Color.White else accentColor, colorSpec, label = "cardGlyph")
     val nameSize by animateFloatAsState(
@@ -653,7 +653,8 @@ private fun CategoryCard(
                         icon = Icons.Filled.MoreTime,
                         contentDescription = stringResource(R.string.add_time_action_format, displayName),
                         onClick = onAddTime,
-                        containerColor = TeperaPalette.activityMoreTime
+                        containerColor = TeperaPalette.activityMoreTime,
+                        contentColor = TeperaPalette.buttonBrandDark
                     )
                 }
             }
