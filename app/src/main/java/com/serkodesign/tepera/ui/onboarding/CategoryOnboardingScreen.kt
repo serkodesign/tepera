@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.CategoryRepository
@@ -133,12 +135,12 @@ fun CategoryOnboardingScreen(
                 }
             }
 
-            Button(
+            TeperaButton(
+                text = stringResource(R.string.category_onboarding_continue),
                 onClick = { finish() },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-            ) {
-                Text(stringResource(R.string.category_onboarding_continue))
-            }
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                type = TeperaButtonType.Primary
+            )
         }
     }
 }

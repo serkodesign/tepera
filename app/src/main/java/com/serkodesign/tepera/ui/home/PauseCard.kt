@@ -31,6 +31,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
@@ -136,12 +139,7 @@ private fun PauseGapRow(gap: PauseUiGap, onClick: () -> Unit, onDismiss: () -> U
             ),
             style = MaterialTheme.typography.bodyMedium
         )
-        IconButton(onClick = onDismiss) {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = stringResource(R.string.pause_gap_dismiss_action)
-            )
-        }
+        TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.pause_gap_dismiss_action), onClick = onDismiss)
     }
 }
 
@@ -187,7 +185,7 @@ private fun CategoryPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.pause_pick_category_cancel)) }
+            TeperaButton(text = stringResource(R.string.pause_pick_category_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
         }
     )
 }

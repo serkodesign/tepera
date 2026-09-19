@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 
@@ -46,14 +48,19 @@ fun WeeklyReflectionCard(state: WeeklyReflectionUiState, onSelectGuess: (WeeklyO
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 WeeklyOnlineGuess.entries.forEach { guess ->
-                    OutlinedButton(onClick = { onSelectGuess(guess) }, modifier = Modifier.weight(1f)) {
-                        Text(guessLabel(guess))
-                    }
+                    TeperaButton(
+                        text = guessLabel(guess),
+                        onClick = { onSelectGuess(guess) },
+                        modifier = Modifier.weight(1f),
+                        type = TeperaButtonType.Secondary
+                    )
                 }
             }
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.weekly_reflection_skip))
-            }
+            TeperaButton(
+                text = stringResource(R.string.weekly_reflection_skip),
+                onClick = onDismiss,
+                type = TeperaButtonType.Tertiary
+            )
         } else {
             // FR-P.6: дві цифри поруч, без "вище/нижче" — рефлексію робить сама людина.
             Text(
@@ -64,9 +71,12 @@ fun WeeklyReflectionCard(state: WeeklyReflectionUiState, onSelectGuess: (WeeklyO
                 stringResource(R.string.weekly_reflection_actual_format, formatDuration(state.actualMinutes)),
                 style = MaterialTheme.typography.bodyLarge
             )
-            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.weekly_reflection_done))
-            }
+            TeperaButton(
+                text = stringResource(R.string.weekly_reflection_done),
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                type = TeperaButtonType.Primary
+            )
         }
     }
 }

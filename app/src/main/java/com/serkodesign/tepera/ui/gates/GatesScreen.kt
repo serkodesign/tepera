@@ -46,6 +46,9 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
@@ -199,9 +202,7 @@ fun GatesScreen(
         AlertDialog(
             onDismissRequest = { pinFailed = false },
             confirmButton = {
-                TextButton(onClick = { pinFailed = false }) {
-                    Text(stringResource(R.string.gates_instruction_done))
-                }
+                TeperaButton(text = stringResource(R.string.gates_instruction_done), onClick = { pinFailed = false }, type = TeperaButtonType.Tertiary)
             },
             text = { Text(stringResource(R.string.gates_pin_failed)) }
         )
@@ -221,12 +222,7 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(end = 8.dp)
                     )
-                    IconButton(onClick = onRemove) {
-                        Icon(
-                            Icons.Filled.Close,
-                            contentDescription = stringResource(R.string.gates_remove_action)
-                        )
-                    }
+                    TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)
                 }
             }
         )
@@ -280,14 +276,10 @@ private fun DelayPickerDialog(app: InstalledAppInfo, onDismiss: () -> Unit, onCo
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(selected) }) {
-                Text(stringResource(R.string.gates_delay_picker_confirm))
-            }
+            TeperaButton(text = stringResource(R.string.gates_delay_picker_confirm), onClick = { onConfirm(selected) }, type = TeperaButtonType.Tertiary)
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.gates_delay_picker_cancel))
-            }
+            TeperaButton(text = stringResource(R.string.gates_delay_picker_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
         }
     )
 }
@@ -299,10 +291,10 @@ private fun InstructionDialog(app: InstalledAppInfo, onDone: () -> Unit, onLater
         title = { Text(stringResource(R.string.gates_instruction_title)) },
         text = { Text(stringResource(R.string.gates_instruction_body, app.label)) },
         confirmButton = {
-            TextButton(onClick = onDone) { Text(stringResource(R.string.gates_instruction_done)) }
+            TeperaButton(text = stringResource(R.string.gates_instruction_done), onClick = onDone, type = TeperaButtonType.Tertiary)
         },
         dismissButton = {
-            TextButton(onClick = onLater) { Text(stringResource(R.string.gates_instruction_later)) }
+            TeperaButton(text = stringResource(R.string.gates_instruction_later), onClick = onLater, type = TeperaButtonType.Tertiary)
         }
     )
 }

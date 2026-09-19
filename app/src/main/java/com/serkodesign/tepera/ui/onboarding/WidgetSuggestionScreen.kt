@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.widget.TeperaWidgetReceiver
@@ -83,7 +85,8 @@ fun WidgetSuggestionScreen(
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.padding(top = 32.dp))
-            Button(
+            TeperaButton(
+                text = stringResource(R.string.widget_suggestion_add_action),
                 onClick = {
                     val appWidgetManager = AppWidgetManager.getInstance(context)
                     val provider = ComponentName(context, TeperaWidgetReceiver::class.java)
@@ -92,13 +95,15 @@ fun WidgetSuggestionScreen(
                     }
                     onDone()
                 },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.widget_suggestion_add_action))
-            }
-            TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.onboarding_skip))
-            }
+                modifier = Modifier.fillMaxWidth(),
+                type = TeperaButtonType.Primary
+            )
+            TeperaButton(
+                text = stringResource(R.string.onboarding_skip),
+                onClick = onDone,
+                modifier = Modifier.fillMaxWidth(),
+                type = TeperaButtonType.Tertiary
+            )
         }
     }
 }

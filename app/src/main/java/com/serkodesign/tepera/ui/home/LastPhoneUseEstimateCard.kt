@@ -18,6 +18,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,14 +54,19 @@ fun LastPhoneUseEstimateCard(
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 LastPhoneUseGuess.entries.forEach { guess ->
-                    OutlinedButton(onClick = { onSelectGuess(guess) }, modifier = Modifier.fillMaxWidth()) {
-                        Text(lastPhoneUseGuessLabel(guess))
-                    }
+                    TeperaButton(
+                        text = lastPhoneUseGuessLabel(guess),
+                        onClick = { onSelectGuess(guess) },
+                        modifier = Modifier.fillMaxWidth(),
+                        type = TeperaButtonType.Secondary
+                    )
                 }
             }
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.weekly_reflection_skip))
-            }
+            TeperaButton(
+                text = stringResource(R.string.weekly_reflection_skip),
+                onClick = onDismiss,
+                type = TeperaButtonType.Tertiary
+            )
         } else {
             // FR-D.7b/розділ 2.2: дві цифри поруч, без "пізно"/"рано"/"вдалося"/"варто".
             Text(
@@ -80,9 +87,12 @@ fun LastPhoneUseEstimateCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.weekly_reflection_done))
-            }
+            TeperaButton(
+                text = stringResource(R.string.weekly_reflection_done),
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                type = TeperaButtonType.Primary
+            )
         }
     }
 }

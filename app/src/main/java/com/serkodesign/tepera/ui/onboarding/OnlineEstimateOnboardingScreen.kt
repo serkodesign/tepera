@@ -20,6 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.EstimateType
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
@@ -94,14 +96,20 @@ fun OnlineEstimateOnboardingScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 DailyOnlineGuess.entries.forEach { guess ->
-                    OutlinedButton(onClick = { finish(guess) }, modifier = Modifier.weight(1f)) {
-                        Text(dailyGuessLabel(guess))
-                    }
+                    TeperaButton(
+                        text = dailyGuessLabel(guess),
+                        onClick = { finish(guess) },
+                        modifier = Modifier.weight(1f),
+                        type = TeperaButtonType.Secondary
+                    )
                 }
             }
-            TextButton(onClick = { finish(null) }, modifier = Modifier.padding(top = 24.dp)) {
-                Text(stringResource(R.string.onboarding_skip))
-            }
+            TeperaButton(
+                text = stringResource(R.string.onboarding_skip),
+                onClick = { finish(null) },
+                modifier = Modifier.padding(top = 24.dp),
+                type = TeperaButtonType.Tertiary
+            )
         }
     }
 }

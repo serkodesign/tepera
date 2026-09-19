@@ -33,6 +33,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.GapSensitivity
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
@@ -89,7 +91,7 @@ fun TrackingSettingsScreen(
         AlertDialog(
             onDismissRequest = { showTargetInfo = false },
             confirmButton = {
-                TextButton(onClick = { showTargetInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { showTargetInfo = false }, type = TeperaButtonType.Tertiary)
             },
             text = { Text(stringResource(R.string.settings_target_info)) }
         )
@@ -98,7 +100,7 @@ fun TrackingSettingsScreen(
         AlertDialog(
             onDismissRequest = { showSleepWindowInfo = false },
             confirmButton = {
-                TextButton(onClick = { showSleepWindowInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { showSleepWindowInfo = false }, type = TeperaButtonType.Tertiary)
             },
             text = { Text(stringResource(R.string.settings_sleep_window_info)) }
         )
@@ -107,7 +109,7 @@ fun TrackingSettingsScreen(
         AlertDialog(
             onDismissRequest = { showGapSensitivityInfo = false },
             confirmButton = {
-                TextButton(onClick = { showGapSensitivityInfo = false }) { Text(stringResource(R.string.dialog_ok)) }
+                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { showGapSensitivityInfo = false }, type = TeperaButtonType.Tertiary)
             },
             text = { Text(stringResource(R.string.settings_gap_sensitivity_info)) }
         )

@@ -44,6 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.theme.GlassRow
@@ -147,7 +150,7 @@ fun CategoriesScreen(
         AlertDialog(
             onDismissRequest = { limitReachedNotice = false },
             confirmButton = {
-                TextButton(onClick = { limitReachedNotice = false }) { Text(stringResource(R.string.dialog_ok)) }
+                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { limitReachedNotice = false }, type = TeperaButtonType.Tertiary)
             },
             text = { Text(stringResource(R.string.category_custom_limit_reached)) }
         )
@@ -159,13 +162,13 @@ fun CategoriesScreen(
             title = { Text(stringResource(R.string.category_delete_confirm_title)) },
             text = { Text(stringResource(R.string.category_delete_confirm_body, categoryDisplayName(category))) },
             confirmButton = {
-                TextButton(onClick = {
+                TeperaButton(text = stringResource(R.string.category_delete_action), onClick = {
                     viewModel.deleteCustomCategory(category.id)
                     pendingDelete = null
-                }) { Text(stringResource(R.string.category_delete_action)) }
+                }, type = TeperaButtonType.Tertiary)
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.dialog_cancel)) }
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { pendingDelete = null }, type = TeperaButtonType.Tertiary)
             }
         )
     }
@@ -193,12 +196,7 @@ private fun CategoryRow(
                 // категорій (звільняє слот ліміту T-8), дефолтні лишаються архів/розархівувати-
                 // only (пересіваються щозапуску за фіксованим id, "видалення" воскресло б).
                 if (category.isCustom) {
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            Icons.Filled.DeleteOutline,
-                            contentDescription = stringResource(R.string.category_delete_action)
-                        )
-                    }
+                    TeperaIconButton(icon = Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.category_delete_action), onClick = onDelete)
                 }
                 Switch(
                     checked = !isArchived,
@@ -289,16 +287,16 @@ private fun CreateCategoryDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = {
+            TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
                 if (name.isBlank()) {
                     showNameError = true
                 } else {
                     onSave(name.trim(), selectedIcon, selectedColor)
                 }
-            }) { Text(stringResource(R.string.dialog_save)) }
+            }, type = TeperaButtonType.Tertiary)
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) }
+            TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
         }
     )
 }

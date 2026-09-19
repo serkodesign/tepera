@@ -58,6 +58,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
@@ -133,9 +136,7 @@ fun AddEntryScreen(
                 onBack = onBack,
                 trailing = {
                     if (viewModel.isEditing) {
-                        IconButton(onClick = { showDeleteConfirm = true }) {
-                            Icon(Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.edit_entry_delete_action))
-                        }
+                        TeperaIconButton(icon = Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.edit_entry_delete_action), onClick = { showDeleteConfirm = true })
                     }
                 }
             )
@@ -301,13 +302,13 @@ fun AddEntryScreen(
             title = { Text(stringResource(R.string.edit_entry_delete_confirm_title)) },
             text = { Text(stringResource(R.string.edit_entry_delete_confirm_body)) },
             confirmButton = {
-                TextButton(onClick = {
+                TeperaButton(text = stringResource(R.string.edit_entry_delete_action), onClick = {
                     showDeleteConfirm = false
                     viewModel.deleteEntry()
-                }) { Text(stringResource(R.string.edit_entry_delete_action)) }
+                }, type = TeperaButtonType.Tertiary)
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.dialog_cancel)) }
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showDeleteConfirm = false }, type = TeperaButtonType.Tertiary)
             }
         )
     }
@@ -318,14 +319,10 @@ fun AddEntryScreen(
             title = { Text(stringResource(R.string.add_entry_overlap_title)) },
             text = { Text(stringResource(R.string.add_entry_overlap_body)) },
             confirmButton = {
-                TextButton(onClick = { viewModel.save(forceOverwrite = true) }) {
-                    Text(stringResource(R.string.add_entry_overlap_confirm))
-                }
+                TeperaButton(text = stringResource(R.string.add_entry_overlap_confirm), onClick = { viewModel.save(forceOverwrite = true) }, type = TeperaButtonType.Tertiary)
             },
             dismissButton = {
-                TextButton(onClick = viewModel::dismissOverlapDialog) {
-                    Text(stringResource(R.string.dialog_cancel))
-                }
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = viewModel::dismissOverlapDialog, type = TeperaButtonType.Tertiary)
             }
         )
     }
@@ -599,13 +596,13 @@ private fun DateRow(dateMillis: Long, onDateSelected: (Long) -> Unit) {
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
             confirmButton = {
-                TextButton(onClick = {
+                TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
                     pickerState.selectedDateMillis?.let { onDateSelected(utcMidnightToLocalStartOfDay(it)) }
                     showPicker = false
-                }) { Text(stringResource(R.string.dialog_save)) }
+                }, type = TeperaButtonType.Tertiary)
             },
             dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.dialog_cancel)) }
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showPicker = false }, type = TeperaButtonType.Tertiary)
             }
         ) {
             DatePicker(state = pickerState)
@@ -632,8 +629,8 @@ private fun TimePickerDialog(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) }
-                    TextButton(onClick = onConfirm) { Text(stringResource(R.string.dialog_save)) }
+                    TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
+                    TeperaButton(text = stringResource(R.string.dialog_save), onClick = onConfirm, type = TeperaButtonType.Tertiary)
                 }
             }
         }

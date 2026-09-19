@@ -36,6 +36,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
@@ -81,17 +83,17 @@ fun SettingsScreen(
             title = { Text(stringResource(R.string.settings_suggest_feature_confirm_title)) },
             text = { Text(stringResource(R.string.settings_suggest_feature_confirm_body)) },
             confirmButton = {
-                TextButton(onClick = {
+                TeperaButton(text = stringResource(R.string.settings_suggest_feature_confirm_action), onClick = {
                     showSuggestFeatureConfirm = false
                     try {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
                     } catch (e: ActivityNotFoundException) {
                         Toast.makeText(context, context.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
                     }
-                }) { Text(stringResource(R.string.settings_suggest_feature_confirm_action)) }
+                }, type = TeperaButtonType.Tertiary)
             },
             dismissButton = {
-                TextButton(onClick = { showSuggestFeatureConfirm = false }) { Text(stringResource(R.string.dialog_cancel)) }
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showSuggestFeatureConfirm = false }, type = TeperaButtonType.Tertiary)
             }
         )
     }

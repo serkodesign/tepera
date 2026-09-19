@@ -27,6 +27,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -77,7 +79,7 @@ fun BackupRestoreScreen(
             title = { Text(stringResource(R.string.backup_import_confirm_title)) },
             text = { Text(stringResource(R.string.backup_import_confirm_body)) },
             confirmButton = {
-                TextButton(onClick = {
+                TeperaButton(text = stringResource(R.string.backup_import_confirm_action), onClick = {
                     val uri = pendingImportUri!!
                     pendingImportUri = null
                     scope.launch {
@@ -91,10 +93,10 @@ fun BackupRestoreScreen(
                             Toast.makeText(context, context.getString(R.string.backup_import_failure), Toast.LENGTH_SHORT).show()
                         }
                     }
-                }) { Text(stringResource(R.string.backup_import_confirm_action)) }
+                }, type = TeperaButtonType.Tertiary)
             },
             dismissButton = {
-                TextButton(onClick = { pendingImportUri = null }) { Text(stringResource(R.string.dialog_cancel)) }
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { pendingImportUri = null }, type = TeperaButtonType.Tertiary)
             }
         )
     }
