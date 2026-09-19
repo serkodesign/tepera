@@ -412,18 +412,20 @@ fun TeperaIconButton(
     shape: Shape = RoundedCornerShape(22.dp),
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    height: Dp = 44.dp,
+    iconSize: Dp = 24.dp
 ) {
     Box(
         modifier = modifier
-            .height(44.dp)
+            .height(height)
             .alpha(if (enabled) 1f else 0.5f)
             .clip(shape)
             .background(containerColor)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor, modifier = Modifier.size(24.dp))
+        Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor, modifier = Modifier.size(iconSize))
     }
 }
 

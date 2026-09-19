@@ -133,10 +133,13 @@ fun DiaryScreen(
             onClick = onAddEntry,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 96.dp)
-                .width(44.dp),
+                .padding(end = 20.dp, bottom = 112.dp)
+                .width(64.dp),
+            shape = CircleShape,
             containerColor = TeperaPalette.buttonBrand,
-            contentColor = Color.White
+            contentColor = Color.White,
+            height = 64.dp,
+            iconSize = 32.dp
         )
     }
 }
