@@ -513,20 +513,14 @@ private fun WidgetContent(
                     height < 175.dp -> WidgetMetrics.MEDIUM
                     else -> WidgetMetrics.FULL
                 }
-                // У 4x1 висота віджета (~60-70dp) менша за кнопку 56dp + відступи 2×16dp — фіксований
-                // size() тоді стискався по вертикалі й кнопки ставали овалами (Huawei P9). Тут кнопка
-                // завжди КОЛО: розмір береться з меншої з доступних висоти й ширини на 5 кнопок,
-                // відступи в компактному режимі зменшені.
+                // 4x1 (лише кнопки): кнопки й бокові відступи (16dp) як у 4x2, вертикальні — 8dp. LocalSize.height
+                // тут — найближчий МЕНШИЙ розмір зі списку Responsive (60dp), а не реальна висота віджета,
+                // тож обчислювати розмір кнопки з нього не можна (на P9 виходили 44dp). 56dp + 2×8dp по вертикалі
+                // вміщується в реальні ~79dp (P9) і 94dp (S23) — кнопки лишаються колами, не овалами.
                 val metrics = if (isExtended) {
                     baseMetrics
                 } else {
-                    val padding = 8.dp
-                    val fitByHeight = height - padding * 2
-                    val fitByWidth = (LocalSize.current.width - padding * 2) / 5
-                    baseMetrics.copy(
-                        padding = padding,
-                        buttonSize = minOf(baseMetrics.buttonSize, fitByHeight, fitByWidth).coerceAtLeast(24.dp)
-                    )
+                    baseMetrics.copy(padding = WIDGET_CONTENT_PADDING, buttonSize = CATEGORY_BUTTON_SIZE)
                 }
 
                 Column(
@@ -542,7 +536,7 @@ private fun WidgetContent(
                         .background(ImageProvider(R.drawable.widget_gradient_bg))
                         // За прямим запитом користувача зменшено з буквального Figma-паддінга
                         // (p-[24px]) до 16dp — більше місця для збільшених 56dp-кнопок і сітки.
-                        .padding(metrics.padding),
+                        .padding(horizontal = metrics.padding, vertical = if (isExtended) metrics.padding else 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Figma node 11:647: кнопки категорій — ВЕРХНІЙ ряд, сітка доби — нижче
