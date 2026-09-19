@@ -226,7 +226,7 @@ private fun NowPointer(glyph: String, fraction: Float) {
 private fun DayStructureLegend(segments: List<DaySegment>) {
     Column(
         modifier = Modifier.padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         segments.forEach { segment ->
             Row(
@@ -236,10 +236,10 @@ private fun DayStructureLegend(segments: List<DaySegment>) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(segment.color))
-                    Text(segment.label, fontSize = 12.sp, color = HomeCardTextPrimary)
+                    Text(segment.label, fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
                 }
                 // FR-P.6: час завжди поруч із назвою, ніколи голий відсоток самотужки.
-                Text(formatClockDuration(segment.minutes), fontSize = 11.sp, color = HomeCardTextPrimary)
+                Text(formatClockDuration(segment.minutes), fontSize = 11.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
             }
         }
     }
