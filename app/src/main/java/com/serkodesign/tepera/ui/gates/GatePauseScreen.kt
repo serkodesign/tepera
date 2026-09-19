@@ -6,7 +6,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,13 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
@@ -40,16 +33,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.repository.GateEventRepository
 import com.serkodesign.tepera.data.repository.GateRepository
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import kotlin.math.cos
 import kotlin.math.sin
-
 /**
  * T-5 (tepera-dev-spec.md, FR-G частина 2). Малюється на тому самому градієнтному фоні, що решта
  * застосунку (`Routes.GATE_PAUSE` у `GRADIENT_ROUTES`, `TeperaNavHost`).
@@ -97,13 +93,18 @@ fun GatePauseScreen(
 
     if (state.loading) return
 
+    // Розкладка за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, вузли 2:3553 (Inhale) і 2:3521
+    // (Exhale), кадр 375x784, 1px = 1dp: поля 20, "Instagram" по центру 18sp, бейдж 215dp,
+    // підпис дихання 27sp, рядок спроб 18sp, кнопки Big (TeperaButton) з проміжком 8.
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp, vertical = 40.dp)
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 120.dp, bottom = 30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = state.appLabel,
-            style = MaterialTheme.typography.labelLarge,
-            color = TeperaPalette.brandAccent
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = TeperaPalette.buttonBrand
         )
 
         val breath = rememberBreathState()
@@ -116,50 +117,44 @@ fun GatePauseScreen(
             BreathingBadge(scale = breath.scale, number = state.remainingSeconds)
             Text(
                 text = stringResource(if (breath.inhaling) R.string.gate_pause_inhale else R.string.gate_pause_exhale),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(top = 24.dp)
+                fontSize = 27.sp,
+                fontWeight = FontWeight.Medium,
+                color = TeperaPalette.buttonBrandDark,
+                modifier = Modifier.padding(top = 32.dp)
             )
         }
 
         Text(
             text = pluralStringResource(R.plurals.gate_pause_attempts_text, state.attemptsToday, state.attemptsToday),
-            style = MaterialTheme.typography.bodyMedium,
-            color = TeperaPalette.brandAccent.copy(alpha = 0.7f),
-            modifier = Modifier.padding(bottom = 16.dp)
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = TeperaPalette.buttonBrandDark,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 40.dp)
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedButton(
+            // "Продовжити" неактивна (напівпрозора — це вже вбудований disabled-стан TeperaButton),
+            // доки йде очікування. "Вийти" — суцільна Primary (текст лишається "Вийти", не "Do not
+            // open" з макета — окреме рішення користувача, підтверджене цією сесією).
+            TeperaButton(
+                text = stringResource(R.string.gate_pause_continue_action),
                 onClick = { viewModel.continueToApp() },
                 enabled = state.canContinue,
-                shape = MaterialTheme.shapes.large,
-                border = BorderStroke(1.dp, TeperaPalette.brandAccent),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = TeperaPalette.brandAccent,
-                    disabledContentColor = TeperaPalette.brandAccent
-                ),
-                // За прямим запитом користувача: непрозорість 0.5, доки таймер очікування йде;
-                // 1.0, щойно кнопка стає активною — Modifier.alpha дim'ить УСЮ кнопку (рамку,
-                // фон, текст) як єдине ціле, а не лише колір тексту (disabledContentColor вище
-                // тому лишається БЕЗ власної альфи — інакше подвійне затемнення).
-                modifier = Modifier.weight(1f).height(52.dp).alpha(if (state.canContinue) 1f else 0.5f)
-            ) {
-                Text(stringResource(R.string.gate_pause_continue_action))
-            }
-            Button(
+                size = TeperaButtonSize.Big,
+                type = TeperaButtonType.Secondary,
+                modifier = Modifier.weight(1f)
+            )
+            TeperaButton(
+                text = stringResource(R.string.gate_pause_exit_action),
                 onClick = { viewModel.cancel() },
-                shape = MaterialTheme.shapes.large,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = TeperaPalette.brandAccent,
-                    contentColor = Color.White
-                ),
-                modifier = Modifier.weight(1f).height(52.dp)
-            ) {
-                Text(stringResource(R.string.gate_pause_exit_action))
-            }
+                size = TeperaButtonSize.Big,
+                type = TeperaButtonType.Primary,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -169,10 +164,15 @@ fun GatePauseScreen(
 private const val BREATH_DIRECTION_MILLIS = 4000
 // Крайні масштаби — не 0/1, а звужений діапазон навколо 1.0: бейдж помітно "дихає", але не
 // з'їжджає з-під центрованого тексту/підпису нижче й не виглядає карикатурно.
-private const val BREATH_SCALE_SMALL = 0.82f
-private const val BREATH_SCALE_LARGE = 1.18f
+// Figma: бейдж 145dp на вдиху (початок) і 215dp на видиху — базовий розмір 215dp, малий масштаб
+// 145/215.
+private const val BREATH_SCALE_SMALL = 145f / 215f
+private const val BREATH_SCALE_LARGE = 1f
 
-private val BADGE_SIZE = 180.dp
+private val BADGE_SIZE = 215.dp
+// Figma: заливка бейджа #DCF6ED (з SVG-ассета Star 1), цифра #005E3E 96sp — цифра НЕ масштабується.
+private val BADGE_FILL = Color(0xFFDCF6ED)
+private val BADGE_NUMBER = Color(0xFF005E3E)
 
 private data class BreathState(val scale: Animatable<Float, AnimationVector1D>, val inhaling: Boolean)
 
@@ -224,24 +224,25 @@ private fun BreathingBadge(scale: Animatable<Float, AnimationVector1D>, number: 
     val path = remember(diameterPx) {
         scallopedBlobPath(diameter = diameterPx, lobes = 12, wobbleFraction = 0.07f)
     }
-    Box(
-        modifier = modifier
-            .size(BADGE_SIZE)
-            .graphicsLayer {
-                scaleX = scale.value
-                scaleY = scale.value
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawPath(path, color = Color.White.copy(alpha = 0.55f))
+    Box(modifier = modifier.size(BADGE_SIZE), contentAlignment = Alignment.Center) {
+        // Масштабується лише сама форма; цифра нижче лишається фіксованого розміру (Figma: "5" —
+        // 96px в обох станах).
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale.value
+                    scaleY = scale.value
+                }
+        ) {
+            drawPath(path, color = BADGE_FILL)
         }
         if (number != null) {
             Text(
                 text = number.toString(),
-                fontSize = 56.sp,
-                fontWeight = FontWeight.Bold,
-                color = TeperaPalette.brandAccent
+                fontSize = 96.sp,
+                fontWeight = FontWeight.Medium,
+                color = BADGE_NUMBER
             )
         }
     }

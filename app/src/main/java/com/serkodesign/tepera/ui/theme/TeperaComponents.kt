@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.theme
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -24,12 +25,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
@@ -257,5 +264,91 @@ fun HourRangeSlider(
         ) {
             Text(valueLabel(hours), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
         }
+    }
+}
+
+enum class TeperaButtonSize(val height: Dp, val textSize: TextUnit, val fontWeight: FontWeight) {
+    Big(108.dp, 14.sp, FontWeight.Medium),
+    Medium(48.dp, 14.sp, FontWeight.Medium),
+    Small(32.dp, 12.sp, FontWeight.Normal)
+}
+
+enum class TeperaButtonType { Primary, Secondary, Tertiary }
+
+/**
+ * Кнопка дизайн-системи — Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 190:639 (3 розміри x
+ * 3 типи x enabled/disabled). Використовувати ЗАМІСТЬ ручного стилювання Material3
+ * `Button`/`OutlinedButton`/`TextButton` (сталий запит користувача).
+ *
+ * - [TeperaButtonSize.Big] (108dp): Primary — суцільний #006944, білий текст, радіус 54dp
+ *   (disabled — фон #003926); Secondary — рамка 1dp #003926, радіус 24dp. Tertiary у Big макет не
+ *   містить — рендериться як Medium-стиль на висоті Big.
+ * - [TeperaButtonSize.Medium] (48dp) / [TeperaButtonSize.Small] (32dp): Primary — білий фон, текст
+ *   #006944; Secondary — рамка #003926; Tertiary — лише текст #003926, без фону й рамки. Радіус 24dp.
+ * - Disabled — непрозорість 0.5 на всю кнопку (фон, рамку й текст разом, як у макеті), без кліків.
+ * - Ширину задає виклик через [modifier] (макет: 163dp за замовчуванням, у рядках — weight(1f)).
+ */
+@Composable
+fun TeperaButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    size: TeperaButtonSize = TeperaButtonSize.Medium,
+    type: TeperaButtonType = TeperaButtonType.Primary,
+    enabled: Boolean = true
+) {
+    val big = size == TeperaButtonSize.Big
+    val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else 24.dp)
+
+    val background: Color = when (type) {
+        TeperaButtonType.Primary -> when {
+            big && enabled -> TeperaPalette.buttonBrand
+            big -> TeperaPalette.buttonBrandDark
+            else -> Color.White
+        }
+        else -> Color.Transparent
+    }
+    val contentColor: Color = when {
+        type == TeperaButtonType.Primary && big -> Color.White
+        type == TeperaButtonType.Primary -> TeperaPalette.buttonBrand
+        else -> TeperaPalette.buttonBrandDark
+    }
+
+    Box(
+        modifier = modifier
+            .height(size.height)
+            .alpha(if (enabled) 1f else 0.5f)
+            .then(
+                when (type) {
+                    // Figma: Primary — drop-shadow 0 0 12 @5%, Secondary — 0 0 24 @5%; у Tertiary тіні нема
+                    // (нема що відкидати — без фону й рамки).
+                    TeperaButtonType.Primary ->
+                        Modifier.shadow(6.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+                    TeperaButtonType.Secondary ->
+                        Modifier.shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+                    TeperaButtonType.Tertiary -> Modifier
+                }
+            )
+            .clip(shape)
+            .background(background)
+            .then(
+                if (type == TeperaButtonType.Secondary) {
+                    Modifier.border(1.dp, TeperaPalette.buttonBrandDark, shape)
+                } else {
+                    Modifier
+                }
+            )
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = contentColor,
+            fontSize = size.textSize,
+            fontWeight = size.fontWeight,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

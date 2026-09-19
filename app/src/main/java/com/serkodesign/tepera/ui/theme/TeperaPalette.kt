@@ -73,6 +73,12 @@ object TeperaPalette {
     val brandAccentSoft = Color(0x1A005E3E) // rgba(0,94,62,0.1) — фон кружка-іконки
     val switchTrackOff = Color(0x80FFFFFF) // той самий "скляний" відтінок, що інші картки
 
+    // Кнопки дизайн-системи (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 190:639):
+    // Surface/surface-brand + Text/text-brand (#006944) і Surface/surface-brand-dark + Text/
+    // text-brand-dark (#003926). Свідомо ІНШІ відтінки, ніж brandAccent (#005E3E) вище.
+    val buttonBrand = Color(0xFF006944)
+    val buttonBrandDark = Color(0xFF003926)
+
     // "Новий екран додавання активності" (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node
     // 61:3516) — фіолетовий акцент лише для чіпів часу (Початок/Фініш, підсумок тривалості),
     // точні токени фрейму (#220d99 текст/рамка, rgba(34,13,153,0.05) фон, rgba(34,13,153,0.3)
