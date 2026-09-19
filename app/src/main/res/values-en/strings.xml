@@ -332,4 +332,6 @@
     <string name="weekly_digest_info_body">A short summary of the last 7 days: how many times you logged activities and when your day usually starts. Tiles without data are not shown.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
+    <string name="widget_4x1_description">Quick category buttons</string>
+    <string name="widget_4x2_description">Category buttons and the day grid</string>
 </resources>

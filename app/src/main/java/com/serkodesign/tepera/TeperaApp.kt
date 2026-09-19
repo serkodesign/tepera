@@ -2,7 +2,9 @@ package com.serkodesign.tepera
 
 import android.app.Application
 import android.os.Build
+import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import com.serkodesign.tepera.widget.TeperaWidget4x2Receiver
 import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import androidx.room.Room
 import com.serkodesign.tepera.data.DefaultCategories
@@ -138,24 +140,39 @@ class TeperaApp : Application() {
 
     /**
      * Генероване прев'ю віджета для меню віджетів (Android 15+/API 35, Glance 1.2.0
-     * `setWidgetPreviews` → `TeperaWidget.providePreview`). Системний виклик обмежений за частотою,
-     * тому реєструється лише коли змінилась [WIDGET_PREVIEW_VERSION] (піднімати, коли змінюється
-     * вигляд віджета), а не щозапуску. На Android < 15 діє статичний `previewImage`.
+     * `setWidgetPreviews` → `TeperaWidget.providePreview`). **Система скидає згенеровані прев'ю при
+     * оновленні застосунку**, тож ключ реєстрації — [WIDGET_PREVIEW_VERSION] + час останнього
+     * оновлення пакета (`lastUpdateTime`), а не лише версія. Виклик обмежений системою за частотою
+     * (кілька на годину) і при перевищенні повертає ненульовий результат замість помилки — тому успіх запам'ятовується
+     * ОКРЕМО для кожного провайдера (4x1/4x2), а невдалий повторюється при наступному запуску.
+     * На Android < 15 діє статичний `previewImage`.
      */
     private fun registerWidgetPreviewIfNeeded() {
         if (Build.VERSION.SDK_INT < 35) return
+        val lastUpdate = packageManager.getPackageInfo(packageName, 0).lastUpdateTime
+        val key = "$WIDGET_PREVIEW_VERSION:$lastUpdate"
         val prefs = getSharedPreferences("widget_prefs", MODE_PRIVATE)
-        if (prefs.getInt("preview_version", 0) >= WIDGET_PREVIEW_VERSION) return
         applicationScope.launch {
-            runCatching {
-                GlanceAppWidgetManager(this@TeperaApp).setWidgetPreviews(TeperaWidgetReceiver::class)
-            }.onSuccess {
-                prefs.edit().putInt("preview_version", WIDGET_PREVIEW_VERSION).apply()
+            val manager = GlanceAppWidgetManager(this@TeperaApp)
+            val receivers = listOf(
+                "preview_key_4x1" to TeperaWidgetReceiver::class,
+                "preview_key_4x2" to TeperaWidget4x2Receiver::class
+            )
+            for ((prefKey, receiver) in receivers) {
+                if (prefs.getString(prefKey, null) == key) continue
+                runCatching { manager.setWidgetPreviews(receiver) }
+                    .onSuccess { result ->
+                        Log.i("WidgetPreview", "${receiver.simpleName}=$result")
+                        // Результат — кількість ВІДХИЛЕНИХ викликів (rate-limited): 0 = успіх, > 0 = ліміт частоти
+                        // (Glance пише "setWidgetPreview call ... was rate-limited") — повторимо при наступному запуску.
+                        if (result.toString() == "0") prefs.edit().putString(prefKey, key).apply()
+                    }
+                    .onFailure { Log.w("WidgetPreview", "setWidgetPreviews failed", it) }
             }
         }
     }
 
     private companion object {
-        const val WIDGET_PREVIEW_VERSION = 2
+        const val WIDGET_PREVIEW_VERSION = 3
     }
 }

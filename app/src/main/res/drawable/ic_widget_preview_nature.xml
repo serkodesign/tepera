@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma node 12:721 ("Іконки для категорій мають бути саме ці") — палатка (camping), точний
+     pathData з експортованого Figma-асета (Material Symbols "camping"). Замінює попередню
+     власноруч намальовану ялинку — за прямою вимогою користувача використовувати лише реальні
+     Figma-гліфи для категорій, без власних. Один гліф для обох станів (вибрано/ні) — Figma дає
+     лише selected=false для цієї категорії; різницю між станами дає лише тонування
+     (напівпрозорий/білий, CategoryButton() у TeperaWidget.kt), не форма. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="25.5"
+    android:viewportHeight="25.5">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M2.65625,23.1094V18.5977L11.759,6.33622L10.2266,4.28878L11.5077,3.33067L12.75,5.00597L14.0024,3.33067L15.2734,4.28878L13.7511,6.33622L22.8437,18.5977V23.1094H2.65625ZM12.75,7.67656L4.25,19.1149V21.5156H7.57031L12.75,14.2723L17.9297,21.5156H21.25V19.1149L12.75,7.67656ZM9.52983,21.5156H15.9702L12.75,17.0183L9.52983,21.5156Z" />
+</vector>

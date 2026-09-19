@@ -345,4 +345,6 @@
     <string name="weekly_digest_info_body">Короткий підсумок останніх 7 днів: скільки разів ти відмічав активності й коли зазвичай починається твій день. Плитки без даних не показуються.</string>
     <string name="weekly_digest_hobby_between">з</string>
     <string name="weekly_digest_hobby_suffix">днів</string>
+    <string name="widget_4x1_description">Швидкі кнопки категорій</string>
+    <string name="widget_4x2_description">Кнопки категорій і сітка доби</string>
 </resources>

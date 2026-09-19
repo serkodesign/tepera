@@ -19,6 +19,7 @@ class WidgetUpdateWorker(context: Context, params: WorkerParameters) : Coroutine
 
     override suspend fun doWork(): Result {
         TeperaWidget().updateAll(applicationContext)
+        TeperaWidget4x2().updateAll(applicationContext)
         return Result.success()
     }
 

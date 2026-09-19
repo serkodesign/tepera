@@ -1,8 +1,13 @@
 package com.serkodesign.tepera.widget
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RectF
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -23,10 +28,12 @@ import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
@@ -106,7 +113,7 @@ private fun widgetIconGlyphSize(iconName: String): Dp = when (iconName) {
  * градієнтний фон взято безпосередньо з Figma-асетів (деталі — коментарі біля widgetIconRes()
  * і widget_gradient_bg.xml); решта категорій лишається на попередньому контурному наборі.
  */
-class TeperaWidget : GlanceAppWidget() {
+open class TeperaWidget : GlanceAppWidget() {
 
     // Figma node 11:647 ("перемалюй віджет"): розширений стан піднято зі 120dp (4x2, T-7, тонка
     // шкала) до 180dp (4x3, сітка доби 12x4 потребує більше висоти). Компактний 4x1 (60dp, лише
@@ -114,7 +121,12 @@ class TeperaWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(
         setOf(
             DpSize(250.dp, 60.dp),
-            DpSize(250.dp, 180.dp)
+            DpSize(250.dp, 140.dp), // 4x2 на лаунчерах з нижчими рядками: тісна розкладка (WidgetMetrics.MEDIUM)
+            DpSize(250.dp, 170.dp), // 4x2 на S23 (~176dp): та сама MEDIUM, але клітинки сітки вищі
+            DpSize(250.dp, 180.dp),
+            // 4x2 на Samsung One UI (S23) повідомляється як ~376x212dp — ця висота дає клітинкам сітки
+            // нормальний розмір, а не пласкі "таблетки", які виходили при розкладці на 180dp.
+            DpSize(250.dp, 200.dp)
         )
     )
 
@@ -238,6 +250,18 @@ private val CATEGORY_BUTTON_SIZE = 56.dp
 // provideGlance() для Spacer, і в DailyGridSection() для розрахунку висоти клітинки, коментар там).
 private val ROW_TO_GRID_GAP = 24.dp
 
+/**
+ * Розміри розкладки віджета залежно від висоти (Responsive): повний 4x3 (Figma node 11:647), середній
+ * 4x2 (те саме, але тісніше — повний вимагає ~180dp) і компактне прев'ю 4x1 (лише кнопки).
+ */
+private data class WidgetMetrics(val padding: Dp, val buttonSize: Dp, val rowGap: Dp, val gridGap: Dp) {
+    companion object {
+        val FULL = WidgetMetrics(WIDGET_CONTENT_PADDING, CATEGORY_BUTTON_SIZE, ROW_TO_GRID_GAP, DAILY_GRID_GAP)
+        val MEDIUM = WidgetMetrics(12.dp, 44.dp, 12.dp, 4.dp)
+        val COMPACT_PREVIEW = WidgetMetrics(6.dp, 48.dp, 0.dp, 0.dp)
+    }
+}
+
 // За прямим запитом користувача — сітка доби тепер розтягується на всю ширину віджета, а розмір
 // клітинки не обмежений зверху (раніше стеля DAILY_GRID_MAX_CELL=16dp, буквальний Figma
 // size-[16px] — прибрано, лишився тільки DAILY_GRID_MIN_CELL як запобіжник від виродження).
@@ -324,7 +348,8 @@ class ToggleCategoryTimerAction : ActionCallback {
         toggleCategoryTimer(app.activeTimerStore, app.activityRepository, categoryId)
         // provideGlance() не перекомпоновується сам по собі після ActionCallback — без явного
         // update() кільце й "■" з'явились би лише при наступному WidgetUpdateWorker (~30 хв).
-        TeperaWidget().update(context, glanceId)
+        TeperaWidget().updateAll(context)
+        TeperaWidget4x2().updateAll(context)
     }
 }
 
@@ -339,7 +364,8 @@ private fun DailyGridSection(
     hasUsageAccess: Boolean,
     slots: List<DailyGridSlot>,
     categoriesById: Map<String, CategoryEntity>,
-    context: Context
+    context: Context,
+    metrics: WidgetMetrics
 ) {
     if (!hasUsageAccess) {
         Text(
@@ -364,57 +390,62 @@ private fun DailyGridSection(
     // розмір launcher-грида зазвичай відповідає номінальному значенню значно ближче за
     // горизонтальний (рядки грида менш гумові за колонки), тож ця арифметика лишається достатньо
     // точною для того, щоб клітинки виглядали приблизно квадратними.
-    val availableHeight = LocalSize.current.height - WIDGET_CONTENT_PADDING * 2 - CATEGORY_BUTTON_SIZE - ROW_TO_GRID_GAP
-    val cellHeight = ((availableHeight - DAILY_GRID_GAP * (DAILY_GRID_ROWS - 1)) / DAILY_GRID_ROWS)
+    val availableHeight = LocalSize.current.height - metrics.padding * 2 - metrics.buttonSize - metrics.rowGap
+    val cellHeight = ((availableHeight - metrics.gridGap * (DAILY_GRID_ROWS - 1)) / DAILY_GRID_ROWS)
         .coerceAtLeast(DAILY_GRID_MIN_CELL)
     // Буквальний Figma rounded-[6px] на клітинці 16px (6/16=0.375) — той самий коефіцієнт,
     // застосований до висоти (менший вимір клітинки-прямокутника).
     val cornerRadius = (cellHeight.value * 0.375f).dp
 
-    // РЕАЛЬНИЙ баг, знайдений на Samsung S23 (той самий клас проблеми, що документований баг
-    // Microsoft Launcher для старої шкали "Твій день" — коментар був у видаленому
-    // colorForFraction/GlanceDayStructureBar): версія з окремим Spacer-дитиною між кожною
-    // клітинкою (12 клітинок + 11 Spacer = 23 дитини в одному Row) рендерилась як лише ~5
-    // видимих клітинок замість 12 — RemoteViews-хост, судячи з усього, згортає/обрізає Row з
-    // надто великою кількістю дітей, і поріг тут НИЖЧИЙ, ніж на Microsoft Launcher (де збій був
-    // при 39). Фікс — той самий принцип: проміжок як .padding(start=) на самій клітинці, а не
-    // окремий Spacer-елемент, це вдвічі скорочує кількість дітей Row (12 замість 23).
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        for (row in 0 until DAILY_GRID_ROWS) {
-            Row(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .padding(top = if (row > 0) DAILY_GRID_GAP else 0.dp)
-            ) {
-                for (col in 0 until DAILY_GRID_COLUMNS) {
-                    val slot = slots[row * DAILY_GRID_COLUMNS + col]
-                    val color = colorForGridSlot(slot, categoriesById)
-                    // Паддінг і фон — на РІЗНИХ Box (зовнішній/внутрішній), не на одному й тому
-                    // самому вузлі: реальний баг, знайдений на Samsung S23 — `.padding(start=)`
-                    // разом з `.defaultWeight()` на ОДНОМУ Box без дочірнього контенту не давав
-                    // жодного видимого проміжку (фон малювався на всю виділену вагою ширину,
-                    // паддінг просто ігнорувався, бо йому нема чийого контенту "стискати"). Фікс —
-                    // паддінг+вага на зовнішньому порожньому Box, фон+заокруглення на внутрішньому
-                    // fillMaxSize()-дочірньому — так паддінг зовнішнього справді звужує область,
-                    // яку заповнює внутрішній колір. Кількість прямих дітей Row не змінюється
-                    // (12, коментар про 23-дітей-баг нижче лишається чинним).
-                    Box(
-                        modifier = GlanceModifier
-                            .padding(start = if (col > 0) DAILY_GRID_GAP else 0.dp)
-                            .defaultWeight()
-                            .height(cellHeight)
-                    ) {
-                        Box(
-                            modifier = GlanceModifier
-                                .fillMaxSize()
-                                .background(ColorProvider(day = color, night = color))
-                                .cornerRadius(cornerRadius)
-                        ) {}
-                    }
-                }
-            }
+    // Сітка малюється ОДНИМ растровим зображенням (Canvas), а не 12x4 вузлами Box. **Реальний баг,
+    // знайдений на Samsung S23 у віджеті 4x2:** RemoteViews-хост відкидає зайві діти контейнера — замість
+    // 12 клітинок у ряду видно було 10 (раніше цей самий клас проблеми вже ламав версії з Spacer-ами
+    // між клітинками: 23 дитини -> ~5 видимих). Одна картинка не залежить від кількості вузлів,
+    // проміжків і паддінгів: точні 12x4 клітинки на будь-якому розмірі віджета. Ширина картинки
+    // розтягується на всю ширину віджета (FillBounds), висота — рахується з метрик розкладки.
+    val density = context.resources.displayMetrics.density
+    val gridHeight = cellHeight * DAILY_GRID_ROWS + metrics.gridGap * (DAILY_GRID_ROWS - 1)
+    val bitmap = renderDailyGridBitmap(
+        slots = slots,
+        categoriesById = categoriesById,
+        // Номінальна ширина ~340dp (4 колонки на S23: 376, на решті лаунчерів ~310) мінус паддінги;
+        // реальна відрізнятиметься — FillBounds підганяє.
+        widthPx = ((340.dp - metrics.padding * 2).value * density).toInt(),
+        cellHeightPx = cellHeight.value * density,
+        gapPx = metrics.gridGap.value * density,
+        cornerRadiusPx = cornerRadius.value * density
+    )
+    Image(
+        provider = ImageProvider(bitmap),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = GlanceModifier.fillMaxWidth().height(gridHeight)
+    )
+}
+
+/** Малює сітку доби 12x4 (по рядках зліва направо) у Bitmap — див. коментар у [DailyGridSection]. */
+private fun renderDailyGridBitmap(
+    slots: List<DailyGridSlot>,
+    categoriesById: Map<String, CategoryEntity>,
+    widthPx: Int,
+    cellHeightPx: Float,
+    gapPx: Float,
+    cornerRadiusPx: Float
+): Bitmap {
+    val heightPx = (cellHeightPx * DAILY_GRID_ROWS + gapPx * (DAILY_GRID_ROWS - 1)).toInt().coerceAtLeast(1)
+    val bitmap = Bitmap.createBitmap(widthPx.coerceAtLeast(1), heightPx, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val cellWidthPx = (widthPx - gapPx * (DAILY_GRID_COLUMNS - 1)) / DAILY_GRID_COLUMNS
+    for (row in 0 until DAILY_GRID_ROWS) {
+        for (col in 0 until DAILY_GRID_COLUMNS) {
+            paint.color = colorForGridSlot(slots[row * DAILY_GRID_COLUMNS + col], categoriesById).toArgb()
+            val left = col * (cellWidthPx + gapPx)
+            val top = row * (cellHeightPx + gapPx)
+            canvas.drawRoundRect(RectF(left, top, left + cellWidthPx, top + cellHeightPx), cornerRadiusPx, cornerRadiusPx, paint)
         }
     }
+    return bitmap
 }
 
 private fun colorForGridSlot(slot: DailyGridSlot, categoriesById: Map<String, CategoryEntity>): Color =
@@ -425,6 +456,17 @@ private fun colorForGridSlot(slot: DailyGridSlot, categoriesById: Map<String, Ca
         is DailyGridSlot.Online -> WIDGET_GRID_ONLINE_COLOR
         is DailyGridSlot.Blank -> if (slot.isFuture) WIDGET_GRID_BLANK_FUTURE else WIDGET_GRID_BLANK_PAST
     }
+
+/**
+ * Другий запис у меню віджетів (типовий розмір 4x2, life_balance_widget_4x2_info.xml) — той самий
+ * вміст і ті самі розміри Responsive, що [TeperaWidget]; окремий клас потрібен, бо Glance зіставляє
+ * провайдера з класом віджета.
+ */
+class TeperaWidget4x2 : TeperaWidget()
+
+class TeperaWidget4x2Receiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = TeperaWidget4x2()
+}
 
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget()
@@ -455,7 +497,14 @@ private fun WidgetContent(
     isPreview: Boolean = false
 ) {
             GlanceTheme {
-                val isExtended = LocalSize.current.height >= 100.dp
+                val height = LocalSize.current.height
+                val isExtended = height >= 100.dp
+                // 4x1 (лише кнопки) / 4x2 (тісніша розкладка) / 4x3 (повна, Figma node 11:647).
+                val metrics = when {
+                    !isExtended -> if (isPreview) WidgetMetrics.COMPACT_PREVIEW else WidgetMetrics.FULL
+                    height < 175.dp -> WidgetMetrics.MEDIUM
+                    else -> WidgetMetrics.FULL
+                }
 
                 Column(
                     modifier = GlanceModifier
@@ -470,7 +519,7 @@ private fun WidgetContent(
                         .background(ImageProvider(R.drawable.widget_gradient_bg))
                         // За прямим запитом користувача зменшено з буквального Figma-паддінга
                         // (p-[24px]) до 16dp — більше місця для збільшених 56dp-кнопок і сітки.
-                        .padding(if (isPreview) 6.dp else WIDGET_CONTENT_PADDING),
+                        .padding(metrics.padding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Figma node 11:647: кнопки категорій — ВЕРХНІЙ ряд, сітка доби — нижче
@@ -480,17 +529,18 @@ private fun WidgetContent(
                         categories = categories.take(5),
                         activeTimers = activeTimers,
                         context = context,
-                        buttonSize = if (isPreview) 48.dp else CATEGORY_BUTTON_SIZE
+                        buttonSize = metrics.buttonSize
                     )
                     if (isExtended) {
                         // Буквальний Figma gap-[24px] між рядом кнопок і сіткою (код фрейму:
                         // flex-col gap-[24px]) — попередні 10dp були довільним наближенням.
-                        Spacer(modifier = GlanceModifier.height(ROW_TO_GRID_GAP))
+                        Spacer(modifier = GlanceModifier.height(metrics.rowGap))
                         DailyGridSection(
                             hasUsageAccess = hasUsageAccess,
                             slots = gridSlots,
                             categoriesById = categoriesById,
-                            context = context
+                            context = context,
+                            metrics = metrics
                         )
                     }
                 }
