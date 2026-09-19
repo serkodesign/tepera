@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Статичне прев'ю віджета для меню віджетів на Android < 15 (на 15+ діє згенероване Glance-прев'ю,
+     TeperaWidget.providePreview): темний градієнт віджета й ряд із п'яти "скляних" кнопок категорій.
+     Замінило спінер widget_loading, який раніше показувався як прев'ю. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/widget_gradient_bg" />
+    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="16dp">
+        <shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape>
+    </item>
+    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="61dp">
+        <shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape>
+    </item>
+    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="105dp">
+        <shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape>
+    </item>
+    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="150dp">
+        <shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape>
+    </item>
+    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="194dp">
+        <shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape>
+    </item>
+</layer-list>

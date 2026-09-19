@@ -40,6 +40,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
@@ -161,46 +162,35 @@ class TeperaWidget : GlanceAppWidget() {
         )
 
         provideContent {
-            GlanceTheme {
-                val isExtended = LocalSize.current.height >= 100.dp
+            WidgetContent(
+                context = context,
+                categories = sorted,
+                activeTimers = activeTimers,
+                hasUsageAccess = hasUsageAccess,
+                gridSlots = gridSlots,
+                categoriesById = categoriesById
+            )
+        }
+    }
 
-                Column(
-                    modifier = GlanceModifier
-                        .fillMaxSize()
-                        // Figma node 11:647 ("Widget") — темний фон із трьома розмитими кольоровими
-                        // плямами (Group 2, node 11:648), відтворений трьома шарами radial-градієнта
-                        // з ФАКТИЧНИХ координат/кольорів/blur-параметрів вектора (get_design_context +
-                        // download_assets на сам SVG, не скріншот — деталі й точні значення
-                        // Ellipse 4/5/6 — коментар у widget_gradient_bg.xml). shape-drawable, не
-                        // ColorProvider: RemoteViews/Glance не має Canvas/Brush-градієнтів. Кути
-                        // радіуса вже в кожному шарі shape, окремий .cornerRadius() тут не потрібен.
-                        .background(ImageProvider(R.drawable.widget_gradient_bg))
-                        // За прямим запитом користувача зменшено з буквального Figma-паддінга
-                        // (p-[24px]) до 16dp — більше місця для збільшених 56dp-кнопок і сітки.
-                        .padding(WIDGET_CONTENT_PADDING),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Figma node 11:647: кнопки категорій — ВЕРХНІЙ ряд, сітка доби — нижче
-                    // (порядок протилежний попередній T-7 версії, де бар був зверху, кнопки —
-                    // знизу). 4x1 (isExtended == false) не змінюється — лише кнопки.
-                    CategoryButtonsRow(
-                        categories = sorted.take(5),
-                        activeTimers = activeTimers,
-                        context = context
-                    )
-                    if (isExtended) {
-                        // Буквальний Figma gap-[24px] між рядом кнопок і сіткою (код фрейму:
-                        // flex-col gap-[24px]) — попередні 10dp були довільним наближенням.
-                        Spacer(modifier = GlanceModifier.height(ROW_TO_GRID_GAP))
-                        DailyGridSection(
-                            hasUsageAccess = hasUsageAccess,
-                            slots = gridSlots,
-                            categoriesById = categoriesById,
-                            context = context
-                        )
-                    }
-                }
-            }
+    /**
+     * Прев'ю для меню віджетів (Android 15+, Glance 1.2.0): той самий [WidgetContent] на демо-даних
+     * (шість дефолтних категорій, "типова" сітка доби). Раніше `previewLayout`/`initialLayout`
+     * вказували на `widget_loading` — просто спінер, тому меню віджетів показувало спінер замість
+     * віджета. Реєструється через `GlanceAppWidgetManager.setWidgetPreviews()` (див. TeperaApp).
+     * На старіших версіях Android діє статичний `previewImage` (`widget_preview.xml`).
+     */
+    override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        provideContent {
+            WidgetContent(
+                context = context,
+                categories = sortCategoriesForWidget(DefaultCategories.all),
+                activeTimers = emptyMap(),
+                hasUsageAccess = true,
+                gridSlots = previewGridSlots(),
+                categoriesById = DefaultCategories.all.associateBy { it.id },
+                isPreview = true
+            )
         }
     }
 }
@@ -261,10 +251,10 @@ private val DAILY_GRID_MIN_CELL = 10.dp
 private fun CategoryButtonsRow(
     categories: List<CategoryEntity>,
     activeTimers: Map<String, Long>,
-    context: Context
+    context: Context,
+    buttonSize: Dp = CATEGORY_BUTTON_SIZE
 ) {
     // Кнопки — фіксовані 56dp (CATEGORY_BUTTON_SIZE вище), не адаптивні під ширину.
-    val buttonSize = CATEGORY_BUTTON_SIZE
 
     // Буквальний Figma "justify-between" (код фрейму: flex items-center justify-between) — кнопки
     // впираються в обидва краї ряду, проміжки МІЖ ними рівні й заповнюють увесь залишок ширини,
@@ -438,4 +428,71 @@ private fun colorForGridSlot(slot: DailyGridSlot, categoriesById: Map<String, Ca
 
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget()
+}
+
+/** Демо-сітка доби для прев'ю: ніч (до пробудження), трохи Online й активностей, далі ще не настало. */
+private fun previewGridSlots(): List<DailyGridSlot> = List(DAILY_GRID_SLOT_COUNT) { index ->
+    when (index) {
+        in 0..13 -> DailyGridSlot.PreUnlock
+        in 14..15, 19, 24, 28 -> DailyGridSlot.Blank(isFuture = false)
+        in 16..18, 25, 26 -> DailyGridSlot.Online
+        in 20..22 -> DailyGridSlot.Category(DefaultCategories.READING_ID)
+        23 -> DailyGridSlot.Category(DefaultCategories.MOVEMENT_ID)
+        27 -> DailyGridSlot.Category(DefaultCategories.HOBBY_ID)
+        else -> DailyGridSlot.Blank(isFuture = true)
+    }
+}
+
+/** Вміст віджета — спільний для [TeperaWidget.provideGlance] (реальні дані) і [TeperaWidget.providePreview] (демо). */
+@Composable
+private fun WidgetContent(
+    context: Context,
+    categories: List<CategoryEntity>,
+    activeTimers: Map<String, Long>,
+    hasUsageAccess: Boolean,
+    gridSlots: List<DailyGridSlot>,
+    categoriesById: Map<String, CategoryEntity>,
+    isPreview: Boolean = false
+) {
+            GlanceTheme {
+                val isExtended = LocalSize.current.height >= 100.dp
+
+                Column(
+                    modifier = GlanceModifier
+                        .fillMaxSize()
+                        // Figma node 11:647 ("Widget") — темний фон із трьома розмитими кольоровими
+                        // плямами (Group 2, node 11:648), відтворений трьома шарами radial-градієнта
+                        // з ФАКТИЧНИХ координат/кольорів/blur-параметрів вектора (get_design_context +
+                        // download_assets на сам SVG, не скріншот — деталі й точні значення
+                        // Ellipse 4/5/6 — коментар у widget_gradient_bg.xml). shape-drawable, не
+                        // ColorProvider: RemoteViews/Glance не має Canvas/Brush-градієнтів. Кути
+                        // радіуса вже в кожному шарі shape, окремий .cornerRadius() тут не потрібен.
+                        .background(ImageProvider(R.drawable.widget_gradient_bg))
+                        // За прямим запитом користувача зменшено з буквального Figma-паддінга
+                        // (p-[24px]) до 16dp — більше місця для збільшених 56dp-кнопок і сітки.
+                        .padding(if (isPreview) 6.dp else WIDGET_CONTENT_PADDING),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Figma node 11:647: кнопки категорій — ВЕРХНІЙ ряд, сітка доби — нижче
+                    // (порядок протилежний попередній T-7 версії, де бар був зверху, кнопки —
+                    // знизу). 4x1 (isExtended == false) не змінюється — лише кнопки.
+                    CategoryButtonsRow(
+                        categories = categories.take(5),
+                        activeTimers = activeTimers,
+                        context = context,
+                        buttonSize = if (isPreview) 48.dp else CATEGORY_BUTTON_SIZE
+                    )
+                    if (isExtended) {
+                        // Буквальний Figma gap-[24px] між рядом кнопок і сіткою (код фрейму:
+                        // flex-col gap-[24px]) — попередні 10dp були довільним наближенням.
+                        Spacer(modifier = GlanceModifier.height(ROW_TO_GRID_GAP))
+                        DailyGridSection(
+                            hasUsageAccess = hasUsageAccess,
+                            slots = gridSlots,
+                            categoriesById = categoriesById,
+                            context = context
+                        )
+                    }
+                }
+            }
 }

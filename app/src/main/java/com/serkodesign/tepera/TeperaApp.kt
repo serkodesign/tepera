@@ -1,6 +1,9 @@
 package com.serkodesign.tepera
 
 import android.app.Application
+import android.os.Build
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import androidx.room.Room
 import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.ActiveTimerStore
@@ -130,5 +133,29 @@ class TeperaApp : Application() {
         // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker) — createNotificationChannel()
         // ідемпотентний, безпечно викликати щозапуску.
         createTimerCheckNotificationChannel(this)
+        registerWidgetPreviewIfNeeded()
+    }
+
+    /**
+     * Генероване прев'ю віджета для меню віджетів (Android 15+/API 35, Glance 1.2.0
+     * `setWidgetPreviews` → `TeperaWidget.providePreview`). Системний виклик обмежений за частотою,
+     * тому реєструється лише коли змінилась [WIDGET_PREVIEW_VERSION] (піднімати, коли змінюється
+     * вигляд віджета), а не щозапуску. На Android < 15 діє статичний `previewImage`.
+     */
+    private fun registerWidgetPreviewIfNeeded() {
+        if (Build.VERSION.SDK_INT < 35) return
+        val prefs = getSharedPreferences("widget_prefs", MODE_PRIVATE)
+        if (prefs.getInt("preview_version", 0) >= WIDGET_PREVIEW_VERSION) return
+        applicationScope.launch {
+            runCatching {
+                GlanceAppWidgetManager(this@TeperaApp).setWidgetPreviews(TeperaWidgetReceiver::class)
+            }.onSuccess {
+                prefs.edit().putInt("preview_version", WIDGET_PREVIEW_VERSION).apply()
+            }
+        }
+    }
+
+    private companion object {
+        const val WIDGET_PREVIEW_VERSION = 2
     }
 }
