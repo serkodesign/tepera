@@ -30,7 +30,9 @@ Android-застосунок з двома пов'язаними ідеями:
 - `applicationId`: `com.serkodesign.tepera`
 - `minSdkVersion` = 26 (Android 8.0), `targetSdkVersion` = 36 (Android 16 — обов'язково для Google Play з 31.08.2026)
 - Мови: українська (основна) + англійська
-- MVP безкоштовний, без реклами/IAP
+- MVP безкоштовний, без реклами. **Платежі — лише через RevenueCat (за прямим запитом користувача):**
+  добровільна підтримка розробника ("Пригостити кавою") і інфраструктура Tepera Pro (підписки/
+  lifetime, поки без гейтингу) — розділ про RevenueCat нижче
 
 ## Стек
 Kotlin, Jetpack Compose, Room, ViewModel + StateFlow, Vico (графіки), **Jetpack Glance** (домашній
@@ -924,6 +926,36 @@ Firebase Crashlytics (лише crash-репортинг).
   правило: одночасно ОДИН таймер (уже вище).
 - **Початок дня не раніше 05:00** (`DAY_START_EARLIEST_HOUR` у `BalanceRepository`) — уже
   описано в розділі структури доби вище.
+- **RevenueCat: Tepera Pro, Paywall, Customer Center і "Пригостити кавою" (за прямим запитом
+  користувача; єдиний платіжний шар — RevenueCat, прямого Play Billing у застосунку НЕМАЄ):**
+  залежності `purchases-kmp-core` + `purchases-kmp-ui` **3.9.0** у наявному Android-модулі
+  (KMP-артефакти без реструктуризації — за відповіддю користувача; формальний KMP і далі поза
+  обсягом). Ключ SDK — з `local.properties` (`revenuecat.apiKey.debug` = Test Store `test_...`;
+  `revenuecat.apiKey.release` = Google Play `goog_...`) через `resValue revenuecat_api_key`; **Test
+  Store ключ у release SDK відхиляє, тож без release-ключа SDK лишається вимкнений (екрани
+  "недоступно"), а не падає; ключ НЕ комітити** (`local.properties` в `.gitignore`).
+  `RevenueCatConfig` (entitlement `tepera_pro`, offering підтримки `support`), налаштування один раз
+  в `Application.onCreate()`, анонімний користувач. **Pro (`ProRepository`/`RevenueCatProRepository`):
+  стан з `CustomerInfo.entitlements["tepera_pro"]` (не з product id) + делегат
+  `onCustomerInfoUpdated`; екрани `ui/pro/` — Pro (стан, "Переглянути Pro"→Paywall, "Керувати
+  підпискою"→Customer Center лише коли Pro активний, "Відновити покупки"), `PaywallScreen`
+  (`Paywall(PaywallOptions)`, закривається лише через `dismissRequest` — окремий слухач давав подвійний
+  `popBackStack`), `CustomerCenterScreen`. За відповіддю користувача Pro ПОКИ НІЧОГО НЕ ГЕЙТИТЬ і
+  Paywall не з'являється сам — лише інфраструктура.** Підтримка ("Пригостити кавою"):
+  `SupportRepository`/`RevenueCatSupportRepository` будують екран від пакетів offering `support`
+  (package identifier `support_small|medium|large` мають локалізовані назви, інші — назва зі стору),
+  тож кава пізніше може стати підпискою зміною продуктів у дашборді. Без offering `support` екран
+  показує "Поки що недоступно". Тихі екрани (Monastic Style). Рядок "Пригостити
+  розробника кавою" — Налаштування → Загальні. **Вхід у "Tepera Pro" ПРИХОВАНИЙ на фазі запуску (за
+  прямим запитом користувача: на запуску буде лише кава): `RevenueCatConfig.PRO_ENTRY_ENABLED =
+  false` — рядок не показується, екрани Pro/Paywall/Customer Center лишаються в коді, але
+  недосяжні, `ProRepository` при старті не ініціалізується; увімкнути — змінити на `true`. Це не
+  створює проблем для Google Play (Play оцінює те, що застосунок пропонує); заглушку "Pro (скоро)"
+  свідомо НЕ робили — видимий неактивний елемент ризикованіший за приховування.** `FakeSupportRepository.kt` має фейки для розробки UI.
+  **Перевірено на S23 через Test Store (дашборд уже мав `monthly`/`yearly`/`lifetime`):** конфігурація,
+  offerings, Paywall (дефолтний шаблон — кастомний ще не опублікований у дашборді), тестова покупка →
+  Pro активний, Customer Center. Реальну оплату Google Play й release-збірку з `goog_` ключем НЕ
+  перевіряли. **Що лишилось (дашборд, Play Console, Data Safety, політика) — `docs/revenuecat-setup.md`.**
 - **Тестування на пристрої (корисні прийоми):** явно `platform-tools/adb.exe`; щоб побачити екран
   дозволів без стирання даних — `adb shell appops set com.serkodesign.tepera GET_USAGE_STATS
   deny` (повернути `allow`); щоб перепройти онбординг зі збереженням даних — бекап
