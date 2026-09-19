@@ -58,8 +58,16 @@ class RoomCategoryRepository(
 
     override suspend fun update(category: CategoryEntity) = dao.update(category)
 
-    override suspend fun ensureDefaultsSeeded(defaults: List<CategoryEntity>) =
+    override suspend fun ensureDefaultsSeeded(defaults: List<CategoryEntity>) {
         dao.insertDefaults(defaults)
+        // insertDefaults() ігнорує вже засіяні рядки, тож на наявних встановленнях дефолтні категорії
+        // лишались би зі старими кольорами після зміни палітри — синхронізуємо colorHex щозапуску
+        // (ідемпотентно; дефолтні кольори з UI не редагуються, схема БД не змінюється).
+        defaults.forEach { default ->
+            val existing = dao.getById(default.id) ?: return@forEach
+            if (existing.colorHex != default.colorHex) dao.update(existing.copy(colorHex = default.colorHex))
+        }
+    }
 
     override suspend fun deleteCustomCategory(categoryId: String) {
         val category = dao.getById(categoryId) ?: return

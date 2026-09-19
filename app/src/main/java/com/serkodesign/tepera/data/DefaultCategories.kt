@@ -28,7 +28,7 @@ object DefaultCategories {
             name = "Природа",
             nameKey = "nature",
             iconName = "nature",
-            colorHex = "#4E7A51",
+            colorHex = "#00B938",
             isDefault = true,
             sortOrder = 0
         ),
@@ -37,7 +37,7 @@ object DefaultCategories {
             name = "Читання",
             nameKey = "reading",
             iconName = "reading",
-            colorHex = "#4A6FA5",
+            colorHex = "#D28FDF",
             isDefault = true,
             sortOrder = 1
         ),
@@ -46,7 +46,7 @@ object DefaultCategories {
             name = "Хобі/творчість",
             nameKey = "hobby",
             iconName = "hobby",
-            colorHex = "#B08968",
+            colorHex = "#00D8CD",
             isDefault = true,
             sortOrder = 2
         ),
@@ -55,7 +55,7 @@ object DefaultCategories {
             name = "Рух/спорт",
             nameKey = "movement",
             iconName = "movement",
-            colorHex = "#C9704F",
+            colorHex = "#FD5B5E",
             isDefault = true,
             sortOrder = 3
         ),
@@ -64,7 +64,7 @@ object DefaultCategories {
             name = "Живе спілкування",
             nameKey = "social",
             iconName = "social",
-            colorHex = "#8A5A83",
+            colorHex = "#FF73D0",
             isDefault = true,
             sortOrder = 4
         ),
@@ -73,7 +73,7 @@ object DefaultCategories {
             name = "Справи",
             nameKey = "errands",
             iconName = "errands",
-            colorHex = "#5C6B73",
+            colorHex = "#A362FF",
             isDefault = true,
             sortOrder = 5
         )

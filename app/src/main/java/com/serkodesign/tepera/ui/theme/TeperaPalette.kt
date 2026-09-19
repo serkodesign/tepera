@@ -36,7 +36,7 @@ object TeperaPalette {
     val backgroundGreenBlob = Color(0xFF005122) // Ellipse 7
 
     val offlineCard = Color(0x8000C567) // rgba(0,197,103,0.5) — лишається лише для addButtonBackground
-    val onlineCard = Color(0x80FF9162) // rgba(255,145,98,0.5)
+    val onlineCard = Color(0xFFF5C401) // #F5C401 — новий колір Online (палітра категорій), непрозорий
 
     // Легкий зелений для сегмента "Решта дня" (за запитом користувача) — попередній "теплий
     // сірий" (0xFFDCD5C6) занадто зливався з напівпрозорою карткою поверх градієнтного фону,
@@ -44,7 +44,7 @@ object TeperaPalette {
     // категорійний колір сегмента, як і решта на шкалі (Online, кожна категорія), не умовна
     // traffic-light оцінка — колір завжди той самий, незалежно від значення (FR-4.3 лишається
     // чинним).
-    val restOfDayCard = Color(0xFFB7E4C7)
+    val restOfDayCard = Color(0xFFC5E2CB) // #C5E2CB — колір "Офлайн-життя" (палітра категорій)
 
     val cardTranslucent = Color(0x80FFFFFF) // rgba(255,255,255,0.5)
     val cardTranslucentLight = Color(0x4DFFFFFF) // rgba(255,255,255,0.3) — обгортка "Life balance"

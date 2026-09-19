@@ -204,7 +204,7 @@ private val WIDGET_ICON_SELECTED = Color(0xFF003926) // фіксований т�
 // користувача під час запиту на перемальовку — не з коду фрейму (той дає лише 2 умовні
 // демо-кольори, #beffb8/#ffecac).
 private val WIDGET_GRID_PRE_UNLOCK_COLOR = Color(0xFFA172FF) // до точки старту дня
-private val WIDGET_GRID_ONLINE_COLOR = Color(0xFFFF9162) // непрозора версія TeperaPalette.onlineCard (той самий відтінок, 100% альфа — на маленькій клітинці 50%-прозорий колір губився б)
+private val WIDGET_GRID_ONLINE_COLOR = Color(0xFFF5C401) // той самий #F5C401, що TeperaPalette.onlineCard
 private val WIDGET_GRID_BLANK_PAST = Color.White // минуло, нічого не залоговано (Figma рядки 2-3)
 private val WIDGET_GRID_BLANK_FUTURE = Color(0x80FFFFFF) // rgba(255,255,255,0.5) — ще не настало (Figma рядок 4)
 
