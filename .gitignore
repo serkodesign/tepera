@@ -22,3 +22,4 @@ key.properties
 # Firebase (google-services.json містить проєктні ключі — не публічний секрет,
 # але краще виключити з публічного репозиторію; підключити у фазі 5)
 google-services.json
+usagestats_dump.txt
