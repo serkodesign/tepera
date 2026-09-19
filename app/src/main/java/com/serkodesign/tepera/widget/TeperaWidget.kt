@@ -286,7 +286,8 @@ private fun CategoryButton(
     val iconColor = if (isTracking) WIDGET_ICON_SELECTED else WIDGET_ICON_UNSELECTED
     // Буквальний розмір гліфа з Figma (widgetIconGlyphSize(), коментар там), НЕ підганяється
     // під розмір кнопки.
-    val iconSize = widgetIconGlyphSize(category.iconName)
+    // На малих кнопках (4x1) гліф зменшується пропорційно, щоб не впиратись у краї кола.
+    val iconSize = minOf(widgetIconGlyphSize(category.iconName), size * 0.5f)
 
     Box(
         modifier = boxModifier.clickable(
@@ -507,10 +508,25 @@ private fun WidgetContent(
                 val height = LocalSize.current.height
                 val isExtended = height >= 100.dp
                 // 4x1 (лише кнопки) / 4x2 (тісніша розкладка) / 4x3 (повна, Figma node 11:647).
-                val metrics = when {
+                val baseMetrics = when {
                     !isExtended -> if (isPreview) WidgetMetrics.COMPACT_PREVIEW else WidgetMetrics.FULL
                     height < 175.dp -> WidgetMetrics.MEDIUM
                     else -> WidgetMetrics.FULL
+                }
+                // У 4x1 висота віджета (~60-70dp) менша за кнопку 56dp + відступи 2×16dp — фіксований
+                // size() тоді стискався по вертикалі й кнопки ставали овалами (Huawei P9). Тут кнопка
+                // завжди КОЛО: розмір береться з меншої з доступних висоти й ширини на 5 кнопок,
+                // відступи в компактному режимі зменшені.
+                val metrics = if (isExtended) {
+                    baseMetrics
+                } else {
+                    val padding = 8.dp
+                    val fitByHeight = height - padding * 2
+                    val fitByWidth = (LocalSize.current.width - padding * 2) / 5
+                    baseMetrics.copy(
+                        padding = padding,
+                        buttonSize = minOf(baseMetrics.buttonSize, fitByHeight, fitByWidth).coerceAtLeast(24.dp)
+                    )
                 }
 
                 Column(
