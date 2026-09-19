@@ -3,7 +3,6 @@ package com.serkodesign.tepera.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,6 +34,7 @@ import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
+import kotlin.math.roundToInt
 import java.time.Instant
 import java.time.ZoneId
 
@@ -159,56 +159,65 @@ private fun DayStructureBar(
     // й ▲ знизу шкали (Figma node 192:726).
     val nowFraction = (dayLengthMinutes.toFloat() / daySpanMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
 
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val markerX = maxWidth * markerFraction
-        val nowX = maxWidth * nowFraction
-        Column {
-            NowPointer("▼", nowX)
-            Box(Modifier.fillMaxWidth()) {
-                // Біла "доріжка" (Figma): те, що ще не сталося (від "Now" до півночі), лишається
-                // незафарбованим — "Офлайн-життя" заповнює лише до позначки "Now".
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(16.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color.White)
-                ) {
-                    segments.forEach { segment ->
-                        Box(
-                            modifier = Modifier
-                                .weight(segment.minutes.coerceAtLeast(1).toFloat())
-                                .fillMaxHeight()
-                                .background(segment.color)
-                        )
-                    }
-                    val futureMinutes = (daySpanMinutes - dayLengthMinutes).coerceAtLeast(0)
-                    if (futureMinutes > 0) {
-                        Box(modifier = Modifier.weight(futureMinutes.toFloat()).fillMaxHeight())
-                    }
+    // Без BoxWithConstraints: він робить субкомпозицію на кожному перевимірі, а слайдер Home
+    // перевимірює сторінки на кожному кадрі свайпу — на Huawei P9 це давало 63% рваних кадрів.
+    // Позиції маркерів рахує легкий layout-модифікатор [atFraction] (без субкомпозиції).
+    Column(Modifier.fillMaxWidth()) {
+        NowPointer("▼", nowFraction)
+        Box(Modifier.fillMaxWidth()) {
+            // Біла "доріжка" (Figma): те, що ще не сталося (від "Now" до півночі), лишається
+            // незафарбованим — "Офлайн-життя" заповнює лише до позначки "Now".
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.White)
+            ) {
+                segments.forEach { segment ->
+                    Box(
+                        modifier = Modifier
+                            .weight(segment.minutes.coerceAtLeast(1).toFloat())
+                            .fillMaxHeight()
+                            .background(segment.color)
+                    )
                 }
-                Box(
-                    modifier = Modifier
-                        .offset(x = markerX)
-                        .width(1.dp)
-                        .height(16.dp)
-                        .background(Color.Black.copy(alpha = 0.3f))
-                )
+                val futureMinutes = (daySpanMinutes - dayLengthMinutes).coerceAtLeast(0)
+                if (futureMinutes > 0) {
+                    Box(modifier = Modifier.weight(futureMinutes.toFloat()).fillMaxHeight())
+                }
             }
-            NowPointer("▲", nowX)
+            Box(
+                modifier = Modifier
+                    .atFraction(markerFraction, centered = false)
+                    .width(1.dp)
+                    .height(16.dp)
+                    .background(Color.Black.copy(alpha = 0.3f))
+            )
         }
+        NowPointer("▲", nowFraction)
+    }
+}
+
+/** Ставить елемент на [fraction] ширини батька (без субкомпозиції, на відміну від BoxWithConstraints). */
+private fun Modifier.atFraction(fraction: Float, centered: Boolean): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+    val width = constraints.maxWidth
+    layout(width, placeable.height) {
+        val x = (width * fraction).roundToInt() - if (centered) placeable.width / 2 else 0
+        placeable.placeRelative(x.coerceAtLeast(0), 0)
     }
 }
 
 @Composable
-private fun NowPointer(glyph: String, x: androidx.compose.ui.unit.Dp) {
+private fun NowPointer(glyph: String, fraction: Float) {
     Box(Modifier.fillMaxWidth()) {
         Text(
             glyph,
             color = TeperaPalette.buttonBrandDark,
             fontSize = 10.sp,
             lineHeight = 12.sp,
-            modifier = Modifier.offset(x = (x - 5.dp).coerceAtLeast(0.dp))
+            modifier = Modifier.atFraction(fraction, centered = true)
         )
     }
 }

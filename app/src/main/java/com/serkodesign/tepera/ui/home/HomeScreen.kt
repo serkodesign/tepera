@@ -586,9 +586,17 @@ private fun CategoryCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(132.dp)
-            .shadow(
-                8.dp, shape,
-                ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f)
+            // Тінь Figma (0 16 20 @5%) — лише Android 10+: на Huawei P9 (Android 8) 6 елевейшн-тіней
+            // на картках давали ~12 пунктів рваних кадрів прокрутки Home, а різниця майже непомітна (5%).
+            .then(
+                if (Build.VERSION.SDK_INT >= 29) {
+                    Modifier.shadow(
+                        8.dp, shape,
+                        ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f)
+                    )
+                } else {
+                    Modifier
+                }
             )
             .clip(shape)
             .background(containerColor)

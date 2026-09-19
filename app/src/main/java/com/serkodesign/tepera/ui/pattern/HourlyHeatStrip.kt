@@ -1,12 +1,12 @@
 package com.serkodesign.tepera.ui.pattern
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +16,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.runtime.remember
+import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
@@ -47,36 +55,54 @@ fun HourlyHeatGrid(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Сітка 12x2 одним Canvas, а не 24 окремими `Box.clip().background()`: на Huawei P9 (Android 8)
+ * сторінка з патерном у слайдері Home давала +15 пунктів рваних кадрів ("Slow UI thread") — 24
+ * вузлів із власним clip/graphicsLayer перевимірювались і перезаписувались на кожному кадрі
+ * свайпу. Один Canvas — один вузол, ті самі 24 закруглені прямокутники (радіус 4dp, проміжок 3dp).
+ */
 @Composable
 private fun HeatGridRows(hourlyMinutes: List<Int>?) {
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-        listOf(0 until 12, 12 until 24).forEach { hourRange ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                hourRange.forEach { hour ->
-                    HeatCell(minutes = hourlyMinutes?.getOrNull(hour), modifier = Modifier.weight(1f))
-                }
+    val colors = remember(hourlyMinutes) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it) } }
+    }
+    val gap = 3.dp
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .layout { measurable, constraints ->
+                val width = constraints.maxWidth
+                val cell = (width - gap.roundToPx() * 11) / 12f
+                val height = (cell * 2 + gap.roundToPx()).roundToInt()
+                val placeable = measurable.measure(Constraints.fixed(width, height))
+                layout(width, height) { placeable.place(0, 0) }
+            }
+    ) {
+        val gapPx = gap.toPx()
+        val cell = (size.width - gapPx * 11) / 12f
+        val radius = CornerRadius(4.dp.toPx())
+        val cellSize = Size(cell, cell)
+        for (hour in 0 until 24) {
+            val row = hour / 12
+            val col = hour % 12
+            val topLeft = Offset(col * (cell + gapPx), row * (cell + gapPx))
+            val color = colors[hour]
+            if (color == null) {
+                // "Немає даних": світла заливка + рамка 1dp (внутрішня, як border у Compose).
+                drawRoundRect(TeperaPalette.heatmapNoDataFill, topLeft, cellSize, radius)
+                val stroke = 1.dp.toPx()
+                drawRoundRect(
+                    TeperaPalette.heatmapNoDataBorder,
+                    Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
+                    Size(cell - stroke, cell - stroke),
+                    CornerRadius(radius.x - stroke / 2),
+                    style = Stroke(stroke)
+                )
+            } else {
+                drawRoundRect(color, topLeft, cellSize, radius)
             }
         }
     }
-}
-
-@Composable
-private fun HeatCell(minutes: Int?, modifier: Modifier = Modifier) {
-    val cellShape = RoundedCornerShape(4.dp)
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .clip(cellShape)
-            .then(
-                if (minutes == null) {
-                    Modifier
-                        .background(TeperaPalette.heatmapNoDataFill)
-                        .border(1.dp, TeperaPalette.heatmapNoDataBorder, cellShape)
-                } else {
-                    Modifier.background(heatBucketColor(minutes))
-                }
-            )
-    )
 }
 
 /**
