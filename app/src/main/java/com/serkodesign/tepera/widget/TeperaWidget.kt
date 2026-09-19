@@ -6,6 +6,10 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
@@ -48,6 +52,7 @@ import androidx.glance.text.TextStyle
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.DefaultCategories
+import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
@@ -132,57 +137,18 @@ open class TeperaWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val app = context.applicationContext as TeperaApp
-
-        val activeCategories = app.categoryRepository.observeActiveCategories().first()
-        val sorted = sortCategoriesForWidget(activeCategories)
-
-        val activeTimers = app.activeTimerStore.activeTimers.first()
-
-        // SRS v2.5, FR-3.5: точка старту дня замінює локальну північ — та сама логіка, що на
-        // Home (BalanceViewModel.refresh()). Тут вона позначає лише межу PreUnlock-клітинок
-        // сітки доби (DailyGridCalculator.kt) — сама сітка анкерується на календарну північ
-        // (нижче), за прямим рішенням користувача під час запиту на перемальовку.
-        val hasUsageAccess = app.balanceRepository.hasUsageAccess()
-        val sleepWindows = app.sleepWindowRepository.getEnabledWindows()
-        val dayStartMillis = app.balanceRepository.calculateDayStartMillis(sleepWindows)
-
-        val allCategories = app.categoryRepository.observeAllCategories().first()
-        val categoriesById = allCategories.associateBy { it.id }
-
-        // Figma node 11:647: сітка доби замінює колишню тришарову шкалу "Твій день" (T-7,
-        // GlanceDayStructureBar) — 48 клітинок по 30 хв, кожна пофарбована реальним кольором
-        // категорії/Online, а не часткою сумарних хвилин. Деталі алгоритму — DailyGridCalculator.kt.
-        val calendarMidnightMillis = startOfTodayMillis()
-        val entries = app.activityRepository
-            .observeEntriesInRange(calendarMidnightMillis, Long.MAX_VALUE)
-            .first()
-        val onlineMinutesPerSlot = if (hasUsageAccess) {
-            app.balanceRepository.getOnlineMinutesPerSlot(
-                fromMillis = calendarMidnightMillis,
-                slotMinutes = 30,
-                slotCount = DAILY_GRID_SLOT_COUNT
-            )
-        } else {
-            IntArray(DAILY_GRID_SLOT_COUNT)
-        }
-        val gridSlots = calculateDailyGridSlots(
-            calendarMidnightMillis = calendarMidnightMillis,
-            dayStartMillis = dayStartMillis,
-            nowMillis = System.currentTimeMillis(),
-            entries = entries,
-            onlineMinutesPerSlot = onlineMinutesPerSlot
+        // Початкові значення завантажуються ДО першого кадру: без цього кожен collectAsState стартував
+        // з порожнього значення й віджет мигав порожнім станом та перемальовувався 6-11 разів поспіль
+        // (виміряно на S23) — тепер оновлення шлеться лише при справжній зміні даних.
+        val midnight = startOfTodayMillis()
+        val initial = LiveWidgetInitial(
+            activeCategories = app.categoryRepository.observeActiveCategories().first(),
+            allCategories = app.categoryRepository.observeAllCategories().first(),
+            activeTimers = app.activeTimerStore.activeTimers.first(),
+            entries = app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE).first(),
+            grid = WidgetLiveData.gridInputs(app, midnight)
         )
-
-        provideContent {
-            WidgetContent(
-                context = context,
-                categories = sorted,
-                activeTimers = activeTimers,
-                hasUsageAccess = hasUsageAccess,
-                gridSlots = gridSlots,
-                categoriesById = categoriesById
-            )
-        }
+        provideContent { LiveWidgetContent(context, app, initial) }
     }
 
     /**
@@ -348,8 +314,6 @@ class ToggleCategoryTimerAction : ActionCallback {
         toggleCategoryTimer(app.activeTimerStore, app.activityRepository, categoryId)
         // provideGlance() не перекомпоновується сам по собі після ActionCallback — без явного
         // update() кільце й "■" з'явились би лише при наступному WidgetUpdateWorker (~30 хв).
-        TeperaWidget().updateAll(context)
-        TeperaWidget4x2().updateAll(context)
     }
 }
 
@@ -470,6 +434,50 @@ class TeperaWidget4x2Receiver : GlanceAppWidgetReceiver() {
 
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget()
+}
+
+
+/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */private class LiveWidgetInitial(    val activeCategories: List<CategoryEntity>,    val allCategories: List<CategoryEntity>,    val activeTimers: Map<String, Long>,    val entries: List<ActivityEntryEntity>,    val grid: GridInputs)
+/**
+ * Вміст віджета на ЖИВИХ даних: таймери/категорії/записи — потоки всередині композиції (див. коментар
+ * у [WidgetLiveData] — раніше все читалось один раз на сесію й показувало застарілий стан).
+ */
+@Composable
+private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWidgetInitial) {
+    val activeCategories by app.categoryRepository.observeActiveCategories().collectAsState(initial = initial.activeCategories)
+    val allCategories by app.categoryRepository.observeAllCategories().collectAsState(initial = initial.allCategories)
+    val activeTimers by app.activeTimerStore.activeTimers.collectAsState(initial = initial.activeTimers)
+    val tick by WidgetLiveData.refreshTick.collectAsState()
+
+    // Figma node 11:647: сітка доби — 48 клітинок по 30 хв від КАЛЕНДАРНОЇ півночі, кожна фарбується
+    // реальним кольором категорії/Online. Ручні записи — жива підписка, Online/точка старту — кеш.
+    val midnight = remember(tick) { startOfTodayMillis() }
+    val entriesFlow = remember(midnight) { app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE) }
+    val entries by entriesFlow.collectAsState(initial = initial.entries)
+    val gridInputs by produceState<GridInputs?>(initialValue = initial.grid, tick) {
+        value = WidgetLiveData.gridInputs(app, midnight)
+    }
+
+    val sorted = remember(activeCategories) { sortCategoriesForWidget(activeCategories) }
+    val categoriesById = remember(allCategories) { allCategories.associateBy { it.id } }
+    val slots = gridInputs?.let {
+        calculateDailyGridSlots(
+            calendarMidnightMillis = midnight,
+            dayStartMillis = it.dayStartMillis,
+            nowMillis = System.currentTimeMillis(),
+            entries = entries,
+            onlineMinutesPerSlot = it.onlineMinutesPerSlot
+        )
+    } ?: List(DAILY_GRID_SLOT_COUNT) { DailyGridSlot.Blank(isFuture = true) }
+
+    WidgetContent(
+        context = context,
+        categories = sorted,
+        activeTimers = activeTimers,
+        hasUsageAccess = gridInputs?.hasUsageAccess ?: true,
+        gridSlots = slots,
+        categoriesById = categoriesById
+    )
 }
 
 /** Демо-сітка доби для прев'ю: ніч (до пробудження), трохи Online й активностей, далі ще не настало. */

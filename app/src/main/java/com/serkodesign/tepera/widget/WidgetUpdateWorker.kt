@@ -18,6 +18,7 @@ private const val UNIQUE_WORK_NAME = "widget_update"
 class WidgetUpdateWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        WidgetLiveData.forceRefresh()
         TeperaWidget().updateAll(applicationContext)
         TeperaWidget4x2().updateAll(applicationContext)
         return Result.success()

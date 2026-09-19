@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.glance.appwidget.updateAll
 import com.serkodesign.tepera.data.TimerCheckWorker
+import com.serkodesign.tepera.widget.TeperaWidget
+import com.serkodesign.tepera.widget.TeperaWidget4x2
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.json.JSONObject
@@ -54,5 +57,15 @@ class ActiveTimerStore(private val context: Context) {
         // більше не потрібно виконувати.
         TimerCheckWorker.cancel(context, categoryId)
         return startTime
+    }
+
+    /**
+     * Просить обидва віджети (4x1 і 4x2) перемалюватись/створити сесію — викликається наприкінці
+     * [com.serkodesign.tepera.data.toggleCategoryTimer], тож охоплює і Home, і кнопки віджета, і "Ні"
+     * у сповіщенні. Сам стан живих сесій оновлюється потоками (WidgetLiveData) без цього виклику.
+     */
+    suspend fun refreshWidgets() {
+        TeperaWidget().updateAll(context)
+        TeperaWidget4x2().updateAll(context)
     }
 }
