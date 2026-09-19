@@ -87,6 +87,7 @@ import com.serkodesign.tepera.ui.gates.GatePauseScreen
 import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.PermissionsBackground
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
@@ -210,13 +211,17 @@ fun TeperaNavHost(
     // Samsung S23). Умовний, не глобальний: Налаштування/Категорії/Додати активність — досі
     // дефолтна Material 3 тема, для них Figma-дизайну ще нема.
     val useGradientBackground = currentRoute in Routes.GRADIENT_ROUTES
+    // Екран дозволів — темний і сягає під статус-бар: його фон малюється тут, на зовнішньому Box, а не
+    // всередині екрана (той отримує відступ під статус-бар від Scaffold нижче).
+    val isPermissionsScreen = currentRoute == Routes.ONBOARDING
     Box(
         modifier = if (useGradientBackground) {
             Modifier.teperaGradientBackground()
         } else {
-            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+            Modifier.fillMaxSize().background(if (isPermissionsScreen) Color(0xFF12171F) else MaterialTheme.colorScheme.background)
         }
     ) {
+        if (isPermissionsScreen) PermissionsBackground()
         Scaffold(
             containerColor = Color.Transparent,
             bottomBar = {
@@ -382,8 +387,8 @@ fun TeperaNavHost(
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
                     settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() },
-                    onLearnMore = { navController.navigate(Routes.KNOWLEDGE_BASE) }
+                    balanceRepository = balanceRepository,
+                    onDone = { navController.popBackStack() }
                 )
             }
             composable(Routes.VALUES_ONBOARDING) {
