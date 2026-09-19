@@ -93,7 +93,8 @@ private fun heatBucketColor(minutes: Int): Color = when {
 
 @Composable
 private fun HeatGridLegend() {
-    // Шість елементів у рядок: без рівних ваг і без переносу підписів (softWrap = false), інакше
+    // П'ять елементів у рядок (пункт "Без даних" прибрано за запитом користувача — стан "немає даних"
+    // і так пояснює текст картки): без рівних ваг і без переносу підписів (softWrap = false), інакше
     // "15-30"/"30-45"/"45-60" ламались на два рядки; вільне місце розподіляє SpaceBetween.
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         listOf(
@@ -112,21 +113,6 @@ private fun HeatGridLegend() {
                 )
                 Text(label, style = MaterialTheme.typography.labelSmall, softWrap = false)
             }
-        }
-        LegendItem {
-            val swatchShape = RoundedCornerShape(2.dp)
-            Box(
-                Modifier
-                    .size(10.dp)
-                    .clip(swatchShape)
-                    .background(TeperaPalette.heatmapNoDataFill)
-                    .border(1.dp, TeperaPalette.heatmapNoDataBorder, swatchShape)
-            )
-            Text(
-                stringResource(R.string.pattern_heat_legend_no_data),
-                style = MaterialTheme.typography.labelSmall,
-                softWrap = false
-            )
         }
     }
 }
