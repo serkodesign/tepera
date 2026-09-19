@@ -11,6 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
+/** Найраніша година, з якої шукається початок дня (розблокування раніше — нічні перевірки телефону). */
+private const val DAY_START_EARLIEST_HOUR = 5
+
 /**
  * FR-3.1–3.12 (SRS v2.5): доступ до статистики використання (UsageStatsManager) + Grace Period
  * Buffer, тепер відлічений від точки старту дня (перше суттєве розблокування), а не від півночі.
@@ -178,6 +181,10 @@ class BalanceRepository(
      * [referenceMidnightMillis]/[searchEndMillis] дефолтять на "сьогодні" (поведінка не змінилась
      * для наявних викликів); FR-D.6 (SRS v2.6, "день з телефоном") передає межі минулої доби, щоб
      * тим самим алгоритмом знайти точку пробудження вчора.
+     *
+     * **Найраніший початок дня — 05:00 (за прямим запитом користувача):** розблокування до цього
+     * часу (напр. о 00:14) НЕ вважається початком дня, пошук стартує з [DAY_START_EARLIEST_HOUR].
+     * Це діє поверх вікна сну (T-12).
      */
     suspend fun calculateDayStartMillis(
         sleepWindows: List<SleepWindowEntity>,
@@ -188,7 +195,11 @@ class BalanceRepository(
         val midnight = referenceMidnightMillis
         val now = searchEndMillis
         try {
-            val events = usm.queryEvents(midnight, now)
+            // Розблокування до 05:00 (нічні перевірки телефону) не можуть бути початком дня — пошук
+            // стартує з 05:00 (за прямим запитом користувача). До 05:00 день ще не почався.
+            val searchFrom = midnight + DAY_START_EARLIEST_HOUR * 3_600_000L
+            if (searchFrom >= now) return@withContext now
+            val events = usm.queryEvents(searchFrom, now)
             val event = UsageEvents.Event()
             var pendingStart: Long? = null
             while (events.hasNextEvent()) {
