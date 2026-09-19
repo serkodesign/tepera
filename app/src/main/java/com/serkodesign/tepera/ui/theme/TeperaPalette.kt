@@ -76,6 +76,7 @@ object TeperaPalette {
     // Кнопки дизайн-системи (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 190:639):
     // Surface/surface-brand + Text/text-brand (#006944) і Surface/surface-brand-dark + Text/
     // text-brand-dark (#003926). Свідомо ІНШІ відтінки, ніж brandAccent (#005E3E) вище.
+    val surfaceBrandLight = Color(0xFFDCF6ED) // Figma Surface/surface-brand-light — чіпи записів Щоденника
     val buttonBrand = Color(0xFF006944)
     val buttonBrandDark = Color(0xFF003926)
 
@@ -146,7 +147,7 @@ fun Modifier.teperaGradientBackground(): Modifier = this
  * Наближення гауссово розмитого диска: повна непрозорість до `radius - σ`, половина на самому
  * краї диска, нуль на `radius + 2σ` (за цією межею гаусс уже майже нульовий).
  */
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBlurredBlob(
+internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBlurredBlob(
     center: Offset,
     radius: Float,
     sigma: Float,

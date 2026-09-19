@@ -56,6 +56,11 @@
     <string name="onboarding_screen_title">Your day\'s structure</string>
     <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted offline, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings, so it can show a real number next to your estimate. Offline logging stays fully functional without it.</string>
     <string name="onboarding_skip">Skip</string>
+    <string name="perm_title">Before we begin</string>
+    <string name="perm_body">We do not collect any data and do not send anything to servers. All processing happens only on your phone</string>
+    <string name="perm_usage_label">Usage access</string>
+    <string name="perm_notifications_label">Notifications</string>
+    <string name="perm_continue">Continue</string>
 
     <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), shown on both branches of "access granted? yes/no". -->
@@ -290,7 +295,7 @@
     <string name="stats_screen_title">Stats</string>
     <string name="stats_period_day">Day</string>
     <string name="stats_period_week">Week</string>
-    <string name="stats_category_breakdown_title">Offline time by category</string>
+    <string name="stats_category_breakdown_title">Time by category</string>
     <string name="stats_weekly_trend_title">Online-time trend</string>
     <string name="stats_no_data">No data for this period</string>
 
@@ -299,6 +304,9 @@
 
     <!-- Activity history on Stats (direct user request, not in SRS) -->
     <string name="stats_history_title">History</string>
+    <string name="diary_unlock_today_label">Unlocks today</string>
+    <string name="diary_unlock_yesterday_label">Unlocks yesterday</string>
+    <string name="diary_last_phone_use_yesterday_label">Last picked up phone yesterday</string>
     <string name="stats_history_today">Today</string>
     <string name="stats_history_yesterday">Yesterday</string>
     <string name="stats_history_edit_action">Edit entry</string>

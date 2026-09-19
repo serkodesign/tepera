@@ -63,6 +63,11 @@
     <string name="onboarding_screen_title">Структура твого дня</string>
     <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього офлайн-логування лишається повністю робочим.</string>
     <string name="onboarding_skip">Пропустити</string>
+    <string name="perm_title">Перед тим як почати</string>
+    <string name="perm_body">Ми не збираємо ніякі дані і не відправляємо на сервери. Вся обробка виключно на смартфоні</string>
+    <string name="perm_usage_label">Доступ до статистики</string>
+    <string name="perm_notifications_label">Сповіщення</string>
+    <string name="perm_continue">Продовжити</string>
 
     <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), показується обома гілками "доступ надано? так/ні". -->
@@ -303,7 +308,7 @@
     <string name="stats_screen_title">Статистика</string>
     <string name="stats_period_day">День</string>
     <string name="stats_period_week">Тиждень</string>
-    <string name="stats_category_breakdown_title">Розподіл офлайн-часу по категоріях</string>
+    <string name="stats_category_breakdown_title">Розподіл часу по категоріях</string>
     <string name="stats_weekly_trend_title">Тренд Online-часу</string>
     <string name="stats_no_data">Немає даних за цей період</string>
 
@@ -312,6 +317,9 @@
 
     <!-- Історія активностей на Stats (за прямим запитом користувача, не в SRS) -->
     <string name="stats_history_title">Історія</string>
+    <string name="diary_unlock_today_label">Розблокувань сьогодні</string>
+    <string name="diary_unlock_yesterday_label">Розблокувань учора</string>
+    <string name="diary_last_phone_use_yesterday_label">Востаннє брав телефон учора</string>
     <string name="stats_history_today">Сьогодні</string>
     <string name="stats_history_yesterday">Вчора</string>
     <string name="stats_history_edit_action">Редагувати запис</string>

@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
@@ -337,7 +338,8 @@ fun TeperaButton(
     modifier: Modifier = Modifier,
     size: TeperaButtonSize = TeperaButtonSize.Medium,
     type: TeperaButtonType = TeperaButtonType.Primary,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    contentColorOverride: Color? = null // для темних екранів (напр. онбординг дозволів), де тертиарний #003926 не читається
 ) {
     val big = size == TeperaButtonSize.Big
     val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else 24.dp)
@@ -386,7 +388,7 @@ fun TeperaButton(
     ) {
         Text(
             text = text,
-            color = contentColor,
+            color = contentColorOverride ?: contentColor,
             fontSize = size.textSize,
             fontWeight = size.fontWeight,
             maxLines = 1,
@@ -422,5 +424,32 @@ fun TeperaIconButton(
         contentAlignment = Alignment.Center
     ) {
         Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor, modifier = Modifier.size(24.dp))
+    }
+}
+
+/**
+ * Заголовок екрана верхнього рівня (Щоденник, Статистика) — Figma "App concept", node 208:1339:
+ * Golos Text Medium 27sp, line-height 1.1, letter-spacing 0.027, #003926; контейнер висотою 60,
+ * padding зліва 24 / справа 16, під статус-баром.
+ */
+@Composable
+fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .statusBarsPadding()
+            .fillMaxWidth()
+            .height(60.dp)
+            .padding(start = 24.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            color = TeperaPalette.buttonBrandDark,
+            fontFamily = TeperaPalette.headlineFont,
+            fontWeight = FontWeight.Medium,
+            fontSize = 27.sp,
+            lineHeight = 29.7.sp,
+            letterSpacing = 0.027.sp
+        )
     }
 }
