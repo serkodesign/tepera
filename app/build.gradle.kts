@@ -22,6 +22,14 @@ if (hasSigningConfig) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// RevenueCat public SDK key — з local.properties (у .gitignore), НЕ хардкодиться. Debug бере Test Store ключ
+// (`test_...`), release — окремий Google Play ключ (`goog_...`): Test Store ключ у release-збірці SDK
+// навмисно відхиляє (крашить), тому release без власного ключа лишає SDK вимкненим (порожній рядок).
+val localProperties = Properties()
+rootProject.file("local.properties").takeIf { it.exists() }?.let { file ->
+    FileInputStream(file).use { localProperties.load(it) }
+}
+
 android {
     namespace = "com.serkodesign.tepera"
     // compileSdk 37, окремо від targetSdk: новіший Compose BOM вимагає компіляції проти API 37,
@@ -49,7 +57,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            resValue("string", "revenuecat_api_key", localProperties.getProperty("revenuecat.apiKey.debug", ""))
+        }
         release {
+            resValue("string", "revenuecat_api_key", localProperties.getProperty("revenuecat.apiKey.release", ""))
             if (hasSigningConfig) {
                 signingConfig = signingConfigs.getByName("release")
             }
@@ -114,6 +126,11 @@ dependencies {
     // (CLAUDE.md: жодної usage-аналітики в MVP, тільки crash-репорти).
     implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
     implementation("com.google.firebase:firebase-crashlytics")
+    // RevenueCat (KMP-артефакти в Android-модулі, без KMP-реструктуризації): підписки/Pro (entitlement
+    // `tepera_pro`), Paywall і Customer Center (purchases-kmp-ui) та добровільна підтримка "Пригостити
+    // кавою" (offering `support`). Play Billing підтягується самим SDK. Див. docs/revenuecat-setup.md.
+    implementation("com.revenuecat.purchases:purchases-kmp-core:3.9.0")
+    implementation("com.revenuecat.purchases:purchases-kmp-ui:3.9.0")
 
     // T-13 (tepera-dev-spec.md): перший юніт-тест у проєкті — "рушій карток" навмисно спроєктований
     // як чиста Kotlin-логіка без Android-залежностей (CardEngine + CardHistorySource), тому досить

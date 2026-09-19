@@ -102,6 +102,19 @@ class TeperaApp : Application() {
 
     val gateEventRepository: GateEventRepository by lazy { GateEventRepository(database.gateEventDao()) }
 
+    // RevenueCat: SDK налаштовується один раз у onCreate() (див. RevenueCatConfig; без ключа лишається
+    // вимкненим). Pro (entitlement tepera_pro) і добровільна підтримка ("Пригостити кавою") — окремі
+    // репозиторії над одним SDK; підтримка ходить у RevenueCat лише з відкритого екрана.
+    private var revenueCatConfigured = false
+
+    val proRepository: com.serkodesign.tepera.data.billing.ProRepository by lazy {
+        com.serkodesign.tepera.data.billing.RevenueCatProRepository(revenueCatConfigured)
+    }
+
+    val supportRepository: com.serkodesign.tepera.data.billing.SupportRepository by lazy {
+        com.serkodesign.tepera.data.billing.RevenueCatSupportRepository(revenueCatConfigured)
+    }
+
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
 
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
@@ -116,6 +129,9 @@ class TeperaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        revenueCatConfigured = com.serkodesign.tepera.data.billing.RevenueCatConfig.configure(this)
+        // Ініціалізуємо Pro одразу: делегат onCustomerInfoUpdated має бути підключений до першої покупки.
+        if (revenueCatConfigured && com.serkodesign.tepera.data.billing.RevenueCatConfig.PRO_ENTRY_ENABLED) proRepository
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
         // у CategoryDao), тож виклик щозапуску безпечний.
         applicationScope.launch {
