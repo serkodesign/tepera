@@ -274,8 +274,7 @@ Firebase Crashlytics (лише crash-репортинг).
   й що треба відобразити в Data Safety form — не лише `app/src/main/AndroidManifest.xml`, який
   сам по собі декларує тільки `PACKAGE_USAGE_STATS`/`POST_NOTIFICATIONS`. Деталі й чернетку
   відповідей для форми — `docs/play-console-declarations.md`.
-  **`FeedbackForm.UA_FORM_URL`/`EN_FORM_URL` — досі плейсхолдери** (`forms.gle/TODO-...`):
-  реальні Google Forms стейкхолдер ще має створити й підставити URL перед релізом.
+  **`FeedbackForm.UA_FORM_URL`/`EN_FORM_URL` — реальна форма `forms.gle/gyUGVProSwdgFpcMA` (UA) і `forms.gle/wwdRU1M6ejiFEkZN9` (EN) — обидві реальні, оновлено 21.09.2026; раніше тут стояли плейсхолдери:**
 - **`WeeklyDigestCard` ("Цей тиждень") — новий тип картки в `ContextCardStack`, не в SRS
   буквально:** з'явився після дослідження Figma-макета (node 2062:2862, файл Everyday_Designs) —
   секція показувала 4 варіанти верхньої картки Home ("My day", "This week", "Weekly time"
