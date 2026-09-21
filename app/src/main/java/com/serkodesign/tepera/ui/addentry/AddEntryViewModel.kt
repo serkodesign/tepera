@@ -19,35 +19,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class DurationMode { PRESETS, MANUAL, INTERVAL }
-
 private const val MAX_NOTE_LENGTH = 250
+private const val DEFAULT_INTERVAL_MINUTES = 30
+private const val MINUTES_IN_DAY = 24 * 60
 
 /**
- * FR-1.1/1.2: durationMinutes резолвиться з активного режиму вводу — пресети (стек +15/+30/
- * +60/+120), ручний ввід або інтервал (кінець - початок).
+ * Час запису вводиться ЛИШЕ інтервалом (початок → кінець): пресети й ручні хвилини прибрані.
+ * [endMinuteOfDay] може бути ≥ 1440 лише для вже збереженого запису, що перетинає північ
+ * (редагування) — тоді UI показує "наступного дня".
+ *
+ * За замовчуванням кінець = зараз, початок = на пів години раніше (але не раніше 00:00): найчастіше
+ * людина заносить щойно завершену активність, тож форма одразу валідна.
  */
 data class AddEntryUiState(
     val selectedCategoryId: String? = null, // FR-4.1: може прийти передвибраним з кнопки віджета
-    val mode: DurationMode = DurationMode.PRESETS,
-    val presetMinutes: Int = 0,
-    val manualMinutesText: String = "",
     val dateMillis: Long = startOfTodayMillis(),
-    val startMinuteOfDay: Int = currentMinuteOfDay(),
+    val startMinuteOfDay: Int = defaultStartMinute(),
     val endMinuteOfDay: Int = currentMinuteOfDay(),
     val note: String = "",
     val categoryRequiredError: Boolean = false,
-    val intervalInvalidError: Boolean = false,
     val overlapEntries: List<ActivityEntryEntity>? = null,
     val saved: Boolean = false
 ) {
-    val durationMinutes: Int
-        get() = when (mode) {
-            DurationMode.PRESETS -> presetMinutes
-            DurationMode.MANUAL -> manualMinutesText.toIntOrNull() ?: 0
-            DurationMode.INTERVAL -> endMinuteOfDay - startMinuteOfDay
-        }
+    val durationMinutes: Int get() = endMinuteOfDay - startMinuteOfDay
+
+    /** Кінець мусить бути пізніше початку — перевіряється наживо, не лише при збереженні. */
+    val intervalValid: Boolean get() = durationMinutes > 0
 }
+
+private fun defaultStartMinute(): Int = (currentMinuteOfDay() - DEFAULT_INTERVAL_MINUTES).coerceAtLeast(0)
 
 class AddEntryViewModel(
     categoryRepository: CategoryRepository,
@@ -66,16 +66,13 @@ class AddEntryViewModel(
     val isEditing: Boolean = editingEntryId != null
 
     init {
-        // Попереднє заповнення форми даними наявного запису — режим тривалості завжди MANUAL
-        // (найпростіший спосіб показати точну збережену тривалість, не вгадуючи, яким режимом
-        // її колись ввели: пресетами чи інтервалом).
+        // Попереднє заповнення форми даними наявного запису: тривалість показується інтервалом
+        // (початок → початок + тривалість), який і є єдиним способом вводу часу.
         if (editingEntryId != null) {
             viewModelScope.launch {
                 activityRepository.getById(editingEntryId)?.let { entry ->
                     _uiState.value = _uiState.value.copy(
                         selectedCategoryId = entry.categoryId,
-                        mode = DurationMode.MANUAL,
-                        manualMinutesText = entry.durationMinutes.toString(),
                         dateMillis = localStartOfDay(entry.startTime),
                         startMinuteOfDay = minuteOfDay(entry.startTime),
                         endMinuteOfDay = minuteOfDay(entry.startTime) + entry.durationMinutes,
@@ -99,33 +96,27 @@ class AddEntryViewModel(
         _uiState.value = _uiState.value.copy(selectedCategoryId = categoryId, categoryRequiredError = false)
     }
 
-    fun selectMode(mode: DurationMode) {
-        _uiState.value = _uiState.value.copy(mode = mode, intervalInvalidError = false)
-    }
-
-    fun addPresetMinutes(minutes: Int) {
-        _uiState.value = _uiState.value.copy(presetMinutes = _uiState.value.presetMinutes + minutes)
-    }
-
-    fun resetPresetMinutes() {
-        _uiState.value = _uiState.value.copy(presetMinutes = 0)
-    }
-
-    fun setManualMinutes(text: String) {
-        val digitsOnly = text.filter { it.isDigit() }.take(4)
-        _uiState.value = _uiState.value.copy(manualMinutesText = digitsOnly)
-    }
-
     fun setDate(dateMillis: Long) {
         _uiState.value = _uiState.value.copy(dateMillis = dateMillis)
     }
 
+    /**
+     * Зсув початку тягне за собою кінець із тією самою тривалістю (як у календарях): людина зазвичай
+     * спершу ставить початок, а тривалість уже обдумана. Якщо тривалість була некоректна або новий
+     * кінець вийшов би за межі доби — кінець не чіпаємо, і форма покаже помилку інтервалу.
+     */
     fun setStartMinuteOfDay(minute: Int) {
-        _uiState.value = _uiState.value.copy(startMinuteOfDay = minute, intervalInvalidError = false)
+        val state = _uiState.value
+        val shiftedEnd = minute + state.durationMinutes
+        val keepDuration = state.intervalValid && shiftedEnd <= MINUTES_IN_DAY - 1
+        _uiState.value = state.copy(
+            startMinuteOfDay = minute,
+            endMinuteOfDay = if (keepDuration) shiftedEnd else state.endMinuteOfDay
+        )
     }
 
     fun setEndMinuteOfDay(minute: Int) {
-        _uiState.value = _uiState.value.copy(endMinuteOfDay = minute, intervalInvalidError = false)
+        _uiState.value = _uiState.value.copy(endMinuteOfDay = minute)
     }
 
     fun setNote(text: String) {
@@ -144,10 +135,7 @@ class AddEntryViewModel(
             _uiState.value = state.copy(categoryRequiredError = true)
             return
         }
-        if (state.mode == DurationMode.INTERVAL && state.durationMinutes <= 0) {
-            _uiState.value = state.copy(intervalInvalidError = true)
-            return
-        }
+        if (!state.intervalValid) return
 
         val duration = state.durationMinutes.coerceAtLeast(1)
         val startTime = state.dateMillis + state.startMinuteOfDay * 60_000L
