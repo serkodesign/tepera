@@ -295,6 +295,14 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
                 EntryChip(durationText)
                 EntryChip(rangeText)
             }
+            item.seriesRange?.let { range ->
+                Text(
+                    text = seriesRangeText(range),
+                    fontSize = 12.sp,
+                    lineHeight = 15.6.sp,
+                    color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+                )
+            }
             if (!item.entry.note.isNullOrBlank()) {
                 Text(
                     text = item.entry.note,
@@ -355,4 +363,18 @@ internal fun EntryChip(
             maxLines = 1
         )
     }
+}
+
+/**
+ * Підпис частини багатодобової активності: "Одна активність: 19 вер 19:00 — 20 вер 12:00". Дні розбиті
+ * лише для рахунку (див. `splitAtDayRollover`), а людині це одна активність — показуємо її цілком.
+ */
+@Composable
+internal fun seriesRangeText(range: Pair<Long, Long>): String {
+    val format = remember { SimpleDateFormat("d MMM HH:mm", Locale.getDefault()) }
+    return stringResource(
+        R.string.entry_series_caption,
+        format.format(Date(range.first)),
+        format.format(Date(range.second))
+    )
 }

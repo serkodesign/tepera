@@ -8,6 +8,7 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.util.localStartOfDay
+import com.serkodesign.tepera.util.seriesRanges
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +28,9 @@ data class CategoryHistoryDayGroup(val dayStartMillis: Long, val entries: List<A
 
 data class CategoryHistoryUiState(
     val category: CategoryEntity? = null,
-    val groups: List<CategoryHistoryDayGroup> = emptyList()
+    val groups: List<CategoryHistoryDayGroup> = emptyList(),
+    /** Початок і кінець цілої багатодобової активності за її `seriesId` (для підпису в рядку). */
+    val seriesRanges: Map<String, Pair<Long, Long>> = emptyMap()
 )
 
 class CategoryHistoryViewModel(
@@ -52,7 +55,7 @@ class CategoryHistoryViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val uiState: StateFlow<CategoryHistoryUiState> = combine(categoryState, groups) { category, dayGroups ->
-        CategoryHistoryUiState(category, dayGroups)
+        CategoryHistoryUiState(category, dayGroups, seriesRanges(dayGroups.flatMap { it.entries }))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CategoryHistoryUiState())
 
     init {

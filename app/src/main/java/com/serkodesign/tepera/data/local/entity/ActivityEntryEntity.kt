@@ -34,5 +34,7 @@ data class ActivityEntryEntity(
     val durationMinutes: Int,
     val note: String? = null,
     val source: EntrySource = EntrySource.MANUAL,
+    /** Спільний id частин однієї багатодобової активності (див. `splitAtDayRollover`); null — звичайний запис. */
+    val seriesId: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )

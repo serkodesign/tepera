@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import kotlinx.coroutines.flow.Flow
@@ -67,6 +68,42 @@ interface ActivityEntryDao {
 
     @Delete
     suspend fun delete(entry: ActivityEntryEntity) // видалення ЗАПИСУ дозволене (FR-1.6), на відміну від категорії
+
+    /** Усі частини багатодобової активності (форма редагування, видалення). */
+    @Query("SELECT * FROM activity_entries WHERE seriesId = :seriesId ORDER BY startTime")
+    suspend fun getBySeriesId(seriesId: String): List<ActivityEntryEntity>
+
+    @Query("DELETE FROM activity_entries WHERE seriesId = :seriesId")
+    suspend fun deleteBySeriesId(seriesId: String)
+
+    @Query("DELETE FROM activity_entries WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
+
+    /**
+     * Те саме, що [findOverlappingInSameCategory], але виключає ВСІ записи активності, що
+     * редагується (у багатодобової їх кілька) — інакше вона «перекривалась» би сама з собою.
+     */
+    @Query(
+        """
+        SELECT * FROM activity_entries
+        WHERE categoryId = :categoryId
+          AND id NOT IN (:excludeIds)
+          AND (startTime < :endTime AND (startTime + durationMinutes * 60000) > :startTime)
+        """
+    )
+    suspend fun findOverlappingExcluding(
+        categoryId: String,
+        startTime: Long,
+        endTime: Long,
+        excludeIds: List<String>
+    ): List<ActivityEntryEntity>
+
+    /** Заміна активності одним кроком: старі частини видаляються, нові вставляються (без проміжного стану). */
+    @Transaction
+    suspend fun replaceAll(deleteIds: List<String>, entries: List<ActivityEntryEntity>) {
+        if (deleteIds.isNotEmpty()) deleteByIds(deleteIds)
+        insertAll(entries)
+    }
 
     // FR-6.2: очищення перед імпортом JSON-бекапу (повна заміна, не злиття).
     @Query("DELETE FROM activity_entries")

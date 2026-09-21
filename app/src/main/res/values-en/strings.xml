@@ -279,7 +279,6 @@
     <string name="add_entry_start_time_label">Start</string>
     <string name="add_entry_end_time_label">End</string>
     <string name="add_entry_time_label">Time</string>
-    <string name="add_entry_next_day">next day</string>
     <string name="add_entry_time_mode_keyboard">Enter time with the keyboard</string>
     <string name="add_entry_time_mode_dial">Pick time on the clock</string>
     <string name="time_field_format">%1$s: %2$s</string>
@@ -288,6 +287,9 @@
     <string name="add_entry_save">Save</string>
     <string name="add_entry_select_category_first">Choose a category first</string>
     <string name="add_entry_interval_invalid">End time must be after start time</string>
+    <string name="add_entry_interval_too_long">One entry can be at most %1$d days long</string>
+    <string name="add_entry_end_next_day_action">Ended the next day</string>
+    <string name="entry_series_caption">One activity: %1$s — %2$s</string>
     <string name="add_entry_overlap_title">Overlapping time</string>
     <string name="add_entry_overlap_body">There is already an overlapping entry in this category. Save anyway?</string>
     <string name="add_entry_overlap_confirm">Save anyway</string>

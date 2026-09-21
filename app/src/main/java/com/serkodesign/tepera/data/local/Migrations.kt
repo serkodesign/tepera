@@ -165,3 +165,14 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         db.execSQL("UPDATE app_gates SET shortcutId = 'gate_' || packageName WHERE shortcutId = ''")
     }
 }
+
+/**
+ * Версія 10: активність, що триває через кілька діб, зберігається кількома записами (по одному на
+ * логічну добу, див. `splitAtDayRollover`), пов'язаними спільним `seriesId`. NULL — звичайний
+ * запис, старі рядки лишаються як були.
+ */
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE activity_entries ADD COLUMN seriesId TEXT")
+    }
+}

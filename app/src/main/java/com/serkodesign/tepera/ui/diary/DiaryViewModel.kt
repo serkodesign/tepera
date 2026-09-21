@@ -13,6 +13,7 @@ import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.util.localStartOfDay
 import com.serkodesign.tepera.util.startOfTodayMillis
+import com.serkodesign.tepera.util.seriesRanges
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,12 @@ const val DIARY_HISTORY_DAYS = 14
  * власний екран "Щоденник" на навбарі (node 2146:320, Figma). Спершу показував лише "сьогодні" і
  * "вчора", тепер — [DIARY_HISTORY_DAYS] діб. Тижневі підсумки розблокувань/медіани лишаються на
  * Stats (вони показувались НЕ в HistoryCard, а окремими рядками над графіками при period == WEEK). */
-data class HistoryEntryItem(val entry: ActivityEntryEntity, val category: CategoryEntity)
+data class HistoryEntryItem(
+    val entry: ActivityEntryEntity,
+    val category: CategoryEntity,
+    /** Початок і кінець ЦІЛОЇ активності, якщо запис — частина багатодобової (див. `splitAtDayRollover`). */
+    val seriesRange: Pair<Long, Long>? = null
+)
 
 /** [daysAgo]: 0 — сьогодні, 1 — вчора, далі — старші доби. */
 data class HistoryDayGroup(val dayStartMillis: Long, val daysAgo: Int, val items: List<HistoryEntryItem>)
@@ -64,11 +70,12 @@ class DiaryViewModel(
         categoryRepository.observeAllCategories()
     ) { entries, categories ->
         val categoryById = categories.associateBy { it.id }
+        val seriesRangeById = seriesRanges(entries)
         val todayStart = startOfTodayMillis()
         entries.groupBy { localStartOfDay(it.startTime) }
             .toSortedMap(compareByDescending { it })
             .mapNotNull { (dayStart, dayEntries) ->
-                val items = dayEntries.mapNotNull { e -> categoryById[e.categoryId]?.let { HistoryEntryItem(e, it) } }
+                val items = dayEntries.mapNotNull { e -> categoryById[e.categoryId]?.let { HistoryEntryItem(e, it, e.seriesId?.let(seriesRangeById::get)) } }
                 if (items.isEmpty()) return@mapNotNull null
                 // round, не floor: перехід на літній/зимовий час робить добу 23 або 25 год.
                 val daysAgo = Math.round((todayStart - dayStart).toDouble() / MS_PER_DAY).toInt()

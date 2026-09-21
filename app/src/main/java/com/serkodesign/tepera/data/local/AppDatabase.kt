@@ -47,6 +47,8 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * T-3 (tepera-dev-spec.md): додано UserEstimateEntity (принцип пасивного сорому — оцінка
  * користувача поруч із реальним числом, замість пасивного показу) — версія 4, `MIGRATION_3_4`
  * (`Migrations.kt`).
+ * Активність через кілька діб — кілька записів зі спільним `seriesId` (`activity_entries.seriesId`) — версія 10,
+ * `MIGRATION_9_10` (`Migrations.kt`).
  * T-4 (tepera-dev-spec.md): додано AppGateEntity (FR-G частина 1 — застосунки з паузою перед
  * запуском) — версія 5, `MIGRATION_4_5` (`Migrations.kt`).
  * T-5 (tepera-dev-spec.md): додано `lastProceedAtMillis` до AppGateEntity (FR-G частина 2 —
@@ -61,6 +63,8 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * інакше повторне створення воріт для того самого застосунку мовчки "успішно" перевикористовувало
  * старий вимкнений ярлик без показу системного діалогу розміщення — версія 9, `MIGRATION_8_9`
  * (`Migrations.kt`).
+ * Активність через кілька діб — кілька записів зі спільним `seriesId` (`activity_entries.seriesId`,
+ * див. `splitAtDayRollover`) — версія 10, `MIGRATION_9_10` (`Migrations.kt`).
  */
 @Database(
     entities = [
@@ -74,7 +78,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         CardShowEntity::class,
         GateEventEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

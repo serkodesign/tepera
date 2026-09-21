@@ -115,6 +115,7 @@ class BackupRepository(
         put("durationMinutes", e.durationMinutes)
         put("note", e.note ?: JSONObject.NULL)
         put("source", e.source.name)
+        put("seriesId", e.seriesId ?: JSONObject.NULL)
         put("createdAt", e.createdAt)
     }
 
@@ -126,6 +127,7 @@ class BackupRepository(
         note = if (o.isNull("note")) null else o.getString("note"),
         // Форвард-сумісність: невідоме джерело з майбутнього формату не має ламати імпорт.
         source = runCatching { EntrySource.valueOf(o.getString("source")) }.getOrDefault(EntrySource.MANUAL),
+        seriesId = if (o.isNull("seriesId")) null else o.optString("seriesId"),
         createdAt = o.getLong("createdAt")
     )
 

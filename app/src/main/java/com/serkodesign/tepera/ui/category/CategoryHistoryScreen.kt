@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.ui.diary.seriesRangeText
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -94,6 +95,7 @@ fun CategoryHistoryScreen(
                                 CategoryHistoryEntryRow(
                                     entry = entry,
                                     category = category,
+                                    seriesRange = entry.seriesId?.let(state.seriesRanges::get),
                                     onEdit = { onEditEntry(entry.id) }
                                 )
                             }
@@ -112,6 +114,7 @@ private fun formatDayLabel(dayStartMillis: Long): String =
 private fun CategoryHistoryEntryRow(
     entry: ActivityEntryEntity,
     category: CategoryEntity,
+    seriesRange: Pair<Long, Long>?,
     onEdit: () -> Unit
 ) {
     val accentColor = categoryColor(category.colorHex)
@@ -150,6 +153,13 @@ private fun CategoryHistoryEntryRow(
                 ),
                 style = MaterialTheme.typography.bodyLarge
             )
+            seriesRange?.let { range ->
+                Text(
+                    text = seriesRangeText(range),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             if (!entry.note.isNullOrBlank()) {
                 Text(
                     text = entry.note,
