@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -30,10 +32,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -96,7 +96,7 @@ fun GatePauseScreen(
 
     // Розкладка за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, вузли 2:3553 (Inhale) і 2:3521
     // (Exhale), кадр 375x784, 1px = 1dp: поля 20, "Instagram" по центру 18sp, бейдж 215dp,
-    // підпис дихання 27sp, рядок спроб 18sp, кнопки Big (TeperaButton) з проміжком 8.
+    // підпис дихання 27sp, кнопки Big (TeperaButton) з проміжком 8.
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 120.dp, bottom = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -125,14 +125,7 @@ fun GatePauseScreen(
             )
         }
 
-        Text(
-            text = pluralStringResource(R.plurals.gate_pause_attempts_text, state.attemptsToday, state.attemptsToday),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = TeperaPalette.buttonBrandDark,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 40.dp)
-        )
+        Spacer(Modifier.height(40.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),

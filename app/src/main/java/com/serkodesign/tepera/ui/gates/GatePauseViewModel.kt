@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 data class GatePauseUiState(
     val loading: Boolean = true,
     val appLabel: String = "",
-    val attemptsToday: Int = 1,
     // null = очікування завершилось (канонічний "нема чого рахувати" стан) — цифра ховається
     // (за прямим запитом користувача).
     val remainingSeconds: Int? = null,
@@ -48,9 +47,7 @@ data class GatePauseUiState(
  *    користувача (раніше число саме й було "дихальним циклом", крутилось по колу незалежно від
  *    таймера очікування; тепер навпаки — число рахує ОЧІКУВАННЯ, а дихання крутиться само по
  *    собі, безперервно, з першого кадру екрана).
- * 2. "Ти намагався відкрити цей застосунок N разів" ([attemptsToday],
- *    `GateEventRepository.countAttemptsToday()` + 1 за поточну спробу, що ще не записана).
- * 3. Автозапуск цільового застосунку по завершенню очікування ПРИБРАНО — таймер лише знімає
+ * 2. Автозапуск цільового застосунку по завершенню очікування ПРИБРАНО — таймер лише знімає
  *    [canContinue] у false→true, а сам перехід відбувається виключно по тапу "Продовжити"
  *    ([continueToApp]), кнопка неактивна (і напівпрозора — `GatePauseScreen`), доки очікування
  *    не мине.
@@ -83,11 +80,9 @@ class GatePauseViewModel(
             return
         }
         screenShown = true
-        val attemptsToday = gateEventRepository.countAttemptsToday(packageName) + 1
         _uiState.value = GatePauseUiState(
             loading = false,
             appLabel = resolveLabel(packageName),
-            attemptsToday = attemptsToday,
             remainingSeconds = delaySeconds
         )
 

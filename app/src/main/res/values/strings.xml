@@ -256,12 +256,6 @@
     <string name="gate_pause_exhale">Видих…</string>
     <string name="gate_pause_continue_action">Продовжити</string>
     <string name="gate_pause_exit_action">Вийти</string>
-    <plurals name="gate_pause_attempts_text">
-        <item quantity="one">Ти намагався відкрити цей застосунок %d раз</item>
-        <item quantity="few">Ти намагався відкрити цей застосунок %d рази</item>
-        <item quantity="many">Ти намагався відкрити цей застосунок %d разів</item>
-        <item quantity="other">Ти намагався відкрити цей застосунок %d раза</item>
-    </plurals>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>

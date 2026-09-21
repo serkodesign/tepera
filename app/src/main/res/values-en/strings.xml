@@ -247,10 +247,6 @@
     <string name="gate_pause_exhale">Exhale…</string>
     <string name="gate_pause_continue_action">Continue</string>
     <string name="gate_pause_exit_action">Exit</string>
-    <plurals name="gate_pause_attempts_text">
-        <item quantity="one">You tried to open this app %d time</item>
-        <item quantity="other">You tried to open this app %d times</item>
-    </plurals>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>
