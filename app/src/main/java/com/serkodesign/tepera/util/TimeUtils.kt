@@ -113,9 +113,13 @@ fun nextDayRolloverMillis(nowMillis: Long = System.currentTimeMillis()): Long {
  * показував би прогрес попереднього дня. Перевірка щоразу за 30 с, а не одна затримка: `delay` не
  * рахує час глибокого сну пристрою, тож довгий таймер спрацював би пізно.
  */
-fun logicalDayStartFlow(): Flow<Long> = flow {
+fun logicalDayStartFlow(
+    // Підмінювані годинник і період опитування — лише для тестів; у застосунку діють значення за замовчуванням.
+    nowMillis: () -> Long = System::currentTimeMillis,
+    pollMillis: Long = 30_000
+): Flow<Long> = flow {
     while (true) {
-        emit(startOfLogicalDayMillis())
-        delay(30_000)
+        emit(startOfLogicalDayMillis(nowMillis()))
+        delay(pollMillis)
     }
 }.distinctUntilChanged()
