@@ -95,33 +95,6 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit, onDismiss: () -
     }
 }
 
-/**
- * Біла плашка "підпис значення" — Figma "App concept" node 192:862 ("First unlock 07:15"):
- * padding 12x6, радіус 16, gap 4, Golos Text Medium 14sp, line-height 1.1, letter-spacing 0.014,
- * підпис #006944 (text-brand), значення #003926 (text-brand-dark).
- */
-@Composable
-internal fun HomeLabelValueChip(label: String, value: String, modifier: Modifier = Modifier) {
-    val textStyle = TextStyle(
-        fontFamily = TeperaPalette.headlineFont,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 15.4.sp, // 14sp * 1.1
-        letterSpacing = 0.014.sp
-    )
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardActive)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(label, style = textStyle, color = TeperaPalette.buttonBrand, maxLines = 1)
-        Text(value, style = textStyle, color = TeperaPalette.buttonBrandDark, maxLines = 1)
-    }
-}
-
 /** Кольорова плашка значення (плитки "This week", "First unlock" у Day usage): радіус 4, паддінг 4. */
 @Composable
 internal fun HomeTintChip(

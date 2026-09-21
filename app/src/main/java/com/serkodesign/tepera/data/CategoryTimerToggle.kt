@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.first
  *
  * Перший виклик для категорії починає живий таймер, другий — зупиняє й зберігає запис. Ціла
  * хвилина зараховується лише після того, як вона повністю минула (floor, не round і без
- * примусового мінімуму 1 хв) — тап коротший за хвилину запис не створює взагалі.
+ * примусового мінімуму 1 хв) — тап коротший за хвилину запис не створює, але його секунди (як і "хвіст"
+ * довшого таймера) накопичуються в лічильнику доби [com.serkodesign.tepera.data.local.SubMinuteStore].
  *
  * **Одночасно йде лише один таймер (за прямим запитом користувача, скасовує попередню можливість
  * таймити кілька категорій одразу):** старт нової категорії спершу зупиняє й зберігає таймер, що
@@ -42,7 +43,10 @@ private suspend fun stopAndSave(
     categoryId: String
 ) {
     val startTime = activeTimerStore.stop(categoryId) ?: return
-    val minutes = ((System.currentTimeMillis() - startTime) / 60_000L).toInt()
+    val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000L).toInt()
+    val minutes = elapsedSeconds / 60
+    // Хвіст (і цілий таймер коротший за хвилину) не губиться, а йде в лічильник доби — див. SubMinuteStore.
+    activeTimerStore.subMinuteStore.add(startTime, categoryId, elapsedSeconds % 60)
     if (minutes > 0) {
         // forceOverwrite: зупинка живого таймера — швидка дія без діалогів; overlap-перевірка
         // (FR-1.4) створена для ручного вводу, тут би лише заважала непередбачувано.

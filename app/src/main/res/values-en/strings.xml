@@ -50,6 +50,7 @@
     <string name="my_day_title_format">Your day: %1$s</string>
     <string name="balance_online_label">Online</string>
     <string name="stats_offline_label">Offline</string>
+    <string name="stats_below_five_min">&lt;5 min</string>
     <string name="balance_rest_of_day_label">Offline life</string>
     <string name="activities_title">Activities</string>
     <string name="home_add_category">+ Add</string>
@@ -100,7 +101,7 @@
     <string name="unlock_estimate_range_over_70">Over 70</string>
     <string name="stats_unlock_count_today_format">Unlocks today: %1$d</string>
     <string name="stats_unlock_count_yesterday_format">Unlocks yesterday: %1$d</string>
-    <string name="stats_unlock_count_week_format">Unlocks this week: %1$d</string>
+    <string name="stats_unlock_week_label">Unlocks this week</string>
 
     <!-- T-10 (tepera-dev-spec.md): last-phone-use-time estimate onboarding -->
     <string name="last_phone_use_estimate_question">What time did you last pick up your phone yesterday?</string>
@@ -110,7 +111,7 @@
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">After 01:00</string>
     <string name="stats_last_phone_use_yesterday_format">Last picked up phone yesterday: %1$s</string>
-    <string name="stats_last_phone_use_week_format">Median last-use time this week: %1$s</string>
+    <string name="stats_last_phone_use_week_label">Median last use</string>
 
     <!-- Weekly "guess vs reality" reflection (FR-P.1) -->
     <string name="weekly_reflection_question">How much do you think you were online this week?</string>
@@ -334,7 +335,7 @@
     <!-- Stats (FR-5.2, FR-5.3) -->
     <string name="stats_nav_action">Data</string>
     <string name="stats_screen_title">Stats</string>
-    <string name="stats_period_day">Day</string>
+    <string name="stats_period_day">Yesterday</string>
     <string name="stats_period_week">Week</string>
     <string name="stats_category_breakdown_title">Time by category</string>
     <string name="stats_weekly_trend_title">Online-time trend</string>
@@ -351,6 +352,13 @@
     <string name="diary_last_phone_use_yesterday_label">Last picked up phone yesterday</string>
     <string name="stats_history_today">Today</string>
     <string name="stats_history_yesterday">Yesterday</string>
+    <string name="stats_day_timeline_title">Yesterday</string>
+    <string name="stats_day_legend_pause">Break</string>
+    <string name="stats_day_legend_offline">Offline, not logged</string>
+    <string name="stats_day_pauses_title">Breaks from the phone</string>
+    <string name="stats_day_pauses_count">Breaks: %1$d</string>
+    <string name="stats_day_pauses_longest">Longest: %1$s (%2$s)</string>
+    <string name="stats_day_compare">Online yesterday %1$s · your typical day (median of %2$d days) %3$s</string>
     <string name="stats_history_edit_action">Edit entry</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 

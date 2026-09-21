@@ -26,6 +26,9 @@ private val ACTIVE_TIMERS_KEY = stringPreferencesKey("active_timers_json")
  */
 class ActiveTimerStore(private val context: Context) {
 
+    /** Секунди, що не склали повну хвилину (короткі таймери й "хвости") — див. [SubMinuteStore]. */
+    val subMinuteStore = SubMinuteStore(context)
+
     val activeTimers: Flow<Map<String, Long>> = context.activeTimersDataStore.data.map { prefs ->
         val json = prefs[ACTIVE_TIMERS_KEY] ?: "{}"
         val obj = JSONObject(json)

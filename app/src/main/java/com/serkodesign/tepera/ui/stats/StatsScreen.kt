@@ -75,6 +75,10 @@ import com.serkodesign.tepera.ui.pattern.HourlyHeatGrid
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaChip
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -97,7 +101,9 @@ fun StatsScreen(
     pauseRepository: PauseRepository
 ) {
     val viewModel: StatsViewModel = viewModel(
-        factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository, sleepWindowRepository, unlockRepository, pauseRepository)
+        factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository, sleepWindowRepository, unlockRepository, pauseRepository, settingsStore,
+            (LocalContext.current.applicationContext as com.serkodesign.tepera.TeperaApp).activeTimerStore.subMinuteStore
+        )
     )
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -164,37 +170,57 @@ fun StatsScreen(
             // пасивний показ на головному екрані). null = нема доступу/API < 28 — рядок відсутній,
             // не "0".
             if (state.period == StatsPeriod.WEEK) {
+              @OptIn(ExperimentalLayoutApi::class)
+              FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+              ) {
                 state.unlockStats.weekCount?.let { count ->
-                    Text(
-                        stringResource(R.string.stats_unlock_count_week_format, count),
-                        style = MaterialTheme.typography.bodyMedium
+                    TeperaChip(
+                        label = stringResource(R.string.stats_unlock_week_label),
+                        value = count.toString()
                     )
                 }
                 // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard — тут
                 // звичайним підписаним рядком, бо це самостійний факт серед інших рядків Stats,
                 // не другорядна деталь під двома щойно показаними числами.
                 state.lastPhoneUseStats.weekMedianMillis?.let { millis ->
-                    Text(
-                        stringResource(R.string.stats_last_phone_use_week_format, formatClockTime(millis)),
-                        style = MaterialTheme.typography.bodyMedium
+                    TeperaChip(
+                        label = stringResource(R.string.stats_last_phone_use_week_label),
+                        value = formatClockTime(millis)
                     )
                 }
+              }
+            }
+
+            // "День" = вчора: замість тренду з однією точкою — деталі доби (межі, хронологія, паузи,
+            // порівняння зі своєю типовою добою). Тиждень лишається без змін.
+            if (state.period == StatsPeriod.DAY) {
+                DayDetailsSection(
+                    details = state.dayDetails,
+                    hasUsageAccess = state.hasUsageAccess,
+                    onOpenUsageAccessSettings = {
+                        context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                    }
+                )
             }
 
             CategoryBreakdownCard(
                 items = state.categoryBreakdown,
                 onlineMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.onlineMinutes } else null,
-                totalMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.dayLengthMinutes } else null
+                offlineMinutes = if (state.hasUsageAccess && state.weeklyTrend.isNotEmpty()) state.weeklyTrend.sumOf { it.offlineMinutes } else null
             )
 
-            WeeklyTrendCard(
-                points = state.weeklyTrend,
-                period = state.period,
-                hasUsageAccess = state.hasUsageAccess,
-                onOpenUsageAccessSettings = {
-                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                }
-            )
+            if (state.period == StatsPeriod.WEEK) {
+                WeeklyTrendCard(
+                    points = state.weeklyTrend,
+                    period = state.period,
+                    hasUsageAccess = state.hasUsageAccess,
+                    onOpenUsageAccessSettings = {
+                        context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                    }
+                )
+            }
 
             PatternCard(state = patternState, period = state.period)
         }
@@ -224,27 +250,15 @@ private fun formatClockTime(millis: Long): String =
 private fun PatternCard(state: PatternUiState, period: StatsPeriod) {
     if (!state.visible) return
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f))
+    TeperaCard(
+        title = stringResource(if (period == StatsPeriod.DAY) R.string.pattern_card_title else R.string.pattern_card_title_average),
+        // Для "Вчора" підпис дублював би заголовок ("Патерн екрану вчора") — лише для тижня.
+        subtitle = if (period == StatsPeriod.DAY) null else stringResource(periodLabelRes(period))
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            val titleRes = if (period == StatsPeriod.DAY) {
-                R.string.pattern_card_title
-            } else {
-                R.string.pattern_card_title_average
-            }
-            Text(stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(periodLabelRes(period)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (!state.hasEnoughData) {
-                Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
-            }
-            HourlyHeatGrid(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null)
+        if (!state.hasEnoughData) {
+            Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
         }
+        HourlyHeatGrid(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null)
     }
 }
 
@@ -267,7 +281,8 @@ private fun PeriodSelector(selected: StatsPeriod, onSelect: (StatsPeriod) -> Uni
     )
 }
 
-private data class BarRow(val label: String, val minutes: Int, val color: Color)
+/** [belowThreshold] — сума категорії менша за [MIN_SHOWN_CATEGORY_SECONDS]: замість хвилин підпис "<5 хв". */
+private data class BarRow(val label: String, val minutes: Int, val color: Color, val belowThreshold: Boolean = false)
 
 /**
  * FR-5.2: розподіл офлайн-часу по категоріях за обраний період — горизонтальні смуги (за
@@ -276,48 +291,50 @@ private data class BarRow(val label: String, val minutes: Int, val color: Color)
  * зліва й час справа. Контейнер — як картка тренду (білий 80%, радіус 16, padding 12, gap 8).
  */
 @Composable
-private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinutes: Int?, totalMinutes: Int?) {
+private fun CategoryBreakdownCard(
+    items: List<CategoryBreakdownItem>,
+    onlineMinutes: Int?,
+    offlineMinutes: Int?
+) {
     // "Online" — окремий рядок серед категорій (за запитом користувача): Online-хвилини за обраний
     // період (null — нема доступу до статистики), колір — той самий, що на Home (`onlineCard`).
     val onlineLabel = stringResource(R.string.balance_online_label)
     val rows = buildList {
         onlineMinutes?.takeIf { it > 0 }?.let { add(BarRow(onlineLabel, it, TeperaPalette.onlineCard)) }
-        items.forEach { add(BarRow(categoryDisplayName(it.category), it.minutes, categoryColor(it.category.colorHex))) }
+        items.forEach {
+            // Сума категорії (цілі хвилини записів + накопичені секунди коротких таймерів) менша за 5 хв —
+            // не показуємо точне число, а "<5 хв"; нуль не показуємо взагалі.
+            val total = it.totalSeconds
+            if (total > 0) {
+                add(
+                    BarRow(
+                        categoryDisplayName(it.category), total / 60, categoryColor(it.category.colorHex),
+                        belowThreshold = total < MIN_SHOWN_CATEGORY_SECONDS
+                    )
+                )
+            }
+        }
         // "Офлайн" — залишок періоду (не Online і не відмічене), як "Офлайн-життя" на Home; ніколи
-        // не від'ємний. Без доступу до статистики (totalMinutes == null) рядка нема.
-        if (totalMinutes != null) {
-            val offline = (totalMinutes - (onlineMinutes ?: 0) - items.sumOf { it.minutes }).coerceAtLeast(0)
-            if (offline > 0) add(BarRow(stringResource(R.string.stats_offline_label), offline, TeperaPalette.restOfDayCard))
+        // не від'ємний. Без доступу до статистики (offlineMinutes == null) рядка нема.
+        // (за об'єднанням Online й записів, без ночі — див. offlineUnloggedMinutes).
+        if (offlineMinutes != null && offlineMinutes > 0) {
+            add(BarRow(stringResource(R.string.stats_offline_label), offlineMinutes, TeperaPalette.restOfDayCard))
         }
     }
-    val visible = rows.filter { it.minutes > 0 }.sortedByDescending { it.minutes }
+    val visible = rows.filter { it.minutes > 0 || it.belowThreshold }.sortedByDescending { it.minutes }
     val maxMinutes = visible.maxOfOrNull { it.minutes } ?: 0
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.8f))
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.stats_category_breakdown_title),
-            color = TeperaPalette.buttonBrandDark,
-            fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
-            lineHeight = 20.8.sp,
-            letterSpacing = 0.016.sp
-        )
-
+    TeperaCard(title = stringResource(R.string.stats_category_breakdown_title)) {
         if (visible.isEmpty()) {
             Text(stringResource(R.string.stats_no_data), style = MaterialTheme.typography.bodyMedium)
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 visible.forEach { item ->
-                    val (hours, remainderMinutes) = roundToQuarterHour(item.minutes)
+                    // Менше 15 хв — точні хвилини (заокруглення до чверті давало б "0 хв" для 5-7 хв).
+                    val (hours, remainderMinutes) =
+                        if (item.minutes < 15) 0 to item.minutes else roundToQuarterHour(item.minutes)
                     val durationText = when {
+                        item.belowThreshold -> stringResource(R.string.stats_below_five_min)
                         hours <= 0 -> stringResource(R.string.minutes_short_format, remainderMinutes)
                         remainderMinutes == 0 -> stringResource(R.string.hours_short_format, hours)
                         else -> stringResource(R.string.hours_minutes_short_format, hours, remainderMinutes)
@@ -334,9 +351,9 @@ private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinu
                                 color = TeperaPalette.buttonBrandDark,
                                 fontFamily = TeperaPalette.headlineFont,
                                 fontWeight = FontWeight.Normal,
-                                fontSize = 12.sp,
-                                lineHeight = 15.6.sp,
-                                letterSpacing = 0.012.sp,
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                letterSpacing = 0.25.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -345,9 +362,9 @@ private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinu
                                 color = TeperaPalette.buttonBrandDark,
                                 fontFamily = TeperaPalette.headlineFont,
                                 fontWeight = FontWeight.Normal,
-                                fontSize = 12.sp,
-                                lineHeight = 15.6.sp,
-                                letterSpacing = 0.012.sp,
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                letterSpacing = 0.25.sp,
                                 maxLines = 1
                             )
                         }
@@ -360,7 +377,7 @@ private fun CategoryBreakdownCard(items: List<CategoryBreakdownItem>, onlineMinu
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth(item.minutes.toFloat() / maxMinutes)
+                                    .fillMaxWidth((item.minutes.toFloat() / maxMinutes).coerceAtLeast(0.03f)) // "<5 хв" — тонка смужка, не порожнеча
                                     .fillMaxHeight()
                                     .clip(RoundedCornerShape(100.dp))
                                     .background(item.color)
@@ -387,24 +404,7 @@ private fun WeeklyTrendCard(
     val hoursFormat = stringResource(R.string.hours_short_format)
     // Figma "App concept" node 210:1880: білий 80%, радіус 16, padding 12, gap 8; заголовок —
     // Golos Text Regular 16sp, line-height 1.3, letter-spacing 0.016, #003926.
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.8f))
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.stats_weekly_trend_title),
-            color = TeperaPalette.buttonBrandDark,
-            fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
-            lineHeight = 20.8.sp,
-            letterSpacing = 0.016.sp
-        )
-
+    TeperaCard(title = stringResource(R.string.stats_weekly_trend_title)) {
         if (!hasUsageAccess) {
             Text(stringResource(R.string.usage_access_prompt_title), style = MaterialTheme.typography.bodyLarge)
             Text(stringResource(R.string.usage_access_prompt_body), style = MaterialTheme.typography.bodyMedium)

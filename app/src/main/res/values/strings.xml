@@ -57,6 +57,7 @@
     <string name="my_day_title_format">Твій день: %1$s</string>
     <string name="balance_online_label">Online</string>
     <string name="stats_offline_label">Офлайн</string>
+    <string name="stats_below_five_min">&lt;5 хв</string>
     <string name="balance_rest_of_day_label">Офлайн-життя</string>
     <string name="activities_title">Активності</string>
     <string name="home_add_category">+ Додати</string>
@@ -107,7 +108,7 @@
     <string name="unlock_estimate_range_over_70">Понад 70</string>
     <string name="stats_unlock_count_today_format">Розблокувань сьогодні: %1$d</string>
     <string name="stats_unlock_count_yesterday_format">Розблокувань учора: %1$d</string>
-    <string name="stats_unlock_count_week_format">Розблокувань за тиждень: %1$d</string>
+    <string name="stats_unlock_week_label">Розблокувань за тиждень</string>
 
     <!-- T-10 (tepera-dev-spec.md): онбординг-оцінка часу останнього дотику до телефону -->
     <string name="last_phone_use_estimate_question">О котрій ти вчора востаннє брав телефон?</string>
@@ -117,7 +118,7 @@
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">Після 01:00</string>
     <string name="stats_last_phone_use_yesterday_format">Востаннє брав телефон учора: %1$s</string>
-    <string name="stats_last_phone_use_week_format">Медіана часу останнього дотику за тиждень: %1$s</string>
+    <string name="stats_last_phone_use_week_label">Медіана останнього дотику</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
     <string name="weekly_reflection_question">Скільки, на твою думку, ти був онлайн цього тижня?</string>
@@ -347,7 +348,7 @@
          самого екрана (заголовок лишається "Статистика" — перейменовано лише в навбарі). -->
     <string name="stats_nav_action">Дані</string>
     <string name="stats_screen_title">Статистика</string>
-    <string name="stats_period_day">День</string>
+    <string name="stats_period_day">Вчора</string>
     <string name="stats_period_week">Тиждень</string>
     <string name="stats_category_breakdown_title">Розподіл часу по категоріях</string>
     <string name="stats_weekly_trend_title">Тренд Online-часу</string>
@@ -364,6 +365,13 @@
     <string name="diary_last_phone_use_yesterday_label">Востаннє брав телефон учора</string>
     <string name="stats_history_today">Сьогодні</string>
     <string name="stats_history_yesterday">Вчора</string>
+    <string name="stats_day_timeline_title">Вчорашня доба</string>
+    <string name="stats_day_legend_pause">Пауза</string>
+    <string name="stats_day_legend_offline">Офлайн без запису</string>
+    <string name="stats_day_pauses_title">Паузи без телефону</string>
+    <string name="stats_day_pauses_count">Пауз: %1$d</string>
+    <string name="stats_day_pauses_longest">Найдовша: %1$s (%2$s)</string>
+    <string name="stats_day_compare">Online вчора %1$s · твій типовий день (медіана за %2$d дн.) %3$s</string>
     <string name="stats_history_edit_action">Редагувати запис</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 

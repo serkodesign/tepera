@@ -7,6 +7,8 @@ import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
 import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import com.serkodesign.tepera.util.SleepWindowCalculator
+import com.serkodesign.tepera.util.TimeSpan
+import com.serkodesign.tepera.util.mergeTimeSpans
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -56,6 +58,62 @@ class BalanceRepository(
      */
     suspend fun getOnlineMinutesToday(dayStartMillis: Long): Int =
         getOnlineMinutes(dayStartMillis, System.currentTimeMillis())
+
+    /**
+     * Час найдавнішої події UsageEvents не раніше [fromMillis]; `null` — подій нема або нема доступу.
+     * Системна історія сягає лише ~7-10 діб, тож доба, що починається ДО цього моменту, покрита
+     * неповністю — статистика "типового дня" такі доби не враховує (нуль там був би хибним фактом).
+     */
+    suspend fun earliestUsageEventMillis(fromMillis: Long): Long? = withContext(Dispatchers.IO) {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        try {
+            val events = usm.queryEvents(fromMillis, System.currentTimeMillis())
+            val event = UsageEvents.Event()
+            // Події йдуть у хронологічному порядку — перша й є найдавнішою.
+            if (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                event.timeStamp
+            } else {
+                null
+            }
+        } catch (e: SecurityException) {
+            null
+        }
+    }
+
+    /**
+     * Проміжки Online у [from, to) — ті самі правила виключень (Exclusion List, лаунчер, клавіатура), що
+     * в [getOnlineMinutes], але не сума хвилин, а самі інтервали: паралельні застосунки (PiP, split-screen)
+     * зливаються в один, тож результат — неперетинні відсортовані проміжки. Потрібні для "Офлайн" за
+     * об'єднанням з ручними записами (Статистика): без інтервалів перекриття Online із записом
+     * віднімалося б двічі.
+     */
+    suspend fun getOnlineIntervals(from: Long, to: Long): List<TimeSpan> = withContext(Dispatchers.IO) {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages(context)
+        try {
+            val events = usm.queryEvents(from, to)
+            val foregroundSince = HashMap<String, Long>()
+            val spans = mutableListOf<TimeSpan>()
+            val event = UsageEvents.Event()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                val packageName = event.packageName ?: continue
+                if (packageName in excluded) continue
+                when (event.eventType) {
+                    UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
+                    UsageEvents.Event.MOVE_TO_BACKGROUND -> foregroundSince.remove(packageName)?.let {
+                        spans.add(TimeSpan(it, event.timeStamp))
+                    }
+                }
+            }
+            // Застосунок, що й досі на передньому плані на момент "to" — рахуємо його до "to".
+            foregroundSince.values.forEach { spans.add(TimeSpan(it, to)) }
+            mergeTimeSpans(spans)
+        } catch (e: SecurityException) {
+            emptyList()
+        }
+    }
 
     /**
      * FR-5.3: узагальнена версія getOnlineMinutesToday() для довільного інтервалу — потрібна
@@ -124,10 +182,14 @@ class BalanceRepository(
      * FR-3.7: скільки хвилин уже триває сьогоднішній день (для "Твій день триває X"), за
      * вирахуванням часу у ввімкнених вікнах сну (T-12) між [dayStartMillis] і "зараз".
      */
-    fun calculateDayLengthMinutes(dayStartMillis: Long, sleepWindows: List<SleepWindowEntity> = emptyList()): Int {
-        val now = System.currentTimeMillis()
-        val rawMinutes = minutesSince(dayStartMillis).coerceAtLeast(0)
-        val sleepMinutes = SleepWindowCalculator.minutesInWindows(sleepWindows, dayStartMillis, now)
+    fun calculateDayLengthMinutes(
+        dayStartMillis: Long,
+        sleepWindows: List<SleepWindowEntity> = emptyList(),
+        // За замовчуванням "зараз" (сьогодні); для завершеної доби (Статистика) — її кінець (північ).
+        endMillis: Long = System.currentTimeMillis()
+    ): Int {
+        val rawMinutes = ((endMillis - dayStartMillis) / 60_000L).toInt().coerceAtLeast(0)
+        val sleepMinutes = SleepWindowCalculator.minutesInWindows(sleepWindows, dayStartMillis, endMillis)
         return (rawMinutes - sleepMinutes).coerceAtLeast(0)
     }
 

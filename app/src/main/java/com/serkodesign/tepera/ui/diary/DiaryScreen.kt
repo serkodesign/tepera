@@ -55,7 +55,7 @@ import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
-import com.serkodesign.tepera.ui.home.HomeLabelValueChip
+import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaScreenTitle
 import com.serkodesign.tepera.ui.theme.TeperaIcons
@@ -81,7 +81,7 @@ import java.util.Locale
  * користувача: чіпи однакові для сьогодні й вчора (у макеті вчора було білим із сірим текстом),
  * кружок категорії — 20% її кольору (не 10-30% з макета), гліф — сам колір категорії; лічильники
  * розблокувань і "востаннє брав телефон" (яких нема в макеті) лишились, оформлені плашками
- * `HomeLabelValueChip`, як "Початок"/"День триває" на Home; нотатка запису — третім рядком.
+ * `TeperaChip` (спільний чіп застосунку), як "Початок"/"День триває" на Home; нотатка запису — третім рядком.
  *
  * Кругла кнопка "+" (за прямим запитом користувача) — єдиний вхід на Щоденнику для ЗАГАЛЬНОГО
  * додавання активності (без попередньо обраної категорії, на відміну від кнопки "додати час"
@@ -211,7 +211,7 @@ private fun HistoryContent(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         unlockCount?.let { count ->
-                            HomeLabelValueChip(
+                            TeperaChip(
                                 label = stringResource(
                                     when {
                                         isToday -> R.string.diary_unlock_today_label
@@ -223,7 +223,7 @@ private fun HistoryContent(
                             )
                         }
                         lastPhoneUseMillis?.let { millis ->
-                            HomeLabelValueChip(
+                            TeperaChip(
                                 label = stringResource(R.string.diary_last_phone_use_yesterday_label),
                                 value = formatClockTime(millis)
                             )

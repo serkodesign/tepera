@@ -11,10 +11,12 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -457,5 +459,88 @@ fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
             lineHeight = 29.7.sp,
             letterSpacing = 0.027.sp
         )
+    }
+}
+
+/**
+ * Єдина картка застосунку (M3 "Filled" без тіні у фірмовому "скляному" виконанні): білий 80%,
+ * радіус 16 (M3 large), внутрішній відступ 16 і проміжок 12 між блоками — крок 4/8dp за M3.
+ * Заголовок — M3 titleMedium (16sp/24sp Medium, tracking 0.15) шрифтом застосунку, необов'язковий
+ * підзаголовок — bodySmall приглушеним кольором. Вміст — колонка, тож блоки самі отримують проміжок.
+ */
+@Composable
+fun TeperaCard(
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: String? = null,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.8f))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (title != null || subtitle != null) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                title?.let {
+                    Text(
+                        text = it,
+                        color = TeperaPalette.buttonBrandDark,
+                        fontFamily = TeperaPalette.headlineFont,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        letterSpacing = 0.15.sp
+                    )
+                }
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
+        content()
+    }
+}
+
+/**
+ * Єдиний чіп "підпис значення" (M3 assist chip у фірмовому виконанні): тональний фон
+ * [TeperaPalette.surfaceBrandLight] (#DCF6ED), повне заокруглення, висота від 32dp, горизонтальний
+ * відступ 12; підпис — M3 labelLarge (14sp Medium) #006944, значення — те саме, але SemiBold #003926
+ * (контраст підпису до фону ≈5.6:1, значення ≈11:1 — AA). Без значення — просто чіп-підпис.
+ * Лише відображення (не натискається) — для дій є [TeperaButton].
+ */
+@Composable
+fun TeperaChip(
+    label: String,
+    modifier: Modifier = Modifier,
+    value: String? = null
+) {
+    val labelStyle = androidx.compose.ui.text.TextStyle(
+        fontFamily = TeperaPalette.headlineFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    )
+    Row(
+        modifier = modifier
+            .heightIn(min = 32.dp)
+            .clip(RoundedCornerShape(100.dp))
+            .background(TeperaPalette.surfaceBrandLight)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = labelStyle, color = TeperaPalette.buttonBrand, maxLines = 1)
+        value?.let {
+            Text(it, style = labelStyle.copy(fontWeight = FontWeight.SemiBold), color = TeperaPalette.buttonBrandDark, maxLines = 1)
+        }
     }
 }

@@ -32,6 +32,7 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 import kotlin.math.roundToInt
@@ -95,12 +96,12 @@ fun MyDayCard(
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             if (state.dayStartMillis > 0L) {
-                                HomeLabelValueChip(
+                                TeperaChip(
                                     label = stringResource(R.string.home_card_first_unlock_label),
                                     value = formatClock(state.dayStartMillis)
                                 )
                             }
-                            HomeLabelValueChip(
+                            TeperaChip(
                                 label = stringResource(R.string.home_card_day_last_label),
                                 value = formatBalanceDuration(state.dayLengthMinutes)
                             )
