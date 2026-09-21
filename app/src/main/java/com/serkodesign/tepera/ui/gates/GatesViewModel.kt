@@ -100,6 +100,10 @@ class GatesViewModel(
         viewModelScope.launch { gateRepository.removeGate(packageName) }
     }
 
+    fun setDelaySeconds(packageName: String, delaySeconds: Int) {
+        viewModelScope.launch { gateRepository.setDelaySeconds(packageName, delaySeconds) }
+    }
+
     fun markOriginalIconHandled(packageName: String) {
         viewModelScope.launch { gateRepository.markOriginalIconHandled(packageName) }
     }

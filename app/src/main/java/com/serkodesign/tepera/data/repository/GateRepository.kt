@@ -154,6 +154,10 @@ class GateRepository(
         dao.getByPackageName(packageName)?.delaySeconds
     }
 
+    suspend fun setDelaySeconds(packageName: String, delaySeconds: Int) = withContext(Dispatchers.IO) {
+        dao.updateDelaySeconds(packageName, delaySeconds)
+    }
+
     suspend fun recordProceed(packageName: String) = withContext(Dispatchers.IO) {
         dao.updateLastProceedAtMillis(packageName, System.currentTimeMillis())
     }

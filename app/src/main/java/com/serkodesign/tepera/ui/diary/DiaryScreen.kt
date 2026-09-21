@@ -40,6 +40,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
@@ -321,14 +323,25 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
     }
 }
 
-/** Чіп запису (Figma 208:1560): #DCF6ED, радіус 100, padding 8x4, текст 11sp Medium #006944, line-height 1.1. */
+/**
+ * Чіп запису (Figma 208:1560): #DCF6ED, радіус 100, padding 8x4, текст 11sp Medium #006944, line-height 1.1.
+ * Параметри дозволяють збільшити чіп там, де він інтерактивний (затримка воріт): розмір шрифту,
+ * тло й горизонтальний відступ; висоту задає виклик через [modifier].
+ */
 @Composable
-private fun EntryChip(text: String) {
+internal fun EntryChip(
+    text: String,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 11.sp,
+    background: Color = TeperaPalette.surfaceBrandLight,
+    horizontalPadding: Dp = 8.dp
+) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(TeperaPalette.surfaceBrandLight)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .background(background)
+            .then(modifier)
+            .padding(horizontal = horizontalPadding, vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -336,9 +349,9 @@ private fun EntryChip(text: String) {
             color = TeperaPalette.buttonBrand,
             fontFamily = TeperaPalette.headlineFont,
             fontWeight = FontWeight.Medium,
-            fontSize = 11.sp,
-            lineHeight = 12.1.sp,
-            letterSpacing = 0.011.sp,
+            fontSize = fontSize,
+            lineHeight = fontSize * 1.1f,
+            letterSpacing = fontSize * 0.001f,
             maxLines = 1
         )
     }

@@ -27,6 +27,9 @@ interface AppGateDao {
     @Query("UPDATE app_gates SET originalIconHandled = 1 WHERE packageName = :packageName")
     suspend fun markOriginalIconHandled(packageName: String)
 
+    @Query("UPDATE app_gates SET delaySeconds = :delaySeconds WHERE packageName = :packageName")
+    suspend fun updateDelaySeconds(packageName: String, delaySeconds: Int)
+
     @Query("UPDATE app_gates SET lastProceedAtMillis = :millis WHERE packageName = :packageName")
     suspend fun updateLastProceedAtMillis(packageName: String, millis: Long)
 }

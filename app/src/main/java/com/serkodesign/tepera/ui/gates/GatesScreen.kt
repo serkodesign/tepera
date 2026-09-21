@@ -3,6 +3,10 @@ package com.serkodesign.tepera.ui.gates
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,11 +62,14 @@ import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
+import com.serkodesign.tepera.ui.diary.EntryChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
 
-private val DELAY_OPTIONS = listOf(5, 10, 20)
+// Тривалість затримки: чіп у списку воріт перемикає їх по колу; старе значення поза набором (20 с з
+// попередньої версії) першим тапом переходить на перше (3 с).
+private val DELAY_OPTIONS = listOf(3, 5, 10)
 
 /**
  * T-4 (tepera-dev-spec.md, FR-G частина 1): "Застосунки з затримкою". Дії, недоступні до наступного
@@ -155,7 +163,8 @@ fun GatesScreen(
                         GateRow(
                             gateState = gateState,
                             onMarkHandled = { viewModel.markOriginalIconHandled(gateState.gate.packageName) },
-                            onRemove = { viewModel.removeGate(gateState.gate.packageName) }
+                            onRemove = { viewModel.removeGate(gateState.gate.packageName) },
+                            onDelayChange = { viewModel.setDelaySeconds(gateState.gate.packageName, it) }
                         )
                     }
 
@@ -210,18 +219,26 @@ fun GatesScreen(
 }
 
 @Composable
-private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove: () -> Unit) {
+private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove: () -> Unit, onDelayChange: (Int) -> Unit) {
     Column {
         GlassRow(
             label = gateState.app.label,
             leading = { AppIcon(gateState.app) },
             trailing = {
-                Row {
-                    Text(
-                        text = stringResource(R.string.gates_delay_format, gateState.gate.delaySeconds),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(end = 8.dp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val currentDelay = gateState.gate.delaySeconds
+                    // Тап по чіпу перемикає тривалість по колу (DELAY_OPTIONS); indexOf == -1 для значення поза
+                    // набором дає перший елемент.
+                    EntryChip(
+                        text = stringResource(R.string.gates_delay_format, currentDelay),
+                        fontSize = 14.sp,
+                        background = Color(0xFFCBE8DE),
+                        horizontalPadding = 12.dp,
+                        modifier = Modifier.height(32.dp).clickable(role = Role.Button) {
+                            onDelayChange(DELAY_OPTIONS[(DELAY_OPTIONS.indexOf(currentDelay) + 1) % DELAY_OPTIONS.size])
+                        }
                     )
+                    Spacer(Modifier.width(8.dp))
                     TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)
                 }
             }
