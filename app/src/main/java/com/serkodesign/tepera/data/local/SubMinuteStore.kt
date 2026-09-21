@@ -26,6 +26,10 @@ fun dayKeyOf(millis: Long): Int {
  */
 class SubMinuteStore(private val context: Context) {
 
+    suspend fun clearAll() {
+        context.subMinuteDataStore.edit { it.clear() }
+    }
+
     private fun key(dayKey: Int, categoryId: String) = intPreferencesKey("$dayKey|$categoryId")
 
     /** Додає [seconds] (0..59) до лічильника доби, якій належить [atMillis], для [categoryId]. */

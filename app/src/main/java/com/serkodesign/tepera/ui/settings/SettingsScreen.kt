@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -23,7 +25,6 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -73,7 +74,9 @@ fun SettingsScreen(
     onOpenWidgetSettings: () -> Unit,
     onOpenSupport: () -> Unit,
     onOpenPro: () -> Unit,
+    onOpenAbout: () -> Unit,
     onOpenSpikeT1: () -> Unit = {},
+    onOpenSpikeT15: () -> Unit = {},
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -84,22 +87,19 @@ fun SettingsScreen(
     // FR-6.4/6.5: чесне попередження, що зараз відкриється браузер (форму приймає Google),
     // перш ніж передати намір системі — і спокійна обробка відсутності браузера (FR-6.5).
     if (showSuggestFeatureConfirm) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { showSuggestFeatureConfirm = false },
-            title = { Text(stringResource(R.string.settings_suggest_feature_confirm_title)) },
-            text = { Text(stringResource(R.string.settings_suggest_feature_confirm_body)) },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.settings_suggest_feature_confirm_action), onClick = {
+            title = stringResource(R.string.settings_suggest_feature_confirm_title),
+            text = stringResource(R.string.settings_suggest_feature_confirm_body),
+            confirmText = stringResource(R.string.settings_suggest_feature_confirm_action),
+            dismissText = stringResource(R.string.dialog_cancel),
+            onConfirm = {
                     showSuggestFeatureConfirm = false
                     try {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
                     } catch (e: ActivityNotFoundException) {
                         Toast.makeText(context, context.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
                     }
-                }, type = TeperaButtonType.Tertiary)
-            },
-            dismissButton = {
-                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showSuggestFeatureConfirm = false }, type = TeperaButtonType.Tertiary)
             }
         )
     }
@@ -193,6 +193,13 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(Icons.Filled.Coffee) },
                     trailing = { NavChevron() }
                 )
+                // GAP-8: посилання на Privacy Policy, версія й контакт — вимога Google Play.
+                GlassRow(
+                    label = stringResource(R.string.settings_about_action),
+                    onClick = onOpenAbout,
+                    leading = { TeperaIconCircle(Icons.Filled.Info) },
+                    trailing = { NavChevron() }
+                )
                 // Debug-only вхід у T-1 (tepera-dev-spec.md) — інструмент спайку, не
                 // продакшн-функція. Перевірка FLAG_DEBUGGABLE, а не BuildConfig.DEBUG:
                 // buildFeatures.buildConfig не увімкнено в app/build.gradle.kts, а вмикати
@@ -203,6 +210,12 @@ fun SettingsScreen(
                     GlassRow(
                         label = "T-1: спайк видимості пакетів (debug)",
                         onClick = onOpenSpikeT1,
+                        leading = { TeperaIconCircle(Icons.Filled.Info) },
+                        trailing = { NavChevron() }
+                    )
+                    GlassRow(
+                        label = "T-15: сирі події в CSV (debug)",
+                        onClick = onOpenSpikeT15,
                         leading = { TeperaIconCircle(Icons.Filled.Info) },
                         trailing = { NavChevron() }
                     )

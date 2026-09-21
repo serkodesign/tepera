@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.addentry
 
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,9 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -297,33 +300,27 @@ fun AddEntryScreen(
     }
 
     if (showDeleteConfirm) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text(stringResource(R.string.edit_entry_delete_confirm_title)) },
-            text = { Text(stringResource(R.string.edit_entry_delete_confirm_body)) },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.edit_entry_delete_action), onClick = {
-                    showDeleteConfirm = false
-                    viewModel.deleteEntry()
-                }, type = TeperaButtonType.Tertiary)
+            title = stringResource(R.string.edit_entry_delete_confirm_title),
+            text = stringResource(R.string.edit_entry_delete_confirm_body),
+            confirmText = stringResource(R.string.edit_entry_delete_action),
+            onConfirm = {
+                showDeleteConfirm = false
+                viewModel.deleteEntry()
             },
-            dismissButton = {
-                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showDeleteConfirm = false }, type = TeperaButtonType.Tertiary)
-            }
+            dismissText = stringResource(R.string.dialog_cancel)
         )
     }
 
     if (state.overlapEntries != null) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = viewModel::dismissOverlapDialog,
-            title = { Text(stringResource(R.string.add_entry_overlap_title)) },
-            text = { Text(stringResource(R.string.add_entry_overlap_body)) },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.add_entry_overlap_confirm), onClick = { viewModel.save(forceOverwrite = true) }, type = TeperaButtonType.Tertiary)
-            },
-            dismissButton = {
-                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = viewModel::dismissOverlapDialog, type = TeperaButtonType.Tertiary)
-            }
+            title = stringResource(R.string.add_entry_overlap_title),
+            text = stringResource(R.string.add_entry_overlap_body),
+            confirmText = stringResource(R.string.add_entry_overlap_confirm),
+            onConfirm = { viewModel.save(forceOverwrite = true) },
+            dismissText = stringResource(R.string.dialog_cancel)
         )
     }
 }
@@ -555,14 +552,35 @@ private fun GlassTimeChip(
             initialMinute = minuteOfDay % 60,
             is24Hour = true
         )
-        TimePickerDialog(
-            onDismiss = { showPicker = false },
+        TeperaDialog(
+            onDismissRequest = { showPicker = false },
+            confirmText = stringResource(R.string.dialog_save),
             onConfirm = {
                 onMinuteSelected(pickerState.hour * 60 + pickerState.minute)
                 showPicker = false
-            }
+            },
+            dismissText = stringResource(R.string.dialog_cancel)
         ) {
-            TimePicker(state = pickerState)
+            TimePicker(
+                state = pickerState,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                colors = TimePickerDefaults.colors(
+                    clockDialColor = Color.White,
+                    clockDialSelectedContentColor = Color.White,
+                    clockDialUnselectedContentColor = TeperaPalette.buttonBrandDark,
+                    selectorColor = TeperaPalette.buttonBrand,
+                    containerColor = Color.Transparent,
+                    periodSelectorBorderColor = TeperaPalette.buttonBrandDark,
+                    periodSelectorSelectedContainerColor = TeperaPalette.buttonBrand,
+                    periodSelectorUnselectedContainerColor = Color.Transparent,
+                    periodSelectorSelectedContentColor = Color.White,
+                    periodSelectorUnselectedContentColor = TeperaPalette.buttonBrandDark,
+                    timeSelectorSelectedContainerColor = TeperaPalette.buttonBrand,
+                    timeSelectorUnselectedContainerColor = Color.White,
+                    timeSelectorSelectedContentColor = Color.White,
+                    timeSelectorUnselectedContentColor = TeperaPalette.buttonBrandDark
+                )
+            )
         }
     }
 }
@@ -593,46 +611,39 @@ private fun DateRow(dateMillis: Long, onDateSelected: (Long) -> Unit) {
 
     if (showPicker) {
         val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateMillis)
+        val pickerColors = DatePickerDefaults.colors(
+            containerColor = TeperaPalette.surfaceBrandLight,
+            titleContentColor = TeperaPalette.buttonBrandDark,
+            headlineContentColor = TeperaPalette.buttonBrandDark,
+            weekdayContentColor = TeperaPalette.buttonBrand,
+            subheadContentColor = TeperaPalette.buttonBrandDark,
+            navigationContentColor = TeperaPalette.buttonBrandDark,
+            yearContentColor = TeperaPalette.buttonBrandDark,
+            currentYearContentColor = TeperaPalette.buttonBrand,
+            selectedYearContentColor = Color.White,
+            selectedYearContainerColor = TeperaPalette.buttonBrand,
+            dayContentColor = TeperaPalette.buttonBrandDark,
+            selectedDayContentColor = Color.White,
+            selectedDayContainerColor = TeperaPalette.buttonBrand,
+            todayContentColor = TeperaPalette.buttonBrand,
+            todayDateBorderColor = TeperaPalette.buttonBrand,
+            dividerColor = TeperaPalette.buttonBrand.copy(alpha = 0.2f)
+        )
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
+            shape = RoundedCornerShape(28.dp),
+            colors = pickerColors,
             confirmButton = {
                 TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
                     pickerState.selectedDateMillis?.let { onDateSelected(utcMidnightToLocalStartOfDay(it)) }
                     showPicker = false
-                }, type = TeperaButtonType.Tertiary)
+                })
             },
             dismissButton = {
-                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showPicker = false }, type = TeperaButtonType.Tertiary)
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showPicker = false }, type = TeperaButtonType.Secondary)
             }
         ) {
-            DatePicker(state = pickerState)
-        }
-    }
-}
-
-// Material3 не постачає готовий TimePickerDialog (на відміну від DatePickerDialog) — це
-// мінімальна обгортка навколо TimePicker у Dialog, стандартний паттерн для М3.
-@Composable
-private fun TimePickerDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = MaterialTheme.shapes.extraLarge, tonalElevation = 6.dp) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                content()
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
-                    TeperaButton(text = stringResource(R.string.dialog_save), onClick = onConfirm, type = TeperaButtonType.Tertiary)
-                }
-            }
+            DatePicker(state = pickerState, colors = pickerColors)
         }
     }
 }

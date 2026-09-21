@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.gates
 
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -208,12 +209,11 @@ fun GatesScreen(
     }
 
     if (pinFailed) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { pinFailed = false },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.gates_instruction_done), onClick = { pinFailed = false }, type = TeperaButtonType.Tertiary)
-            },
-            text = { Text(stringResource(R.string.gates_pin_failed)) }
+            text = stringResource(R.string.gates_pin_failed),
+            confirmText = stringResource(R.string.gates_instruction_done),
+            onConfirm = { pinFailed = false }
         )
     }
 }
@@ -275,44 +275,31 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
 @Composable
 private fun DelayPickerDialog(app: InstalledAppInfo, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
     var selected by remember { mutableStateOf(DELAY_OPTIONS[1]) }
-    AlertDialog(
+    TeperaDialog(
         onDismissRequest = onDismiss,
-        title = { Text(app.label) },
-        text = {
-            Column {
-                Text(
-                    text = stringResource(R.string.gates_delay_picker_title),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-                PillSegmentedControl(
-                    options = DELAY_OPTIONS.map { it to stringResource(R.string.gates_delay_format, it) },
-                    selected = selected,
-                    onSelect = { selected = it }
-                )
-            }
-        },
-        confirmButton = {
-            TeperaButton(text = stringResource(R.string.gates_delay_picker_confirm), onClick = { onConfirm(selected) }, type = TeperaButtonType.Tertiary)
-        },
-        dismissButton = {
-            TeperaButton(text = stringResource(R.string.gates_delay_picker_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
-        }
-    )
+        title = app.label,
+        text = stringResource(R.string.gates_delay_picker_title),
+        confirmText = stringResource(R.string.gates_delay_picker_confirm),
+        onConfirm = { onConfirm(selected) },
+        dismissText = stringResource(R.string.gates_delay_picker_cancel)
+    ) {
+        PillSegmentedControl(
+            options = DELAY_OPTIONS.map { it to stringResource(R.string.gates_delay_format, it) },
+            selected = selected,
+            onSelect = { selected = it }
+        )
+    }
 }
 
 @Composable
 private fun InstructionDialog(app: InstalledAppInfo, onDone: () -> Unit, onLater: () -> Unit) {
-    AlertDialog(
+    TeperaDialog(
         onDismissRequest = onLater,
-        title = { Text(stringResource(R.string.gates_instruction_title)) },
-        text = { Text(stringResource(R.string.gates_instruction_body, app.label)) },
-        confirmButton = {
-            TeperaButton(text = stringResource(R.string.gates_instruction_done), onClick = onDone, type = TeperaButtonType.Tertiary)
-        },
-        dismissButton = {
-            TeperaButton(text = stringResource(R.string.gates_instruction_later), onClick = onLater, type = TeperaButtonType.Tertiary)
-        }
+        title = stringResource(R.string.gates_instruction_title),
+        text = stringResource(R.string.gates_instruction_body, app.label),
+        confirmText = stringResource(R.string.gates_instruction_done),
+        onConfirm = onDone,
+        dismissText = stringResource(R.string.gates_instruction_later)
     )
 }
 

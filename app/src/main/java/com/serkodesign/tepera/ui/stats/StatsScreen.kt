@@ -411,7 +411,7 @@ private fun WeeklyTrendCard(
             TeperaButton(
                 text = stringResource(R.string.usage_access_open_settings),
                 onClick = onOpenUsageAccessSettings,
-                type = TeperaButtonType.Primary
+                type = TeperaButtonType.Secondary
             )
         } else if (points.isEmpty()) {
             Box(modifier = Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {

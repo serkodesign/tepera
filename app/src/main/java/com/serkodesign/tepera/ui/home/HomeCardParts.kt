@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -121,17 +122,11 @@ internal fun HomeTintChip(
 /** Діалог пояснення картки (ⓘ). Кнопка — `TeperaButton` (дизайн-система). */
 @Composable
 internal fun HomeInfoDialog(title: String, body: String, onDismiss: () -> Unit) {
-    AlertDialog(
+    TeperaDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = { Text(body) },
-        confirmButton = {
-            TeperaButton(
-                text = stringResource(R.string.home_card_info_close),
-                onClick = onDismiss,
-                size = TeperaButtonSize.Medium,
-                type = TeperaButtonType.Tertiary
-            )
-        }
+        title = title,
+        text = body,
+        confirmText = stringResource(R.string.home_card_info_close),
+        onConfirm = onDismiss
     )
 }

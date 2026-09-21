@@ -65,7 +65,7 @@ fun DayDetailsSection(
             TeperaButton(
                 text = stringResource(R.string.usage_access_open_settings),
                 onClick = onOpenUsageAccessSettings,
-                type = TeperaButtonType.Primary
+                type = TeperaButtonType.Secondary
             )
         }
     }
@@ -85,6 +85,20 @@ fun DayDetailsSection(
             details.unlockCount?.let {
                 TeperaChip(stringResource(R.string.diary_unlock_yesterday_label), value = it.toString())
             }
+        }
+    }
+
+    // GAP-9: у день встановлення "вчора" ще не існує — один спокійний рядок замість порожнього екрана чи нулів
+    // (розділ 4 SRS: без докору, "Поки порожньо", не "Ти нічого не зафіксував").
+    val nothingYet = details.firstUseMillis == null && details.lastUseMillis == null &&
+        details.unlockCount == null && !details.hasTimelineData && details.pauses == null
+    if (hasUsageAccess && nothingYet) {
+        TeperaCard {
+            Text(
+                stringResource(R.string.stats_day_first_day_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TeperaPalette.buttonBrandDark.copy(alpha = 0.85f)
+            )
         }
     }
 

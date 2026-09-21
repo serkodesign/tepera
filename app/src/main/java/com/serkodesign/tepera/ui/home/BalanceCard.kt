@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaCard
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,24 +67,32 @@ fun MyDayCard(
         when (state.hasUsageAccess) {
             null -> Unit // перевірка ще триває, картка мовчить, щоб не блимати fallback-текстом
             false -> {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.usage_access_prompt_title), style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(R.string.usage_access_prompt_body), style = MaterialTheme.typography.bodyMedium)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TeperaButton(
-                                text = stringResource(R.string.usage_access_learn_more),
-                                onClick = onLearnMore,
-                                size = TeperaButtonSize.Medium,
-                                type = TeperaButtonType.Tertiary
-                            )
-                            TeperaButton(
-                                text = stringResource(R.string.usage_access_open_settings),
-                                onClick = onOpenUsageAccessSettings,
-                                size = TeperaButtonSize.Medium,
-                                type = TeperaButtonType.Primary
-                            )
-                        }
+                // GAP-2: доступ відкликано пізніше — та сама єдина картка (TeperaCard), що й на Статистиці; головна дія —
+                // Secondary (на білій картці біла Primary-кнопка зливалась би з фоном).
+                TeperaCard {
+                    Text(
+                        stringResource(R.string.usage_access_prompt_title),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TeperaPalette.buttonBrandDark
+                    )
+                    Text(
+                        stringResource(R.string.usage_access_prompt_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.85f)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TeperaButton(
+                            text = stringResource(R.string.usage_access_learn_more),
+                            onClick = onLearnMore,
+                            size = TeperaButtonSize.Medium,
+                            type = TeperaButtonType.Tertiary
+                        )
+                        TeperaButton(
+                            text = stringResource(R.string.usage_access_open_settings),
+                            onClick = onOpenUsageAccessSettings,
+                            size = TeperaButtonSize.Medium,
+                            type = TeperaButtonType.Secondary
+                        )
                     }
                 }
             }

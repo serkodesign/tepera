@@ -92,6 +92,7 @@ import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
+import com.serkodesign.tepera.ui.settings.AboutScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
@@ -119,9 +120,11 @@ private object Routes {
     const val LANGUAGE_SETTINGS = "language_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
+    const val ABOUT = "about"
     const val STATS = "stats"
     const val DIARY = "diary"
     const val SPIKE_T1 = "spike_t1"
+    const val SPIKE_T15 = "spike_t15"
     const val GATES = "gates"
     const val WIDGET_SETTINGS = "widget_settings"
     const val SUPPORT = "support"
@@ -129,6 +132,7 @@ private object Routes {
     const val PRO_PAYWALL = "pro_paywall"
     const val PRO_CUSTOMER_CENTER = "pro_customer_center"
     const val KNOWLEDGE_BASE = "knowledge_base"
+    const val KNOWLEDGE_SCROLLING = "knowledge_scrolling"
     const val CATEGORY_HISTORY = "category_history/{categoryId}"
 
     // Три вкладки нижнього навбару, node 2146:320 (Figma, замінив попередній фрейм 1951:4017,
@@ -149,10 +153,10 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, GATES, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
-        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, CATEGORY_HISTORY, SUPPORT, PRO
+        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, SUPPORT, PRO
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -393,7 +397,13 @@ fun TeperaNavHost(
                 )
             }
             composable(Routes.KNOWLEDGE_BASE) {
-                KnowledgeBaseScreen(onBack = { navController.popBackStack() })
+                KnowledgeBaseScreen(
+                    onOpenScrollingNotes = { navController.navigate(Routes.KNOWLEDGE_SCROLLING) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.KNOWLEDGE_SCROLLING) {
+                com.serkodesign.tepera.ui.knowledge.ScrollingNotesScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
@@ -440,7 +450,9 @@ fun TeperaNavHost(
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenSupport = { navController.navigate(Routes.SUPPORT) },
                     onOpenPro = { navController.navigate(Routes.PRO) },
+                    onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
+                    onOpenSpikeT15 = { navController.navigate(Routes.SPIKE_T15) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -453,6 +465,9 @@ fun TeperaNavHost(
             }
             composable(Routes.LANGUAGE_SETTINGS) {
                 LanguageSettingsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.SPIKE_T15) {
+                com.serkodesign.tepera.debug.SpikeT15Screen(onBack = { navController.popBackStack() })
             }
             composable(Routes.SPIKE_T1) {
                 SpikeT1Screen(onBack = { navController.popBackStack() })
@@ -505,6 +520,12 @@ fun TeperaNavHost(
                 ExclusionListScreen(
                     installedAppsProvider = installedAppsProvider,
                     excludedAppRepository = excludedAppRepository,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.ABOUT) {
+                AboutScreen(
+                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onBack = { navController.popBackStack() }
                 )
             }

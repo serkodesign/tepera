@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,30 +89,27 @@ fun TrackingSettingsScreen(
     }
 
     if (showTargetInfo) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { showTargetInfo = false },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { showTargetInfo = false }, type = TeperaButtonType.Tertiary)
-            },
-            text = { Text(stringResource(R.string.settings_target_info)) }
+            text = stringResource(R.string.settings_target_info),
+            confirmText = stringResource(R.string.dialog_ok),
+            onConfirm = { showTargetInfo = false }
         )
     }
     if (showSleepWindowInfo) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { showSleepWindowInfo = false },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { showSleepWindowInfo = false }, type = TeperaButtonType.Tertiary)
-            },
-            text = { Text(stringResource(R.string.settings_sleep_window_info)) }
+            text = stringResource(R.string.settings_sleep_window_info),
+            confirmText = stringResource(R.string.dialog_ok),
+            onConfirm = { showSleepWindowInfo = false }
         )
     }
     if (showGapSensitivityInfo) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { showGapSensitivityInfo = false },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { showGapSensitivityInfo = false }, type = TeperaButtonType.Tertiary)
-            },
-            text = { Text(stringResource(R.string.settings_gap_sensitivity_info)) }
+            text = stringResource(R.string.settings_gap_sensitivity_info),
+            confirmText = stringResource(R.string.dialog_ok),
+            onConfirm = { showGapSensitivityInfo = false }
         )
     }
 

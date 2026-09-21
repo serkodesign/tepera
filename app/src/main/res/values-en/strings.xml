@@ -339,7 +339,8 @@
     <string name="stats_period_week">Week</string>
     <string name="stats_category_breakdown_title">Time by category</string>
     <string name="stats_weekly_trend_title">Online-time trend</string>
-    <string name="stats_no_data">No data for this period</string>
+    <string name="stats_no_data">Nothing here yet</string>
+    <string name="stats_day_first_day_empty">Nothing here yet. Yesterday will show up here once there is one.</string>
 
     <!-- T-2 (tepera-dev-spec.md): pause-history backfill right after usage access is granted -->
     <string name="home_backfill_processing">Processing your history…</string>
@@ -394,4 +395,46 @@
     <string name="widget_1x1_description">One activity button</string>
     <string name="widget_2x1_description">Two activity buttons</string>
     <string name="widget_4x2_description">Category buttons and the day grid</string>
+
+    <!-- About (GAP-8) -->
+    <string name="settings_about_action">About</string>
+    <string name="about_screen_title">About</string>
+    <string name="about_version_format">Version %1$s</string>
+    <string name="about_tagline">Tepera works without an account. Your entries stay on this phone.</string>
+    <string name="about_privacy_policy">Privacy Policy</string>
+    <string name="about_contact">Write to the developer</string>
+    <string name="about_no_app">Couldn\'t find an app that can open this</string>
+
+    <!-- Delete all data (two confirmation steps) -->
+    <string name="backup_delete_section">Data deletion</string>
+    <string name="backup_delete_action">Delete all data</string>
+    <string name="backup_delete_title">Delete all data?</string>
+    <string name="backup_delete_body">This deletes entries, categories, delayed apps, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nIf you\'re unsure, save a copy first: \"Export data\" above.\n\nThis doesn\'t touch an Android Auto Backup copy (if enabled) — you can turn that off in system settings.</string>
+    <string name="backup_delete_next">Continue</string>
+    <string name="backup_delete_final_title">One last confirmation</string>
+    <string name="backup_delete_final_body">To delete everything for good, type the word \"%1$s\".</string>
+    <string name="backup_delete_word">DELETE</string>
+    <string name="backup_delete_word_label">Confirmation word</string>
+    <string name="backup_delete_confirm">Delete permanently</string>
+    <string name="backup_delete_running">Deleting…</string>
+    <string name="backup_delete_failure">Couldn\'t delete the data</string>
+
+    <string name="home_active_timer_format">In progress: %1$s</string>
+    <string name="home_active_timer_stop">Stop</string>
+
+    <!-- T-16 B: what is known / not known about scrolling -->
+    <string name="scrolling_notes_row">What is known about scrolling and dopamine</string>
+    <string name="scrolling_notes_title">What is and isn\'t known</string>
+    <string name="scrolling_notes_intro">This is not advice and not an assessment. It is only what science knows right now, and where scientists disagree with each other.</string>
+    <string name="scrolling_notes_1_title">What this is about</string>
+    <string name="scrolling_notes_1_body">Scrolling means moving through a feed with no goal set in advance. Tepera can\'t see what happens inside an app: a minute of reading and a minute of scrolling look the same to it.</string>
+    <string name="scrolling_notes_2_title">What is known</string>
+    <string name="scrolling_notes_2_body">Neuroscientists usually describe dopamine as part of a system tied to anticipating rewards and to learning, not as a \"pleasure hormone\". Feeds that keep refreshing are built so that the next item is unknown in advance — that is a described property of the design, not a verdict on a person.</string>
+    <string name="scrolling_notes_3_title">What is not known</string>
+    <string name="scrolling_notes_3_body">There is no single answer on whether regular social media use can be called an addiction. There is also no agreement on how strongly screen time is linked to wellbeing: some researchers see a noticeable link, others a very weak one, and others think the direction of the link is not established.</string>
+    <string name="scrolling_notes_4_title">Where scientists disagree</string>
+    <string name="scrolling_notes_4_body">Whether \"social media addiction\" is a separate condition. Whether screen time changes wellbeing, or people with a certain wellbeing spend more time in apps. Whether the time itself matters, or what a person does during it.</string>
+    <string name="scrolling_notes_5_title">How this relates to Tepera</string>
+    <string name="scrolling_notes_5_body">Tepera draws no conclusions about you from these questions. It only shows how you use your phone; what to do with that is up to you.</string>
+    <string name="scrolling_notes_reviewed">Text last reviewed: 21.09.2026</string>
 </resources>

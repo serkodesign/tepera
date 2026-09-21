@@ -16,6 +16,10 @@ private val DEVICE_ID_KEY = stringPreferencesKey("device_id")
  */
 class DeviceIdProvider(private val context: Context) {
 
+    suspend fun clearAll() {
+        context.deviceIdDataStore.edit { it.clear() }
+    }
+
     suspend fun getOrCreate(): String {
         val existing = context.deviceIdDataStore.data.first()[DEVICE_ID_KEY]
         if (existing != null) return existing

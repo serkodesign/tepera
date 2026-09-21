@@ -1,5 +1,13 @@
 package com.serkodesign.tepera.ui.category
 
+import com.serkodesign.tepera.ui.theme.TeperaPalette
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+
+import androidx.compose.material3.OutlinedTextFieldDefaults
+
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,7 +29,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -147,29 +154,25 @@ fun CategoriesScreen(
     }
 
     if (limitReachedNotice) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { limitReachedNotice = false },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.dialog_ok), onClick = { limitReachedNotice = false }, type = TeperaButtonType.Tertiary)
-            },
-            text = { Text(stringResource(R.string.category_custom_limit_reached)) }
+            text = stringResource(R.string.category_custom_limit_reached),
+            confirmText = stringResource(R.string.dialog_ok),
+            onConfirm = { limitReachedNotice = false }
         )
     }
 
     pendingDelete?.let { category ->
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text(stringResource(R.string.category_delete_confirm_title)) },
-            text = { Text(stringResource(R.string.category_delete_confirm_body, categoryDisplayName(category))) },
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.category_delete_action), onClick = {
-                    viewModel.deleteCustomCategory(category.id)
-                    pendingDelete = null
-                }, type = TeperaButtonType.Tertiary)
+            title = stringResource(R.string.category_delete_confirm_title),
+            text = stringResource(R.string.category_delete_confirm_body, categoryDisplayName(category)),
+            confirmText = stringResource(R.string.category_delete_action),
+            onConfirm = {
+                viewModel.deleteCustomCategory(category.id)
+                pendingDelete = null
             },
-            dismissButton = {
-                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { pendingDelete = null }, type = TeperaButtonType.Tertiary)
-            }
+            dismissText = stringResource(R.string.dialog_cancel)
         )
     }
 }
@@ -218,99 +221,108 @@ internal fun CreateCategoryDialog(
     var selectedColor by remember { mutableStateOf(customCategoryColorChoices.first()) }
     var showNameError by remember { mutableStateOf(false) }
 
-    AlertDialog(
+    TeperaDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.category_dialog_title)) },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it; showNameError = false },
-                    label = { Text(stringResource(R.string.category_name_label)) },
-                    isError = showNameError,
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (showNameError) {
-                    Text(
-                        stringResource(R.string.category_name_required),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
+        title = stringResource(R.string.category_dialog_title),
+        confirmText = stringResource(R.string.dialog_save),
+        onConfirm = {
+            if (name.isBlank()) {
+                showNameError = true
+            } else {
+                onSave(name.trim(), selectedIcon, selectedColor)
+            }
+        },
+        dismissText = stringResource(R.string.dialog_cancel)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it; showNameError = false },
+                label = { Text(stringResource(R.string.category_name_label)) },
+                isError = showNameError,
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    errorContainerColor = Color.White,
+                    focusedBorderColor = TeperaPalette.buttonBrand,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedLabelColor = TeperaPalette.buttonBrand,
+                    unfocusedLabelColor = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
+                    focusedTextColor = TeperaPalette.buttonBrandDark,
+                    unfocusedTextColor = TeperaPalette.buttonBrandDark,
+                    cursorColor = TeperaPalette.buttonBrand
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (showNameError) {
                 Text(
-                    stringResource(R.string.category_icon_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+                    stringResource(R.string.category_name_required),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.horizontalScroll(rememberScrollState())
-                ) {
-                    customCategoryIconChoices.forEach { iconKey ->
-                        SwatchPickable(
-                            selected = selectedIcon == iconKey,
-                            onClick = { selectedIcon = iconKey }
-                        ) {
-                            Icon(categoryIcon(iconKey), contentDescription = null)
-                        }
-                    }
-                }
+            }
+        }
 
-                Text(
-                    stringResource(R.string.category_color_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.horizontalScroll(rememberScrollState())
-                ) {
-                    customCategoryColorChoices.forEach { colorHex ->
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(categoryColor(colorHex), CircleShape)
-                                .then(
-                                    if (selectedColor == colorHex) {
-                                        Modifier.border(
-                                            BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface),
-                                            CircleShape
-                                        )
-                                    } else Modifier
-                                )
-                                .clickable { selectedColor = colorHex }
-                        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.category_icon_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = TeperaPalette.buttonBrandDark
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.horizontalScroll(rememberScrollState())
+            ) {
+                customCategoryIconChoices.forEach { iconKey ->
+                    SwatchPickable(
+                        selected = selectedIcon == iconKey,
+                        onClick = { selectedIcon = iconKey }
+                    ) { tint ->
+                        Icon(categoryIcon(iconKey), contentDescription = null, tint = tint)
                     }
                 }
             }
-        },
-        confirmButton = {
-            TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
-                if (name.isBlank()) {
-                    showNameError = true
-                } else {
-                    onSave(name.trim(), selectedIcon, selectedColor)
-                }
-            }, type = TeperaButtonType.Tertiary)
-        },
-        dismissButton = {
-            TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
         }
-    )
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(R.string.category_color_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = TeperaPalette.buttonBrandDark
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.horizontalScroll(rememberScrollState())
+            ) {
+                customCategoryColorChoices.forEach { colorHex ->
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .padding(4.dp)
+                            .background(categoryColor(colorHex), CircleShape)
+                            .then(
+                                if (selectedColor == colorHex) {
+                                    Modifier.border(BorderStroke(2.dp, TeperaPalette.buttonBrandDark), CircleShape)
+                                } else Modifier
+                            )
+                            .clickable { selectedColor = colorHex }
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
-private fun SwatchPickable(selected: Boolean, onClick: () -> Unit, content: @Composable () -> Unit) {
+private fun SwatchPickable(selected: Boolean, onClick: () -> Unit, content: @Composable (tint: Color) -> Unit) {
     Box(
         modifier = Modifier
             .size(40.dp)
-            .background(
-                if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                CircleShape
-            )
+            .background(if (selected) TeperaPalette.buttonBrand else Color.White, CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
-    ) { content() }
+    ) { content(if (selected) Color.White else TeperaPalette.buttonBrandDark) }
 }

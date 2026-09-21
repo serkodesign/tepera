@@ -29,6 +29,12 @@ class ActiveTimerStore(private val context: Context) {
     /** Секунди, що не склали повну хвилину (короткі таймери й "хвости") — див. [SubMinuteStore]. */
     val subMinuteStore = SubMinuteStore(context)
 
+    /** Повне очищення (Видалити всі дані): активні таймери й накопичені секунди. */
+    suspend fun clearAll() {
+        context.activeTimersDataStore.edit { it.clear() }
+        subMinuteStore.clearAll()
+    }
+
     val activeTimers: Flow<Map<String, Long>> = context.activeTimersDataStore.data.map { prefs ->
         val json = prefs[ACTIVE_TIMERS_KEY] ?: "{}"
         val obj = JSONObject(json)

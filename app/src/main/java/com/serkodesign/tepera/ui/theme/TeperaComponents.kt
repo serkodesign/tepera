@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -541,6 +542,82 @@ fun TeperaChip(
         Text(label, style = labelStyle, color = TeperaPalette.buttonBrand, maxLines = 1)
         value?.let {
             Text(it, style = labelStyle.copy(fontWeight = FontWeight.SemiBold), color = TeperaPalette.buttonBrandDark, maxLines = 1)
+        }
+    }
+}
+
+/**
+ * Єдиний діалог застосунку (M3 basic dialog у фірмовому виконанні) — ЗАМІСТЬ `AlertDialog` з дефолтною
+ * лілово-сірою поверхнею. Контейнер: тональний [TeperaPalette.surfaceBrandLight] (#DCF6ED, на ньому біла
+ * Primary-кнопка дизайн-системи читається), радіус 28 (M3 extraLarge), відступ 24, проміжок 16.
+ * Заголовок — Golos Medium 22/28 #003926, текст — M3 bodyMedium #003926 @85%. Дії — в один рядок на всю
+ * ширину: [dismissText] — Secondary (рамка), [confirmText] — Primary; без [dismissText] (інформаційний
+ * діалог) — одна широка Primary-кнопка. Кнопки — лише [TeperaButton], без ручного стилювання.
+ * [content] — довільне тіло (поля, списки) під [text].
+ */
+@Composable
+fun TeperaDialog(
+    onDismissRequest: () -> Unit,
+    confirmText: String,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    text: String? = null,
+    dismissText: String? = null,
+    onDismiss: () -> Unit = onDismissRequest,
+    confirmEnabled: Boolean = true,
+    content: (@Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit)? = null
+) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismissRequest) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(TeperaPalette.surfaceBrandLight)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            title?.let {
+                Text(
+                    text = it,
+                    color = TeperaPalette.buttonBrandDark,
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 22.sp,
+                    lineHeight = 28.sp
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(androidx.compose.foundation.rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                text?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.85f)
+                    )
+                }
+                content?.invoke(this)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (dismissText != null) {
+                    TeperaButton(
+                        text = dismissText,
+                        onClick = onDismiss,
+                        type = TeperaButtonType.Secondary,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                TeperaButton(
+                    text = confirmText,
+                    onClick = onConfirm,
+                    enabled = confirmEnabled,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }

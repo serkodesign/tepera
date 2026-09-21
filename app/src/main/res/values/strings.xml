@@ -352,7 +352,8 @@
     <string name="stats_period_week">Тиждень</string>
     <string name="stats_category_breakdown_title">Розподіл часу по категоріях</string>
     <string name="stats_weekly_trend_title">Тренд Online-часу</string>
-    <string name="stats_no_data">Немає даних за цей період</string>
+    <string name="stats_no_data">Поки порожньо</string>
+    <string name="stats_day_first_day_empty">Поки порожньо. Тут з\'явиться вчорашня доба, щойно вона буде.</string>
 
     <!-- T-2 (tepera-dev-spec.md): бекфіл історії пауз одразу після надання дозволу -->
     <string name="home_backfill_processing">Обробляємо історію…</string>
@@ -407,4 +408,46 @@
     <string name="widget_1x1_description">Одна кнопка активності</string>
     <string name="widget_2x1_description">Дві кнопки активностей</string>
     <string name="widget_4x2_description">Кнопки категорій і сітка доби</string>
+
+    <!-- Про застосунок (GAP-8) -->
+    <string name="settings_about_action">Про застосунок</string>
+    <string name="about_screen_title">Про застосунок</string>
+    <string name="about_version_format">Версія %1$s</string>
+    <string name="about_tagline">Tepera працює без облікового запису. Твої записи лишаються на цьому телефоні.</string>
+    <string name="about_privacy_policy">Політика конфіденційності</string>
+    <string name="about_contact">Написати розробнику</string>
+    <string name="about_no_app">Не знайшов застосунок, який може це відкрити</string>
+
+    <!-- Видалення всіх даних (два кроки підтвердження) -->
+    <string name="backup_delete_section">Видалення даних</string>
+    <string name="backup_delete_action">Видалити всі дані</string>
+    <string name="backup_delete_title">Видалити всі дані?</string>
+    <string name="backup_delete_body">Буде видалено записи, категорії, застосунки з затримкою, налаштування й усе, що Tepera зберігає на цьому телефоні. Це не можна скасувати.\n\nЯкщо є сумнів, спершу збережи копію: «Експортувати дані» вище.\n\nКопію в Android Auto Backup (якщо вона ввімкнена) це не чіпає — її можна вимкнути в системних налаштуваннях.</string>
+    <string name="backup_delete_next">Далі</string>
+    <string name="backup_delete_final_title">Останнє підтвердження</string>
+    <string name="backup_delete_final_body">Щоб видалити все назавжди, напиши слово «%1$s».</string>
+    <string name="backup_delete_word">ВИДАЛИТИ</string>
+    <string name="backup_delete_word_label">Слово підтвердження</string>
+    <string name="backup_delete_confirm">Видалити назавжди</string>
+    <string name="backup_delete_running">Видаляю…</string>
+    <string name="backup_delete_failure">Не вдалося видалити дані</string>
+
+    <string name="home_active_timer_format">Зараз іде: %1$s</string>
+    <string name="home_active_timer_stop">Зупинити</string>
+
+    <!-- T-16 Б: що відомо / чого не відомо про скролінг (редакційні правила ТЗ, розділ 4.1) -->
+    <string name="scrolling_notes_row">Що відомо про скролінг і дофамін</string>
+    <string name="scrolling_notes_title">Що відомо і чого не відомо</string>
+    <string name="scrolling_notes_intro">Це не поради й не оцінка. Тут лише те, що наука знає на цей момент, і те, де вчені не згодні між собою.</string>
+    <string name="scrolling_notes_1_title">Про що йдеться</string>
+    <string name="scrolling_notes_1_body">Скролінг — це гортання стрічки без наперед заданої мети. Tepera не бачить, що відбувається всередині застосунку: хвилина читання й хвилина гортання виглядають для неї однаково.</string>
+    <string name="scrolling_notes_2_title">Що відомо</string>
+    <string name="scrolling_notes_2_body">Нейробіологи зазвичай описують дофамін як частину системи, пов\'язаної з очікуванням нагороди й навчанням, а не як «гормон задоволення». Стрічки, що оновлюються, влаштовані так, що наступний елемент невідомий заздалегідь — це описана властивість самого дизайну, а не вирок людині.</string>
+    <string name="scrolling_notes_3_title">Чого не відомо</string>
+    <string name="scrolling_notes_3_body">Немає єдиної відповіді, чи можна називати регулярне користування соцмережами залежністю. Немає й згоди щодо того, наскільки екранний час пов\'язаний із самопочуттям: одні дослідники бачать помітний зв\'язок, інші — дуже слабкий, ще інші вважають, що напрямок зв\'язку не встановлено.</string>
+    <string name="scrolling_notes_4_title">Де вчені не згодні</string>
+    <string name="scrolling_notes_4_body">Чи є «залежність від соцмереж» окремим станом. Чи екранний час змінює самопочуття, чи люди з певним самопочуттям частіше проводять час у застосунках. Чи має значення сам час, чи те, що людина в цей час робить.</string>
+    <string name="scrolling_notes_5_title">Як це стосується Tepera</string>
+    <string name="scrolling_notes_5_body">Tepera не робить висновків про тебе з цих питань. Вона лише показує, як ти користуєшся телефоном, а що з цим робити — вирішуєш ти.</string>
+    <string name="scrolling_notes_reviewed">Текст востаннє переглянуто: 21.09.2026</string>
 </resources>

@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 11.09.2026*
+*Останнє оновлення / Last updated: 21.09.2026*
 
 ---
 
@@ -30,8 +30,15 @@ title: Privacy Policy — Tepera
 **Аналітика:** застосунок надсилає лише анонімні crash-репорти (через Firebase Crashlytics) у разі
 збою — без ідентифікації користувача та без трекінгу поведінки в застосунку.
 
-**Ваш контроль:** ви можете в будь-який момент експортувати або видалити всі свої дані через
-налаштування застосунку. Видалення застосунку видаляє всі локальні дані (крім копії в Android Auto
+**Добровільна підтримка розробника:** якщо ви самі відкриєте екран «Пригостити кавою» й оберете
+суму, покупку проводить Google Play через сервіс **RevenueCat**. Для цього використовується
+анонімний ідентифікатор (без імені, пошти чи облікового запису), історія такої покупки й технічні
+дані пристрою. Поки ви не відкриваєте цей екран, застосунок з RevenueCat не з'єднується. Підтримка
+нічого не відкриває й не змінює у функціях застосунку.
+
+**Ваш контроль:** ви можете в будь-який момент експортувати свої дані (Налаштування → Резервне
+копіювання) або видалити їх усі (Налаштування → Резервне копіювання → «Видалити всі дані»; потрібно
+двічі підтвердити). Видалення застосунку видаляє всі локальні дані (крім копії в Android Auto
 Backup, яку можна вимкнути в системних налаштуваннях Android).
 
 **Контакт:** serkodesign@gmail.com
@@ -59,8 +66,14 @@ with third parties.
 **Analytics:** the app sends only anonymous crash reports (via Firebase Crashlytics) when something
 goes wrong — no user identification, no in-app behavior tracking.
 
-**Your control:** you can export or delete all your data at any time from the app's settings.
-Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be
+**Voluntary support of the developer:** if you open the "Buy the developer a coffee" screen and choose
+an amount, the purchase is processed by Google Play through the **RevenueCat** service. This uses an
+anonymous identifier (no name, email or account), the history of that purchase, and technical device
+data. Until you open that screen, the app does not connect to RevenueCat. Support does not unlock or
+change anything in the app.
+
+**Your control:** you can export your data at any time (Settings → Backup and restore) or delete all
+of it (Settings → Backup and restore → "Delete all data"; you have to confirm twice). Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be
 disabled in Android system settings).
 
 **Contact:** serkodesign@gmail.com

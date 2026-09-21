@@ -1,5 +1,9 @@
 package com.serkodesign.tepera.ui.home
 
+import androidx.compose.ui.graphics.Color
+
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -149,45 +152,48 @@ private fun CategoryPickerDialog(
     onPick: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    TeperaDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.pause_pick_category_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                categories.forEach { category ->
-                    val accentColor = categoryColor(category.colorHex)
-                    Row(
+        title = stringResource(R.string.pause_pick_category_title),
+        confirmText = stringResource(R.string.pause_pick_category_cancel),
+        onConfirm = onDismiss
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            categories.forEach { category ->
+                val accentColor = categoryColor(category.colorHex)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White.copy(alpha = 0.8f))
+                        .clickable { onPick(category.id) }
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable { onPick(category.id) }
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(accentColor.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(accentColor.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = categoryIcon(category.iconName),
-                                contentDescription = null,
-                                tint = accentColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Text(categoryDisplayName(category))
+                        Icon(
+                            imageVector = categoryIcon(category.iconName),
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
+                    Text(
+                        categoryDisplayName(category),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TeperaPalette.buttonBrandDark
+                    )
                 }
             }
-        },
-        confirmButton = {
-            TeperaButton(text = stringResource(R.string.pause_pick_category_cancel), onClick = onDismiss, type = TeperaButtonType.Tertiary)
         }
-    )
+    }
 }
 
 private fun formatTime(millis: Long): String =

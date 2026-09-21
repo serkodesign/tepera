@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -47,7 +49,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.draw.alpha
 import com.serkodesign.tepera.ui.category.CategoryViewModel
 import com.serkodesign.tepera.ui.category.CreateCategoryDialog
@@ -168,16 +169,11 @@ fun HomeScreen(
         )
     }
     if (showCategoryLimitNotice) {
-        AlertDialog(
+        TeperaDialog(
             onDismissRequest = { showCategoryLimitNotice = false },
-            confirmButton = {
-                TeperaButton(
-                    text = stringResource(R.string.dialog_ok),
-                    onClick = { showCategoryLimitNotice = false },
-                    type = TeperaButtonType.Tertiary
-                )
-            },
-            text = { Text(stringResource(R.string.category_custom_limit_reached)) }
+            text = stringResource(R.string.category_custom_limit_reached),
+            confirmText = stringResource(R.string.dialog_ok),
+            onConfirm = { showCategoryLimitNotice = false }
         )
     }
 
@@ -418,6 +414,15 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             HomeHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
+
+            // GAP-5: активний таймер (у т.ч. запущений з віджета) видно одразу й зупиняється звідси.
+            summary.firstOrNull { it.trackingStartTime != null }?.let { active ->
+                ActiveTimerBar(
+                    active = active,
+                    onStop = { viewModel.toggleTimer(active.category.id) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
 
             // T-2 (tepera-dev-spec.md): "обробка... з індикатором" — короткий тихий рядок, доки
             // триває одноразовий бекфіл історії пауз (BackfillViewModel), зазвичай зникає

@@ -41,6 +41,11 @@ private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
  */
 class SettingsStore(private val context: Context) {
 
+    /** Повне очищення (Резервне копіювання → Видалити всі дані): усі ключі, включно з прапорцями онбордингу. */
+    suspend fun clearAll() {
+        context.settingsDataStore.edit { it.clear() }
+    }
+
     val targetMinutes: Flow<Int> = context.settingsDataStore.data
         .map { it[TARGET_MINUTES_KEY] ?: DEFAULT_TARGET_MINUTES }
 

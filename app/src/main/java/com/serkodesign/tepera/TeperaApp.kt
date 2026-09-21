@@ -46,6 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Без DI-фреймворку (CLAUDE.md) — ручний factory pattern. Усі залежності будуються тут
@@ -147,18 +148,7 @@ class TeperaApp : Application() {
         if (com.serkodesign.tepera.data.billing.RevenueCatConfig.PRO_ENTRY_ENABLED) proRepository
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
         // у CategoryDao), тож виклик щозапуску безпечний.
-        applicationScope.launch {
-            categoryRepository.ensureDefaultsSeeded(DefaultCategories.all)
-            // SRS v2.4: "Сон" прибрано з дефолтних категорій — archive(), не видалення (FR-2.3).
-            // Ідемпотентно (archive() лише виставляє isHidden=true), безпечно викликати щозапуску;
-            // не чіпає вже існуючі записи цієї категорії, лише ховає її з активного списку.
-            categoryRepository.archive(DefaultCategories.LEGACY_SLEEP_ID)
-            // FR-D.9: окрема точка відліку для порогу готовності теплового патерну доби.
-            settingsStore.seedFirstLaunchMillisIfUnset()
-            // T-12: дефолт SRS "вікно сну (00:00-06:00)" — слот 1 ввімкнений, слот 2 (друге
-            // вікно для плаваючого графіка) вимкнений, доки користувач не ввімкне сам.
-            sleepWindowRepository.seedDefaultsIfUnset()
-        }
+        applicationScope.launch { seedInitialData() }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)
         WidgetRolloverWorker.schedule(this)
@@ -166,6 +156,59 @@ class TeperaApp : Application() {
         // ідемпотентний, безпечно викликати щозапуску.
         createTimerCheckNotificationChannel(this)
         registerWidgetPreviewIfNeeded()
+    }
+
+    /** Початкові дані, безпечні до повторного виклику щозапуску (див. [onCreate]); після [wipeAllData] викликаються ще раз. */
+    private suspend fun seedInitialData() {
+        categoryRepository.ensureDefaultsSeeded(DefaultCategories.all)
+        // SRS v2.4: "Сон" прибрано з дефолтних категорій — archive(), не видалення (FR-2.3).
+        // Ідемпотентно (archive() лише виставляє isHidden=true), безпечно викликати щозапуску;
+        // не чіпає вже існуючі записи цієї категорії, лише ховає її з активного списку.
+        categoryRepository.archive(DefaultCategories.LEGACY_SLEEP_ID)
+        // FR-D.9: окрема точка відліку для порогу готовності теплового патерну доби.
+        settingsStore.seedFirstLaunchMillisIfUnset()
+        // T-12: дефолт SRS "вікно сну (00:00-06:00)" — слот 1 ввімкнений, слот 2 (друге
+        // вікно для плаваючого графіка) вимкнений, доки користувач не ввімкне сам.
+        sleepWindowRepository.seedDefaultsIfUnset()
+    }
+
+    /**
+     * Повне видалення всіх локальних даних (Резервне копіювання → Видалити всі дані, після двох підтверджень):
+     * Room (усі таблиці), усі DataStore (налаштування й прапорці онбордингу, активні таймери, накопичені секунди,
+     * id пристрою), мова застосунку, фонові завдання й сповіщення, закріплені ярлики воріт (вимикаються — Android
+     * не дозволяє застосунку зняти закріплення), потім заново засіваються дефолтні категорії. Копію в Android Auto
+     * Backup (якщо ввімкнена) це не чіпає — вона в акаунті Google. Після виклику треба перезапустити застосунок
+     * ([restartApp]), щоб усі екрани й кеші стартували з чистого стану.
+     */
+    suspend fun wipeAllData() = withContext(Dispatchers.IO) {
+        androidx.work.WorkManager.getInstance(this@TeperaApp).cancelAllWork()
+        runCatching {
+            getSystemService(android.app.NotificationManager::class.java)?.cancelAll()
+            val shortcuts = getSystemService(android.content.pm.ShortcutManager::class.java)
+            if (shortcuts != null) {
+                val pinnedIds = shortcuts.pinnedShortcuts.map { it.id }
+                if (pinnedIds.isNotEmpty()) shortcuts.disableShortcuts(pinnedIds)
+                shortcuts.removeAllDynamicShortcuts()
+            }
+        }
+        database.clearAllTables()
+        settingsStore.clearAll()
+        activeTimerStore.clearAll()
+        deviceIdProvider.clearAll()
+        getSharedPreferences("locale_prefs", MODE_PRIVATE).edit().clear().commit()
+        getSharedPreferences("widget_prefs", MODE_PRIVATE).edit().clear().commit()
+        seedInitialData()
+        WidgetUpdateWorker.schedule(this@TeperaApp)
+        WidgetRolloverWorker.schedule(this@TeperaApp)
+        runCatching { activeTimerStore.refreshWidgets() }
+    }
+
+    /** Перезапуск із чистого стану: нова задача з головною активністю й завершення процесу (кеші DataStore/Room скидаються). */
+    fun restartApp() {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+            ?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        if (intent != null) startActivity(intent)
+        android.os.Process.killProcess(android.os.Process.myPid())
     }
 
     /**
