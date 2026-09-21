@@ -1,50 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Концепт "B. Два хребти": ближній темний хребет і дальній світліший, сонце визирає між ними —
-     обрано користувачем із 4 варіантів (артефакт "Гірський світанок"). Координати 1:1 з тим
-     артефактом (viewBox/viewport 108×108, той самий формат, що Android adaptive-icon canvas).
-     Головні форми лишаються в межах центрального кола safe zone (⌀66dp), хребти навмисно
-     "заземлені" — торкаються нижнього краю полотна, як і в оригінальному прев'ю.
-     Сонце — СУЦІЛЬНА заливка (#FFB58A, бренд-персиковий), за прямим запитом користувача, а не
-     радіальний градієнт, як у початковому ескізі; м'яке розмиття-"сяйво" довкола сонця з
-     ескізу (SVG feGaussianBlur) тут не відтворено — VectorDrawable фільтрів розмиття не
-     підтримує, тому сонце лишається чистим колом без гало. -->
+<!-- Логотип "Т" (Figma "App concept", node 234:438 "Union", 633.576 x 593.214 у фреймі 1000x1000 на
+     позиції (180.607, 220.930)); градієнт #003926 -> #699129 і контур — з SVG-асета макета 1:1.
+     Задній шар — ic_launcher_background.xml. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:viewportWidth="1000"
+    android:viewportHeight="1000">
 
-    <!-- Сонце — суцільна заливка, без градієнта. Малюється ПЕРШИМ (під хребтами), щоб дальній
-         і ближній хребет коректно перекривали його нижню частину — той самий порядок шарів,
-         що в оригінальному SVG-ескізі (концепт B). -->
-    <path
-        android:pathData="M51,50 A13,13 0 1 1 77,50 A13,13 0 1 1 51,50 Z"
-        android:fillColor="#FFB58A" />
-
-    <!-- Дальній (світліший) хребет -->
-    <path android:pathData="M0,108 L0,80 Q36,46 72,80 Q90,96 108,86 L108,108 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="54" android:startY="46"
-                android:endX="54" android:endY="108">
-                <item android:offset="0" android:color="#6FBE94" />
-                <item android:offset="1" android:color="#2E8F63" />
-            </gradient>
-        </aapt:attr>
-    </path>
-
-    <!-- Ближній (темніший) хребет -->
-    <path android:pathData="M0,108 L0,94 Q66,44 108,94 L108,108 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="54" android:startY="44"
-                android:endX="54" android:endY="108">
-                <item android:offset="0" android:color="#0B5A3C" />
-                <item android:offset="1" android:color="#00301F" />
-            </gradient>
-        </aapt:attr>
-    </path>
+    <!-- Логотип вписано у видиму зону (scale 0.72), як і фон. -->
+    <group android:scaleX="0.72" android:scaleY="0.72" android:pivotX="500" android:pivotY="500">
+    <group
+        android:translateX="180.607"
+        android:translateY="220.930">
+        <path
+            android:pathData="M633.576,22.8564C633.576,101.754 569.617,165.714 490.719,165.714H470.005C444.758,165.714 424.291,186.181 424.291,211.428V450.356C424.291,529.254 360.331,593.214 281.434,593.214H212.862V285.714C212.862,127.918 340.781,0.000114289 498.576,0H633.576V22.8564ZM263.472,1.24316C265.664,1.2434 267.441,3.02117 267.441,5.21387C267.441,92.9277 196.335,164.033 108.621,164.033H3.9707C1.77796,164.033 0.000164236,162.256 0,160.063C0,72.3495 71.1064,1.24316 158.82,1.24316H263.472Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="340.717" android:startY="366.071"
+                    android:endX="597.858" android:endY="-113.93">
+                    <item android:offset="0" android:color="#003926" />
+                    <item android:offset="1" android:color="#699129" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+    </group>
 </vector>
