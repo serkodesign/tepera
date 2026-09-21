@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -69,6 +70,7 @@ fun SettingsScreen(
     onOpenCategories: () -> Unit,
     onOpenBackupRestore: () -> Unit,
     onOpenGates: () -> Unit,
+    onOpenWidgetSettings: () -> Unit,
     onOpenSupport: () -> Unit,
     onOpenPro: () -> Unit,
     onOpenSpikeT1: () -> Unit = {},
@@ -144,6 +146,12 @@ fun SettingsScreen(
                     label = stringResource(R.string.settings_gates_action),
                     onClick = onOpenGates,
                     leading = { TeperaIconCircle(Icons.Filled.Timer) },
+                    trailing = { NavChevron() }
+                )
+                GlassRow(
+                    label = stringResource(R.string.settings_widget_action),
+                    onClick = onOpenWidgetSettings,
+                    leading = { TeperaIconCircle(Icons.Filled.Widgets) },
                     trailing = { NavChevron() }
                 )
 

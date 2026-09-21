@@ -5,6 +5,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
+import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import com.serkodesign.tepera.util.SleepWindowCalculator
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
@@ -139,13 +140,12 @@ class BalanceRepository(
      * [calculateDayLengthMinutes] — інакше сума сегментів шкали не збігалася б із довжиною дня.
      */
     fun calculateDaySpanMinutes(dayStartMillis: Long, sleepWindows: List<SleepWindowEntity> = emptyList()): Int {
-        val cal = Calendar.getInstance()
+        // Кінець логічної доби (Home/віджет перемикаються о 01:00, DAY_ROLLOVER_HOUR): до 01:00 це
+        // ще північ, що настала щойно. Між 00:00 і 01:00 "зараз" уже за нею — шкала тоді просто
+        // повністю заповнена (без порожньої ділянки "майбутнього"), а не довша за 100%.
+        val cal = Calendar.getInstance().apply { timeInMillis = startOfLogicalDayMillis() }
         cal.add(Calendar.DAY_OF_YEAR, 1)
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        val nextMidnight = cal.timeInMillis
+        val nextMidnight = maxOf(cal.timeInMillis, System.currentTimeMillis())
         val rawMinutes = ((nextMidnight - dayStartMillis) / 60_000L).toInt()
         val sleepMinutes = SleepWindowCalculator.minutesInWindows(sleepWindows, dayStartMillis, nextMidnight)
         return (rawMinutes - sleepMinutes).coerceAtLeast(1)
@@ -154,15 +154,8 @@ class BalanceRepository(
     private fun minutesSince(millis: Long): Int =
         ((System.currentTimeMillis() - millis) / 60_000L).toInt()
 
-    /** FR-3.3: локальна північ (узгоджується з відомим timezone-обмеженням, SRS розділ 11). */
-    private fun startOfTodayMillis(): Long {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        return cal.timeInMillis
-    }
+    /** FR-3.3: північ поточної логічної доби (до 01:00 — ще вчорашня), див. [startOfLogicalDayMillis]. */
+    private fun startOfTodayMillis(): Long = startOfLogicalDayMillis()
 
     /**
      * FR-3.2, FR-3.5: точка старту дня — перше "суттєве" розблокування (перший MOVE_TO_FOREGROUND

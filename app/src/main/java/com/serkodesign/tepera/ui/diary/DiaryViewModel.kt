@@ -11,6 +11,7 @@ import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
+import com.serkodesign.tepera.util.localStartOfDay
 import com.serkodesign.tepera.util.startOfTodayMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,21 +19,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 private const val MS_PER_DAY = 24 * 60 * 60 * 1000L
 
+/** Скільки діб (разом із сьогоднішньою) показує Щоденник — за прямим запитом користувача, 2 тижні.
+ * Самі записи в БД не видаляються ніколи; це лише глибина показу. */
+const val DIARY_HISTORY_DAYS = 14
+
 /** За прямим запитом користувача: перенесено зі StatsViewModel (`HistoryCard` жила на Stats) у
- * власний екран "Щоденник" на навбарі (node 2146:320, Figma) — сам розділ "сьогодні"+"вчора" не
- * змінився, лише переїхав. Тижневі підсумки розблокувань/медіани лишаються на Stats (вони
- * показувались НЕ в HistoryCard, а окремими рядками над графіками при period == WEEK). */
+ * власний екран "Щоденник" на навбарі (node 2146:320, Figma). Спершу показував лише "сьогодні" і
+ * "вчора", тепер — [DIARY_HISTORY_DAYS] діб. Тижневі підсумки розблокувань/медіани лишаються на
+ * Stats (вони показувались НЕ в HistoryCard, а окремими рядками над графіками при period == WEEK). */
 data class HistoryEntryItem(val entry: ActivityEntryEntity, val category: CategoryEntity)
 
-data class HistoryDayGroup(val dayStartMillis: Long, val isToday: Boolean, val items: List<HistoryEntryItem>)
+/** [daysAgo]: 0 — сьогодні, 1 — вчора, далі — старші доби. */
+data class HistoryDayGroup(val dayStartMillis: Long, val daysAgo: Int, val items: List<HistoryEntryItem>)
 
 data class DiaryUiState(
     val history: List<HistoryDayGroup> = emptyList(),
-    val unlockCountToday: Int? = null,
-    val unlockCountYesterday: Int? = null,
+    /** Початок доби -> розблокування; доби без надійних даних (старші за системну історію) відсутні. */
+    val unlockCountsByDay: Map<Long, Int> = emptyMap(),
     val lastPhoneUseYesterdayMillis: Long? = null
 )
 
@@ -47,9 +54,9 @@ class DiaryViewModel(
 
     // Той самий спрощений принцип, що був у StatsViewModel: рахується один раз при створенні
     // ViewModel, не перераховується сам собою рівно опівночі, якщо екран лишається відкритим.
-    private val historyRangeStart = startOfTodayMillis() - MS_PER_DAY
+    private val historyRangeStart = startOfDayDaysAgo(DIARY_HISTORY_DAYS - 1)
 
-    private val unlockCounts = MutableStateFlow<Pair<Int?, Int?>>(null to null)
+    private val unlockCounts = MutableStateFlow<Map<Long, Int>>(emptyMap())
     private val lastPhoneUseYesterday = MutableStateFlow<Long?>(null)
 
     private val history: StateFlow<List<HistoryDayGroup>> = combine(
@@ -58,21 +65,19 @@ class DiaryViewModel(
     ) { entries, categories ->
         val categoryById = categories.associateBy { it.id }
         val todayStart = startOfTodayMillis()
-        val (todayEntries, yesterdayEntries) = entries.partition { it.startTime >= todayStart }
-        fun toGroup(dayStart: Long, isToday: Boolean, dayEntries: List<ActivityEntryEntity>) =
-            HistoryDayGroup(
-                dayStartMillis = dayStart,
-                isToday = isToday,
-                items = dayEntries.mapNotNull { e -> categoryById[e.categoryId]?.let { HistoryEntryItem(e, it) } }
-            ).takeIf { it.items.isNotEmpty() }
-        listOfNotNull(
-            toGroup(todayStart, true, todayEntries),
-            toGroup(historyRangeStart, false, yesterdayEntries)
-        )
+        entries.groupBy { localStartOfDay(it.startTime) }
+            .toSortedMap(compareByDescending { it })
+            .mapNotNull { (dayStart, dayEntries) ->
+                val items = dayEntries.mapNotNull { e -> categoryById[e.categoryId]?.let { HistoryEntryItem(e, it) } }
+                if (items.isEmpty()) return@mapNotNull null
+                // round, не floor: перехід на літній/зимовий час робить добу 23 або 25 год.
+                val daysAgo = Math.round((todayStart - dayStart).toDouble() / MS_PER_DAY).toInt()
+                HistoryDayGroup(dayStart, daysAgo, items)
+            }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val uiState: StateFlow<DiaryUiState> = combine(history, unlockCounts, lastPhoneUseYesterday) { h, (today, yesterday), lastUse ->
-        DiaryUiState(h, today, yesterday, lastUse)
+    val uiState: StateFlow<DiaryUiState> = combine(history, unlockCounts, lastPhoneUseYesterday) { h, counts, lastUse ->
+        DiaryUiState(h, counts, lastUse)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DiaryUiState())
 
     init {
@@ -85,22 +90,26 @@ class DiaryViewModel(
     fun refresh() {
         viewModelScope.launch {
             if (!balanceRepository.hasUsageAccess()) {
-                unlockCounts.value = null to null
+                unlockCounts.value = emptyMap()
                 lastPhoneUseYesterday.value = null
                 return@launch
             }
-            val todayStart = startOfTodayMillis()
             val sleepWindows = sleepWindowRepository.getEnabledWindows()
-            unlockCounts.value = if (unlockRepository.isSupported()) {
-                unlockRepository.countUnlocks(todayStart, System.currentTimeMillis(), sleepWindows) to
-                    unlockRepository.countUnlocks(todayStart - MS_PER_DAY, todayStart, sleepWindows)
-            } else {
-                null to null
-            }
+            unlockCounts.value = unlockRepository.countUnlocksByDay(
+                from = historyRangeStart,
+                to = System.currentTimeMillis(),
+                sleepWindows = sleepWindows
+            )
             lastPhoneUseYesterday.value =
                 pauseRepository.lastPhoneUseForShiftedDay(System.currentTimeMillis(), daysBack = 0).lastUseMillis
         }
     }
+
+    private fun startOfDayDaysAgo(days: Int): Long =
+        Calendar.getInstance().apply {
+            timeInMillis = startOfTodayMillis()
+            add(Calendar.DAY_OF_YEAR, -days)
+        }.timeInMillis
 
     class Factory(
         private val activityRepository: ActivityRepository,

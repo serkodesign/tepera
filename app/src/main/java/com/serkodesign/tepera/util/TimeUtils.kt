@@ -1,5 +1,9 @@
 package com.serkodesign.tepera.util
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -70,3 +74,48 @@ fun utcMidnightToLocalStartOfDay(utcMillis: Long): Long {
     }
     return local.timeInMillis
 }
+
+
+/** Година, до якої Home і віджет ще показують попередню добу (за прямим запитом користувача). */
+const val DAY_ROLLOVER_HOUR = 1
+
+/**
+ * Північ "логічної" доби для Home і віджета: до 01:00 це ще вчорашня доба, тож повертає вчорашню
+ * північ, і запит записів "від неї до нескінченності" охоплює і вчорашні записи, і все, що
+ * додано/зупинено між 00:00 і 01:00. Календарна [startOfTodayMillis] лишається для Статистики й
+ * Щоденника — вони перемикаються рівно опівночі.
+ */
+fun startOfLogicalDayMillis(nowMillis: Long = System.currentTimeMillis()): Long {
+    val cal = Calendar.getInstance().apply { timeInMillis = nowMillis }
+    cal.add(Calendar.HOUR_OF_DAY, -DAY_ROLLOVER_HOUR)
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    return cal.timeInMillis
+}
+
+/** Найближчі 01:00 після [nowMillis] — момент, коли Home і віджет перемикаються на нову добу. */
+fun nextDayRolloverMillis(nowMillis: Long = System.currentTimeMillis()): Long {
+    val cal = Calendar.getInstance().apply { timeInMillis = nowMillis }
+    cal.set(Calendar.HOUR_OF_DAY, DAY_ROLLOVER_HOUR)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    if (cal.timeInMillis <= nowMillis) cal.add(Calendar.DAY_OF_YEAR, 1)
+    return cal.timeInMillis
+}
+
+/**
+ * [startOfLogicalDayMillis] як потік: одразу віддає поточне значення і знову — щойно настає нова
+ * логічна доба (о 01:00). Потрібен ViewModel-ям, що живуть довше за одну добу: одноразовий
+ * виклик у конструкторі тримав би запити записів прив'язаними до вчорашньої півночі, і Home
+ * показував би прогрес попереднього дня. Перевірка щоразу за 30 с, а не одна затримка: `delay` не
+ * рахує час глибокого сну пристрою, тож довгий таймер спрацював би пізно.
+ */
+fun logicalDayStartFlow(): Flow<Long> = flow {
+    while (true) {
+        emit(startOfLogicalDayMillis())
+        delay(30_000)
+    }
+}.distinctUntilChanged()

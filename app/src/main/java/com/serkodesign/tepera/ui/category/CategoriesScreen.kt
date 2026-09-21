@@ -209,7 +209,7 @@ private fun CategoryRow(
 }
 
 @Composable
-private fun CreateCategoryDialog(
+internal fun CreateCategoryDialog(
     onDismiss: () -> Unit,
     onSave: (name: String, iconName: String, colorHex: String) -> Unit
 ) {

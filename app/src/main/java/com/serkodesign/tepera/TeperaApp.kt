@@ -4,6 +4,8 @@ import android.app.Application
 import android.os.Build
 import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import com.serkodesign.tepera.widget.TeperaWidget1x1Receiver
+import com.serkodesign.tepera.widget.TeperaWidget2x1Receiver
 import com.serkodesign.tepera.widget.TeperaWidget4x2Receiver
 import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import androidx.room.Room
@@ -39,6 +41,7 @@ import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.widget.WidgetUpdateWorker
+import com.serkodesign.tepera.widget.WidgetRolloverWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -158,6 +161,7 @@ class TeperaApp : Application() {
         }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)
+        WidgetRolloverWorker.schedule(this)
         // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker) — createNotificationChannel()
         // ідемпотентний, безпечно викликати щозапуску.
         createTimerCheckNotificationChannel(this)
@@ -182,7 +186,9 @@ class TeperaApp : Application() {
             val manager = GlanceAppWidgetManager(this@TeperaApp)
             val receivers = listOf(
                 "preview_key_4x1" to TeperaWidgetReceiver::class,
-                "preview_key_4x2" to TeperaWidget4x2Receiver::class
+                "preview_key_4x2" to TeperaWidget4x2Receiver::class,
+                "preview_key_1x1" to TeperaWidget1x1Receiver::class,
+                "preview_key_2x1" to TeperaWidget2x1Receiver::class
             )
             for ((prefKey, receiver) in receivers) {
                 if (prefs.getString(prefKey, null) == key) continue
@@ -199,6 +205,6 @@ class TeperaApp : Application() {
     }
 
     private companion object {
-        const val WIDGET_PREVIEW_VERSION = 3
+        const val WIDGET_PREVIEW_VERSION = 4
     }
 }

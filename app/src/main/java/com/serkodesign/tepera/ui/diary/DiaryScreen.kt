@@ -27,6 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
+import com.serkodesign.tepera.util.localStartOfDay
+import com.serkodesign.tepera.util.startOfTodayMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -119,8 +122,7 @@ fun DiaryScreen(
             ) {
                 HistoryContent(
                     groups = state.history,
-                    unlockCountToday = state.unlockCountToday,
-                    unlockCountYesterday = state.unlockCountYesterday,
+                    unlockCountsByDay = state.unlockCountsByDay,
                     lastPhoneUseYesterdayMillis = state.lastPhoneUseYesterdayMillis,
                     onEditEntry = onEditEntry
                 )
@@ -148,31 +150,49 @@ fun DiaryScreen(
 @Composable
 private fun HistoryContent(
     groups: List<HistoryDayGroup>,
-    unlockCountToday: Int?,
-    unlockCountYesterday: Int?,
+    unlockCountsByDay: Map<Long, Int>,
     lastPhoneUseYesterdayMillis: Long?,
     onEditEntry: (String) -> Unit
 ) {
-    if (groups.isEmpty() && unlockCountToday == null && unlockCountYesterday == null && lastPhoneUseYesterdayMillis == null) {
+    val todayStart = remember { startOfTodayMillis() }
+    val yesterdayStart = remember(todayStart) { localStartOfDay(todayStart - 1) }
+    val groupsByDay = groups.associateBy { it.dayStartMillis }
+
+    // Доба з'являється, якщо в ній є записи; сьогодні й вчора — ще й коли є лічильник розблокувань
+    // чи "востаннє брав телефон" (як було до розширення історії). Старші доби без записів не
+    // показуються порожніми чіпами — щоб 2 тижні не перетворились на стовпчик самих цифр.
+    val dayStarts = (groupsByDay.keys +
+        listOfNotNull(
+            todayStart.takeIf { it in unlockCountsByDay },
+            yesterdayStart.takeIf { it in unlockCountsByDay || lastPhoneUseYesterdayMillis != null }
+        )).toSortedSet(compareByDescending { it })
+
+    if (dayStarts.isEmpty()) {
         Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
             Text(stringResource(R.string.home_no_entries_today), color = TeperaPalette.buttonBrandDark)
         }
         return
     }
 
-    val groupsByToday = groups.associateBy { it.isToday }
+    val locale = LocalConfiguration.current.locales[0]
+    val dateFormat = remember(locale) { SimpleDateFormat("EEEE, d MMMM", locale) }
 
-    listOf(true, false).forEach { isToday ->
-        val group = groupsByToday[isToday]
-        val unlockCount = if (isToday) unlockCountToday else unlockCountYesterday
-        val lastPhoneUseMillis = if (isToday) null else lastPhoneUseYesterdayMillis
-        if (group == null && unlockCount == null && lastPhoneUseMillis == null) return@forEach
+    dayStarts.forEach { dayStart ->
+        val group = groupsByDay[dayStart]
+        val isToday = dayStart == todayStart
+        val isYesterday = dayStart == yesterdayStart
+        val unlockCount = unlockCountsByDay[dayStart]
+        val lastPhoneUseMillis = if (isYesterday) lastPhoneUseYesterdayMillis else null
 
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             // Figma 208:1549: Subheader 1 — Golos Text Medium 18sp, line-height 1.1, letter-spacing 0.018,
             // #003926, горизонтальний відступ 8.
             Text(
-                text = stringResource(if (isToday) R.string.stats_history_today else R.string.stats_history_yesterday),
+                text = when {
+                    isToday -> stringResource(R.string.stats_history_today)
+                    isYesterday -> stringResource(R.string.stats_history_yesterday)
+                    else -> dateFormat.format(Date(dayStart)).replaceFirstChar { it.titlecase(locale) }
+                },
                 modifier = Modifier.padding(horizontal = 8.dp),
                 color = TeperaPalette.buttonBrandDark,
                 fontFamily = TeperaPalette.headlineFont,
@@ -191,7 +211,11 @@ private fun HistoryContent(
                         unlockCount?.let { count ->
                             HomeLabelValueChip(
                                 label = stringResource(
-                                    if (isToday) R.string.diary_unlock_today_label else R.string.diary_unlock_yesterday_label
+                                    when {
+                                        isToday -> R.string.diary_unlock_today_label
+                                        isYesterday -> R.string.diary_unlock_yesterday_label
+                                        else -> R.string.diary_unlock_label
+                                    }
                                 ),
                                 value = count.toString()
                             )

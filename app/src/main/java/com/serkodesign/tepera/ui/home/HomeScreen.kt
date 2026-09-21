@@ -45,6 +45,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.draw.alpha
+import com.serkodesign.tepera.ui.category.CategoryViewModel
+import com.serkodesign.tepera.ui.category.CreateCategoryDialog
+import com.serkodesign.tepera.ui.category.CreateCategoryResult
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -128,6 +138,48 @@ fun HomeScreen(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
     )
     val summary by viewModel.todaySummary.collectAsState()
+
+    // Кнопка "+ Додати" біля "Активності": створення власної категорії, та сама логіка й діалог,
+    // що в Налаштування → Категорії.
+    val categoryViewModel: CategoryViewModel = viewModel(factory = CategoryViewModel.Factory(categoryRepository))
+    val allCategories by categoryViewModel.allCategories.collectAsState()
+    val createCategoryResult by categoryViewModel.createResult.collectAsState()
+    var showCreateCategoryDialog by remember { mutableStateOf(false) }
+    var showCategoryLimitNotice by remember { mutableStateOf(false) }
+    val customSlotAvailable = allCategories.count { it.isCustom } < CategoryViewModel.MAX_CUSTOM_CATEGORIES
+    LaunchedEffect(createCategoryResult) {
+        when (createCategoryResult) {
+            CreateCategoryResult.Success -> {
+                showCreateCategoryDialog = false
+                categoryViewModel.consumeCreateResult()
+            }
+            CreateCategoryResult.LimitReached -> {
+                showCreateCategoryDialog = false
+                showCategoryLimitNotice = true
+                categoryViewModel.consumeCreateResult()
+            }
+            null -> Unit
+        }
+    }
+    if (showCreateCategoryDialog) {
+        CreateCategoryDialog(
+            onDismiss = { showCreateCategoryDialog = false },
+            onSave = { name, icon, color -> categoryViewModel.createCustomCategory(name, icon, color) }
+        )
+    }
+    if (showCategoryLimitNotice) {
+        AlertDialog(
+            onDismissRequest = { showCategoryLimitNotice = false },
+            confirmButton = {
+                TeperaButton(
+                    text = stringResource(R.string.dialog_ok),
+                    onClick = { showCategoryLimitNotice = false },
+                    type = TeperaButtonType.Tertiary
+                )
+            },
+            text = { Text(stringResource(R.string.category_custom_limit_reached)) }
+        )
+    }
 
     val balanceViewModel: BalanceViewModel = viewModel(
         factory = BalanceViewModel.Factory(balanceRepository, activityRepository, categoryRepository, settingsStore, sleepWindowRepository)
@@ -425,14 +477,34 @@ fun HomeScreen(
                 onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss
             )
 
-            Text(
-                text = stringResource(R.string.activities_title),
-                fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Medium,
-                fontSize = 22.sp,
-                color = TeperaPalette.buttonBrandDark,
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.activities_title),
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 22.sp,
+                    color = TeperaPalette.buttonBrandDark
+                )
+                // Те саме, що Налаштування → Категорії → "Додати свою категорію" (FR-2.2, ліміт 2).
+                // На ліміті кнопка виглядає неактивною (alpha), але лишається натискною — тап
+                // пояснює, чому додати не можна (не `enabled = false`, той блокує тап взагалі).
+                TeperaButton(
+                    text = stringResource(R.string.home_add_category),
+                    onClick = { if (customSlotAvailable) showCreateCategoryDialog = true else showCategoryLimitNotice = true },
+                    size = TeperaButtonSize.Small,
+                    textSizeOverride = 18.sp,
+                    lineHeightOverride = 20.sp,
+                    contentColorOverride = TeperaPalette.buttonBrand,
+                    type = TeperaButtonType.Tertiary,
+                    modifier = Modifier.alpha(if (customSlotAvailable) 1f else 0.5f)
+                )
+            }
 
             if (summary.isEmpty()) {
                 Box(
@@ -563,14 +635,9 @@ private fun CategoryCard(
     val containerColor by animateColorAsState(
         targetValue = when {
             isTracking -> TeperaPalette.activityCardActive
-            item.category.isCustom -> Color.Transparent
             else -> TeperaPalette.activityCardIdle
         },
         animationSpec = colorSpec, label = "cardContainer"
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (item.category.isCustom && !isTracking) Color.White.copy(alpha = 0.5f) else Color.Transparent,
-        animationSpec = colorSpec, label = "cardBorder"
     )
     val nameColor by animateColorAsState(if (isTracking) Color.White else Color.Black, colorSpec, label = "cardName")
     val badgeColor by animateColorAsState(
@@ -600,7 +667,6 @@ private fun CategoryCard(
             )
             .clip(shape)
             .background(containerColor)
-            .border(1.dp, borderColor, shape)
             .padding(8.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {

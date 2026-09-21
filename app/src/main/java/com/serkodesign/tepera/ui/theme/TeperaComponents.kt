@@ -339,7 +339,9 @@ fun TeperaButton(
     size: TeperaButtonSize = TeperaButtonSize.Medium,
     type: TeperaButtonType = TeperaButtonType.Primary,
     enabled: Boolean = true,
-    contentColorOverride: Color? = null // для темних екранів (напр. онбординг дозволів), де тертиарний #003926 не читається
+    contentColorOverride: Color? = null, // для темних екранів (напр. онбординг дозволів), де тертиарний #003926 не читається
+    textSizeOverride: TextUnit? = null,
+    lineHeightOverride: TextUnit? = null
 ) {
     val big = size == TeperaButtonSize.Big
     val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else 24.dp)
@@ -389,7 +391,9 @@ fun TeperaButton(
         Text(
             text = text,
             color = contentColorOverride ?: contentColor,
-            fontSize = size.textSize,
+            fontSize = textSizeOverride ?: size.textSize,
+            lineHeight = lineHeightOverride ?: TextUnit.Unspecified,
+            letterSpacing = if (textSizeOverride != null) 0.sp else TextUnit.Unspecified,
             fontWeight = size.fontWeight,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

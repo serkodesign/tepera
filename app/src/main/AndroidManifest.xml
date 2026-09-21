@@ -87,6 +87,28 @@
                 android:resource="@xml/life_balance_widget_4x2_info" />
         </receiver>
 
+        <!-- Віджети 1x1 (1 кнопка) і 2x1 (2 кнопки) — обрані в Налаштування → Віджет категорії -->
+        <receiver
+            android:name=".widget.TeperaWidget1x1Receiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/life_balance_widget_1x1_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.TeperaWidget2x1Receiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/life_balance_widget_2x1_info" />
+        </receiver>
+
         <!-- "Так"/"Ні" на сповіщенні "усе ще цим займаєшся?" (TimerCheckWorker) -->
         <receiver
             android:name=".data.TimerCheckNotificationReceiver"

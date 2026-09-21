@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
 import com.serkodesign.tepera.util.SleepWindowCalculator
+import com.serkodesign.tepera.util.localStartOfDay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -47,4 +48,46 @@ class UnlockRepository(private val context: Context) {
                 0
             }
         }
+
+    /**
+     * Розблокування по календарних добах за один прохід по подіях [from, to): ключ — початок доби.
+     * Системна історія подій сягає лише ~7-9 діб, тож доби ДО найдавнішої відомої події в мапі
+     * відсутні (а не "0") — нуль там був би хибним фактом, а не відсутністю даних (документ T-14
+     * забороняє показувати щось неточне). Доба, у якій є найдавніша подія, зараховується.
+     */
+    suspend fun countUnlocksByDay(
+        from: Long,
+        to: Long,
+        sleepWindows: List<SleepWindowEntity> = emptyList()
+    ): Map<Long, Int> = withContext(Dispatchers.IO) {
+        if (!isSupported()) return@withContext emptyMap()
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        try {
+            val events = usm.queryEvents(from, to)
+            val event = UsageEvents.Event()
+            val counts = HashMap<Long, Int>()
+            var earliest: Long? = null
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (earliest == null || event.timeStamp < earliest) earliest = event.timeStamp
+                if (event.eventType == UsageEvents.Event.KEYGUARD_HIDDEN &&
+                    !SleepWindowCalculator.isInsideWindow(sleepWindows, event.timeStamp)
+                ) {
+                    val day = localStartOfDay(event.timeStamp)
+                    counts[day] = (counts[day] ?: 0) + 1
+                }
+            }
+            val firstDay = earliest?.let { localStartOfDay(it) } ?: return@withContext emptyMap()
+            // Кожна доба від найдавнішої відомої до сьогодні — без записів у counts це справжній 0.
+            val result = HashMap<Long, Int>()
+            val cal = java.util.Calendar.getInstance().apply { timeInMillis = firstDay }
+            while (cal.timeInMillis < to) {
+                result[cal.timeInMillis] = counts[cal.timeInMillis] ?: 0
+                cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+            }
+            result
+        } catch (e: SecurityException) {
+            emptyMap()
+        }
+    }
 }

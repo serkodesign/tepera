@@ -28,3 +28,18 @@ fun sortCategoriesForWidget(
         if (index == -1) Int.MAX_VALUE else index
     }
 }
+
+/**
+ * Кнопки віджета: якщо користувач обрав категорії в налаштуваннях — рівно вони й у його порядку
+ * (архівовані/видалені мовчки пропускаються), інакше автоматичне сортування FR-4.5.
+ */
+fun categoriesForWidget(
+    active: List<CategoryEntity>,
+    selectedIds: List<String>,
+    period: DayPeriod = currentDayPeriod()
+): List<CategoryEntity> {
+    if (selectedIds.isEmpty()) return sortCategoriesForWidget(active, period)
+    val byId = active.associateBy { it.id }
+    val chosen = selectedIds.mapNotNull { byId[it] }
+    return if (chosen.isEmpty()) sortCategoriesForWidget(active, period) else chosen
+}

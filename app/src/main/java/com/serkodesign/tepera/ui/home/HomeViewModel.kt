@@ -8,10 +8,12 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.toggleCategoryTimer
-import com.serkodesign.tepera.util.startOfTodayMillis
+import com.serkodesign.tepera.util.logicalDayStartFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -27,6 +29,7 @@ data class CategoryTodaySummary(
  * категорій можуть таймитись одночасно — узгоджується з FR-1.3 (перекриття лише в межах
  * однієї категорії, різні категорії законно перекриваються, CLAUDE.md).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
     categoryRepository: CategoryRepository,
     private val activityRepository: ActivityRepository,
@@ -38,7 +41,7 @@ class HomeViewModel(
     // міг би випасти з фіксованого на момент ініціалізації верхнього кордону.
     val todaySummary: StateFlow<List<CategoryTodaySummary>> = combine(
         categoryRepository.observeActiveCategories(),
-        activityRepository.observeEntriesInRange(startOfTodayMillis(), Long.MAX_VALUE),
+        logicalDayStartFlow().flatMapLatest { activityRepository.observeEntriesInRange(it, Long.MAX_VALUE) },
         activeTimerStore.activeTimers
     ) { categories, entries, activeTimers ->
         categories.sortedBy { it.sortOrder }.map { category ->

@@ -52,6 +52,7 @@
     <string name="stats_offline_label">Offline</string>
     <string name="balance_rest_of_day_label">Offline life</string>
     <string name="activities_title">Activities</string>
+    <string name="home_add_category">+ Add</string>
 
     <!-- Usage access onboarding (FR-7.1) -->
     <string name="onboarding_screen_title">Your day\'s structure</string>
@@ -242,6 +243,16 @@
 
     <!-- T-4 (tepera-dev-spec.md, FR-G part 1): gates — apps with a delay before opening -->
     <string name="settings_gates_action">Apps with a delay</string>
+    <string name="settings_widget_action">Widget buttons</string>
+    <string name="widget_settings_title">Widget buttons</string>
+    <string name="widget_settings_hint">Buttons follow the list order. The 1x1 widget shows the first, 2x1 the first two, larger ones up to five. Drag the handle to reorder.</string>
+    <string name="widget_settings_auto_hint">The order is automatic right now and depends on the time of day. Pick activities to set your own.</string>
+    <string name="widget_settings_selected_section">On the widget</string>
+    <string name="widget_settings_available_section">Add to widget</string>
+    <string name="widget_settings_limit">The widget holds up to %1$d buttons. Remove one to add another.</string>
+    <string name="widget_settings_remove">Remove from widget</string>
+    <string name="widget_settings_drag_handle">Reorder</string>
+    <string name="widget_settings_reset">Restore automatic order</string>
     <string name="gates_screen_title">Apps with a delay</string>
     <string name="gates_hint">Selected apps open only through a new shortcut, with a pause before launch</string>
     <string name="gates_pause_today_label">Turn off delay for today</string>
@@ -336,6 +347,7 @@
     <string name="stats_history_title">History</string>
     <string name="diary_unlock_today_label">Unlocks today</string>
     <string name="diary_unlock_yesterday_label">Unlocks yesterday</string>
+    <string name="diary_unlock_label">Unlocks</string>
     <string name="diary_last_phone_use_yesterday_label">Last picked up phone yesterday</string>
     <string name="stats_history_today">Today</string>
     <string name="stats_history_yesterday">Yesterday</string>
@@ -371,5 +383,7 @@
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
     <string name="widget_4x1_description">Quick category buttons</string>
+    <string name="widget_1x1_description">One activity button</string>
+    <string name="widget_2x1_description">Two activity buttons</string>
     <string name="widget_4x2_description">Category buttons and the day grid</string>
 </resources>

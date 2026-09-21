@@ -98,6 +98,7 @@ import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
+import com.serkodesign.tepera.ui.settings.WidgetSettingsScreen
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaGradientBackground
@@ -122,6 +123,7 @@ private object Routes {
     const val DIARY = "diary"
     const val SPIKE_T1 = "spike_t1"
     const val GATES = "gates"
+    const val WIDGET_SETTINGS = "widget_settings"
     const val SUPPORT = "support"
     const val PRO = "pro"
     const val PRO_PAYWALL = "pro_paywall"
@@ -147,7 +149,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES,
+        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, GATES, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
         WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, CATEGORY_HISTORY, SUPPORT, PRO
@@ -369,6 +371,9 @@ fun TeperaNavHost(
                     editingEntryId = entry.arguments?.getString("entryId")
                 )
             }
+            composable(Routes.WIDGET_SETTINGS) {
+                WidgetSettingsScreen(onBack = { navController.popBackStack() })
+            }
             composable(Routes.CATEGORIES) {
                 CategoriesScreen(
                     repository = categoryRepository,
@@ -432,6 +437,7 @@ fun TeperaNavHost(
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenSupport = { navController.navigate(Routes.SUPPORT) },
                     onOpenPro = { navController.navigate(Routes.PRO) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },

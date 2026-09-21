@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Статичне прев'ю віджета 1x1: темний градієнт і одна "скляна" кнопка. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/widget_gradient_bg" />
+    <item android:width="40dp" android:height="40dp" android:gravity="center"><shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape></item>
+    <item android:drawable="@drawable/ic_widget_preview_reading" android:width="24dp" android:height="24dp" android:gravity="center" />
+</layer-list>

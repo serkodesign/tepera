@@ -59,6 +59,7 @@
     <string name="stats_offline_label">Офлайн</string>
     <string name="balance_rest_of_day_label">Офлайн-життя</string>
     <string name="activities_title">Активності</string>
+    <string name="home_add_category">+ Додати</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
     <string name="onboarding_screen_title">Структура твого дня</string>
@@ -251,6 +252,16 @@
 
     <!-- T-4 (tepera-dev-spec.md, FR-G частина 1): ворота — застосунки з паузою перед запуском -->
     <string name="settings_gates_action">Застосунки з затримкою</string>
+    <string name="settings_widget_action">Кнопки віджета</string>
+    <string name="widget_settings_title">Кнопки віджета</string>
+    <string name="widget_settings_hint">Порядок кнопок — як у списку. Віджет 1x1 показує першу, 2x1 — перші дві, великі — до п’яти. Тягни за ручку, щоб змінити порядок.</string>
+    <string name="widget_settings_auto_hint">Зараз порядок автоматичний і залежить від пори доби. Обери активності, щоб задати свій.</string>
+    <string name="widget_settings_selected_section">На віджеті</string>
+    <string name="widget_settings_available_section">Додати на віджет</string>
+    <string name="widget_settings_limit">На віджеті може бути до %1$d кнопок. Прибери одну, щоб додати іншу.</string>
+    <string name="widget_settings_remove">Прибрати з віджета</string>
+    <string name="widget_settings_drag_handle">Змінити порядок</string>
+    <string name="widget_settings_reset">Повернути автоматичний порядок</string>
     <string name="gates_screen_title">Застосунки з затримкою</string>
     <string name="gates_hint">Обрані застосунки відкриваються лише через новий ярлик, з паузою перед запуском</string>
     <string name="gates_pause_today_label">Вимкнути затримку на сьогодні</string>
@@ -349,6 +360,7 @@
     <string name="stats_history_title">Історія</string>
     <string name="diary_unlock_today_label">Розблокувань сьогодні</string>
     <string name="diary_unlock_yesterday_label">Розблокувань учора</string>
+    <string name="diary_unlock_label">Розблокувань</string>
     <string name="diary_last_phone_use_yesterday_label">Востаннє брав телефон учора</string>
     <string name="stats_history_today">Сьогодні</string>
     <string name="stats_history_yesterday">Вчора</string>
@@ -384,5 +396,7 @@
     <string name="weekly_digest_hobby_between">з</string>
     <string name="weekly_digest_hobby_suffix">днів</string>
     <string name="widget_4x1_description">Швидкі кнопки категорій</string>
+    <string name="widget_1x1_description">Одна кнопка активності</string>
+    <string name="widget_2x1_description">Дві кнопки активностей</string>
     <string name="widget_4x2_description">Кнопки категорій і сітка доби</string>
 </resources>

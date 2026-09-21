@@ -10,10 +10,13 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
-import com.serkodesign.tepera.util.startOfTodayMillis
+import com.serkodesign.tepera.util.logicalDayStartFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -42,6 +45,7 @@ data class BalanceUiState(
  * з ненульовим часом сьогодні — FR-5.1) і "Решта дня" (залишок, FR-3.4). Свідомо НЕ протиставлення
  * Online/Offline на одній шкалі (FR-3.8) — три доданки одного цілого (довжини дня).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class BalanceViewModel(
     private val balanceRepository: BalanceRepository,
     activityRepository: ActivityRepository,
@@ -71,7 +75,7 @@ class BalanceViewModel(
         hasUsageAccess,
         onlineMinutes,
         dayStartWithWindows,
-        activityRepository.observeEntriesInRange(startOfTodayMillis(), Long.MAX_VALUE),
+        logicalDayStartFlow().flatMapLatest { activityRepository.observeEntriesInRange(it, Long.MAX_VALUE) },
         categoriesAndTarget
     ) { access, online, (dayStart, windows), entries, (categories, target) ->
         val minutesByCategory = entries.groupBy { it.categoryId }
@@ -111,6 +115,11 @@ class BalanceViewModel(
 
     init {
         refresh()
+        // Настала нова доба, поки Home відкритий чи процес живий: точка старту дня й Online-хвилини
+        // лишились би вчорашніми (записи оновлюються самі через logicalDayStartFlow вище).
+        viewModelScope.launch {
+            logicalDayStartFlow().drop(1).collect { refresh() }
+        }
     }
 
     /** Викликається при вході на Home і при поверненні з системних Налаштувань (LifecycleResumeEffect). */

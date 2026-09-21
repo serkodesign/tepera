@@ -30,6 +30,7 @@ private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
 private val NOTIFICATION_PERMISSION_REQUESTED_KEY = booleanPreferencesKey("notification_permission_requested")
+private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 
@@ -109,6 +110,19 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWidgetSuggestionSeen() {
         context.settingsDataStore.edit { it[WIDGET_SUGGESTION_SEEN_KEY] = true }
+    }
+
+    /**
+     * Обрані користувачем категорії кнопок віджета — у порядку кнопок (за прямим запитом
+     * користувача). Порожній список = "не налаштовано": віджет лишається на автоматичному
+     * сортуванні за порою доби (FR-4.5, `sortCategoriesForWidget`). Не Room — це налаштування, не
+     * дані, міграція БД не потрібна; id зберігаються одним рядком через кому (UUID не містять ",").
+     */
+    val widgetCategoryIds: Flow<List<String>> = context.settingsDataStore.data
+        .map { prefs -> prefs[WIDGET_CATEGORY_IDS_KEY]?.split(",")?.filter { it.isNotBlank() } ?: emptyList() }
+
+    suspend fun setWidgetCategoryIds(ids: List<String>) {
+        context.settingsDataStore.edit { it[WIDGET_CATEGORY_IDS_KEY] = ids.joinToString(",") }
     }
 
     /**

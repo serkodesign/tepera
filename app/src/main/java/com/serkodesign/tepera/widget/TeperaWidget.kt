@@ -58,7 +58,7 @@ import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.TeperaPalette
-import com.serkodesign.tepera.util.startOfTodayMillis
+import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import kotlinx.coroutines.flow.first
 
 /**
@@ -123,7 +123,10 @@ open class TeperaWidget : GlanceAppWidget() {
     // Figma node 11:647 ("перемалюй віджет"): розширений стан піднято зі 120dp (4x2, T-7, тонка
     // шкала) до 180dp (4x3, сітка доби 12x4 потребує більше висоти). Компактний 4x1 (60dp, лише
     // кнопки) не змінився.
-    override val sizeMode = SizeMode.Responsive(
+    /** Скільки кнопок категорій показує цей розмір віджета (1x1 — 1, 2x1 — 2, 4x1/4x3 — 5). */
+    protected open val maxButtons: Int = MAX_WIDGET_BUTTONS
+
+    override val sizeMode: SizeMode = SizeMode.Responsive(
         setOf(
             DpSize(250.dp, 60.dp),
             DpSize(250.dp, 140.dp), // 4x2 на лаунчерах з нижчими рядками: тісна розкладка (WidgetMetrics.MEDIUM)
@@ -140,15 +143,16 @@ open class TeperaWidget : GlanceAppWidget() {
         // Початкові значення завантажуються ДО першого кадру: без цього кожен collectAsState стартував
         // з порожнього значення й віджет мигав порожнім станом та перемальовувався 6-11 разів поспіль
         // (виміряно на S23) — тепер оновлення шлеться лише при справжній зміні даних.
-        val midnight = startOfTodayMillis()
+        val midnight = startOfLogicalDayMillis()
         val initial = LiveWidgetInitial(
             activeCategories = app.categoryRepository.observeActiveCategories().first(),
             allCategories = app.categoryRepository.observeAllCategories().first(),
+            selectedIds = app.settingsStore.widgetCategoryIds.first(),
             activeTimers = app.activeTimerStore.activeTimers.first(),
             entries = app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE).first(),
             grid = WidgetLiveData.gridInputs(app, midnight)
         )
-        provideContent { LiveWidgetContent(context, app, initial) }
+        provideContent { LiveWidgetContent(context, app, initial, maxButtons) }
     }
 
     /**
@@ -167,6 +171,7 @@ open class TeperaWidget : GlanceAppWidget() {
                 hasUsageAccess = true,
                 gridSlots = previewGridSlots(),
                 categoriesById = DefaultCategories.all.associateBy { it.id },
+                maxButtons = maxButtons,
                 isPreview = true
             )
         }
@@ -428,6 +433,26 @@ private fun colorForGridSlot(slot: DailyGridSlot, categoriesById: Map<String, Ca
  */
 class TeperaWidget4x2 : TeperaWidget()
 
+/** 1x1: одна кнопка — перша з обраних у налаштуваннях віджета. */
+class TeperaWidget1x1 : TeperaWidget() {
+    override val maxButtons = 1
+    override val sizeMode: SizeMode = SizeMode.Single
+}
+
+class TeperaWidget1x1Receiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = TeperaWidget1x1()
+}
+
+/** 2x1: дві кнопки — перші дві з обраних у налаштуваннях віджета. */
+class TeperaWidget2x1 : TeperaWidget() {
+    override val maxButtons = 2
+    override val sizeMode: SizeMode = SizeMode.Single
+}
+
+class TeperaWidget2x1Receiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = TeperaWidget2x1()
+}
+
 class TeperaWidget4x2Receiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget4x2()
 }
@@ -437,13 +462,14 @@ class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 
-/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */private class LiveWidgetInitial(    val activeCategories: List<CategoryEntity>,    val allCategories: List<CategoryEntity>,    val activeTimers: Map<String, Long>,    val entries: List<ActivityEntryEntity>,    val grid: GridInputs)
+/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */private class LiveWidgetInitial(    val activeCategories: List<CategoryEntity>,    val allCategories: List<CategoryEntity>,    val selectedIds: List<String>,    val activeTimers: Map<String, Long>,    val entries: List<ActivityEntryEntity>,    val grid: GridInputs)
 /**
  * Вміст віджета на ЖИВИХ даних: таймери/категорії/записи — потоки всередині композиції (див. коментар
  * у [WidgetLiveData] — раніше все читалось один раз на сесію й показувало застарілий стан).
  */
 @Composable
-private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWidgetInitial) {
+private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWidgetInitial, maxButtons: Int) {
+    val selectedIds by app.settingsStore.widgetCategoryIds.collectAsState(initial = initial.selectedIds)
     val activeCategories by app.categoryRepository.observeActiveCategories().collectAsState(initial = initial.activeCategories)
     val allCategories by app.categoryRepository.observeAllCategories().collectAsState(initial = initial.allCategories)
     val activeTimers by app.activeTimerStore.activeTimers.collectAsState(initial = initial.activeTimers)
@@ -451,14 +477,14 @@ private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWid
 
     // Figma node 11:647: сітка доби — 48 клітинок по 30 хв від КАЛЕНДАРНОЇ півночі, кожна фарбується
     // реальним кольором категорії/Online. Ручні записи — жива підписка, Online/точка старту — кеш.
-    val midnight = remember(tick) { startOfTodayMillis() }
+    val midnight = remember(tick) { startOfLogicalDayMillis() }
     val entriesFlow = remember(midnight) { app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE) }
     val entries by entriesFlow.collectAsState(initial = initial.entries)
     val gridInputs by produceState<GridInputs?>(initialValue = initial.grid, tick) {
         value = WidgetLiveData.gridInputs(app, midnight)
     }
 
-    val sorted = remember(activeCategories) { sortCategoriesForWidget(activeCategories) }
+    val sorted = remember(activeCategories, selectedIds) { categoriesForWidget(activeCategories, selectedIds) }
     val categoriesById = remember(allCategories) { allCategories.associateBy { it.id } }
     val slots = gridInputs?.let {
         calculateDailyGridSlots(
@@ -476,7 +502,8 @@ private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWid
         activeTimers = activeTimers,
         hasUsageAccess = gridInputs?.hasUsageAccess ?: true,
         gridSlots = slots,
-        categoriesById = categoriesById
+        categoriesById = categoriesById,
+        maxButtons = maxButtons
     )
 }
 
@@ -493,6 +520,39 @@ private fun previewGridSlots(): List<DailyGridSlot> = List(DAILY_GRID_SLOT_COUNT
     }
 }
 
+/**
+ * 1x1 / 2x1: лише кнопки на тому ж темному градієнті, без сітки. Кнопки 48dp (не 56dp, як у 4x1) —
+ * клітинка 1x1 на лаунчері ~57-73dp, 56dp з відступами не влазило б.
+ */
+@Composable
+private fun SmallWidgetContent(
+    context: Context,
+    categories: List<CategoryEntity>,
+    activeTimers: Map<String, Long>
+) {
+    Box(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ImageProvider(R.drawable.widget_gradient_bg))
+            .padding(6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        when (categories.size) {
+            0 -> Unit
+            1 -> CategoryButton(
+                category = categories[0],
+                isTracking = activeTimers.containsKey(categories[0].id),
+                context = context,
+                size = SMALL_BUTTON_SIZE
+            )
+            else -> CategoryButtonsRow(categories, activeTimers, context, SMALL_BUTTON_SIZE)
+        }
+    }
+}
+
+private val SMALL_BUTTON_SIZE = 48.dp
+private const val MAX_WIDGET_BUTTONS = 5
+
 /** Вміст віджета — спільний для [TeperaWidget.provideGlance] (реальні дані) і [TeperaWidget.providePreview] (демо). */
 @Composable
 private fun WidgetContent(
@@ -502,9 +562,14 @@ private fun WidgetContent(
     hasUsageAccess: Boolean,
     gridSlots: List<DailyGridSlot>,
     categoriesById: Map<String, CategoryEntity>,
+    maxButtons: Int = MAX_WIDGET_BUTTONS,
     isPreview: Boolean = false
 ) {
             GlanceTheme {
+                if (maxButtons < MAX_WIDGET_BUTTONS) {
+                    SmallWidgetContent(context, categories.take(maxButtons), activeTimers)
+                    return@GlanceTheme
+                }
                 val height = LocalSize.current.height
                 val isExtended = height >= 100.dp
                 // 4x1 (лише кнопки) / 4x2 (тісніша розкладка) / 4x3 (повна, Figma node 11:647).
@@ -543,7 +608,7 @@ private fun WidgetContent(
                     // (порядок протилежний попередній T-7 версії, де бар був зверху, кнопки —
                     // знизу). 4x1 (isExtended == false) не змінюється — лише кнопки.
                     CategoryButtonsRow(
-                        categories = categories.take(5),
+                        categories = categories.take(maxButtons),
                         activeTimers = activeTimers,
                         context = context,
                         buttonSize = metrics.buttonSize
