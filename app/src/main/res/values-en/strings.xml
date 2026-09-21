@@ -273,7 +273,7 @@
     <string name="gates_instruction_done">Done</string>
     <string name="gates_instruction_later">I\'ll do it later</string>
     <!-- Gate pause screen redesign per a provided mockup (direct user request, not T-5) -->
-    <string name="gate_pause_inhale">Inhale….</string>
+    <string name="gate_pause_inhale">Inhale…</string>
     <string name="gate_pause_exhale">Exhale…</string>
     <string name="gate_pause_continue_action">Continue</string>
     <string name="gate_pause_exit_action">Exit</string>
@@ -384,7 +384,7 @@
     <string name="knowledge_base_section_4_body">Tepera doesn\'t send notifications trying to pull you back, doesn\'t count day streaks, and doesn\'t award points or badges for usage. The numbers on screen are facts about time that has already passed, not a goal to reach — that\'s why the app never says "goal," only "reference," and colors never turn "alarming" no matter how much time has passed. Comparisons are only ever against your own history, never against other people\'s averages.</string>
     <string name="onboarding_learn_more">Learn more about your data</string>
     <string name="home_card_first_unlock_label">First unlock</string>
-    <string name="home_card_day_last_label">Day last</string>
+    <string name="home_card_day_last_label">Day so far</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
     <string name="day_usage_info_body">Each square is one hour of yesterday; the color shows how many minutes of that hour the phone was online. It is only a picture of yesterday, with no judgement.</string>
