@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Біле коло 64dp-кнопки віджета (Figma "Activity icons 2", node 234:442): у Glance тонується
+     ColorFilter.tint() — біле для невибраної, відтінок категорії для вибраної. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#FFFFFFFF" />
+</shape>

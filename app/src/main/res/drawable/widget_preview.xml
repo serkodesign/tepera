@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Статичне прев'ю віджета 4x1 (Android < 15 і запасне, поки система не прийняла згенероване): темний градієнт і ряд із п'яти "скляних" кнопок категорій з іконками (білі копії ic_widget_preview_*). -->
+<!-- Статичне превью віджета 4x1. Стиль Figma "App concept" (nodes 236:956, 234:788/235:935/234:808/234:848): напівпрозора капсула, білі кола, сірі гліфи, перша кнопка вибрана. Фон-підкладка тут лише для меню віджетів (сам віджет без фону). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/widget_gradient_bg" />
-    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="16dp"><shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape></item>
-    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="61dp"><shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape></item>
-    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="105dp"><shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape></item>
-    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="150dp"><shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape></item>
-    <item android:width="40dp" android:height="40dp" android:gravity="center_vertical|start" android:start="194dp"><shape android:shape="oval"><solid android:color="#80FFFFFF" /></shape></item>
-    <item android:drawable="@drawable/ic_widget_preview_reading" android:width="24dp" android:height="24dp" android:gravity="center_vertical|start" android:start="24dp" />
-    <item android:drawable="@drawable/ic_widget_preview_hobby" android:width="24dp" android:height="24dp" android:gravity="center_vertical|start" android:start="69dp" />
-    <item android:drawable="@drawable/ic_widget_preview_nature" android:width="24dp" android:height="24dp" android:gravity="center_vertical|start" android:start="113dp" />
-    <item android:drawable="@drawable/ic_widget_preview_movement" android:width="24dp" android:height="24dp" android:gravity="center_vertical|start" android:start="158dp" />
-    <item android:drawable="@drawable/ic_widget_preview_social" android:width="24dp" android:height="24dp" android:gravity="center_vertical|start" android:start="202dp" />
+    <item><shape android:shape="rectangle"><gradient android:angle="270" android:startColor="#A9C9B6" android:endColor="#7DA28F" /><corners android:radius="22dp" /></shape></item>
+    <item android:width="234dp" android:height="50dp" android:gravity="top|start" android:start="8dp" android:top="5dp"><shape android:shape="rectangle"><solid android:color="#4DFFFFFF" /><corners android:radius="100dp" /></shape></item>
+    <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="14dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFECC3F2" /></shape></item>
+    <item android:drawable="@drawable/ic_widget2_preview_reading_selected" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="25.875dp" android:top="22.875dp" />
+    <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="59.5dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFFFFFFF" /></shape></item>
+    <item android:drawable="@drawable/ic_widget2_preview_nature" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="71.375dp" android:top="22.875dp" />
+    <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="105dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFFFFFFF" /></shape></item>
+    <item android:drawable="@drawable/ic_widget2_preview_hobby" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="116.875dp" android:top="22.875dp" />
+    <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="150.5dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFFFFFFF" /></shape></item>
+    <item android:drawable="@drawable/ic_widget2_preview_movement" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="162.375dp" android:top="22.875dp" />
+    <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="196dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFFFFFFF" /></shape></item>
+    <item android:drawable="@drawable/ic_widget2_preview_errands" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="207.875dp" android:top="22.875dp" />
 </layer-list>
