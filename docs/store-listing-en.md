@@ -48,4 +48,4 @@ your day.
 
 ---
 
-*Tepera is free, with no ads. There is an optional way to support the developer ("Buy the developer a coffee") — it does not unlock or change anything in the app.*
+*Tepera is free, with no ads. No paid features and no in-app purchases.*

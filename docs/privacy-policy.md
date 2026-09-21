@@ -27,14 +27,8 @@ title: Privacy Policy — Tepera
 - Ми **не** запитуємо дозвіл на геолокацію (в жодній формі, включно з фоновою).
 - Ми **не** створюємо облікових записів і не вимагаємо реєстрації.
 
-**Аналітика:** застосунок надсилає лише анонімні crash-репорти (через Firebase Crashlytics) у разі
+**Аналітика й мережа:** застосунок сам не робить мережевих запитів, окрім анонімних crash-звітів (через Firebase Crashlytics, для чого в застосунку є дозвіл на доступ до мережі) у разі
 збою — без ідентифікації користувача та без трекінгу поведінки в застосунку.
-
-**Добровільна підтримка розробника:** якщо ви самі відкриєте екран «Пригостити кавою» й оберете
-суму, покупку проводить Google Play через сервіс **RevenueCat**. Для цього використовується
-анонімний ідентифікатор (без імені, пошти чи облікового запису), історія такої покупки й технічні
-дані пристрою. Поки ви не відкриваєте цей екран, застосунок з RevenueCat не з'єднується. Підтримка
-нічого не відкриває й не змінює у функціях застосунку.
 
 **Ваш контроль:** ви можете в будь-який момент експортувати свої дані (Налаштування → Резервне
 копіювання) або видалити їх усі (Налаштування → Резервне копіювання → «Видалити всі дані»; потрібно
@@ -63,14 +57,8 @@ with third parties.
 - We do **not** request location permissions, in any form, including background location.
 - We do **not** create user accounts or require registration.
 
-**Analytics:** the app sends only anonymous crash reports (via Firebase Crashlytics) when something
+**Analytics and network:** the app makes no network requests of its own except anonymous crash reports (via Firebase Crashlytics, which is why the app holds the network permission) when something
 goes wrong — no user identification, no in-app behavior tracking.
-
-**Voluntary support of the developer:** if you open the "Buy the developer a coffee" screen and choose
-an amount, the purchase is processed by Google Play through the **RevenueCat** service. This uses an
-anonymous identifier (no name, email or account), the history of that purchase, and technical device
-data. Until you open that screen, the app does not connect to RevenueCat. Support does not unlock or
-change anything in the app.
 
 **Your control:** you can export your data at any time (Settings → Backup and restore) or delete all
 of it (Settings → Backup and restore → "Delete all data"; you have to confirm twice). Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be
