@@ -332,7 +332,7 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
 internal fun EntryChip(
     text: String,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = 11.sp,
+    fontSize: TextUnit = 12.sp,
     background: Color = TeperaPalette.surfaceBrandLight,
     horizontalPadding: Dp = 8.dp
 ) {

@@ -409,7 +409,7 @@ private fun CategoryTile(
         Text(
             categoryDisplayName(category),
             // Довгі назви ("Хобі/творчість", "Живе спілкування") переносяться на другий рядок, а не обрізаються "…".
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 13.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 14.sp),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )

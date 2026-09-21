@@ -258,7 +258,7 @@ private fun DayStructureLegend(segments: List<DaySegment>) {
                     Text(segment.label, fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
                 }
                 // FR-P.6: час завжди поруч із назвою, ніколи голий відсоток самотужки.
-                Text(formatClockDuration(segment.minutes), fontSize = 11.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
+                Text(formatClockDuration(segment.minutes), fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
             }
         }
     }
