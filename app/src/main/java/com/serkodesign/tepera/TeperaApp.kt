@@ -106,29 +106,6 @@ class TeperaApp : Application() {
 
     val gateEventRepository: GateEventRepository by lazy { GateEventRepository(database.gateEventDao()) }
 
-    // RevenueCat налаштовується ЛІНИВО (за запитом користувача): SDK не звертається до мережі, доки не
-    // відкрито екран "Пригостити кавою" — тоді `ensureRevenueCatConfigured()` викликається з
-    // SupportRepository.refresh(). Без ключа SDK лишається вимкненим (див. RevenueCatConfig). Pro
-    // (entitlement tepera_pro) прихований на запуску (PRO_ENTRY_ENABLED = false); коли його ввімкнуть,
-    // SDK налаштовується одразу в onCreate() нижче.
-    private var revenueCatConfigured = false
-
-    /** Налаштувати RevenueCat, якщо ще ні; `true` — SDK готовий до використання. */
-    fun ensureRevenueCatConfigured(): Boolean {
-        if (!revenueCatConfigured) {
-            revenueCatConfigured = com.serkodesign.tepera.data.billing.RevenueCatConfig.configure(this)
-        }
-        return revenueCatConfigured
-    }
-
-    val proRepository: com.serkodesign.tepera.data.billing.ProRepository by lazy {
-        com.serkodesign.tepera.data.billing.RevenueCatProRepository(ensureRevenueCatConfigured())
-    }
-
-    val supportRepository: com.serkodesign.tepera.data.billing.SupportRepository by lazy {
-        com.serkodesign.tepera.data.billing.RevenueCatSupportRepository(::ensureRevenueCatConfigured)
-    }
-
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
 
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
@@ -143,9 +120,6 @@ class TeperaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Pro вимкнений на запуску — SDK лишається неналаштованим до екрана кави. Якщо Pro увімкнуть, його
-        // репозиторій має ініціалізуватись одразу (делегат onCustomerInfoUpdated до першої покупки).
-        if (com.serkodesign.tepera.data.billing.RevenueCatConfig.PRO_ENTRY_ENABLED) proRepository
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
         // у CategoryDao), тож виклик щозапуску безпечний.
         applicationScope.launch { seedInitialData() }

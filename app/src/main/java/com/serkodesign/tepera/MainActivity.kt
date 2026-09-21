@@ -83,8 +83,6 @@ class MainActivity : ComponentActivity() {
                         activeTimerStore = app.activeTimerStore,
                         backupRepository = app.backupRepository,
                         gateRepository = app.gateRepository,
-                        supportRepository = app.supportRepository,
-                        proRepository = app.proRepository,
                         gateEventRepository = app.gateEventRepository,
                         cardHistoryRepository = app.cardHistoryRepository,
                         pendingOpenAddEntry = openAddEntry,

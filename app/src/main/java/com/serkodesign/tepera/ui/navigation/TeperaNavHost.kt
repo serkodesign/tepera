@@ -127,10 +127,6 @@ private object Routes {
     const val SPIKE_T15 = "spike_t15"
     const val GATES = "gates"
     const val WIDGET_SETTINGS = "widget_settings"
-    const val SUPPORT = "support"
-    const val PRO = "pro"
-    const val PRO_PAYWALL = "pro_paywall"
-    const val PRO_CUSTOMER_CENTER = "pro_customer_center"
     const val KNOWLEDGE_BASE = "knowledge_base"
     const val KNOWLEDGE_SCROLLING = "knowledge_scrolling"
     const val CATEGORY_HISTORY = "category_history/{categoryId}"
@@ -156,7 +152,7 @@ private object Routes {
         SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, GATES, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
-        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, SUPPORT, PRO
+        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -185,8 +181,6 @@ fun TeperaNavHost(
     activeTimerStore: ActiveTimerStore,
     backupRepository: BackupRepository,
     gateRepository: GateRepository,
-    supportRepository: com.serkodesign.tepera.data.billing.SupportRepository,
-    proRepository: com.serkodesign.tepera.data.billing.ProRepository,
     gateEventRepository: GateEventRepository,
     cardHistoryRepository: CardHistoryRepository,
     navController: NavHostController = rememberNavController(),
@@ -448,8 +442,6 @@ fun TeperaNavHost(
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
-                    onOpenSupport = { navController.navigate(Routes.SUPPORT) },
-                    onOpenPro = { navController.navigate(Routes.PRO) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onOpenSpikeT15 = { navController.navigate(Routes.SPIKE_T15) },
@@ -471,26 +463,6 @@ fun TeperaNavHost(
             }
             composable(Routes.SPIKE_T1) {
                 SpikeT1Screen(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.PRO) {
-                com.serkodesign.tepera.ui.pro.ProScreen(
-                    proRepository = proRepository,
-                    onOpenPaywall = { navController.navigate(Routes.PRO_PAYWALL) },
-                    onOpenCustomerCenter = { navController.navigate(Routes.PRO_CUSTOMER_CENTER) },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.PRO_PAYWALL) {
-                com.serkodesign.tepera.ui.pro.PaywallScreen(onClose = { navController.popBackStack() })
-            }
-            composable(Routes.PRO_CUSTOMER_CENTER) {
-                com.serkodesign.tepera.ui.pro.CustomerCenterScreen(onClose = { navController.popBackStack() })
-            }
-            composable(Routes.SUPPORT) {
-                com.serkodesign.tepera.ui.support.SupportScreen(
-                    supportRepository = supportRepository,
-                    onBack = { navController.popBackStack() }
-                )
             }
             composable(Routes.GATES) {
                 GatesScreen(
