@@ -13,6 +13,7 @@ import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
+import com.serkodesign.tepera.util.offlineUnloggedMinutes
 import com.serkodesign.tepera.util.startOfTodayMillis
 import com.serkodesign.tepera.widget.DAILY_GRID_SLOT_COUNT
 import kotlinx.coroutines.ExperimentalCoroutinesApi

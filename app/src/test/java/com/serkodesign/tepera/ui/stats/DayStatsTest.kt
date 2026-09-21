@@ -2,6 +2,7 @@ package com.serkodesign.tepera.ui.stats
 
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.repository.GapCandidate
+import com.serkodesign.tepera.util.offlineUnloggedMinutes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

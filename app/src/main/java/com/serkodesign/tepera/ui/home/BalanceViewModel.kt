@@ -10,7 +10,9 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
+import com.serkodesign.tepera.util.TimeSpan
 import com.serkodesign.tepera.util.logicalDayStartFlow
+import com.serkodesign.tepera.util.offlineUnloggedMinutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +26,12 @@ import kotlinx.coroutines.launch
 
 /** Одна категорія, за якою сьогодні є хоч один запис — "Ти відмітив" (FR-3.3), розбитий по категоріях. */
 data class CategorySegment(val category: CategoryEntity, val minutes: Int)
+
+/**
+ * Online від точки старту дня до "зараз": сума хвилин (як і раніше) і самі інтервали — для "Офлайн-життя" за
+ * об'єднанням з ручними записами (перекриття Online із записом не віднімається двічі).
+ */
+data class OnlineSnapshot(val minutes: Int, val intervals: List<TimeSpan>)
 
 /** hasUsageAccess == null означає, що перевірка ще не завершилась (перший рендер). */
 data class BalanceUiState(
@@ -55,7 +63,7 @@ class BalanceViewModel(
 ) : ViewModel() {
 
     private val hasUsageAccess = MutableStateFlow<Boolean?>(null)
-    private val onlineMinutes = MutableStateFlow(0)
+    private val onlineSnapshot = MutableStateFlow(OnlineSnapshot(0, emptyList()))
     private val dayStartMillis = MutableStateFlow(System.currentTimeMillis())
     // T-12: вікна сну (0-2 ввімкнені) міняються рідко (лише з Налаштувань) — окремий MutableStateFlow
     // замість settingsStore.observeWindows(), щоб лишатись у парі з dayStartMillis, обчисленим
@@ -73,11 +81,11 @@ class BalanceViewModel(
 
     val uiState: StateFlow<BalanceUiState> = combine(
         hasUsageAccess,
-        onlineMinutes,
+        onlineSnapshot,
         dayStartWithWindows,
         logicalDayStartFlow().flatMapLatest { activityRepository.observeEntriesInRange(it, Long.MAX_VALUE) },
         categoriesAndTarget
-    ) { access, online, (dayStart, windows), entries, (categories, target) ->
+    ) { access, onlineSnap, (dayStart, windows), entries, (categories, target) ->
         val minutesByCategory = entries.groupBy { it.categoryId }
             .mapValues { (_, categoryEntries) -> categoryEntries.sumOf { it.durationMinutes } }
         // FR-5.1: лише категорії, у яких сьогодні є хоч один запис — динамічна легенда
@@ -98,11 +106,14 @@ class BalanceViewModel(
         val loggedMinutes = segments.sumOf { it.minutes }
         // FR-3.4: "Офлайн-життя" — залишок часу, що вже МИНУВ (не Online, не запис), НІКОЛИ
         // від'ємний, навіть якщо Online+записи вже перевищили довжину дня (напр. запис заднім числом).
-        val restOfDay = (dayLength - online - loggedMinutes).coerceAtLeast(0)
+        // "Офлайн-життя" за об'єднанням (те саме, що "Офлайн" у Статистиці): неспана доба мінус час, зайнятий
+        // Online АБО записом. Перекриття (аудіокнига на прогулянці, запис поверх Online, записи різних категорій
+        // між собою) рахується один раз — раніше "довжина дня − Online − сума записів" віднімало його двічі.
+        val restOfDay = offlineUnloggedMinutes(dayStart, System.currentTimeMillis(), onlineSnap.intervals, entries, windows)
 
         BalanceUiState(
             hasUsageAccess = access,
-            onlineMinutes = online,
+            onlineMinutes = onlineSnap.minutes,
             categorySegments = segments,
             restOfDayMinutes = restOfDay,
             dayLengthMinutes = dayLength,
@@ -136,7 +147,15 @@ class BalanceViewModel(
             // dayStartWithWindows не встиг зіставити НОВИЙ dayStart зі СТАРИМ набором вікон.
             sleepWindows.value = windows
             dayStartMillis.value = dayStart
-            onlineMinutes.value = if (access) balanceRepository.getOnlineMinutesToday(dayStart) else 0
+            val now = System.currentTimeMillis()
+            onlineSnapshot.value = if (access) {
+                OnlineSnapshot(
+                    balanceRepository.getOnlineMinutes(dayStart, now),
+                    balanceRepository.getOnlineIntervals(dayStart, now)
+                )
+            } else {
+                OnlineSnapshot(0, emptyList())
+            }
         }
     }
 

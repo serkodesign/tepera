@@ -175,10 +175,18 @@ private fun DayStructureBar(
                     .clip(RoundedCornerShape(4.dp))
                     .background(Color.White)
             ) {
+                // Сегменти можуть перекриватись (Online + запис + офлайн за об'єднанням у сумі більші за довжину
+                // дня) — їхні ширини нормалізуються до довжини дня, щоб шкала не виходила за позначку "Now".
+                val segmentsTotal = segments.sumOf { it.minutes }
+                val scale = if (segmentsTotal > dayLengthMinutes && segmentsTotal > 0) {
+                    dayLengthMinutes.toFloat() / segmentsTotal
+                } else {
+                    1f
+                }
                 segments.forEach { segment ->
                     Box(
                         modifier = Modifier
-                            .weight(segment.minutes.coerceAtLeast(1).toFloat())
+                            .weight((segment.minutes * scale).coerceAtLeast(1f))
                             .fillMaxHeight()
                             .background(segment.color)
                     )
