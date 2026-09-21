@@ -32,8 +32,13 @@ object SleepWindowCalculator {
         return minutesInWindows(windows, fromMillis, toMillis) >= ((toMillis - fromMillis) / 60_000L).toInt()
     }
 
+    /**
+     * Чи момент [millis] лежить у ввімкненому вікні. Це точкова перевірка: через [minutesInWindows]
+     * вона б завжди давала false (інтервал у 1 мс округлюється вниз до 0 хв) — тому дивимось на
+     * самі інтервали.
+     */
     fun isInsideWindow(windows: List<SleepWindowEntity>, millis: Long): Boolean =
-        overlapsWindow(windows, millis, millis + 1)
+        windows.any { it.enabled && windowIntervalsIn(it, millis, millis + 1).isNotEmpty() }
 
     /** [window], повторене на кожен календарний день, що перетинає [fromMillis, toMillis), обрізане по межах. */
     private fun windowIntervalsIn(window: SleepWindowEntity, fromMillis: Long, toMillis: Long): List<Pair<Long, Long>> {
