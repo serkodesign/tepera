@@ -196,12 +196,13 @@
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>
     <string name="backup_import_action">Import data (JSON)</string>
+    <string name="backup_not_included_note">The file contains categories, entries, excluded apps and the reference. Not transferred: the sleep window, labelled pauses, delayed apps, widget buttons, pause sensitivity, language and the seconds counters — set those up again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Failed to export data</string>
     <string name="backup_import_success">Data imported</string>
     <string name="backup_import_failure">Failed to import data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
-    <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the reference with the data from the file. This cannot be undone.</string>
+    <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the reference with the data from the file. This cannot be undone. The sleep window, labelled pauses, delayed apps, widget buttons and pause sensitivity are not restored from the file.</string>
     <string name="backup_import_confirm_action">Import</string>
 
     <!-- Exclusion List (FR-3.5) -->

@@ -205,12 +205,13 @@
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Експортувати дані (JSON)</string>
     <string name="backup_import_action">Імпортувати дані (JSON)</string>
+    <string name="backup_not_included_note">У файл потрапляють категорії, записи, виключені застосунки й орієнтир. Не переносяться: вікно сну, позначені паузи, застосунки з затримкою, кнопки віджета, чутливість пауз, мова й лічильники секунд — їх треба налаштувати заново.</string>
     <string name="backup_export_success">Дані експортовано</string>
     <string name="backup_export_failure">Не вдалося експортувати дані</string>
     <string name="backup_import_success">Дані імпортовано</string>
     <string name="backup_import_failure">Не вдалося імпортувати дані — перевірте файл</string>
     <string name="backup_import_confirm_title">Замінити всі дані?</string>
-    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й орієнтир поточними даними з файлу. Це не можна скасувати.</string>
+    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й орієнтир поточними даними з файлу. Це не можна скасувати. Вікно сну, позначені паузи, застосунки з затримкою, кнопки віджета й чутливість пауз з файлу не відновлюються.</string>
     <string name="backup_import_confirm_action">Імпортувати</string>
 
     <!-- Exclusion List (FR-3.5) -->

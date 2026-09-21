@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -194,6 +195,13 @@ fun BackupRestoreScreen(
                     onClick = { importPickerLauncher.launch(arrayOf("application/json")) },
                     leading = { TeperaIconCircle(Icons.Filled.FileUpload) },
                     trailing = { NavChevron() }
+                )
+                // CH-06 / FR-6.2: чесно про те, що файл не містить усіх налаштувань.
+                Text(
+                    text = stringResource(R.string.backup_not_included_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TeperaPalette.buttonBrandDark,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
                 GlassSectionHeader(stringResource(R.string.backup_delete_section))
                 GlassRow(
