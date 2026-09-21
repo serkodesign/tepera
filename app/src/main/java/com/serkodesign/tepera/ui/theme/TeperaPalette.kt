@@ -71,7 +71,11 @@ object TeperaPalette {
     // що на toggle track у фреймі, #005e3e).
     val brandAccent = Color(0xFF005E3E)
     val brandAccentSoft = Color(0x1A005E3E) // rgba(0,94,62,0.1) — фон кружка-іконки
-    val switchTrackOff = Color(0x80FFFFFF) // той самий "скляний" відтінок, що інші картки
+    // Вимкнений перемикач за Material 3: суцільний світлий трек + рамка й ручка кольору outline (раніше —
+    // напівпрозорий білий трек, біла ручка й без рамки, тож на "скляному" рядку майже зникав). Outline
+    // #006944 — брендовий, контраст з треком/фоном значно вищий за 3:1 (WCAG 1.4.11).
+    val switchTrackOff = Color(0xFFE3EAE5)
+    val switchOutlineOff = Color(0xFF006944) // брендовий (buttonBrand) замість сірого, за запитом користувача
 
     // Кнопки дизайн-системи (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 190:639):
     // Surface/surface-brand + Text/text-brand (#006944) і Surface/surface-brand-dark + Text/
