@@ -80,7 +80,6 @@
     <string name="timer_check_action_no">No</string>
 
     <!-- Values onboarding (FR-P.2) -->
-    <string name="values_onboarding_title">What would you like to do more of?</string>
 
     <!-- T-8 (tepera-dev-spec.md): category selection onboarding, right after the values question -->
     <string name="category_onboarding_title">What\'s part of your day?</string>

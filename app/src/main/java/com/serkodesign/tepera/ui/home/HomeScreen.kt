@@ -130,7 +130,6 @@ fun HomeScreen(
     onAddEntryForCategory: (String) -> Unit,
     onOpenCategoryHistory: (String) -> Unit,
     onShowOnboarding: () -> Unit,
-    onShowValuesOnboarding: () -> Unit,
     onShowCategoryOnboarding: () -> Unit,
     onShowOnlineEstimateOnboarding: () -> Unit,
     onShowWidgetSuggestion: () -> Unit
@@ -300,21 +299,12 @@ fun HomeScreen(
         )
     }
 
-    // FR-P.2: питання про цінності ЗАВЖДИ показується першим при першому запуску — окремий
-    // ефект, що не залежить від стану доступу до статистики.
-    val valuesOnboardingSeen by settingsStore.valuesOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(valuesOnboardingSeen) {
-        if (!valuesOnboardingSeen) {
-            onShowValuesOnboarding()
-        }
-    }
-
-    // T-8 (tepera-dev-spec.md), крок 2 "Порядку першого запуску": одразу після питання про
-    // цінності, перед онбординг-оцінкою Online-часу — логічне продовження "що ти цінуєш" у
-    // "що саме відмічатимеш" (документ: попередні 5 категорій самі по собі норма, FR-P.5).
+    // T-8 (tepera-dev-spec.md), крок 2 "Порядку першого запуску": першим кроком онбордингу, перед
+    // онбординг-оцінкою Online-часу — вибір "що саме відмічатимеш"
+    // (документ: попередні 5 категорій самі по собі норма, FR-P.5).
     val categoryOnboardingSeen by settingsStore.categoryOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(valuesOnboardingSeen, categoryOnboardingSeen) {
-        if (valuesOnboardingSeen && !categoryOnboardingSeen) {
+    LaunchedEffect(categoryOnboardingSeen) {
+        if (!categoryOnboardingSeen) {
             onShowCategoryOnboarding()
         }
     }
@@ -322,18 +312,18 @@ fun HomeScreen(
     // T-3, крок 3 "Порядку першого запуску": одразу після вибору категорій (T-8), ще до
     // пояснення дозволу нижче — не залежить від стану доступу до статистики, той самий принцип.
     val onlineEstimateOnboardingSeen by settingsStore.onlineEstimateOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
-        if (valuesOnboardingSeen && categoryOnboardingSeen && !onlineEstimateOnboardingSeen) {
+    LaunchedEffect(categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
+        if (categoryOnboardingSeen && !onlineEstimateOnboardingSeen) {
             onShowOnlineEstimateOnboarding()
         }
     }
 
-    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як питання про цінності, вибір
+    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як вибір
     // категорій (T-8) і онбординг-оцінка Online-часу (T-3) вже показані, інакше кілька ефектів
     // могли б спробувати навігувати одночасно на першому запуску.
     val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
-        if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
             onShowOnboarding()
         }
     }
@@ -343,9 +333,9 @@ fun HomeScreen(
     // розв'язаний" — доступ уже надано (permissionScreen вище й не показувався) АБО сам
     // permission-екран уже показувався (onboardingSeen), незалежно від того, чим скінчилось.
     val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen) {
         val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
-        if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && !widgetSuggestionSeen) {
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && !widgetSuggestionSeen) {
             // Той самий race, що описаний нижче для POST_NOTIFICATIONS: OnboardingScreen
             // (пояснення дозволу) виставляє onboardingSeen=true у своєму LaunchedEffect(Unit)
             // ОДРАЗУ при монтуванні, не чекаючи дії користувача — і Home встигає прочитати це
@@ -380,10 +370,10 @@ fun HomeScreen(
             ActivityResultContracts.RequestPermission()
         ) { }
         LaunchedEffect(
-            notificationPermissionRequested, valuesOnboardingSeen, categoryOnboardingSeen,
+            notificationPermissionRequested, categoryOnboardingSeen,
             onlineEstimateOnboardingSeen, widgetSuggestionSeen
         ) {
-            if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
+            if (categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
                 widgetSuggestionSeen && !notificationPermissionRequested
             ) {
                 delay(1000)

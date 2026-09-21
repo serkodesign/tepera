@@ -90,7 +90,6 @@ import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.PermissionsBackground
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
-import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
 import com.serkodesign.tepera.ui.settings.AboutScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
@@ -111,7 +110,6 @@ private object Routes {
     const val EDIT_ENTRY = "edit_entry/{entryId}"
     const val CATEGORIES = "categories"
     const val ONBOARDING = "onboarding"
-    const val VALUES_ONBOARDING = "values_onboarding"
     const val CATEGORY_ONBOARDING = "category_onboarding"
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
     const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
@@ -151,7 +149,7 @@ private object Routes {
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
         SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, GATES, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
-        ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
+        ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
         WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
@@ -307,7 +305,6 @@ fun TeperaNavHost(
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
-                    onShowValuesOnboarding = { navController.navigate(Routes.VALUES_ONBOARDING) },
                     onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
                     onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
                     onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) }
@@ -403,13 +400,6 @@ fun TeperaNavHost(
                 OnboardingScreen(
                     settingsStore = settingsStore,
                     balanceRepository = balanceRepository,
-                    onDone = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.VALUES_ONBOARDING) {
-                ValuesOnboardingScreen(
-                    categoryRepository = categoryRepository,
-                    settingsStore = settingsStore,
                     onDone = { navController.popBackStack() }
                 )
             }

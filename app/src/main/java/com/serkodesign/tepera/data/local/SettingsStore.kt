@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.map
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val TARGET_MINUTES_KEY = intPreferencesKey("target_minutes")
 private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
-private val VALUES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("values_onboarding_seen")
-private val VALUED_CATEGORY_ID_KEY = stringPreferencesKey("valued_category_id")
 private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
 private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
@@ -61,27 +59,8 @@ class SettingsStore(private val context: Context) {
     }
 
     /**
-     * FR-P.2: чи вже показане одноразове онбординг-питання про цінності ("Що ти хотів би
-     * робити більше?"). Показується ЗАВЖДИ першим при першому запуску — HomeScreen перевіряє
-     * цей прапорець РАНІШЕ за onboardingUsageAccessSeen (FR-7.1).
-     */
-    val valuesOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
-        .map { it[VALUES_ONBOARDING_SEEN_KEY] ?: false }
-
-    /** [categoryId] null, якщо користувач пропустив питання — це теж валідний вибір. */
-    suspend fun setValuesOnboardingAnswer(categoryId: String?) {
-        context.settingsDataStore.edit {
-            it[VALUES_ONBOARDING_SEEN_KEY] = true
-            if (categoryId != null) it[VALUED_CATEGORY_ID_KEY] = categoryId
-        }
-    }
-
-    val valuedCategoryId: Flow<String?> = context.settingsDataStore.data
-        .map { it[VALUED_CATEGORY_ID_KEY] }
-
-    /**
      * T-8 (tepera-dev-spec.md): чи вже показаний одноразовий вибір категорій на онбордингу
-     * (`CategoryOnboardingScreen`) — між питанням про цінності (FR-P.2) і онбординг-оцінкою
+     * (`CategoryOnboardingScreen`) — першим кроком, перед онбординг-оцінкою
      * Online-часу (T-3), той самий принцип "показано" фіксується одразу при відкритті екрана.
      */
     val categoryOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
