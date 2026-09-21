@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.addentry
 
+import androidx.compose.foundation.layout.BoxWithConstraints
+
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.animation.animateColorAsState
@@ -75,6 +77,7 @@ import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
+import com.serkodesign.tepera.util.localStartOfDayToUtcMidnight
 import com.serkodesign.tepera.util.utcMidnightToLocalStartOfDay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -336,21 +339,26 @@ private fun modeLabel(mode: DurationMode): String = when (mode) {
  * + 2 кастомні), lazy-грід тут надлишковий, той самий принцип, що сітка категорій на Home. */
 @Composable
 private fun CategoryGrid(categories: List<CategoryEntity>, selectedId: String?, onSelect: (String) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        categories.chunked(3).forEach { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                rowItems.forEach { category ->
-                    CategoryTile(
-                        category = category,
-                        selected = category.id == selectedId,
-                        onClick = { onSelect(category.id) },
-                        modifier = Modifier.weight(1f)
-                    )
+    // На вузьких екранах (~360dp, напр. Huawei P9) у плитці ~105dp не вміщується "Живе спілкування" навіть у два рядки —
+    // там 2 колонки, на звичайних (~410dp) лишаються 3.
+    BoxWithConstraints {
+        val columns = if (maxWidth < 390.dp) 2 else 3
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            categories.chunked(columns).forEach { rowItems ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    rowItems.forEach { category ->
+                        CategoryTile(
+                            category = category,
+                            selected = category.id == selectedId,
+                            onClick = { onSelect(category.id) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    repeat(columns - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
-                repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
             }
         }
     }
@@ -611,7 +619,7 @@ private fun DateRow(dateMillis: Long, onDateSelected: (Long) -> Unit) {
     }
 
     if (showPicker) {
-        val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateMillis)
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = localStartOfDayToUtcMidnight(dateMillis))
         val pickerColors = DatePickerDefaults.colors(
             containerColor = TeperaPalette.surfaceBrandLight,
             titleContentColor = TeperaPalette.buttonBrandDark,

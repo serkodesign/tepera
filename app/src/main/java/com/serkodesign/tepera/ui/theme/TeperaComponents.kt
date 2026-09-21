@@ -373,8 +373,14 @@ fun TeperaButton(
                     // (нема що відкидати — без фону й рамки).
                     TeperaButtonType.Primary ->
                         Modifier.shadow(6.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+                    // Secondary має прозорий фон: на Android 8-9 (API < 28) elevation-тінь просвічує крізь нього й малює сіру пляму
+                    // всередині кнопки (Huawei P9) — тому тінь лише з API 28, на старіших лишається рамка.
                     TeperaButtonType.Secondary ->
-                        Modifier.shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+                        if (android.os.Build.VERSION.SDK_INT >= 28) {
+                            Modifier.shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+                        } else {
+                            Modifier
+                        }
                     TeperaButtonType.Tertiary -> Modifier
                 }
             )

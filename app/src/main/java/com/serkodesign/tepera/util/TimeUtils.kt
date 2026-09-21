@@ -61,6 +61,19 @@ fun currentDayPeriod(hourOfDay: Int = Calendar.getInstance().get(Calendar.HOUR_O
  * (задокументована особливість API). Конвертує в локальну північ того ж календарного дня,
  * інакше в часових поясах на схід від UTC (напр. Київ) дата могла б "з'їхати" на день раніше.
  */
+/**
+ * Зворотна до [utcMidnightToLocalStartOfDay]: локальна північ → UTC-північ того ж календарного дня. Потрібна, щоб передати
+ * DatePicker початкову дату: без цього в часових поясах на схід від UTC він показував ПОПЕРЕДНІЙ день (і "Зберегти" без змін
+ * переносило запис на день раніше).
+ */
+fun localStartOfDayToUtcMidnight(localMillis: Long): Long {
+    val local = Calendar.getInstance().apply { timeInMillis = localMillis }
+    return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        clear()
+        set(local.get(Calendar.YEAR), local.get(Calendar.MONTH), local.get(Calendar.DAY_OF_MONTH), 0, 0, 0)
+    }.timeInMillis
+}
+
 fun utcMidnightToLocalStartOfDay(utcMillis: Long): Long {
     val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = utcMillis }
     val local = Calendar.getInstance().apply {
