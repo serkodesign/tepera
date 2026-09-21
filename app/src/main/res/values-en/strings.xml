@@ -174,12 +174,10 @@
     <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment for going over.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_sleep_window_label">Sleep window</string>
-    <string name="settings_sleep_window_info">Time inside this window doesn\'t count toward the day\'s structure and won\'t create pauses — it\'s a technical setting, never shown on the scale. Adjust it if you work nights.</string>
+    <string name="settings_sleep_window_info">This isn\'t sleep tracking — it\'s only a calculation setting. It changes: the start of your day (unlocks inside the window don\'t start the day), the length of your awake day in the day structure, pause detection (no pauses are looked for inside it), the \"Offline\" row in Statistics, and the unlock counter. It is never shown on the scale. Adjust it if you work nights.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
     <string name="settings_sleep_window_start_label">Start</string>
     <string name="settings_sleep_window_end_label">End</string>
-    <string name="settings_sleep_window_second_label">Second window</string>
-    <string name="settings_sleep_window_second_hint">For a floating schedule — off by default.</string>
 
     <!-- T-11 (tepera-dev-spec.md): gap detection sensitivity preset -->
     <string name="settings_gap_sensitivity_label">Pause detection sensitivity</string>
@@ -350,7 +348,7 @@
     <string name="knowledge_base_section_2_title">Pauses and gates</string>
     <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a skipped pause is never recorded as a metric.\n\nGates (Settings → Apps with a delay) are a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so gates work through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning gates off for the day is one tap, no explanation needed.</string>
     <string name="knowledge_base_section_3_title">Sleep window</string>
-    <string name="knowledge_base_section_3_body">The sleep window (Settings → Time and day boundaries) doesn\'t show sleep as an activity and says nothing about how much or how well you slept. It\'s only a time range excluded from the calculation: minutes inside the sleep window don\'t count toward the day structure, don\'t become pauses, and don\'t count toward the unlock counter. You can set up to two windows — a second one for a shifting schedule, off by default.</string>
+    <string name="knowledge_base_section_3_body">The sleep window (Settings → Time and day boundaries) doesn\'t show sleep as an activity and says nothing about how much or how well you slept. It\'s only a time range excluded from the calculation: minutes inside the sleep window don\'t count toward the day structure, don\'t become pauses, and don\'t count toward the unlock counter.</string>
     <string name="knowledge_base_section_4_title">Why there are no notifications, streaks, or scores</string>
     <string name="knowledge_base_section_4_body">Tepera doesn\'t send notifications trying to pull you back, doesn\'t count day streaks, and doesn\'t award points or badges for usage. The numbers on screen are facts about time that has already passed, not a goal to reach — that\'s why the app never says "goal," only "reference," and colors never turn "alarming" no matter how much time has passed. Comparisons are only ever against your own history, never against other people\'s averages.</string>
     <string name="onboarding_learn_more">Learn more about your data</string>

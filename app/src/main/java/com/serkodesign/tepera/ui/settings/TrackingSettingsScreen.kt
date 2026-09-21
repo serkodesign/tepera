@@ -66,9 +66,6 @@ fun TrackingSettingsScreen(
     var showTargetInfo by remember { mutableStateOf(false) }
     var window1StartHour by remember { mutableStateOf(0) }
     var window1EndHour by remember { mutableStateOf(6) }
-    var window2Enabled by remember { mutableStateOf(false) }
-    var window2StartHour by remember { mutableStateOf(0) }
-    var window2EndHour by remember { mutableStateOf(6) }
     var showSleepWindowInfo by remember { mutableStateOf(false) }
     var gapSensitivity by remember { mutableStateOf(GapSensitivity.NORMAL) }
     var showGapSensitivityInfo by remember { mutableStateOf(false) }
@@ -79,11 +76,6 @@ fun TrackingSettingsScreen(
         windows.find { it.slot == 1 }?.let {
             window1StartHour = (it.startMinuteOfDay / 60).coerceIn(0, 23)
             window1EndHour = (it.endMinuteOfDay / 60).coerceIn(0, 23)
-        }
-        windows.find { it.slot == 2 }?.let {
-            window2Enabled = it.enabled
-            window2StartHour = (it.startMinuteOfDay / 60).coerceIn(0, 23)
-            window2EndHour = (it.endMinuteOfDay / 60).coerceIn(0, 23)
         }
         gapSensitivity = settingsStore.gapSensitivity.first()
     }
@@ -194,63 +186,6 @@ fun TrackingSettingsScreen(
                         minHours = 0,
                         maxHours = 23
                     )
-
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
-                            Text(stringResource(R.string.settings_sleep_window_second_label), style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                stringResource(R.string.settings_sleep_window_second_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = window2Enabled,
-                            onCheckedChange = { enabled ->
-                                window2Enabled = enabled
-                                scope.launch { sleepWindowRepository.setWindow(2, window2StartHour * 60, window2EndHour * 60, enabled) }
-                            },
-                            colors = teperaSwitchColors()
-                        )
-                    }
-                    if (window2Enabled) {
-                        Text(
-                            stringResource(R.string.settings_sleep_window_start_label),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                        HourRangeSlider(
-                            hours = window2StartHour,
-                            onHoursChange = { hour ->
-                                window2StartHour = hour
-                                scope.launch { sleepWindowRepository.setWindow(2, hour * 60, window2EndHour * 60, enabled = true) }
-                            },
-                            valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
-                            minHours = 0,
-                            maxHours = 23
-                        )
-                        Text(
-                            stringResource(R.string.settings_sleep_window_end_label),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                        HourRangeSlider(
-                            hours = window2EndHour,
-                            onHoursChange = { hour ->
-                                window2EndHour = hour
-                                scope.launch { sleepWindowRepository.setWindow(2, window2StartHour * 60, hour * 60, enabled = true) }
-                            },
-                            valueLabel = { hour -> stringResource(R.string.settings_sleep_window_hour_format, hour) },
-                            minHours = 0,
-                            maxHours = 23
-                        )
-                    }
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
