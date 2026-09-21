@@ -107,9 +107,6 @@ dependencies {
     // WorkManager — періодичне оновлення віджета (FR-4.3), ~30 хв інтервал
     implementation("androidx.work:work-runtime-ktx:2.11.2")
 
-    // Графіки — Vico, без власного chart-движка (out-of-scope, SRS розділ 6)
-    implementation("com.patrykandpatrick.vico:compose-m3:3.3.1")
-
     // Crashlytics (Фаза 5) — лише crash-репортинг, СВІДОМО без firebase-analytics
     // (CLAUDE.md: жодної usage-аналітики в MVP, тільки crash-репорти).
     implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
