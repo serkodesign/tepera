@@ -135,7 +135,16 @@ open class TeperaWidget : GlanceAppWidget() {
             DpSize(250.dp, 60.dp),
             DpSize(250.dp, 140.dp),
             DpSize(250.dp, 170.dp),
-            DpSize(250.dp, 205.dp)
+            DpSize(250.dp, 205.dp),
+            // Ширші брейкпоінти: кнопки 4x1/4x2 підбираються під реальну ширину (див. CategoryButtonsRow)
+            DpSize(300.dp, 60.dp),
+            DpSize(300.dp, 140.dp),
+            DpSize(300.dp, 170.dp),
+            DpSize(300.dp, 205.dp),
+            DpSize(340.dp, 60.dp),
+            DpSize(340.dp, 140.dp),
+            DpSize(340.dp, 170.dp),
+            DpSize(340.dp, 205.dp)
         )
     )
 
@@ -185,6 +194,7 @@ private val CATEGORY_BUTTON_SIZE = 60.dp // макет 236:956 — 56; збіл�
 private val PILL_PADDING = 12.dp // макет 236:956 — 8; збільшено до 12 за запитом користувача
 private val PILL_HEIGHT = CATEGORY_BUTTON_SIZE + PILL_PADDING * 2
 private val BUTTON_GAP = 8.dp
+private val MIN_SPREAD_GAP = 4.dp
 private val WIDGET_GLYPH_UNSELECTED = Color(0xFF505050) // Text/text-secondary
 private val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
 
@@ -223,6 +233,14 @@ private fun CategoryButtonsRow(
     padding: Dp = PILL_PADDING
 ) {
     val spread = fillWidth && categories.size >= MAX_WIDGET_BUTTONS
+    // Повний ряд: кнопка зменшується пропорційно, щоб 5 кіл + відступи + мінімальні проміжки вміщались у
+    // ширину віджета. Інакше RemoteViews стискає кола по ширині в овали (P9, вужчий лаунчер-грід).
+    val size = if (spread) {
+        minOf(buttonSize, (LocalSize.current.width - padding * 2 - MIN_SPREAD_GAP * (categories.size - 1)) / categories.size)
+            .coerceAtLeast(32.dp)
+    } else {
+        buttonSize
+    }
     Row(
         modifier = (if (spread) GlanceModifier.fillMaxWidth() else GlanceModifier)
             .background(ImageProvider(R.drawable.widget_pill_translucent))
@@ -233,7 +251,7 @@ private fun CategoryButtonsRow(
             if (index > 0) {
                 if (spread) Spacer(modifier = GlanceModifier.defaultWeight()) else Spacer(modifier = GlanceModifier.width(BUTTON_GAP))
             }
-            CategoryButton(category, activeTimers.containsKey(category.id), context, buttonSize)
+            CategoryButton(category, activeTimers.containsKey(category.id), context, size)
         }
     }
 }
