@@ -1817,7 +1817,7 @@ ViewModel ад-хок правила частоти на єдину підсис
 
 ### Відкриті пункти перед релізом (станом на 21.09.2026)
 
-- [x] **Feature graphic і скріншоти (EN)** для сторінки Google Play — виконано 21.09.2026: `docs/play-store/feature-graphic.png` (1024x500) і `docs/play-store/screenshots/en/` (6 шт., 1080x2160); українські скріншоти ще не робились
+- [x] **Feature graphic і скріншоти (EN)** для сторінки Google Play — виконано 21.09.2026: `docs/play-store/feature-graphic.png` (1024x500) і `docs/play-store/screenshots/en/` (6 шт., 1080x2160); українські: `docs/play-store/screenshots/uk/` (6 шт.)
 - [ ] **T-9:** аудит скріншотів і Privacy Policy на оцінювальні слова перед поданням (описи лістингу вже пройшли)
 - [x] **Екран "Про застосунок"** (виконано 21.09.2026, див. нижче) з посиланням на Privacy Policy, версією й контактом — вимога Google Play (GAP-8 у
       SRS v3.1); зараз у застосунку посилання на політику немає

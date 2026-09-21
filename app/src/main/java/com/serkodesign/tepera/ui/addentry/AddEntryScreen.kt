@@ -374,12 +374,12 @@ private fun CategoryTile(
             .clip(RoundedCornerShape(16.dp))
             .background(tileColor)
             .clickable(onClick = onClick)
-            .padding(8.dp),
+            .padding(6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Box(
-            modifier = Modifier.size(32.dp).clip(CircleShape).background(accentColor.copy(alpha = 0.2f)),
+            modifier = Modifier.size(28.dp).clip(CircleShape).background(accentColor.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             if (lineArtRes != null) {
@@ -400,8 +400,9 @@ private fun CategoryTile(
         }
         Text(
             categoryDisplayName(category),
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
+            // Довгі назви ("Хобі/творчість", "Живе спілкування") переносяться на другий рядок, а не обрізаються "…".
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 13.sp),
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
     }
