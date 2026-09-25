@@ -93,10 +93,12 @@ import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
+import androidx.compose.ui.platform.LocalContext
+import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.settings.AboutScreen
+import com.serkodesign.tepera.ui.settings.ProInterestScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
-import com.serkodesign.tepera.ui.settings.ProInterestScreen
 import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
@@ -115,18 +117,18 @@ private object Routes {
     const val ONBOARDING = "onboarding"
     const val CATEGORY_ONBOARDING = "category_onboarding"
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
+    const val TARGET_ONBOARDING = "target_onboarding"
     const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
-    const val TARGET_ONBOARDING = "target_onboarding"
     const val LANGUAGE_SETTINGS = "language_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val ABOUT = "about"
-    const val STATS = "stats"
-    const val DIARY = "diary"
     const val PRO_INTEREST = "pro_interest"
     const val GATE_SCHEDULE = "gate_schedule"
+    const val STATS = "stats"
+    const val DIARY = "diary"
     const val SPIKE_T1 = "spike_t1"
     const val SPIKE_T15 = "spike_t15"
     const val GATES = "gates"
@@ -213,13 +215,13 @@ fun TeperaNavHost(
         }
     }
 
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route
-
     // CC-8: тап по тижневому сповіщенню — повернутися на Home, де лежить картка «Цей тиждень».
     LaunchedEffect(pendingWeeklySummaryNonce) {
         if (pendingWeeklySummaryNonce != null) navController.popBackStack(Routes.HOME, inclusive = false)
     }
+
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
 
     // Градієнт застосовується ТУТ, на самому зовнішньому Box (а не всередині HomeScreen/
     // StatsScreen) — інакше він потрапляє під contentPadding зовнішнього Scaffold і не сягає
@@ -319,6 +321,7 @@ fun TeperaNavHost(
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
                     onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
                     onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
+                    onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
                     onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) }
                 )
             }
@@ -328,7 +331,6 @@ fun TeperaNavHost(
                     activityRepository = activityRepository,
                     balanceRepository = balanceRepository,
                     patternRepository = patternRepository,
-                    onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
                     unlockRepository = unlockRepository,
@@ -430,6 +432,13 @@ fun TeperaNavHost(
                     onDone = { navController.popBackStack() }
                 )
             }
+            composable(Routes.TARGET_ONBOARDING) {
+                TargetOnboardingScreen(
+                    settingsStore = settingsStore,
+                    balanceRepository = balanceRepository,
+                    onDone = { navController.popBackStack() }
+                )
+            }
             composable(Routes.WIDGET_SUGGESTION_ONBOARDING) {
                 WidgetSuggestionScreen(
                     settingsStore = settingsStore,
@@ -439,13 +448,6 @@ fun TeperaNavHost(
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
-            composable(Routes.TARGET_ONBOARDING) {
-                TargetOnboardingScreen(
-                    settingsStore = settingsStore,
-                    balanceRepository = balanceRepository,
-                    onDone = { navController.popBackStack() }
-                )
-            }
                     onOpenLanguage = { navController.navigate(Routes.LANGUAGE_SETTINGS) },
                     onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
@@ -453,9 +455,9 @@ fun TeperaNavHost(
                     onOpenGates = { navController.navigate(Routes.GATES) },
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
+                    onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onOpenSpikeT15 = { navController.navigate(Routes.SPIKE_T15) },
-                    onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -463,6 +465,7 @@ fun TeperaNavHost(
                 TrackingSettingsScreen(
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
+                    balanceRepository = balanceRepository,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -473,7 +476,6 @@ fun TeperaNavHost(
                 com.serkodesign.tepera.debug.SpikeT15Screen(onBack = { navController.popBackStack() })
             }
             composable(Routes.SPIKE_T1) {
-                    balanceRepository = balanceRepository,
                 SpikeT1Screen(onBack = { navController.popBackStack() })
             }
             composable(Routes.GATES) {
@@ -507,8 +509,6 @@ fun TeperaNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
-            composable(Routes.ABOUT) {
-                AboutScreen(
             composable(Routes.GATE_SCHEDULE) {
                 GateScheduleScreen(
                     gateRepository = gateRepository,
@@ -518,6 +518,8 @@ fun TeperaNavHost(
             composable(Routes.PRO_INTEREST) {
                 ProInterestScreen(onBack = { navController.popBackStack() })
             }
+            composable(Routes.ABOUT) {
+                AboutScreen(
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onBack = { navController.popBackStack() }
                 )

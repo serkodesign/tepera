@@ -14,7 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.serkodesign.tepera.data.repository.GateRepository
+import kotlinx.coroutines.launch
 import com.serkodesign.tepera.ui.navigation.TeperaNavHost
 import com.serkodesign.tepera.ui.theme.TeperaTheme
 import com.serkodesign.tepera.util.LocaleStore
@@ -26,10 +28,10 @@ class MainActivity : ComponentActivity() {
         // FR-4.1: тап по кнопці категорії на віджеті. FR-4.4: тап по Quick Settings tile.
         const val EXTRA_OPEN_ADD_ENTRY = "open_add_entry"
         const val EXTRA_CATEGORY_ID = "category_id"
-    }
-
         // CC-8: тап по тижневому сповіщенню — відкрити Home з карткою підсумку тижня.
         const val EXTRA_OPEN_WEEKLY_SUMMARY = "open_weekly_summary"
+    }
+
     /**
      * T-5 (tepera-dev-spec.md): тап по закріпленому ярлику воріт (T-4) запускає ту саму
      * MainActivity, що вже, як правило, живе у фоні — без `onNewIntent()` система лише виносить
@@ -50,6 +52,10 @@ class MainActivity : ComponentActivity() {
     // активності (зміна мови) не рахуються.
     private var skipNextOpen = false
 
+    // Застосовує збережений вибір мови (Налаштування → Мова застосунку) ДО того, як
+    // з'явиться будь-який ресурс/рядок цієї Activity — LocaleStore.kt пояснює, чому це
+    // обов'язково ручний attachBaseContext(), а не AppCompatDelegate.
+    override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleStore.wrap(newBase))
     }
 
@@ -69,14 +75,14 @@ class MainActivity : ComponentActivity() {
         val categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID)
         val openAddEntry = intent.getBooleanExtra(EXTRA_OPEN_ADD_ENTRY, false) || categoryId != null
         pendingGateRequest = gateRequestFromIntent(intent)
+        skipNextOpen = savedInstanceState != null || pendingGateRequest != null
+        handleWeeklySummaryIntent(intent)
         setContent {
             ProvideAppLocale {
             TeperaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     TeperaNavHost(
                         categoryRepository = app.categoryRepository,
-        skipNextOpen = savedInstanceState != null || pendingGateRequest != null
-        handleWeeklySummaryIntent(intent)
                         activityRepository = app.activityRepository,
                         balanceRepository = app.balanceRepository,
                         excludedAppRepository = app.excludedAppRepository,
@@ -104,14 +110,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        pendingGateRequest = gateRequestFromIntent(intent)
-    }
-
-    private fun gateRequestFromIntent(intent: Intent): GateRequest? =
-        intent.getStringExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA)
     override fun onStart() {
         super.onStart()
         if (skipNextOpen) {
@@ -124,8 +122,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-            ?.let { GateRequest(it, System.nanoTime()) }
-}
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingGateRequest = gateRequestFromIntent(intent)
         skipNextOpen = pendingGateRequest != null
         handleWeeklySummaryIntent(intent)
     }
@@ -138,3 +138,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch { (application as TeperaApp).settingsStore.setWeeklyDigestCardDismissedKey(-1L) }
     }
 
+    private fun gateRequestFromIntent(intent: Intent): GateRequest? =
+        intent.getStringExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA)
+            ?.let { GateRequest(it, System.nanoTime()) }
+}

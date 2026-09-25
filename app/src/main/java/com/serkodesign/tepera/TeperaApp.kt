@@ -23,13 +23,13 @@ import com.serkodesign.tepera.data.local.MIGRATION_6_7
 import com.serkodesign.tepera.data.local.MIGRATION_7_8
 import com.serkodesign.tepera.data.local.MIGRATION_8_9
 import com.serkodesign.tepera.data.local.MIGRATION_9_10
-import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.MIGRATION_10_11
 import com.serkodesign.tepera.data.local.MIGRATION_11_12
 import com.serkodesign.tepera.data.local.MIGRATION_12_13
 import com.serkodesign.tepera.data.local.MIGRATION_13_14
 import com.serkodesign.tepera.data.local.MIGRATION_14_15
 import com.serkodesign.tepera.data.repository.WelcomeBackRepository
+import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -44,12 +44,12 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
-import com.serkodesign.tepera.data.createTimerCheckNotificationChannel
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.widget.WidgetUpdateWorker
 import com.serkodesign.tepera.widget.WidgetRolloverWorker
+import com.serkodesign.tepera.util.CrashReporting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -116,11 +116,11 @@ class TeperaApp : Application() {
 
     val gateEventRepository: GateEventRepository by lazy { GateEventRepository(database.gateEventDao()) }
 
-    val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
-
     val welcomeBackRepository: WelcomeBackRepository by lazy {
         WelcomeBackRepository(settingsStore, balanceRepository, activityRepository)
     }
+
+    val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
 
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
 
@@ -134,6 +134,8 @@ class TeperaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // D-15: звіти про збої — за збереженим вибором користувача (маніфест за замовчуванням вимикає збір).
+        CrashReporting.apply(this)
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
         // у CategoryDao), тож виклик щозапуску безпечний.
         applicationScope.launch { seedInitialData() }
@@ -189,6 +191,7 @@ class TeperaApp : Application() {
         deviceIdProvider.clearAll()
         getSharedPreferences("locale_prefs", MODE_PRIVATE).edit().clear().commit()
         getSharedPreferences("widget_prefs", MODE_PRIVATE).edit().clear().commit()
+        CrashReporting.reset(this@TeperaApp)
         seedInitialData()
         WidgetUpdateWorker.schedule(this@TeperaApp)
         WidgetRolloverWorker.schedule(this@TeperaApp)

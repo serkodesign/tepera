@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.map
 
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val TARGET_MINUTES_KEY = intPreferencesKey("target_minutes")
-private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
 private val TARGET_ONBOARDING_SEEN_KEY = booleanPreferencesKey("target_onboarding_seen")
+private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
 private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
 private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
@@ -29,8 +29,6 @@ private val ONLINE_ESTIMATE_REVEAL_DISMISSED_ID_KEY = stringPreferencesKey("onli
 private val GAP_SENSITIVITY_KEY = stringPreferencesKey("gap_sensitivity")
 private val HISTORY_BACKFILL_COMPLETED_AT_KEY = longPreferencesKey("history_backfill_completed_at")
 private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
-private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
-private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
 private val GATES_PAUSED_FROM_KEY = longPreferencesKey("gates_paused_from")
 private val GATE_PAUSE_HISTORY_KEY = stringPreferencesKey("gate_pause_history")
 private val GATE_SCHEDULE_KEY = stringPreferencesKey("gate_schedule")
@@ -40,6 +38,8 @@ private val GATE_TEXT_BAG_KEY = stringPreferencesKey("gate_text_bag")
 private val GATE_GROWING_DELAY_KEY = booleanPreferencesKey("gate_growing_delay")
 private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
+private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
+private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 
 
@@ -218,6 +218,28 @@ class SettingsStore(private val context: Context) {
     suspend fun setHistoryBackfillCompletedAt(millis: Long) {
         context.settingsDataStore.edit { it[HISTORY_BACKFILL_COMPLETED_AT_KEY] = millis }
     }
+    /**
+     * CC-5: пауза воріт — вікно [from, until). Раніше (T-4) був лише кінець "на сьогодні"
+     * (`gates_paused_until`), тепер до нього додано початок (`gates_paused_from`), бо "на вихідні"
+     * серед тижня починається в суботу. Відсутній `from` (старі значення) = 0, тобто пауза вже діє.
+     * `until` = 0 — не на паузі.
+     */
+    val gatePause: Flow<PauseWindow?> = context.settingsDataStore.data.map { prefs ->
+        val until = prefs[GATES_PAUSED_UNTIL_KEY] ?: 0L
+        if (until > 0L) PauseWindow(prefs[GATES_PAUSED_FROM_KEY] ?: 0L, until) else null
+    }
+
+    suspend fun setGatePause(window: PauseWindow?) {
+        context.settingsDataStore.edit {
+            if (window == null) {
+                it.remove(GATES_PAUSED_UNTIL_KEY)
+                it.remove(GATES_PAUSED_FROM_KEY)
+            } else {
+                it[GATES_PAUSED_FROM_KEY] = window.fromMillis
+                it[GATES_PAUSED_UNTIL_KEY] = window.untilMillis
+            }
+        }
+    }
 
     /**
      * Завершені паузи (фактичний початок і кінець) — потрібні, щоб скан обходів воріт (CC-9) міг
@@ -286,6 +308,9 @@ class SettingsStore(private val context: Context) {
             if (millis <= 0L) it.remove(WELCOME_BACK_PENDING_FROM_KEY) else it[WELCOME_BACK_PENDING_FROM_KEY] = millis
         }
     }
+
+
+    /**
      * T-13 (tepera-dev-spec.md), "рушій карток": скільки разів поспіль подієва картка (пауза)
      * витіснила тижневу картку-оцінку зі стеку — `CardEngine`/`CardHistoryRepository` звіряють
      * це між викликами `selectVisible()` (не лише в межах одного відкриття Home), щоб правило
