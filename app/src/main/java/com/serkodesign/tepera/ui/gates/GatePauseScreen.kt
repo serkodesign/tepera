@@ -3,6 +3,7 @@ package com.serkodesign.tepera.ui.gates
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
@@ -43,6 +45,7 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.repository.GateEventRepository
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.util.findActivity
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
@@ -134,7 +137,15 @@ fun GatePauseScreen(
 
         // CC-6: «Не зараз» — головна кнопка, доступна одразу; «Відкрити {app}» з'являється лише після
         // затримки (до того місця під неї не резервується, щоб не тиснути очікуванням).
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Поява за M3-рухом (emphasized, ~500 мс): «Відкрити» не з'являється миттєво — її частка ширини
+        // плавно росте від нуля до половини ряду (кнопка «Не зараз» так само плавно звужується), а сама
+        // кнопка проявляється з прозорості. Ширина рахується вагою, тож без стрибків розкладки.
+        val reveal by animateFloatAsState(
+            targetValue = if (state.canContinue) 1f else 0f,
+            animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized),
+            label = "openButtonReveal"
+        )
+        Row(modifier = Modifier.fillMaxWidth()) {
             TeperaButton(
                 text = stringResource(R.string.gate_pause_exit_action),
                 onClick = { viewModel.cancel() },
@@ -142,13 +153,18 @@ fun GatePauseScreen(
                 type = TeperaButtonType.Primary,
                 modifier = Modifier.weight(1f)
             )
-            if (state.canContinue) {
+            if (reveal > 0.001f) {
                 TeperaButton(
                     text = stringResource(R.string.gate_pause_open_format, state.appLabel),
                     onClick = { viewModel.continueToApp() },
+                    enabled = state.canContinue,
                     size = TeperaButtonSize.Big,
                     type = TeperaButtonType.Secondary,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .padding(start = 8.dp * reveal)
+                        .weight(reveal)
+                        .clipToBounds()
+                        .graphicsLayer { alpha = reveal }
                 )
             }
         }
