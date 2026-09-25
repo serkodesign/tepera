@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.first
 
 /**
  * Спільна логіка тап-таймера категорії — використовується і на Home (HomeViewModel), і в кнопках
- * категорій на віджеті (ToggleCategoryTimerAction), і в "Ні" на сповіщенні (TimerCheckWorker), щоб
+ * категорій на віджеті (ToggleCategoryTimerAction), щоб
  * поведінка (округлення, forceOverwrite) не розходилась між місцями виклику.
  *
  * Перший виклик для категорії починає живий таймер, другий — зупиняє й зберігає запис. Ціла

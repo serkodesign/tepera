@@ -14,10 +14,9 @@
 
     <!-- WorkManager для періодичного оновлення віджета (FR-4.3) не потребує окремого дозволу -->
 
-    <!-- Сповіщення "усе ще цим займаєшся?" через 4 год роботи тап-таймера (Figma user-flow
-         k6s4prQ9oK9x2uUvzHRghR, node 14:791, за прямим рішенням користувача — ЛИШЕ сповіщення,
-         без автозупинки). Звичайний runtime-дозвіл (Android 13+), не protected/sensitive —
-         запитується через системний діалог (HomeScreen), не через окремі Налаштування. -->
+
+    <!-- CC-8: єдине сповіщення застосунку — тижневий підсумок, лише якщо людина сама його ввімкнула в Налаштуваннях.
+         Runtime-дозвіл (Android 13+) запитується тільки в момент ввімкнення, не при першому запуску. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Свідомо ВІДСУТНІ: жодні локаційні дозволи (FR-7.2) -->
@@ -44,6 +43,13 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.Tepera">
+
+        <!-- D-15: Crashlytics нічого не збирає, доки TeperaApp не застосує вибір користувача
+             (util/CrashReporting.apply). Без цього SDK стартував би з увімкненим збором до
+             того, як людина встигла побачити перемикач. -->
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
 
         <!-- launchMode="singleTask" — T-5 (tepera-dev-spec.md): без нього повторний тап по
              закріпленому ярлику воріт (T-4), коли Tepera вже у фоні, лише виносить наявний
@@ -109,10 +115,6 @@
                 android:resource="@xml/life_balance_widget_2x1_info" />
         </receiver>
 
-        <!-- "Так"/"Ні" на сповіщенні "усе ще цим займаєшся?" (TimerCheckWorker) -->
-        <receiver
-            android:name=".data.TimerCheckNotificationReceiver"
-            android:exported="false" />
 
         <!-- Quick Settings Tile (FR-4.4) -->
         <service

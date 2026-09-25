@@ -2,12 +2,9 @@ package com.serkodesign.tepera.ui.home
 
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
-import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -335,8 +332,8 @@ fun HomeScreen(
     val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
     LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen) {
         val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
-        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && !widgetSuggestionSeen) {
-            // Той самий race, що описаний нижче для POST_NOTIFICATIONS: OnboardingScreen
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && targetStepDone && !widgetSuggestionSeen) {
+            // Race "Home оживає між popBackStack()/navigate()": OnboardingScreen
             // (пояснення дозволу) виставляє onboardingSeen=true у своєму LaunchedEffect(Unit)
             // ОДРАЗУ при монтуванні, не чекаючи дії користувача — і Home встигає прочитати це
             // на тому самому короткому "оживанні" між popBackStack()/navigate(), перш ніж
@@ -345,41 +342,6 @@ fun HomeScreen(
             // дозволу (знайдено живим тестом на Samsung S23, T-3 переставав показуватись).
             delay(1000)
             onShowWidgetSuggestion()
-        }
-    }
-
-    // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker, за 4 год роботи тап-таймера) потребує
-    // звичайного runtime-дозволу POST_NOTIFICATIONS на Android 13+ — запитується РІВНО раз, без
-    // окремого пояснювального екрана (не protected/sensitive дозвіл, на відміну від статистики
-    // використання застосунків). **Реальний баг, знайдений під час перевірки цієї сесії, у два
-    // заходи:** без gating на онбординг-ланцюжок системний діалог міг з'явитись ПОВЕРХ будь-якого
-    // проміжного екрана онбордингу — Home коротко "прокидається" між кожним `popBackStack()` і
-    // наступним `navigate()` у ланцюжку (кожен крок повертається на Home перед тим, як той одразу
-    // штовхає на наступний), і саме в цю мить встигає прочитати вже оновлений прапорець і
-    // запустити `launch()`. Перший фікс (gating на `widgetSuggestionSeen`) не позбувся проблеми
-    // повністю — той прапорець виставляється в LaunchedEffect(Unit) самого WidgetSuggestionScreen
-    // одразу при монтуванні, тож той самий стан "Home ще встигає це побачити" повторився,
-    // просто зсунувшись на крок пізніше (підтверджено повторним живим тестом). Другий фікс —
-    // невеликий `delay()` ПЕРЕД самим launch(): якщо Home справді покидає композицію (навігація
-    // пішла далі), корутина LaunchedEffect скасовується автоматично й до launch() просто не
-    // доходить; якщо ж Home і справді лишився видимим (реальний фінал онбордингу), затримка
-    // непомітна для користувача.
-    if (Build.VERSION.SDK_INT >= 33) {
-        val notificationPermissionRequested by settingsStore.notificationPermissionRequested.collectAsState(initial = true)
-        val notificationPermissionLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { }
-        LaunchedEffect(
-            notificationPermissionRequested, categoryOnboardingSeen,
-            onlineEstimateOnboardingSeen, widgetSuggestionSeen
-        ) {
-            if (categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
-                widgetSuggestionSeen && !notificationPermissionRequested
-            ) {
-                delay(1000)
-                settingsStore.setNotificationPermissionRequested()
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
         }
     }
 

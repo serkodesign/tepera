@@ -60,10 +60,11 @@
     <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted offline, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings, so it can show a real number next to your estimate. Offline logging stays fully functional without it.</string>
     <string name="onboarding_skip">Skip</string>
     <string name="perm_title">Before we begin</string>
-    <string name="perm_body">We do not collect any data and do not send anything to servers. All processing happens only on your phone</string>
+    <string name="perm_body">Your entries and app usage time stay on your phone. The only thing that leaves it is anonymous crash reports — you can turn them off in Settings</string>
     <string name="perm_usage_label">Usage access</string>
-    <string name="perm_notifications_label">Notifications</string>
     <string name="perm_continue">Continue</string>
+    <string name="crash_reports_label">Crash reports</string>
+    <string name="crash_reports_explanation">During testing, Tepera sends the developer anonymous reports when the app crashes (via Firebase Crashlytics by Google). A report contains the phone model, Android version and a technical description of the crash; it does not contain your entries, categories or app usage time. You can turn this off in Settings at any time.</string>
 
     <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), shown on both branches of "access granted? yes/no". -->
@@ -71,13 +72,6 @@
     <string name="widget_suggestion_body">Your day structure and a quick tap-timer within reach, without opening the app.</string>
     <string name="widget_suggestion_add_action">Add widget</string>
 
-    <!-- "Still doing this?" notification after 4h of a running tap-timer (Figma user-flow
-         k6s4prQ9oK9x2uUvzHRghR, node 14:791) — by direct user decision, notification ONLY,
-         the timer is never stopped automatically. -->
-    <string name="timer_check_channel_name">Active timer check-in</string>
-    <string name="timer_check_notification_body">Still doing this?</string>
-    <string name="timer_check_action_yes">Yes</string>
-    <string name="timer_check_action_no">No</string>
 
     <!-- Values onboarding (FR-P.2) -->
 

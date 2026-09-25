@@ -27,7 +27,6 @@ private val HISTORY_BACKFILL_COMPLETED_AT_KEY = longPreferencesKey("history_back
 private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
-private val NOTIFICATION_PERMISSION_REQUESTED_KEY = booleanPreferencesKey("notification_permission_requested")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
@@ -107,19 +106,6 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWidgetCategoryIds(ids: List<String>) {
         context.settingsDataStore.edit { it[WIDGET_CATEGORY_IDS_KEY] = ids.joinToString(",") }
-    }
-
-    /**
-     * `POST_NOTIFICATIONS` (Android 13+) — потрібен для сповіщення "усе ще цим займаєшся?"
-     * (`TimerCheckWorker`). Запитується РІВНО раз (HomeScreen) незалежно від відповіді
-     * користувача — системний діалог і так не з'явиться вдруге після відмови без цього
-     * прапорця, він лише запобігає повторному виклику `launch()` при кожному відкритті Home.
-     */
-    val notificationPermissionRequested: Flow<Boolean> = context.settingsDataStore.data
-        .map { it[NOTIFICATION_PERMISSION_REQUESTED_KEY] ?: false }
-
-    suspend fun setNotificationPermissionRequested() {
-        context.settingsDataStore.edit { it[NOTIFICATION_PERMISSION_REQUESTED_KEY] = true }
     }
 
     /**

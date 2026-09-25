@@ -32,6 +32,7 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
@@ -133,6 +134,9 @@ fun CategoryOnboardingScreen(
                     )
                 }
             }
+
+            // D-15: чесне повідомлення про звіти про збої одразу на початку, з можливістю вимкнути.
+            CrashReportsToggle(modifier = Modifier.padding(top = 12.dp))
 
             TeperaButton(
                 text = stringResource(R.string.category_onboarding_continue),

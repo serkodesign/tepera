@@ -67,10 +67,11 @@
     <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього офлайн-логування лишається повністю робочим.</string>
     <string name="onboarding_skip">Пропустити</string>
     <string name="perm_title">Перед тим як почати</string>
-    <string name="perm_body">Ми не збираємо ніякі дані і не відправляємо на сервери. Вся обробка виключно на смартфоні</string>
+    <string name="perm_body">Твої записи й час у застосунках лишаються на телефоні. З телефону виходять лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
     <string name="perm_usage_label">Доступ до статистики</string>
-    <string name="perm_notifications_label">Сповіщення</string>
     <string name="perm_continue">Продовжити</string>
+    <string name="crash_reports_label">Звіти про збої</string>
+    <string name="crash_reports_explanation">Під час тестування Tepera надсилає розробнику анонімні звіти, коли застосунок падає (через Firebase Crashlytics від Google). У звіті — модель телефону, версія Android і технічний опис збою; твоїх записів, категорій і часу в застосунках там немає. Це можна вимкнути в Налаштуваннях у будь-який момент.</string>
 
     <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), показується обома гілками "доступ надано? так/ні". -->
@@ -78,13 +79,6 @@
     <string name="widget_suggestion_body">Структура дня й швидкий тап-таймер під рукою, без відкриття застосунку.</string>
     <string name="widget_suggestion_add_action">Додати віджет</string>
 
-    <!-- Сповіщення "усе ще цим займаєшся?" через 4 год тап-таймера (Figma user-flow
-         k6s4prQ9oK9x2uUvzHRghR, node 14:791) — за прямим рішенням користувача ЛИШЕ сповіщення,
-         таймер не зупиняється автоматично. -->
-    <string name="timer_check_channel_name">Перевірка активного таймера</string>
-    <string name="timer_check_notification_body">Усе ще цим займаєшся?</string>
-    <string name="timer_check_action_yes">Так</string>
-    <string name="timer_check_action_no">Ні</string>
 
     <!-- Онбординг про цінності (FR-P.2) -->
 

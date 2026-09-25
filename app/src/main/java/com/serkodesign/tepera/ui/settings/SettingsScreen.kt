@@ -174,6 +174,8 @@ fun SettingsScreen(
                 )
                 // GAP-8: посилання на Privacy Policy, версія й контакт — вимога Google Play.
                 GlassRow(
+                // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
+                CrashReportsToggle()
                     label = stringResource(R.string.settings_about_action),
                     onClick = onOpenAbout,
                     leading = { TeperaIconCircle(Icons.Filled.Info) },
