@@ -45,6 +45,10 @@ class MainActivity : ComponentActivity() {
     // з'явиться будь-який ресурс/рядок цієї Activity — LocaleStore.kt пояснює, чому це
     // обов'язково ручний attachBaseContext(), а не AppCompatDelegate.
     override fun attachBaseContext(newBase: Context) {
+    // CC-4: відкриття через ворота (це не "відкрив Tepera") і перестворення
+    // активності (зміна мови) не рахуються.
+    private var skipNextOpen = false
+
         super.attachBaseContext(LocaleStore.wrap(newBase))
     }
 
@@ -71,6 +75,8 @@ class MainActivity : ComponentActivity() {
                     TeperaNavHost(
                         categoryRepository = app.categoryRepository,
                         activityRepository = app.activityRepository,
+        skipNextOpen = savedInstanceState != null || pendingGateRequest != null
+        handleWeeklySummaryIntent(intent)
                         balanceRepository = app.balanceRepository,
                         excludedAppRepository = app.excludedAppRepository,
                         installedAppsProvider = app.installedAppsProvider,
@@ -104,5 +110,21 @@ class MainActivity : ComponentActivity() {
 
     private fun gateRequestFromIntent(intent: Intent): GateRequest? =
         intent.getStringExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA)
+    override fun onStart() {
+        super.onStart()
+        if (skipNextOpen) {
+            skipNextOpen = false
+        } else {
+            val welcomeBack = (application as TeperaApp).welcomeBackRepository
+            lifecycleScope.launch {
+                welcomeBack.onAppOpened() // CC-4: перерва ≥ 3 діб → підсумок на Home
+            }
+        }
+    }
+
             ?.let { GateRequest(it, System.nanoTime()) }
 }
+        skipNextOpen = pendingGateRequest != null
+        handleWeeklySummaryIntent(intent)
+    }
+

@@ -86,8 +86,13 @@ fun ContextCardStack(
     onSelectLastPhoneUseGuess: (LastPhoneUseGuess) -> Unit,
     onDismissLastPhoneUseEstimate: () -> Unit,
     gateEventsSummaryState: GateEventsSummaryUiState,
-    onDismissGateEventsSummary: () -> Unit
+    onDismissGateEventsSummary: () -> Unit,
+    welcomeBackState: WelcomeBackUiState,
+    onDismissWelcomeBack: () -> Unit
 ) {
+    ContextCardSlot(visible = CardType.WELCOME_BACK in visibleCards) {
+        WelcomeBackCard(state = welcomeBackState, onDismiss = onDismissWelcomeBack)
+    }
     ContextCardSlot(visible = CardType.ONLINE_ESTIMATE_REVEAL in visibleCards) {
         OnlineEstimateRevealCard(state = onlineEstimateRevealState, onDismiss = onDismissOnlineEstimateReveal)
     }

@@ -270,27 +270,19 @@ class SettingsStore(private val context: Context) {
         context.settingsDataStore.edit { it[GATE_GROWING_DELAY_KEY] = enabled }
     }
 
-    /**
-    /**
-     * CC-5: пауза воріт — вікно [from, until). Раніше (T-4) був лише кінець "на сьогодні"
-     * (`gates_paused_until`), тепер до нього додано початок (`gates_paused_from`), бо "на вихідні"
-     * серед тижня починається в суботу. Відсутній `from` (старі значення) = 0, тобто пауза вже діє.
-     * `until` = 0 — не на паузі.
-     */
-    val gatePause: Flow<PauseWindow?> = context.settingsDataStore.data.map { prefs ->
-        val until = prefs[GATES_PAUSED_UNTIL_KEY] ?: 0L
-        if (until > 0L) PauseWindow(prefs[GATES_PAUSED_FROM_KEY] ?: 0L, until) else null
+    /** CC-4: момент попереднього справжнього відкриття Tepera (0 — ще ніколи). */
+    val lastOpenMillis: Flow<Long> = context.settingsDataStore.data.map { it[LAST_OPEN_KEY] ?: 0L }
+
+    suspend fun setLastOpenMillis(millis: Long) {
+        context.settingsDataStore.edit { it[LAST_OPEN_KEY] = millis }
     }
 
-    suspend fun setGatePause(window: PauseWindow?) {
+    /** CC-4: початок перерви (момент попереднього відкриття), для якої ще чекає підсумок; 0 — нема. */
+    val welcomeBackPendingFrom: Flow<Long> = context.settingsDataStore.data.map { it[WELCOME_BACK_PENDING_FROM_KEY] ?: 0L }
+
+    suspend fun setWelcomeBackPendingFrom(millis: Long) {
         context.settingsDataStore.edit {
-            if (window == null) {
-                it.remove(GATES_PAUSED_UNTIL_KEY)
-                it.remove(GATES_PAUSED_FROM_KEY)
-            } else {
-                it[GATES_PAUSED_FROM_KEY] = window.fromMillis
-                it[GATES_PAUSED_UNTIL_KEY] = window.untilMillis
-            }
+            if (millis <= 0L) it.remove(WELCOME_BACK_PENDING_FROM_KEY) else it[WELCOME_BACK_PENDING_FROM_KEY] = millis
         }
     }
      * T-13 (tepera-dev-spec.md), "рушій карток": скільки разів поспіль подієва картка (пауза)

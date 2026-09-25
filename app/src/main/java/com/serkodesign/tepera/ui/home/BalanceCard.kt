@@ -292,7 +292,7 @@ private fun formatClockDuration(minutes: Int): String {
  * а не "3 год 47 хв".
  */
 @Composable
-private fun formatBalanceDuration(minutes: Int): String {
+internal fun formatBalanceDuration(minutes: Int): String {
     val (hours, remainderMinutes) = roundToQuarterHour(minutes)
     return when {
         hours <= 0 -> stringResource(R.string.minutes_short_format, remainderMinutes)

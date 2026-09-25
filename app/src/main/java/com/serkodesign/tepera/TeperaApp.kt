@@ -28,6 +28,7 @@ import com.serkodesign.tepera.data.local.MIGRATION_11_12
 import com.serkodesign.tepera.data.local.MIGRATION_12_13
 import com.serkodesign.tepera.data.local.MIGRATION_13_14
 import com.serkodesign.tepera.data.local.MIGRATION_14_15
+import com.serkodesign.tepera.data.repository.WelcomeBackRepository
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -114,6 +115,10 @@ class TeperaApp : Application() {
     val gateEventRepository: GateEventRepository by lazy { GateEventRepository(database.gateEventDao()) }
 
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
+
+    val welcomeBackRepository: WelcomeBackRepository by lazy {
+        WelcomeBackRepository(settingsStore, balanceRepository, activityRepository)
+    }
 
     val settingsStore: SettingsStore by lazy { SettingsStore(this) }
 

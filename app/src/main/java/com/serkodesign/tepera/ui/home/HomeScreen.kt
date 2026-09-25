@@ -246,6 +246,14 @@ fun HomeScreen(
         factory = GateEventsSummaryViewModel.Factory(gateEventRepository, cardHistoryRepository)
     )
     val gateEventsSummaryState by gateEventsSummaryViewModel.uiState.collectAsState()
+    val welcomeBackViewModel: WelcomeBackViewModel = viewModel(
+        factory = WelcomeBackViewModel.Factory(
+            (LocalContext.current.applicationContext as com.serkodesign.tepera.TeperaApp).welcomeBackRepository,
+            settingsStore,
+            cardHistoryRepository
+        )
+    )
+    val welcomeBackState by welcomeBackViewModel.uiState.collectAsState()
 
     // T-13 (tepera-dev-spec.md): "рушій карток" — вирішує, яку саме множину з готових-до-показу
     // карток (isDue/visible нижче) реально видно на екрані, застосовуючи глобальний бюджет
@@ -281,10 +289,11 @@ fun HomeScreen(
     // місце для наступної в черзі, без очікування наступного LifecycleResumeEffect).
     LaunchedEffect(
         onlineEstimateRevealState, pauseState, weeklyReflectionState, unlockEstimateState,
-        lastPhoneUseEstimateState, weeklyDigestState, patternState, gateEventsSummaryState
+        lastPhoneUseEstimateState, weeklyDigestState, patternState, gateEventsSummaryState, welcomeBackState
     ) {
         cardStackViewModel.evaluate(
             listOf(
+                CardSource(CardType.WELCOME_BACK, priority = -1, minIntervalDays = null, dataReady = welcomeBackState.visible),
                 CardSource(CardType.ONLINE_ESTIMATE_REVEAL, priority = 0, minIntervalDays = null, dataReady = onlineEstimateRevealState.visible),
                 CardSource(CardType.PAUSE, priority = 1, minIntervalDays = null, dataReady = pauseState.visible),
                 CardSource(CardType.WEEKLY_REFLECTION, priority = 2, minIntervalDays = 7, dataReady = weeklyReflectionState.isDue),
@@ -447,7 +456,9 @@ fun HomeScreen(
                 onSelectLastPhoneUseGuess = lastPhoneUseEstimateViewModel::selectGuess,
                 onDismissLastPhoneUseEstimate = lastPhoneUseEstimateViewModel::dismiss,
                 gateEventsSummaryState = gateEventsSummaryState,
-                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss
+                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss,
+                welcomeBackState = welcomeBackState,
+                onDismissWelcomeBack = welcomeBackViewModel::dismiss
             )
 
             Row(

@@ -76,6 +76,10 @@
     <string name="target_onboarding_later">Пізніше</string>
     <string name="target_onboarding_set">Задати</string>
     <string name="settings_target_off_hint">Орієнтира немає — на шкалі дня нічого не позначається.</string>
+    <string name="welcome_back_title">Ось як минули ці дні</string>
+    <plurals name="welcome_back_period">
+    <string name="welcome_back_logged_format">Відмічено: %1$s</string>
+    <string name="welcome_back_online_format">Online в середньому: %1$s на день</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Під час тестування Tepera надсилає розробнику анонімні звіти, коли застосунок падає (через Firebase Crashlytics від Google). У звіті — модель телефону, версія Android і технічний опис збою; твоїх записів, категорій і часу в застосунках там немає. Це можна вимкнути в Налаштуваннях у будь-який момент.</string>
 

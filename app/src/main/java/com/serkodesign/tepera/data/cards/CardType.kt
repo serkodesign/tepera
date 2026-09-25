@@ -16,6 +16,8 @@ package com.serkodesign.tepera.data.cards
  * власним таймером, лише коли реально є нерозв'язаний запис).
  */
 enum class CardType(val isEstimate: Boolean, val isEvent: Boolean) {
+    /** CC-4: підсумок після перерви ≥ 3 діб — одноразова картка, найвищий пріоритет. */
+    WELCOME_BACK(isEstimate = false, isEvent = false),
     ONLINE_ESTIMATE_REVEAL(isEstimate = false, isEvent = false),
     PAUSE(isEstimate = false, isEvent = true),
     WEEKLY_REFLECTION(isEstimate = true, isEvent = false),
