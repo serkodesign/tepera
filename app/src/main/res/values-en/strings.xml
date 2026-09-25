@@ -49,15 +49,15 @@
          directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
     <string name="my_day_title_format">Your day: %1$s</string>
     <string name="balance_online_label">Online</string>
-    <string name="stats_offline_label">Offline</string>
+    <string name="stats_offline_label">Away from the phone</string>
     <string name="stats_below_five_min">&lt;5 min</string>
-    <string name="balance_rest_of_day_label">Offline life</string>
+    <string name="balance_rest_of_day_label">Away from the phone</string>
     <string name="activities_title">Activities</string>
     <string name="home_add_category">+ Add</string>
 
     <!-- Usage access onboarding (FR-7.1) -->
     <string name="onboarding_screen_title">Your day\'s structure</string>
-    <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted offline, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings, so it can show a real number next to your estimate. Offline logging stays fully functional without it.</string>
+    <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted in entries, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings, so it can show a real number next to your estimate. Logging activities stays fully functional without it.</string>
     <string name="onboarding_skip">Skip</string>
     <string name="perm_title">Before we begin</string>
     <string name="perm_body">Your entries and app usage time stay on your phone. The only thing that leaves it is anonymous crash reports — you can turn them off in Settings</string>
@@ -69,11 +69,23 @@
     <string name="target_onboarding_later">Later</string>
     <string name="target_onboarding_set">Set</string>
     <string name="settings_target_off_hint">No reference — nothing is marked on the day scale.</string>
+    <string name="welcome_back_title">Here\'s how these days went</string>
+    <plurals name="welcome_back_period">
+        <item quantity="one">Over %d day</item>
+        <item quantity="other">Over %d days</item>
+    </plurals>
+    <string name="welcome_back_logged_format">Noted: %1$s</string>
+    <string name="welcome_back_online_format">Online on average: %1$s per day</string>
     <string name="weekly_summary_label">Weekly summary</string>
     <string name="weekly_summary_hint">Once a week, on Sunday evening — one quiet notification. Tapping it opens your week\'s summary. There are no other notifications.</string>
     <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. You can allow it in the app\'s system settings — everything else works as before.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
+    <string name="settings_pro_interest_action">Tepera Pro</string>
+    <string name="pro_interest_screen_title">Tepera Pro</string>
+    <string name="pro_interest_title">Tepera Pro — in development</string>
+    <string name="pro_interest_body">We\'re wondering whether Tepera needs a separate extended version. It doesn\'t exist yet — right now this is only a question for you. No prices, no payments. If you\'re curious, tell us what would be useful.</string>
+    <string name="pro_interest_action">I want to know more</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">During testing, Tepera sends the developer anonymous reports when the app crashes (via Firebase Crashlytics by Google). A report contains the phone model, Android version and a technical description of the crash; it does not contain your entries, categories or app usage time. You can turn this off in Settings at any time.</string>
 
@@ -81,11 +93,6 @@
          node 14:791), shown on both branches of "access granted? yes/no". -->
     <string name="widget_suggestion_title">Add the widget to your home screen</string>
     <string name="widget_suggestion_body">Your day structure and a quick tap-timer within reach, without opening the app.</string>
-    <string name="settings_pro_interest_action">Tepera Pro</string>
-    <string name="pro_interest_screen_title">Tepera Pro</string>
-    <string name="pro_interest_title">Tepera Pro — in development</string>
-    <string name="pro_interest_body">We\'re wondering whether Tepera needs a separate extended version. It doesn\'t exist yet — right now this is only a question for you. No prices, no payments. If you\'re curious, tell us what would be useful.</string>
-    <string name="pro_interest_action">I want to know more</string>
     <string name="widget_suggestion_add_action">Add widget</string>
 
 
@@ -180,10 +187,10 @@
     <string name="settings_tracking_screen_title">Tracking</string>
     <string name="settings_language_action">Language</string>
     <string name="settings_language_screen_title">Language</string>
-    <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment for going over.</string>
+    <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_sleep_window_label">Sleep window</string>
-    <string name="settings_sleep_window_info">This isn\'t sleep tracking — it\'s only a calculation setting. It changes: the start of your day (unlocks inside the window don\'t start the day), the length of your awake day in the day structure, pause detection (no pauses are looked for inside it), the \"Offline\" row in Statistics, and the unlock counter. It is never shown on the scale. Adjust it if you work nights.</string>
+    <string name="settings_sleep_window_info">This isn\'t sleep tracking — it\'s only a calculation setting. It changes: the start of your day (unlocks inside the window don\'t start the day), the length of your awake day in the day structure, pause detection (no pauses are looked for inside it), the \"Away from the phone\" row in Statistics, and the unlock counter. It is never shown on the scale. Adjust it if you work nights.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
     <string name="settings_sleep_window_start_label">Start</string>
     <string name="settings_sleep_window_end_label">End</string>
@@ -205,11 +212,11 @@
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>
     <string name="backup_import_action">Import data (JSON)</string>
-    <string name="backup_not_included_note">The file contains categories, entries, excluded apps and the reference. Not transferred: the sleep window, labelled pauses, delayed apps, widget buttons, pause sensitivity, language and the seconds counters — set those up again.</string>
+    <string name="backup_not_included_note">The file contains categories, entries, excluded apps and the reference. Not transferred: the sleep window, labelled pauses, delayed apps, widget buttons, pause sensitivity, language and the seconds counters — you will need to set those up yourself.</string>
     <string name="backup_export_success">Data exported</string>
-    <string name="backup_export_failure">Failed to export data</string>
+    <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
-    <string name="backup_import_failure">Failed to import data — check the file</string>
+    <string name="backup_import_failure">Couldn\'t import the data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
     <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the reference with the data from the file. This cannot be undone. The sleep window, labelled pauses, delayed apps, widget buttons and pause sensitivity are not restored from the file.</string>
     <string name="backup_import_confirm_action">Import</string>
@@ -259,6 +266,58 @@
     <string name="gate_schedule_to">To</string>
     <string name="gate_schedule_note_whole_day">All day</string>
     <string name="gate_schedule_note_next_day">Ends the next day</string>
+    <string name="gates_hint">Selected apps open only through a new shortcut, with a pause before launch</string>
+    <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — gates aren\'t available on this device</string>
+    <string name="gates_section_active">Apps with a delay</string>
+    <string name="gates_section_add">Add an app</string>
+    <string name="gates_empty">No gates yet</string>
+    <string name="gates_delay_format">%ds</string>
+    <string name="gates_icon_not_handled">The original icon is still on your screen — tap once you\'ve hidden it</string>
+    <string name="gates_remove_action">Remove gate</string>
+    <string name="gates_delay_picker_title">Pause length</string>
+    <string name="gates_delay_picker_confirm">Create gate</string>
+    <string name="gates_delay_picker_cancel">Cancel</string>
+    <string name="gates_pin_failed">Couldn\'t create the shortcut — please retry</string>
+    <string name="gates_instruction_title">Shortcut created</string>
+    <string name="gates_instruction_body">Android doesn\'t let us remove %1$s\'s original icon for you. Do it by hand: long-press the icon on your home screen and drag it to \"Remove\".</string>
+    <string name="gates_instruction_done">Done</string>
+    <string name="gates_instruction_later">I\'ll do it later</string>
+    <!-- Gate pause screen redesign per a provided mockup (direct user request, not T-5) -->
+    <string name="gate_pause_exit_action">Not now</string>
+    <!-- CC-6: gate pause texts (bag rotation); %1$s — app name; 25–27 (end of the array) — night texts -->
+    <string-array name="gate_texts">
+        <item>Breathe in. Breathe out. Then it\'s your call.</item>
+        <item>A few seconds of quiet.</item>
+        <item>One slow breath.</item>
+        <item>Drop your shoulders. Unclench your jaw.</item>
+        <item>While we wait, look out the window.</item>
+        <item>Notice how you\'re sitting or standing right now.</item>
+        <item>What are you hoping to find there?</item>
+        <item>One thing, then back?</item>
+        <item>For something, or to unwind? Both are fine.</item>
+        <item>%1$s isn\'t going anywhere.</item>
+        <item>Know what you want to check?</item>
+        <item>If you open it, make it on purpose.</item>
+        <item>You can open it. You can also not.</item>
+        <item>There\'s no wrong answer here.</item>
+        <item>These seconds are yours.</item>
+        <item>Nothing happens if you wait.</item>
+        <item>You set this gate. It only reminds.</item>
+        <item>Opening it is okay too.</item>
+        <item>Now is a good moment to notice where you are.</item>
+        <item>What can you hear right now?</item>
+        <item>Find three things nearby with your eyes.</item>
+        <item>How are you right now? Honestly.</item>
+        <item>The feed will refresh without you.</item>
+        <item>Probably nothing new in there. Probably.</item>
+        <item>It\'s late. The screen can wait till morning.</item>
+        <item>Can\'t sleep? Lying in the quiet counts as rest too.</item>
+        <item>Morning is a few hours away. %1$s can wait too.</item>
+    </string-array>
+    <string name="gate_pause_open_format">Open %1$s</string>
+    <string name="gates_growing_delay_label">Growing delay</string>
+    <string name="gates_growing_delay_hint">If you open the same gate over and over, the delay grows a little — up to 20 s — and resets after half an hour without openings.</string>
+
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>
     <string name="categories_section_active">Active</string>
@@ -276,12 +335,6 @@
     <string name="category_icon_label">Icon</string>
     <string name="category_color_label">Color</string>
     <string name="dialog_save">Save</string>
-    <string name="gate_pause_exit_action">Not now</string>
-    <!-- CC-6: gate pause texts (bag rotation); %1$s — app name; 25–27 (end of the array) — night texts -->
-    <string-array name="gate_texts">
-    <string name="gate_pause_open_format">Open %1$s</string>
-    <string name="gates_growing_delay_label">Growing delay</string>
-    <string name="gates_growing_delay_hint">If you open the same gate over and over, the delay grows a little — up to 20 s — and resets after half an hour without openings.</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_ok">OK</string>
 
@@ -335,7 +388,7 @@
     <string name="stats_history_yesterday">Yesterday</string>
     <string name="stats_day_timeline_title">Yesterday</string>
     <string name="stats_day_legend_pause">Break</string>
-    <string name="stats_day_legend_offline">Offline, not logged</string>
+    <string name="stats_day_legend_offline">Away from the phone, not logged</string>
     <string name="stats_day_pauses_title">Breaks from the phone</string>
     <string name="stats_day_pauses_count_chip_label">Count</string>
     <string name="stats_day_pauses_longest_chip_label">Longest</string>
@@ -358,7 +411,7 @@
     <string name="knowledge_base_section_1_title">Where the data comes from</string>
     <string name="knowledge_base_section_1_body">Online time and the day structure are counted through Android\'s system "Usage access" permission (Settings → Special access, not a pop-up dialog). The permission only grants access to app names and the moments they move to the foreground or background. Without it, manual activity logging keeps working fully — Tepera just won\'t have automatic Online time.\n\nTepera does not see screen content: not message text, not what you\'re actually reading or watching, not scrolling inside an app — a minute of reading looks the same as a minute of scrolling a feed. All data stays on the phone; the only network request is the "Suggest a feature" button, which opens the browser, not Tepera itself.</string>
     <string name="knowledge_base_section_2_title">Pauses and gates</string>
-    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a skipped pause is never recorded as a metric.\n\nGates (Settings → Apps with a delay) are a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so gates work through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning gates off for the day is one tap, no explanation needed.</string>
+    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a pause you leave unlabeled is never recorded as a metric.\n\nGates (Settings → Apps with a delay) are a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so gates work through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning gates off for the day is one tap, no explanation needed.</string>
     <string name="knowledge_base_section_3_title">Sleep window</string>
     <string name="knowledge_base_section_3_body">The sleep window (Settings → Time and day boundaries) doesn\'t show sleep as an activity and says nothing about how much or how well you slept. It\'s only a time range excluded from the calculation: minutes inside the sleep window don\'t count toward the day structure, don\'t become pauses, and don\'t count toward the unlock counter.</string>
     <string name="knowledge_base_section_4_title">Why there are no notifications, streaks, or scores</string>

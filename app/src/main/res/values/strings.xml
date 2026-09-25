@@ -56,15 +56,15 @@
          "Решта дня" — без окремої відсоткової оцінки (FR-P.6). -->
     <string name="my_day_title_format">Твій день: %1$s</string>
     <string name="balance_online_label">Online</string>
-    <string name="stats_offline_label">Офлайн</string>
+    <string name="stats_offline_label">Без телефону</string>
     <string name="stats_below_five_min">&lt;5 хв</string>
-    <string name="balance_rest_of_day_label">Офлайн-життя</string>
+    <string name="balance_rest_of_day_label">Без телефону</string>
     <string name="activities_title">Активності</string>
     <string name="home_add_category">+ Додати</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
     <string name="onboarding_screen_title">Структура твого дня</string>
-    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього офлайн-логування лишається повністю робочим.</string>
+    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив у записах, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього записи активностей лишаються повністю робочими.</string>
     <string name="onboarding_skip">Пропустити</string>
     <string name="perm_title">Перед тим як почати</string>
     <string name="perm_body">Твої записи й час у застосунках лишаються на телефоні. З телефону виходять лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
@@ -78,13 +78,13 @@
     <string name="settings_target_off_hint">Орієнтира немає — на шкалі дня нічого не позначається.</string>
     <string name="welcome_back_title">Ось як минули ці дні</string>
     <plurals name="welcome_back_period">
+        <item quantity="one">За %d день</item>
+        <item quantity="few">За %d дні</item>
+        <item quantity="many">За %d днів</item>
+        <item quantity="other">За %d дня</item>
+    </plurals>
     <string name="welcome_back_logged_format">Відмічено: %1$s</string>
     <string name="welcome_back_online_format">Online в середньому: %1$s на день</string>
-    <string name="crash_reports_label">Звіти про збої</string>
-    <string name="crash_reports_explanation">Під час тестування Tepera надсилає розробнику анонімні звіти, коли застосунок падає (через Firebase Crashlytics від Google). У звіті — модель телефону, версія Android і технічний опис збою; твоїх записів, категорій і часу в застосунках там немає. Це можна вимкнути в Налаштуваннях у будь-який момент.</string>
-
-    <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
-         node 14:791), показується обома гілками "доступ надано? так/ні". -->
     <string name="weekly_summary_label">Тижневий підсумок</string>
     <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері, — одне тихе сповіщення. Тап відкриває підсумок тижня. Інших сповіщень немає.</string>
     <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не надійде. Дозволити можна в системних налаштуваннях застосунку — усе інше працює як раніше.</string>
@@ -95,6 +95,11 @@
     <string name="pro_interest_title">Tepera Pro — у розробці</string>
     <string name="pro_interest_body">Ми думаємо, чи потрібна окрема розширена версія Tepera. Поки її немає, зараз це лише питання до тебе. Без цін і без оплат. Якщо цікаво — розкажи, що було б корисним.</string>
     <string name="pro_interest_action">Хочу дізнатись</string>
+    <string name="crash_reports_label">Звіти про збої</string>
+    <string name="crash_reports_explanation">Під час тестування Tepera надсилає розробнику анонімні звіти, коли застосунок падає (через Firebase Crashlytics від Google). У звіті — модель телефону, версія Android і технічний опис збою; твоїх записів, категорій і часу в застосунках там немає. Це можна вимкнути в Налаштуваннях у будь-який момент.</string>
+
+    <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
+         node 14:791), показується обома гілками "доступ надано? так/ні". -->
     <string name="widget_suggestion_title">Додай віджет на головний екран</string>
     <string name="widget_suggestion_body">Структура дня й швидкий тап-таймер під рукою, без відкриття застосунку.</string>
     <string name="widget_suggestion_add_action">Додати віджет</string>
@@ -193,10 +198,10 @@
     <string name="settings_tracking_screen_title">Відстеження</string>
     <string name="settings_language_action">Мова</string>
     <string name="settings_language_screen_title">Мова</string>
-    <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, без оцінки перевищення.</string>
+    <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, нічого не оцінює.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_sleep_window_label">Вікно сну</string>
-    <string name="settings_sleep_window_info">Це не облік сну — лише технічний параметр розрахунку. Він змінює: початок дня (нічні розблокування у вікні не починають день), довжину неспаного дня в структурі доби, пошук пауз (паузи у вікні не шукаються), рядок «Офлайн» у Статистиці й лічильник розблокувань. На шкалі вікно не показується. Онови межі, якщо працюєш ночами.</string>
+    <string name="settings_sleep_window_info">Це не облік сну — лише технічний параметр розрахунку. Він змінює: початок дня (нічні розблокування у вікні не починають день), довжину неспаного дня в структурі доби, пошук пауз (паузи у вікні не шукаються), рядок «Без телефону» у Статистиці й лічильник розблокувань. На шкалі вікно не показується. Онови межі, якщо працюєш ночами.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
     <string name="settings_sleep_window_start_label">Початок</string>
     <string name="settings_sleep_window_end_label">Кінець</string>
@@ -247,8 +252,32 @@
     <string name="widget_settings_drag_handle">Змінити порядок</string>
     <string name="widget_settings_reset">Повернути автоматичний порядок</string>
     <string name="gates_screen_title">Застосунки з затримкою</string>
+    <string name="gates_pause_label">Пауза</string>
+    <string name="gates_pause_none">Не на паузі</string>
+    <string name="gates_pause_until_format">до %1$s</string>
+    <string name="gates_pause_from_until_format">%1$s – %2$s</string>
+    <string name="gates_pause_dialog_title">Призупинити ворота</string>
+    <string name="gates_pause_dialog_confirm">Призупинити</string>
+    <string name="gates_pause_choice_today">Сьогодні</string>
+    <string name="gates_pause_choice_weekend">На вихідні</string>
+    <string name="gates_pause_choice_date">До дати…</string>
+    <string name="gates_pause_end_now">Увімкнути ворота зараз</string>
+    <string name="gates_schedule_label">Розклад</string>
+    <string name="gates_schedule_always">Завжди</string>
+    <string name="gates_schedule_custom">За розкладом</string>
+    <string name="gate_schedule_title">Розклад воріт</string>
+    <string name="gate_schedule_always">Завжди активні</string>
+    <string name="gate_schedule_always_hint">Ворота працюють у будь-який час, коли не на паузі.</string>
+    <string name="gate_schedule_custom_hint">Ворота працюють лише в обраних проміжках. Поза ними ярлик одразу відкриває застосунок. Час — локальний.</string>
+    <string name="gate_schedule_day_off">Цього дня ворота не діють</string>
+    <string name="gate_schedule_add_interval">Додати проміжок</string>
+    <string name="gate_schedule_copy_all">На всі дні</string>
+    <string name="gate_schedule_remove_interval">Прибрати проміжок</string>
+    <string name="gate_schedule_from">Початок</string>
+    <string name="gate_schedule_to">Кінець</string>
+    <string name="gate_schedule_note_whole_day">Весь день</string>
+    <string name="gate_schedule_note_next_day">Закінчується наступного дня</string>
     <string name="gates_hint">Обрані застосунки відкриваються лише через новий ярлик, з паузою перед запуском</string>
-    <string name="gates_pause_today_label">Вимкнути затримку на сьогодні</string>
     <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — ворота недоступні на цьому пристрої</string>
     <string name="gates_section_active">Застосунки з затримкою</string>
     <string name="gates_section_add">Додати застосунок</string>
@@ -259,7 +288,7 @@
     <string name="gates_delay_picker_title">Тривалість паузи</string>
     <string name="gates_delay_picker_confirm">Створити ворота</string>
     <string name="gates_delay_picker_cancel">Скасувати</string>
-    <string name="gates_pin_failed">Не вдалося створити ярлик — спробуй ще раз</string>
+    <string name="gates_pin_failed">Не вдалося створити ярлик — повтори дію</string>
     <string name="gates_instruction_title">Ярлик створено</string>
     <string name="gates_instruction_body">Android не дозволяє нам прибрати оригінальну іконку %1$s за тебе. Зроби це вручну: затримай іконку на робочому столі й перетягни у "Видалити".</string>
     <string name="gates_instruction_done">Готово</string>
@@ -372,7 +401,7 @@
     <string name="stats_history_yesterday">Вчора</string>
     <string name="stats_day_timeline_title">Вчорашня доба</string>
     <string name="stats_day_legend_pause">Пауза</string>
-    <string name="stats_day_legend_offline">Офлайн без запису</string>
+    <string name="stats_day_legend_offline">Без телефону, без запису</string>
     <string name="stats_day_pauses_title">Паузи без телефону</string>
     <string name="stats_day_pauses_count_chip_label">Кількість</string>
     <string name="stats_day_pauses_longest_chip_label">Найдовша</string>
@@ -395,7 +424,7 @@
     <string name="knowledge_base_section_1_title">Звідки беруться дані</string>
     <string name="knowledge_base_section_1_body">Online-час і структура дня рахуються через системний дозвіл Android «Доступ до статистики використання» (Налаштування → Спеціальний доступ, не спливаюче вікно). Дозвіл дає доступ лише до назв застосунків і моментів, коли вони виходять на передній план чи йдуть у фон. Без нього ручне логування активностей лишається повністю робочим — просто без автоматичного Online-часу.\n\nTepera не бачить зміст екрана: не текст повідомлень, не те, що саме ти читаєш чи дивишся, не скролінг усередині застосунку — хвилина читання виглядає так само, як хвилина гортання стрічки. Усі дані лишаються на телефоні; єдиний вихід у мережу — кнопка «Запропонувати функцію», яка відкриває браузер, не сам застосунок.</string>
     <string name="knowledge_base_section_2_title">Паузи та ворота</string>
-    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: пропущена пауза нікуди не записується як показник.\n\nВорота (Налаштування → Застосунки із затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож ворота працюють через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути ворота на сьогодні можна одним тапом, без пояснень.</string>
+    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: якщо паузу не позначити, це нікуди не записується як показник.\n\nВорота (Налаштування → Застосунки із затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож ворота працюють через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути ворота на сьогодні можна одним тапом, без пояснень.</string>
     <string name="knowledge_base_section_3_title">Вікно сну</string>
     <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ти спав. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань.</string>
     <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>
