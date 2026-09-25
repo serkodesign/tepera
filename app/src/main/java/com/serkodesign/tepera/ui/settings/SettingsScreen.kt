@@ -73,8 +73,6 @@ fun SettingsScreen(
     onOpenWidgetSettings: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenProInterest: () -> Unit,
-    onOpenSpikeT1: () -> Unit = {},
-    onOpenSpikeT15: () -> Unit = {},
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -192,26 +190,6 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(Icons.Filled.Info) },
                     trailing = { NavChevron() }
                 )
-                // Debug-only вхід у T-1 (tepera-dev-spec.md) — інструмент спайку, не
-                // продакшн-функція. Перевірка FLAG_DEBUGGABLE, а не BuildConfig.DEBUG:
-                // buildFeatures.buildConfig не увімкнено в app/build.gradle.kts, а вмикати
-                // його заради одного прапорця в debug-only коді — зайва зміна білд-конфігу.
-                val isDebuggable = (context.applicationInfo.flags and
-                    android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
-                if (isDebuggable) {
-                    GlassRow(
-                        label = "T-1: спайк видимості пакетів (debug)",
-                        onClick = onOpenSpikeT1,
-                        leading = { TeperaIconCircle(Icons.Filled.Info) },
-                        trailing = { NavChevron() }
-                    )
-                    GlassRow(
-                        label = "T-15: сирі події в CSV (debug)",
-                        onClick = onOpenSpikeT15,
-                        leading = { TeperaIconCircle(Icons.Filled.Info) },
-                        trailing = { NavChevron() }
-                    )
-                }
             }
         }
     }

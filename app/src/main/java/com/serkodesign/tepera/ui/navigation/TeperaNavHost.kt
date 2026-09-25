@@ -61,7 +61,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.debug.SpikeT1Screen
 import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
@@ -129,8 +128,6 @@ private object Routes {
     const val GATE_SCHEDULE = "gate_schedule"
     const val STATS = "stats"
     const val DIARY = "diary"
-    const val SPIKE_T1 = "spike_t1"
-    const val SPIKE_T15 = "spike_t15"
     const val GATES = "gates"
     const val WIDGET_SETTINGS = "widget_settings"
     const val KNOWLEDGE_BASE = "knowledge_base"
@@ -456,8 +453,6 @@ fun TeperaNavHost(
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
-                    onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
-                    onOpenSpikeT15 = { navController.navigate(Routes.SPIKE_T15) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -471,12 +466,6 @@ fun TeperaNavHost(
             }
             composable(Routes.LANGUAGE_SETTINGS) {
                 LanguageSettingsScreen(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.SPIKE_T15) {
-                com.serkodesign.tepera.debug.SpikeT15Screen(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.SPIKE_T1) {
-                SpikeT1Screen(onBack = { navController.popBackStack() })
             }
             composable(Routes.GATES) {
                 GatesScreen(
