@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.serkodesign.tepera.data.GapSensitivity
 import com.serkodesign.tepera.util.GateSchedule
+import com.serkodesign.tepera.util.GateTexts
 import com.serkodesign.tepera.util.PauseWindow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

@@ -21,6 +21,8 @@ data class GatePauseUiState(
     // null = очікування завершилось (канонічний "нема чого рахувати" стан) — цифра ховається
     // (за прямим запитом користувача).
     val remainingSeconds: Int? = null,
+    // CC-6: індекс тексту з `R.array.gate_texts` (ротація «мішком»); сам рядок підставляє екран — з урахуванням мови застосунку.
+    val textIndex: Int = 0,
     val canContinue: Boolean = false,
     val finished: Boolean = false
 )
@@ -74,7 +76,7 @@ class GatePauseViewModel(
             launchTarget()
             return
         }
-        val delaySeconds = gateRepository.getDelaySeconds(packageName)
+        val delaySeconds = gateRepository.delayForShow(packageName)
         if (delaySeconds == null) {
             launchTarget()
             return
@@ -83,7 +85,8 @@ class GatePauseViewModel(
         _uiState.value = GatePauseUiState(
             loading = false,
             appLabel = resolveLabel(packageName),
-            remainingSeconds = delaySeconds
+            remainingSeconds = delaySeconds,
+            textIndex = gateRepository.nextTextIndex()
         )
 
         // Показує delaySeconds..1 (ніколи 0) — по секунді на значення, і лише ПІСЛЯ останньої
@@ -117,7 +120,9 @@ class GatePauseViewModel(
     fun cancel() {
         waitJob?.cancel()
         if (screenShown) {
-            viewModelScope.launch { gateEventRepository.record(packageName, GateEventResult.CANCELLED) }
+            viewModelScope.launch {
+                gateEventRepository.record(packageName, GateEventResult.CANCELLED)
+            }
         }
         _uiState.value = _uiState.value.copy(finished = true)
     }
@@ -150,6 +155,8 @@ class GatePauseViewModel(
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            GatePauseViewModel(context.applicationContext, gateRepository, gateEventRepository, packageName) as T
+            GatePauseViewModel(
+                context.applicationContext, gateRepository, gateEventRepository, packageName
+            ) as T
     }
 }

@@ -32,8 +32,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -109,6 +111,7 @@ fun GatePauseScreen(
         )
 
         val breath = rememberBreathState()
+        val gateText = stringArrayResource(R.array.gate_texts).getOrElse(state.textIndex) { "" }.format(state.appLabel)
 
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -117,8 +120,10 @@ fun GatePauseScreen(
         ) {
             BreathingBadge(scale = breath.scale, number = state.remainingSeconds)
             Text(
-                text = stringResource(if (breath.inhaling) R.string.gate_pause_inhale else R.string.gate_pause_exhale),
-                fontSize = 27.sp,
+                text = gateText,
+                fontSize = 24.sp,
+                lineHeight = 30.sp,
+                textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Medium,
                 color = TeperaPalette.buttonBrandDark,
                 modifier = Modifier.padding(top = 32.dp)
@@ -127,21 +132,9 @@ fun GatePauseScreen(
 
         Spacer(Modifier.height(40.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // "Продовжити" неактивна (напівпрозора — це вже вбудований disabled-стан TeperaButton),
-            // доки йде очікування. "Вийти" — суцільна Primary (текст лишається "Вийти", не "Do not
-            // open" з макета — окреме рішення користувача, підтверджене цією сесією).
-            TeperaButton(
-                text = stringResource(R.string.gate_pause_continue_action),
-                onClick = { viewModel.continueToApp() },
-                enabled = state.canContinue,
-                size = TeperaButtonSize.Big,
-                type = TeperaButtonType.Secondary,
-                modifier = Modifier.weight(1f)
-            )
+        // CC-6: «Не зараз» — головна кнопка, доступна одразу; «Відкрити {app}» з'являється лише після
+        // затримки (до того місця під неї не резервується, щоб не тиснути очікуванням).
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TeperaButton(
                 text = stringResource(R.string.gate_pause_exit_action),
                 onClick = { viewModel.cancel() },
@@ -149,6 +142,15 @@ fun GatePauseScreen(
                 type = TeperaButtonType.Primary,
                 modifier = Modifier.weight(1f)
             )
+            if (state.canContinue) {
+                TeperaButton(
+                    text = stringResource(R.string.gate_pause_open_format, state.appLabel),
+                    onClick = { viewModel.continueToApp() },
+                    size = TeperaButtonSize.Big,
+                    type = TeperaButtonType.Secondary,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }

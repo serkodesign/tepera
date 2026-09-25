@@ -106,7 +106,7 @@ class TeperaApp : Application() {
 
     val unlockRepository: UnlockRepository by lazy { UnlockRepository(this) }
 
-    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore) }
+    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository) }
 
     val cardHistoryRepository: CardHistoryRepository by lazy {
         CardHistoryRepository(database.cardShowDao(), settingsStore)

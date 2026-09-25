@@ -255,10 +255,40 @@
     <string name="gates_instruction_done">Готово</string>
     <string name="gates_instruction_later">Зроблю пізніше</string>
     <!-- Редизайн екрана паузи за наданим макетом (за прямим запитом користувача, не T-5) -->
-    <string name="gate_pause_inhale">Вдих…</string>
-    <string name="gate_pause_exhale">Видих…</string>
-    <string name="gate_pause_continue_action">Продовжити</string>
-    <string name="gate_pause_exit_action">Вийти</string>
+    <string name="gate_pause_exit_action">Не зараз</string>
+    <!-- CC-6: тексти екрана паузи воріт (ротація «мішком»); %1$s — назва застосунку; 25–27 (кінець масиву) — нічні -->
+    <string-array name="gate_texts">
+        <item>Вдих. Видих. Далі — як вирішиш.</item>
+        <item>Кілька секунд тиші.</item>
+        <item>Один повільний вдих.</item>
+        <item>Опусти плечі. Розслаб щелепу.</item>
+        <item>Поки чекаємо — глянь у вікно.</item>
+        <item>Відчуй, як ти зараз сидиш чи стоїш.</item>
+        <item>Що хочеш там знайти?</item>
+        <item>Одна справа — і назад?</item>
+        <item>По справі чи відпочити? Обидва варіанти ок.</item>
+        <item>%1$s нікуди не дінеться.</item>
+        <item>Знаєш, що саме хочеш перевірити?</item>
+        <item>Якщо відкриваєш — хай це буде свідомо.</item>
+        <item>Можна відкрити. Можна й не відкривати.</item>
+        <item>Тут немає неправильної відповіді.</item>
+        <item>Ці секунди — твої.</item>
+        <item>Нічого не станеться, якщо зачекати.</item>
+        <item>Ці ворота поставив ти. Вони лише нагадують.</item>
+        <item>Відкрити — теж нормально.</item>
+        <item>Тепер — гарний момент помітити, де ти.</item>
+        <item>Що чути навколо просто зараз?</item>
+        <item>Знайди поглядом три речі поруч.</item>
+        <item>Як ти зараз? Просто чесно.</item>
+        <item>Стрічка оновиться і без тебе.</item>
+        <item>Там, мабуть, нічого нового. Мабуть.</item>
+        <item>Уже пізно. Екран може почекати до ранку.</item>
+        <item>Не спиться? Полежати в тиші — теж відпочинок.</item>
+        <item>До ранку кілька годин. %1$s теж дочекається.</item>
+    </string-array>
+    <string name="gate_pause_open_format">Відкрити %1$s</string>
+    <string name="gates_growing_delay_label">Зростаюча затримка</string>
+    <string name="gates_growing_delay_hint">Якщо відкривати ті самі ворота знову й знову, затримка трохи росте — до 20 с, і скидається за пів години без відкриттів.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>

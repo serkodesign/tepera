@@ -10,6 +10,8 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.dao.AppGateDao
 import com.serkodesign.tepera.data.local.entity.AppGateEntity
 import com.serkodesign.tepera.util.GateActivity
+import com.serkodesign.tepera.util.GateTexts
+import com.serkodesign.tepera.util.GrowingDelay
 import com.serkodesign.tepera.util.GatePausePresets
 import com.serkodesign.tepera.util.GateSchedule
 import com.serkodesign.tepera.util.PauseWindow
@@ -28,7 +30,8 @@ import kotlinx.coroutines.withContext
 class GateRepository(
     private val context: Context,
     private val dao: AppGateDao,
-    private val settingsStore: SettingsStore
+    private val settingsStore: SettingsStore,
+    private val sleepWindowRepository: SleepWindowRepository
 ) {
     val gates: Flow<List<AppGateEntity>> = dao.observeAll()
 
@@ -153,9 +156,8 @@ class GateRepository(
         now - gate.lastProceedAtMillis <= PROCEED_DEBOUNCE_MILLIS
     }
 
-    suspend fun getDelaySeconds(packageName: String): Int? = withContext(Dispatchers.IO) {
-        dao.getByPackageName(packageName)?.delaySeconds
-    }
+    // --- CC-5: пауза воріт і розклад ---------------------------------------------------------
+
     val pause: Flow<PauseWindow?> = settingsStore.gatePause
     val schedule: Flow<GateSchedule?> = settingsStore.gateSchedule
 
@@ -209,6 +211,35 @@ class GateRepository(
         return settingsStore.gateSchedule.first() to pauses
     }
 
+    /**
+     * CC-6: затримка для ЦЬОГО показу екрана паузи. Без «зростаючої» затримки — збережена в воротах; з нею —
+     * плюс [GrowingDelay.STEP_SECONDS] с за кожне повторне відкриття протягом 30 хв, максимум
+     * [GrowingDelay.MAX_SECONDS] с. `null` — воріт уже нема.
+     */
+    suspend fun delayForShow(packageName: String, nowMillis: Long = System.currentTimeMillis()): Int? =
+        withContext(Dispatchers.IO) {
+            val gate = dao.getByPackageName(packageName) ?: return@withContext null
+            if (!settingsStore.gateGrowingDelay.first()) return@withContext gate.delaySeconds
+            val repeats = GrowingDelay.repeatsAfterShow(gate.repeatCount, gate.lastShownAtMillis, nowMillis)
+            dao.updateShowState(packageName, repeats, nowMillis)
+            GrowingDelay.effectiveSeconds(gate.delaySeconds, repeats)
+        }
+
+    /** CC-6: індекс наступного тексту екрана паузи з «мішка»; нічні тексти — лише вночі ([GateTexts.isNight]). */
+    suspend fun nextTextIndex(nowMillis: Long = System.currentTimeMillis()): Int = withContext(Dispatchers.IO) {
+        val night = GateTexts.isNight(nowMillis, sleepWindowRepository.getEnabledWindows())
+        val pick = GateTexts.pick(settingsStore.gateTextBag.first(), night)
+        settingsStore.setGateTextBag(pick.remaining)
+        pick.index
+    }
+
+    val growingDelay: Flow<Boolean> = settingsStore.gateGrowingDelay
+
+    suspend fun setGrowingDelay(enabled: Boolean) = settingsStore.setGateGrowingDelay(enabled)
+
+    suspend fun getDelaySeconds(packageName: String): Int? = withContext(Dispatchers.IO) {
+        dao.getByPackageName(packageName)?.delaySeconds
+    }
 
     suspend fun setDelaySeconds(packageName: String, delaySeconds: Int) = withContext(Dispatchers.IO) {
         dao.updateDelaySeconds(packageName, delaySeconds)

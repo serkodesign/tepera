@@ -224,28 +224,6 @@
     <string name="widget_settings_drag_handle">Reorder</string>
     <string name="widget_settings_reset">Restore automatic order</string>
     <string name="gates_screen_title">Apps with a delay</string>
-    <string name="gates_hint">Selected apps open only through a new shortcut, with a pause before launch</string>
-    <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — gates aren\'t available on this device</string>
-    <string name="gates_section_active">Apps with a delay</string>
-    <string name="gates_section_add">Add an app</string>
-    <string name="gates_empty">No gates yet</string>
-    <string name="gates_delay_format">%ds</string>
-    <string name="gates_icon_not_handled">The original icon is still on your screen — tap once you\'ve hidden it</string>
-    <string name="gates_remove_action">Remove gate</string>
-    <string name="gates_delay_picker_title">Pause length</string>
-    <string name="gates_delay_picker_confirm">Create gate</string>
-    <string name="gates_delay_picker_cancel">Cancel</string>
-    <string name="gates_pin_failed">Couldn\'t create the shortcut — try again</string>
-    <string name="gates_instruction_title">Shortcut created</string>
-    <string name="gates_instruction_body">Android doesn\'t let us remove %1$s\'s original icon for you. Do it by hand: long-press the icon on your home screen and drag it to \"Remove\".</string>
-    <string name="gates_instruction_done">Done</string>
-    <string name="gates_instruction_later">I\'ll do it later</string>
-    <!-- Gate pause screen redesign per a provided mockup (direct user request, not T-5) -->
-    <string name="gate_pause_inhale">Inhale…</string>
-    <string name="gate_pause_exhale">Exhale…</string>
-    <string name="gate_pause_continue_action">Continue</string>
-    <string name="gate_pause_exit_action">Exit</string>
-
     <string name="gates_pause_label">Pause</string>
     <string name="gates_pause_none">Not paused</string>
     <string name="gates_pause_until_format">until %1$s</string>
@@ -288,6 +266,12 @@
     <string name="category_icon_label">Icon</string>
     <string name="category_color_label">Color</string>
     <string name="dialog_save">Save</string>
+    <string name="gate_pause_exit_action">Not now</string>
+    <!-- CC-6: gate pause texts (bag rotation); %1$s — app name; 25–27 (end of the array) — night texts -->
+    <string-array name="gate_texts">
+    <string name="gate_pause_open_format">Open %1$s</string>
+    <string name="gates_growing_delay_label">Growing delay</string>
+    <string name="gates_growing_delay_hint">If you open the same gate over and over, the delay grows a little — up to 20 s — and resets after half an hour without openings.</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_ok">OK</string>
 

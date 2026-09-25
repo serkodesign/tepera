@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -35,9 +36,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -62,8 +63,8 @@ import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.repository.GateRepository
-import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.ui.theme.NavChevron
+import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import com.serkodesign.tepera.ui.theme.TeperaDatePickerDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.util.PauseWindow
@@ -73,6 +74,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
+import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -80,7 +82,6 @@ import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.diary.EntryChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
-import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
 
 // Тривалість затримки: чіп у списку воріт перемикає їх по колу; старе значення поза набором (20 с з
@@ -103,6 +104,7 @@ fun GatesScreen(
         factory = GatesViewModel.Factory(gateRepository, installedAppsProvider)
     )
     val state by viewModel.uiState.collectAsState()
+    val growingDelay by viewModel.growingDelay.collectAsState()
     val scope = rememberCoroutineScope()
 
     // Видалення ярлика воріт відбувається поза застосунком (long-press на робочому столі) — без
@@ -141,18 +143,53 @@ fun GatesScreen(
                         )
                     }
                     item {
-                        // Розділ 2.3 документа: один тап, без підтвердження, без пояснювального тексту.
-                        GlassRow(
-                            label = stringResource(R.string.gates_pause_today_label),
-                            leading = {},
-                            trailing = {
-                                Switch(
-                                    checked = isPaused,
-                                    onCheckedChange = { viewModel.toggleGatesPausedForToday() },
-                                    colors = teperaSwitchColors()
-                                )
-                            }
-                        )
+                        // CC-5: ворота активні = зараз вікно розкладу І немає паузи.
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            GlassRow(
+                                label = stringResource(R.string.gates_pause_label),
+                                onClick = { showPauseDialog = true },
+                                leading = { TeperaIconCircle(Icons.Filled.PauseCircle) },
+                                trailing = {
+                                    Text(
+                                        text = pauseSummary(state.pause),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    NavChevron()
+                                }
+                            )
+                            GlassRow(
+                                label = stringResource(R.string.gates_schedule_label),
+                                onClick = onOpenSchedule,
+                                leading = { TeperaIconCircle(Icons.Filled.Schedule) },
+                                trailing = {
+                                    Text(
+                                        text = stringResource(
+                                            if (state.schedule == null) R.string.gates_schedule_always
+                                            else R.string.gates_schedule_custom
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    NavChevron()
+                                }
+                            )
+                            // CC-6: опційна «зростаюча» затримка; лічильник повторних відкриттів ніде не показується.
+                            GlassRow(
+                                label = stringResource(R.string.gates_growing_delay_label),
+                                leading = { TeperaIconCircle(Icons.Filled.Timer) },
+                                trailing = {
+                                    Switch(
+                                        checked = growingDelay,
+                                        onCheckedChange = { viewModel.setGrowingDelay(it) },
+                                        colors = teperaSwitchColors()
+                                    )
+                                }
+                            )
+                            Text(
+                                text = stringResource(R.string.gates_growing_delay_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                        }
                     }
 
                     if (!state.pinShortcutSupported) {
@@ -199,6 +236,39 @@ fun GatesScreen(
         }
     }
 
+    if (showPauseDialog) {
+        PauseDialog(
+            isPaused = state.pause != null,
+            onChoose = { choice ->
+                showPauseDialog = false
+                when (choice) {
+                    PauseChoice.TODAY -> viewModel.pauseToday()
+                    PauseChoice.WEEKEND -> viewModel.pauseWeekend()
+                    PauseChoice.UNTIL_DATE -> showPauseDatePicker = true
+                }
+            },
+            onEndPause = {
+                showPauseDialog = false
+                viewModel.endPause()
+            },
+            onDismiss = { showPauseDialog = false }
+        )
+    }
+
+    if (showPauseDatePicker) {
+        val today = startOfTodayMillis()
+        TeperaDatePickerDialog(
+            dayMillis = today,
+            minDayMillis = today,
+            maxDayMillis = null,
+            onSelected = { dayMillis ->
+                showPauseDatePicker = false
+                viewModel.pauseUntil(Instant.ofEpochMilli(dayMillis).atZone(ZoneId.systemDefault()).toLocalDate())
+            },
+            onDismiss = { showPauseDatePicker = false }
+        )
+    }
+
     pendingApp?.let { app ->
         DelayPickerDialog(
             app = app,
@@ -236,39 +306,6 @@ fun GatesScreen(
 
 @Composable
 private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove: () -> Unit, onDelayChange: (Int) -> Unit) {
-    if (showPauseDialog) {
-        PauseDialog(
-            isPaused = state.pause != null,
-            onChoose = { choice ->
-                showPauseDialog = false
-                when (choice) {
-                    PauseChoice.TODAY -> viewModel.pauseToday()
-                    PauseChoice.WEEKEND -> viewModel.pauseWeekend()
-                    PauseChoice.UNTIL_DATE -> showPauseDatePicker = true
-                }
-            },
-            onEndPause = {
-                showPauseDialog = false
-                viewModel.endPause()
-            },
-            onDismiss = { showPauseDialog = false }
-        )
-    }
-
-    if (showPauseDatePicker) {
-        val today = startOfTodayMillis()
-        TeperaDatePickerDialog(
-            dayMillis = today,
-            minDayMillis = today,
-            maxDayMillis = null,
-            onSelected = { dayMillis ->
-                showPauseDatePicker = false
-                viewModel.pauseUntil(Instant.ofEpochMilli(dayMillis).atZone(ZoneId.systemDefault()).toLocalDate())
-            },
-            onDismiss = { showPauseDatePicker = false }
-        )
-    }
-
     Column {
         GlassRow(
             label = gateState.app.label,

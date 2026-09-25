@@ -72,6 +72,14 @@ class GatesViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GatesUiState())
 
+    /** CC-6: опційна «зростаюча» затримка (вимкнена за замовчуванням). */
+    val growingDelay: StateFlow<Boolean> = gateRepository.growingDelay
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setGrowingDelay(enabled: Boolean) {
+        viewModelScope.launch { gateRepository.setGrowingDelay(enabled) }
+    }
+
     init {
         refresh()
     }
@@ -91,6 +99,7 @@ class GatesViewModel(
             // За прямим запитом користувача: синхронізувати список воріт з реальним станом
             // закріплених ярликів ПЕРЕД тим, як список узагалі відобразиться — інакше рядок
             // для вже видаленого з робочого столу ярлика встиг би на мить показатись.
+            gateRepository.reconcileExpiredPause()
             gateRepository.pruneRemovedShortcuts()
             _availableApps.value = installedAppsProvider.listUsedApps()
             _loading.value = false
@@ -99,7 +108,6 @@ class GatesViewModel(
 
     suspend fun createGate(app: InstalledAppInfo, delaySeconds: Int = DEFAULT_DELAY_SECONDS): Boolean =
         gateRepository.createGate(app.packageName, app.label, delaySeconds)
-            gateRepository.reconcileExpiredPause()
 
     fun removeGate(packageName: String) {
         viewModelScope.launch { gateRepository.removeGate(packageName) }
@@ -112,6 +120,11 @@ class GatesViewModel(
     fun markOriginalIconHandled(packageName: String) {
         viewModelScope.launch { gateRepository.markOriginalIconHandled(packageName) }
     }
+    /**
+     * CC-5: пауза воріт — "сьогодні" / "на вихідні" / "до дати" (розділ 2.3 документа: автономія
+     * важливіша за ефективність, тож без підтвердження й пояснень); закінчується автоматично.
+     */
+    fun pauseToday() = startPause { GatePausePresets.today(it) }
 
     fun pauseWeekend() = startPause { GatePausePresets.weekend(it) }
 
@@ -120,11 +133,6 @@ class GatesViewModel(
     fun endPause() {
         viewModelScope.launch { gateRepository.endPause() }
     }
-    /**
-     * CC-5: пауза воріт — "сьогодні" / "на вихідні" / "до дати" (розділ 2.3 документа: автономія
-     * важливіша за ефективність, тож без підтвердження й пояснень); закінчується автоматично.
-     */
-    fun pauseToday() = startPause { GatePausePresets.today(it) }
 
     private fun startPause(window: (Long) -> PauseWindow) {
         viewModelScope.launch {
@@ -133,6 +141,7 @@ class GatesViewModel(
         }
     }
 
+
     class Factory(
         private val gateRepository: GateRepository,
         private val installedAppsProvider: InstalledAppsProvider
@@ -140,6 +149,5 @@ class GatesViewModel(
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
             GatesViewModel(gateRepository, installedAppsProvider) as T
-
     }
 }
