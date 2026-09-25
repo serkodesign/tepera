@@ -65,6 +65,12 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * (`Migrations.kt`).
  * Активність через кілька діб — кілька записів зі спільним `seriesId` (`activity_entries.seriesId`,
  * див. `splitAtDayRollover`) — версія 10, `MIGRATION_9_10` (`Migrations.kt`).
+ * CC-9 (план закритого тесту): додано MetricEventEntity (локальні метрики — лише тип і час) —
+ * версія 11, `MIGRATION_10_11` (`Migrations.kt`).
+ * CC-4: у версії 12 була додана `daily_snapshots` (щоденний знімок Online) — за рішенням власника фонові знімки
+ * скасовано, версія 13 (`MIGRATION_12_13`) прибирає таблицю. `MIGRATION_11_12` лишається для пристроїв на версії 11.
+ * D-27: локальні метрики (`metric_events`, версія 11) скасовано — версія 14 (`MIGRATION_13_14`) прибирає таблицю.
+ * CC-6: додано `repeatCount`/`lastShownAtMillis` до AppGateEntity (зростаюча затримка воріт) — версія 15, `MIGRATION_14_15`.
  */
 @Database(
     entities = [
@@ -78,7 +84,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         CardShowEntity::class,
         GateEventEntity::class
     ],
-    version = 10,
+    version = 15,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

@@ -30,5 +30,7 @@ data class AppGateEntity(
     val originalIconHandled: Boolean,
     val createdAt: Long = System.currentTimeMillis(),
     val lastProceedAtMillis: Long = 0L,
-    val shortcutId: String = "gate_$packageName"
+    val shortcutId: String = "gate_$packageName",
+    val repeatCount: Int = 0,
+    val lastShownAtMillis: Long = 0L
 )
