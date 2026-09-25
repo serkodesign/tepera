@@ -11,6 +11,7 @@ import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import androidx.room.Room
 import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.ActiveTimerStore
+import com.serkodesign.tepera.data.WeeklySummaryWorker
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
 import com.serkodesign.tepera.data.local.MIGRATION_1_2
@@ -52,6 +53,7 @@ import com.serkodesign.tepera.widget.WidgetRolloverWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -138,9 +140,13 @@ class TeperaApp : Application() {
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)
         WidgetRolloverWorker.schedule(this)
-        // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker) — createNotificationChannel()
-        // ідемпотентний, безпечно викликати щозапуску.
-        createTimerCheckNotificationChannel(this)
+        // CC-8: канал єдиного сповіщення (тижневий підсумок) і планування, якщо людина його вмикала.
+        WeeklySummaryWorker.createChannel(this)
+        applicationScope.launch {
+            if (settingsStore.weeklySummaryEnabled.first()) WeeklySummaryWorker.ensureScheduled(this@TeperaApp)
+        }
+        // D-25: щоденні фонові знімки скасовано; прибираємо роботу, яку могли запланувати ранні збірки.
+        androidx.work.WorkManager.getInstance(this).cancelUniqueWork("daily_snapshot")
         registerWidgetPreviewIfNeeded()
     }
 

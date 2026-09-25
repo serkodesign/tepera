@@ -197,7 +197,8 @@ fun TeperaNavHost(
     // без унікального nonce на кожен тап LaunchedEffect(pendingGateTargetPackage) не перезапустився
     // б, якщо застосунок збігається з попереднім.
     pendingGateTargetPackage: String? = null,
-    pendingGateRequestNonce: Long? = null
+    pendingGateRequestNonce: Long? = null,
+    pendingWeeklySummaryNonce: Long? = null
 ) {
     LaunchedEffect(Unit) {
         if (pendingOpenAddEntry) {
@@ -213,6 +214,11 @@ fun TeperaNavHost(
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // CC-8: тап по тижневому сповіщенню — повернутися на Home, де лежить картка «Цей тиждень».
+    LaunchedEffect(pendingWeeklySummaryNonce) {
+        if (pendingWeeklySummaryNonce != null) navController.popBackStack(Routes.HOME, inclusive = false)
+    }
 
     // Градієнт застосовується ТУТ, на самому зовнішньому Box (а не всередині HomeScreen/
     // StatsScreen) — інакше він потрапляє під contentPadding зовнішнього Scaffold і не сягає

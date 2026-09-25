@@ -69,6 +69,11 @@
     <string name="target_onboarding_later">Later</string>
     <string name="target_onboarding_set">Set</string>
     <string name="settings_target_off_hint">No reference — nothing is marked on the day scale.</string>
+    <string name="weekly_summary_label">Weekly summary</string>
+    <string name="weekly_summary_hint">Once a week, on Sunday evening — one quiet notification. Tapping it opens your week\'s summary. There are no other notifications.</string>
+    <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. You can allow it in the app\'s system settings — everything else works as before.</string>
+    <string name="weekly_summary_channel_name">Weekly summary</string>
+    <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">During testing, Tepera sends the developer anonymous reports when the app crashes (via Firebase Crashlytics by Google). A report contains the phone model, Android version and a technical description of the crash; it does not contain your entries, categories or app usage time. You can turn this off in Settings at any time.</string>
 

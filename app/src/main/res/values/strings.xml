@@ -85,6 +85,11 @@
 
     <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), показується обома гілками "доступ надано? так/ні". -->
+    <string name="weekly_summary_label">Тижневий підсумок</string>
+    <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері, — одне тихе сповіщення. Тап відкриває підсумок тижня. Інших сповіщень немає.</string>
+    <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не надійде. Дозволити можна в системних налаштуваннях застосунку — усе інше працює як раніше.</string>
+    <string name="weekly_summary_channel_name">Тижневий підсумок</string>
+    <string name="weekly_summary_notification_text">Підсумок твого тижня готовий.</string>
     <string name="widget_suggestion_title">Додай віджет на головний екран</string>
     <string name="widget_suggestion_body">Структура дня й швидкий тап-таймер під рукою, без відкриття застосунку.</string>
     <string name="widget_suggestion_add_action">Додати віджет</string>

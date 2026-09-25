@@ -28,6 +28,8 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_CATEGORY_ID = "category_id"
     }
 
+        // CC-8: тап по тижневому сповіщенню — відкрити Home з карткою підсумку тижня.
+        const val EXTRA_OPEN_WEEKLY_SUMMARY = "open_weekly_summary"
     /**
      * T-5 (tepera-dev-spec.md): тап по закріпленому ярлику воріт (T-4) запускає ту саму
      * MainActivity, що вже, як правило, живе у фоні — без `onNewIntent()` система лише виносить
@@ -41,10 +43,9 @@ class MainActivity : ComponentActivity() {
 
     private var pendingGateRequest by mutableStateOf<GateRequest?>(null)
 
-    // Застосовує збережений вибір мови (Налаштування → Мова застосунку) ДО того, як
-    // з'явиться будь-який ресурс/рядок цієї Activity — LocaleStore.kt пояснює, чому це
-    // обов'язково ручний attachBaseContext(), а не AppCompatDelegate.
-    override fun attachBaseContext(newBase: Context) {
+    // CC-8: nonce тапу по тижневому сповіщенню — TeperaNavHost повертає на Home.
+    private var weeklySummaryNonce by mutableStateOf<Long?>(null)
+
     // CC-4: відкриття через ворота (це не "відкрив Tepera") і перестворення
     // активності (зміна мови) не рахуються.
     private var skipNextOpen = false
@@ -74,9 +75,9 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     TeperaNavHost(
                         categoryRepository = app.categoryRepository,
-                        activityRepository = app.activityRepository,
         skipNextOpen = savedInstanceState != null || pendingGateRequest != null
         handleWeeklySummaryIntent(intent)
+                        activityRepository = app.activityRepository,
                         balanceRepository = app.balanceRepository,
                         excludedAppRepository = app.excludedAppRepository,
                         installedAppsProvider = app.installedAppsProvider,
@@ -94,7 +95,8 @@ class MainActivity : ComponentActivity() {
                         pendingOpenAddEntry = openAddEntry,
                         pendingCategoryId = categoryId,
                         pendingGateTargetPackage = pendingGateRequest?.packageName,
-                        pendingGateRequestNonce = pendingGateRequest?.nonce
+                        pendingGateRequestNonce = pendingGateRequest?.nonce,
+                        pendingWeeklySummaryNonce = weeklySummaryNonce
                     )
                 }
             }
@@ -126,5 +128,13 @@ class MainActivity : ComponentActivity() {
 }
         skipNextOpen = pendingGateRequest != null
         handleWeeklySummaryIntent(intent)
+    }
+
+    /** CC-8: тап по тижневому сповіщенню — знімаємо приховування картки «Цей тиждень» і повертаємо на Home. */
+    private fun handleWeeklySummaryIntent(intent: Intent) {
+        if (!intent.getBooleanExtra(EXTRA_OPEN_WEEKLY_SUMMARY, false)) return
+        intent.removeExtra(EXTRA_OPEN_WEEKLY_SUMMARY)
+        weeklySummaryNonce = System.nanoTime()
+        lifecycleScope.launch { (application as TeperaApp).settingsStore.setWeeklyDigestCardDismissedKey(-1L) }
     }
 

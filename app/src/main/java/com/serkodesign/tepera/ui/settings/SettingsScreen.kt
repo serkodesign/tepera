@@ -172,8 +172,8 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(Icons.Filled.Feedback) },
                     trailing = { NavChevron() }
                 )
-                // GAP-8: посилання на Privacy Policy, версія й контакт — вимога Google Play.
-                GlassRow(
+                // CC-8: тижневий підсумок — одне тихе сповіщення раз на тиждень, вимкнене за замовчуванням.
+                WeeklySummaryToggle(settingsStore = (context.applicationContext as com.serkodesign.tepera.TeperaApp).settingsStore)
                 // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
                 CrashReportsToggle()
                     label = stringResource(R.string.settings_about_action),
