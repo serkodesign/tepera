@@ -37,7 +37,8 @@ class BackupRepository(
         val root = JSONObject()
         root.put("schemaVersion", SCHEMA_VERSION)
         root.put("exportedAt", System.currentTimeMillis())
-        root.put("settings", JSONObject().put("targetMinutes", targetMinutes))
+        // CC-1: орієнтира може не бути (null) — тоді так і записується.
+        root.put("settings", JSONObject().put("targetMinutes", targetMinutes ?: JSONObject.NULL))
 
         root.put("categories", JSONArray().apply {
             categories.forEach { put(categoryToJson(it)) }
@@ -65,7 +66,9 @@ class BackupRepository(
         val excludedApps = root.getJSONArray("excludedApps").let { array ->
             List(array.length()) { excludedAppFromJson(array.getJSONObject(it)) }
         }
-        val targetMinutes = root.optJSONObject("settings")?.optInt("targetMinutes")
+        val settingsJson = root.optJSONObject("settings")
+        // CC-1: немає значення (або 0) — орієнтира немає; імпорт повністю замінює поточний.
+        val targetMinutes = if (settingsJson == null || settingsJson.isNull("targetMinutes")) null else settingsJson.optInt("targetMinutes").takeIf { it > 0 }
 
         database.withTransaction {
             database.activityEntryDao().deleteAll() // спершу дочірня таблиця (FK на categories)
@@ -77,9 +80,7 @@ class BackupRepository(
             database.excludedAppDao().insertAll(excludedApps)
         }
 
-        if (targetMinutes != null && targetMinutes > 0) {
-            settingsStore.setTargetMinutes(targetMinutes)
-        }
+        settingsStore.setTargetMinutes(targetMinutes)
     }
 
     private fun categoryToJson(c: CategoryEntity) = JSONObject().apply {

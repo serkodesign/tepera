@@ -91,6 +91,7 @@ import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.PermissionsBackground
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
 import com.serkodesign.tepera.ui.settings.AboutScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
@@ -116,6 +117,7 @@ private object Routes {
     const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
+    const val TARGET_ONBOARDING = "target_onboarding"
     const val LANGUAGE_SETTINGS = "language_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
@@ -152,7 +154,7 @@ private object Routes {
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
         SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
-        ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
+        ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
@@ -319,6 +321,7 @@ fun TeperaNavHost(
                     activityRepository = activityRepository,
                     balanceRepository = balanceRepository,
                     patternRepository = patternRepository,
+                    onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
                     unlockRepository = unlockRepository,
@@ -429,6 +432,13 @@ fun TeperaNavHost(
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
+            composable(Routes.TARGET_ONBOARDING) {
+                TargetOnboardingScreen(
+                    settingsStore = settingsStore,
+                    balanceRepository = balanceRepository,
+                    onDone = { navController.popBackStack() }
+                )
+            }
                     onOpenLanguage = { navController.navigate(Routes.LANGUAGE_SETTINGS) },
                     onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
@@ -455,6 +465,7 @@ fun TeperaNavHost(
                 com.serkodesign.tepera.debug.SpikeT15Screen(onBack = { navController.popBackStack() })
             }
             composable(Routes.SPIKE_T1) {
+                    balanceRepository = balanceRepository,
                 SpikeT1Screen(onBack = { navController.popBackStack() })
             }
             composable(Routes.GATES) {

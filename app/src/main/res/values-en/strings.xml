@@ -63,6 +63,12 @@
     <string name="perm_body">Your entries and app usage time stay on your phone. The only thing that leaves it is anonymous crash reports — you can turn them off in Settings</string>
     <string name="perm_usage_label">Usage access</string>
     <string name="perm_continue">Continue</string>
+    <string name="target_onboarding_title">A reference for your day</string>
+    <string name="target_onboarding_body">A reference is an optional, quiet tick on your day scale. It doesn\'t judge anything and never changes colors. You can set it now or later in Settings.</string>
+    <string name="target_onboarding_average_format">Over the last %1$d days, about %2$s online per day on average. It\'s only a starting point — pick your own.</string>
+    <string name="target_onboarding_later">Later</string>
+    <string name="target_onboarding_set">Set</string>
+    <string name="settings_target_off_hint">No reference — nothing is marked on the day scale.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">During testing, Tepera sends the developer anonymous reports when the app crashes (via Firebase Crashlytics by Google). A report contains the phone model, Android version and a technical description of the crash; it does not contain your entries, categories or app usage time. You can turn this off in Settings at any time.</string>
 

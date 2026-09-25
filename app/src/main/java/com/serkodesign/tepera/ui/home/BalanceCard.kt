@@ -162,7 +162,7 @@ private fun daySegments(state: BalanceUiState): List<DaySegment> {
 @Composable
 private fun DayStructureBar(
     segments: List<DaySegment>,
-    targetMinutes: Int,
+    targetMinutes: Int?,
     daySpanMinutes: Int,
     dayLengthMinutes: Int
 ) {
@@ -171,8 +171,8 @@ private fun DayStructureBar(
     // перевищення кольором — це сигнал звірити рішення з розділом 4, не з інтуїцією"). Позиція —
     // частка від повного діапазону шкали (пробудження → 00:00, за запитом користувача), а не
     // лише від довжини дня, що минула, — інакше засічка "стрибала" б праворуч разом з ростом дня.
-    val referenceMinutes = maxOf(daySpanMinutes, targetMinutes, 1)
-    val markerFraction = (targetMinutes.toFloat() / referenceMinutes).coerceIn(0f, 1f)
+    val referenceMinutes = maxOf(daySpanMinutes, targetMinutes ?: 0, 1)
+    val markerFraction = targetMinutes?.let { (it.toFloat() / referenceMinutes).coerceIn(0f, 1f) }
 
     // Позначка "Now" — де саме "зараз" на шкалі "пробудження → 00:00". На відміну від засічки
     // орієнтиру вище, ця позначка РУХАЄТЬСЯ разом із часом — по своїй природі не евалюативна
@@ -216,7 +216,8 @@ private fun DayStructureBar(
                     Box(modifier = Modifier.weight(futureMinutes.toFloat()).fillMaxHeight())
                 }
             }
-            Box(
+            // CC-1: без орієнтира засічки на шкалі немає взагалі.
+            if (markerFraction != null) Box(
                 modifier = Modifier
                     .atFraction(markerFraction, centered = false)
                     .width(1.dp)

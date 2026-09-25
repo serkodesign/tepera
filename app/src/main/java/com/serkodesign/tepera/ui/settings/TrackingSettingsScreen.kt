@@ -5,6 +5,7 @@ import com.serkodesign.tepera.ui.theme.TeperaDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,11 +39,13 @@ import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.GapSensitivity
 import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.HourRangeSlider
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
+import com.serkodesign.tepera.util.TargetSuggestion
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -59,10 +62,11 @@ import kotlin.math.roundToInt
 fun TrackingSettingsScreen(
     settingsStore: SettingsStore,
     sleepWindowRepository: SleepWindowRepository,
+    balanceRepository: BalanceRepository,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    var targetHours by remember { mutableStateOf(3) }
+    var targetHours by remember { mutableStateOf<Int?>(null) }
     var showTargetInfo by remember { mutableStateOf(false) }
     var window1StartHour by remember { mutableStateOf(0) }
     var window1EndHour by remember { mutableStateOf(6) }
@@ -71,7 +75,7 @@ fun TrackingSettingsScreen(
     var showGapSensitivityInfo by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        targetHours = (settingsStore.targetMinutes.first() / 60f).roundToInt().coerceIn(1, 8)
+        targetHours = settingsStore.targetMinutes.first()?.let { (it / 60f).roundToInt().coerceIn(TargetSuggestion.MIN_HOURS, TargetSuggestion.MAX_HOURS) }
         val windows = sleepWindowRepository.getWindows()
         windows.find { it.slot == 1 }?.let {
             window1StartHour = (it.startMinuteOfDay / 60).coerceIn(0, 23)
@@ -129,17 +133,47 @@ fun TrackingSettingsScreen(
                         IconButton(onClick = { showTargetInfo = true }, modifier = Modifier.size(20.dp)) {
                             Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_target_info))
                         }
+                        Spacer(Modifier.weight(1f))
+                        // CC-1: орієнтир можна вимкнути зовсім. Вмикаючи, стартуємо від середнього самої
+                        // людини (якщо є історія), а не від "стандартного" значення.
+                        Switch(
+                            checked = targetHours != null,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    if (enabled) {
+                                        val average = balanceRepository.averageDailyOnline()
+                                        val hours = average?.let { TargetSuggestion.hoursFor(it.minutesPerDay) }
+                                            ?: TargetSuggestion.NEUTRAL_START_HOURS
+                                        targetHours = hours
+                                        settingsStore.setTargetMinutes(hours * 60)
+                                    } else {
+                                        targetHours = null
+                                        settingsStore.setTargetMinutes(null)
+                                    }
+                                }
+                            },
+                            colors = teperaSwitchColors()
+                        )
                     }
-                    HourRangeSlider(
-                        hours = targetHours,
-                        onHoursChange = { hours ->
-                            targetHours = hours
-                            scope.launch { settingsStore.setTargetMinutes(hours * 60) }
-                        },
-                        valueLabel = { hours -> stringResource(R.string.settings_target_hours_format, hours) },
-                        minHours = 1,
-                        maxHours = 8
-                    )
+                    val hours = targetHours
+                    if (hours != null) {
+                        HourRangeSlider(
+                            hours = hours,
+                            onHoursChange = { newHours ->
+                                targetHours = newHours
+                                scope.launch { settingsStore.setTargetMinutes(newHours * 60) }
+                            },
+                            valueLabel = { value -> stringResource(R.string.settings_target_hours_format, value) },
+                            minHours = TargetSuggestion.MIN_HOURS,
+                            maxHours = TargetSuggestion.MAX_HOURS
+                        )
+                    } else {
+                        Text(
+                            stringResource(R.string.settings_target_off_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

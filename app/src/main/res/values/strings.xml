@@ -70,6 +70,12 @@
     <string name="perm_body">Твої записи й час у застосунках лишаються на телефоні. З телефону виходять лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
     <string name="perm_usage_label">Доступ до статистики</string>
     <string name="perm_continue">Продовжити</string>
+    <string name="target_onboarding_title">Орієнтир на день</string>
+    <string name="target_onboarding_body">Орієнтир — необов\'язкова тиха риска на шкалі дня. Він нічого не оцінює й не змінює кольорів. Можна задати зараз або пізніше в Налаштуваннях.</string>
+    <string name="target_onboarding_average_format">За останні %1$d дн. у середньому %2$s онлайн на день. Це лише точка відліку — обери своє.</string>
+    <string name="target_onboarding_later">Пізніше</string>
+    <string name="target_onboarding_set">Задати</string>
+    <string name="settings_target_off_hint">Орієнтира немає — на шкалі дня нічого не позначається.</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Під час тестування Tepera надсилає розробнику анонімні звіти, коли застосунок падає (через Firebase Crashlytics від Google). У звіті — модель телефону, версія Android і технічний опис збою; твоїх записів, категорій і часу в застосунках там немає. Це можна вимкнути в Налаштуваннях у будь-який момент.</string>
 

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val TARGET_MINUTES_KEY = intPreferencesKey("target_minutes")
 private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
+private val TARGET_ONBOARDING_SEEN_KEY = booleanPreferencesKey("target_onboarding_seen")
 private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
 private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
@@ -40,7 +41,6 @@ private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_e
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 
-private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 
 /**
  * FR-3.10 (орієнтир Online-часу), FR-7.1 (чи вже показаний онбординг доступу до статистики).
@@ -54,11 +54,26 @@ class SettingsStore(private val context: Context) {
         context.settingsDataStore.edit { it.clear() }
     }
 
-    val targetMinutes: Flow<Int> = context.settingsDataStore.data
-        .map { it[TARGET_MINUTES_KEY] ?: DEFAULT_TARGET_MINUTES }
+    /**
+     * CC-1: орієнтир Online-часу на день (хвилини). `null` — орієнтира немає: значення за замовчуванням
+     * (раніше 180 хв) прибране, людина або задає його сама (крок онбордингу "Орієнтир на день",
+     * Налаштування), або живе без нього. Без орієнтира ніде не показується жодне число-ціль.
+     */
+    val targetMinutes: Flow<Int?> = context.settingsDataStore.data
+        .map { it[TARGET_MINUTES_KEY] }
 
-    suspend fun setTargetMinutes(minutes: Int) {
-        context.settingsDataStore.edit { it[TARGET_MINUTES_KEY] = minutes }
+    suspend fun setTargetMinutes(minutes: Int?) {
+        context.settingsDataStore.edit {
+            if (minutes == null) it.remove(TARGET_MINUTES_KEY) else it[TARGET_MINUTES_KEY] = minutes
+        }
+    }
+
+    /** CC-1: чи вже показаний крок онбордингу "Орієнтир на день" (після дозволу на доступ до статистики). */
+    val targetOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[TARGET_ONBOARDING_SEEN_KEY] ?: false }
+
+    suspend fun setTargetOnboardingSeen() {
+        context.settingsDataStore.edit { it[TARGET_ONBOARDING_SEEN_KEY] = true }
     }
 
     val onboardingUsageAccessSeen: Flow<Boolean> = context.settingsDataStore.data

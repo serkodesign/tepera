@@ -129,6 +129,7 @@ fun HomeScreen(
     onShowOnboarding: () -> Unit,
     onShowCategoryOnboarding: () -> Unit,
     onShowOnlineEstimateOnboarding: () -> Unit,
+    onShowTargetOnboarding: () -> Unit,
     onShowWidgetSuggestion: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
@@ -330,7 +331,7 @@ fun HomeScreen(
     // розв'язаний" — доступ уже надано (permissionScreen вище й не показувався) АБО сам
     // permission-екран уже показувався (onboardingSeen), незалежно від того, чим скінчилось.
     val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen, targetStepDone) {
         val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
         if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && targetStepDone && !widgetSuggestionSeen) {
             // Race "Home оживає між popBackStack()/navigate()": OnboardingScreen
@@ -338,6 +339,21 @@ fun HomeScreen(
             // ОДРАЗУ при монтуванні, не чекаючи дії користувача — і Home встигає прочитати це
             // на тому самому короткому "оживанні" між popBackStack()/navigate(), перш ніж
             // OnboardingScreen встигає реально лишитись на екрані. Без затримки цей ефект
+    // CC-1: крок "Орієнтир на день" — ПІСЛЯ кроку дозволу й лише коли доступ до статистики реально є
+    // (потрібна історія для власного середнього). Той самий race "Home оживає між popBackStack()/navigate()",
+    // що й нижче, тож перед переходом невелика затримка.
+    val targetOnboardingSeen by settingsStore.targetOnboardingSeen.collectAsState(initial = true)
+    LaunchedEffect(balanceState.hasUsageAccess, categoryOnboardingSeen, onlineEstimateOnboardingSeen, targetOnboardingSeen) {
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
+            balanceState.hasUsageAccess == true && !targetOnboardingSeen
+        ) {
+            delay(1000)
+            onShowTargetOnboarding()
+        }
+    }
+    // Пропозиція віджета чекає на цей крок, поки він реально належить до ланцюжка (є доступ і крок ще не пройдено).
+    val targetStepDone = targetOnboardingSeen || balanceState.hasUsageAccess == false
+
             // стрибав одразу на WidgetSuggestionScreen, повністю пропускаючи екран пояснення
             // дозволу (знайдено живим тестом на Samsung S23, T-3 переставав показуватись).
             delay(1000)
