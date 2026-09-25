@@ -118,8 +118,8 @@
     <string name="weekly_reflection_range_10_20">10–20h</string>
     <string name="weekly_reflection_range_over_20">Over 20h</string>
     <string name="weekly_reflection_skip">Skip this</string>
-    <string name="weekly_reflection_your_guess_format">Your guess: %1$s</string>
-    <string name="weekly_reflection_actual_format">Actual: %1$s</string>
+    <string name="weekly_reflection_your_guess_label">Your guess</string>
+    <string name="weekly_reflection_actual_label">Actual</string>
     <string name="weekly_reflection_done">Got it</string>
 
     <!-- Detected pauses card (FR-D.1–D.5, SRS v2.6) -->
@@ -319,9 +319,10 @@
     <string name="stats_day_legend_pause">Break</string>
     <string name="stats_day_legend_offline">Offline, not logged</string>
     <string name="stats_day_pauses_title">Breaks from the phone</string>
-    <string name="stats_day_pauses_count">Breaks: %1$d</string>
-    <string name="stats_day_pauses_longest">Longest: %1$s (%2$s)</string>
-    <string name="stats_day_compare">Online yesterday %1$s · your typical day (median of %2$d days) %3$s</string>
+    <string name="stats_day_pauses_count_chip_label">Count</string>
+    <string name="stats_day_pauses_longest_chip_label">Longest</string>
+    <string name="stats_day_compare_yesterday">Yesterday: %1$s</string>
+    <string name="stats_day_compare_typical">Typical (median of %1$d days): %2$s</string>
     <string name="stats_history_edit_action">Edit entry</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 

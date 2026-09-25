@@ -63,14 +63,7 @@ fun UnlockEstimateCard(state: UnlockEstimateUiState, onSelectGuess: (UnlockCount
             )
         } else {
             // FR-P.6/розділ 2.2: дві цифри поруч, без "багато"/"мало" — рефлексію робить сама людина.
-            Text(
-                stringResource(R.string.weekly_reflection_your_guess_format, unlockGuessLabel(state.guess)),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                stringResource(R.string.weekly_reflection_actual_format, state.actualCount.toString()),
-                style = MaterialTheme.typography.bodyLarge
-            )
+            GuessRevealRow(guessValue = unlockGuessLabel(state.guess), actualValue = state.actualCount.toString())
             TeperaButton(
                 text = stringResource(R.string.weekly_reflection_done),
                 onClick = onDismiss,

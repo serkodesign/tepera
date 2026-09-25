@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -63,10 +64,8 @@ import com.serkodesign.tepera.ui.pattern.HourlyHeatGrid
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
+import com.serkodesign.tepera.ui.theme.StatTile
 import com.serkodesign.tepera.ui.theme.TeperaCard
-import com.serkodesign.tepera.ui.theme.TeperaChip
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -152,40 +151,46 @@ fun StatsScreen(
             // T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком,
             // без виділення" — саме тут (Stats, period == WEEK), НЕ на Home (розділ 2.2 забороняє
             // пасивний показ на головному екрані). null = нема доступу/API < 28 — рядок відсутній,
-            // не "0".
+            // не "0". За прямим запитом користувача — дві картки в ряд (`StatTile`), не чипи.
             if (state.period == StatsPeriod.WEEK) {
-              @OptIn(ExperimentalLayoutApi::class)
-              FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-              ) {
-                state.unlockStats.weekCount?.let { count ->
-                    TeperaChip(
-                        label = stringResource(R.string.stats_unlock_week_label),
-                        value = count.toString()
-                    )
+                if (state.unlockStats.weekCount != null || state.lastPhoneUseStats.weekMedianMillis != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        state.unlockStats.weekCount?.let { count ->
+                            StatTile(
+                                label = stringResource(R.string.stats_unlock_week_label),
+                                value = count.toString(),
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                        // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard —
+                        // тут окремою карткою серед інших фактів Stats, не другорядна деталь.
+                        state.lastPhoneUseStats.weekMedianMillis?.let { millis ->
+                            StatTile(
+                                label = stringResource(R.string.stats_last_phone_use_week_label),
+                                value = formatClockTime(millis),
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                    }
                 }
-                // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard — тут
-                // звичайним підписаним рядком, бо це самостійний факт серед інших рядків Stats,
-                // не другорядна деталь під двома щойно показаними числами.
-                state.lastPhoneUseStats.weekMedianMillis?.let { millis ->
-                    TeperaChip(
-                        label = stringResource(R.string.stats_last_phone_use_week_label),
-                        value = formatClockTime(millis)
-                    )
-                }
-              }
+                // За прямим запитом користувача: тепловий патерн одразу під картками вище.
+                PatternCard(state = patternState, period = state.period)
             }
 
             // "День" = вчора: замість тренду з однією точкою — деталі доби (межі, хронологія, паузи,
-            // порівняння зі своєю типовою добою). Тиждень лишається без змін.
+            // порівняння зі своєю типовою добою). Тепловий патерн для Дня рендериться всередині
+            // DayDetailsSection, одразу під картками меж дня (той самий принцип, що Тиждень вище).
             if (state.period == StatsPeriod.DAY) {
                 DayDetailsSection(
                     details = state.dayDetails,
                     hasUsageAccess = state.hasUsageAccess,
                     onOpenUsageAccessSettings = {
                         context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                    }
+                    },
+                    patternState = patternState
                 )
             }
 
@@ -205,8 +210,6 @@ fun StatsScreen(
                     }
                 )
             }
-
-            PatternCard(state = patternState, period = state.period)
         }
         }
     }
@@ -231,7 +234,7 @@ private fun formatClockTime(millis: Long): String =
  * днів, не "вчора" — "Добовий патерн використання" (той самий рядок, що тепер завжди на Home).
  */
 @Composable
-private fun PatternCard(state: PatternUiState, period: StatsPeriod) {
+internal fun PatternCard(state: PatternUiState, period: StatsPeriod) {
     if (!state.visible) return
 
     TeperaCard(

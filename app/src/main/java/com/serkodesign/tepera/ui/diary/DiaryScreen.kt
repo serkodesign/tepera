@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -55,7 +57,7 @@ import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
-import com.serkodesign.tepera.ui.theme.TeperaChip
+import com.serkodesign.tepera.ui.theme.StatTile
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaScreenTitle
 import com.serkodesign.tepera.ui.theme.TeperaIcons
@@ -80,8 +82,9 @@ import java.util.Locale
  * Medium) з тривалістю й інтервалом, кнопка редагування — іконка 24dp без фону. За відповідями
  * користувача: чіпи однакові для сьогодні й вчора (у макеті вчора було білим із сірим текстом),
  * кружок категорії — 20% її кольору (не 10-30% з макета), гліф — сам колір категорії; лічильники
- * розблокувань і "востаннє брав телефон" (яких нема в макеті) лишились, оформлені плашками
- * `TeperaChip` (спільний чіп застосунку), як "Початок"/"День триває" на Home; нотатка запису — третім рядком.
+ * розблокувань і "востаннє брав телефон" (яких нема в макеті) лишились, оформлені картками
+ * `StatTile` (за прямим запитом користувача — заміна плоских чипів картками, той самий компонент,
+ * що межі доби на Статистиці); нотатка запису — третім рядком.
  *
  * Кругла кнопка "+" (за прямим запитом користувача) — єдиний вхід на Щоденнику для ЗАГАЛЬНОГО
  * додавання активності (без попередньо обраної категорії, на відміну від кнопки "додати час"
@@ -204,14 +207,16 @@ private fun HistoryContent(
                 letterSpacing = 0.018.sp
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                // За прямим запитом користувача — картки (`StatTile`), не плоскі чипи; той самий
+                // компонент, що межі доби на Статистиці. Без іконок (за прямим запитом користувача —
+                // на вузьких картках вони посилювали перенос підпису на кілька рядків).
                 if (unlockCount != null || lastPhoneUseMillis != null) {
-                    FlowRow(
-                        modifier = Modifier.padding(bottom = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    Row(
+                        modifier = Modifier.padding(bottom = 4.dp).fillMaxWidth().height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         unlockCount?.let { count ->
-                            TeperaChip(
+                            StatTile(
                                 label = stringResource(
                                     when {
                                         isToday -> R.string.diary_unlock_today_label
@@ -219,13 +224,15 @@ private fun HistoryContent(
                                         else -> R.string.diary_unlock_label
                                     }
                                 ),
-                                value = count.toString()
+                                value = count.toString(),
+                                modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                         }
                         lastPhoneUseMillis?.let { millis ->
-                            TeperaChip(
+                            StatTile(
                                 label = stringResource(R.string.diary_last_phone_use_yesterday_label),
-                                value = formatClockTime(millis)
+                                value = formatClockTime(millis),
+                                modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                         }
                     }

@@ -98,7 +98,17 @@ fun MyDayCard(
             }
             true -> {
                 val segments = daySegments(state)
-                if (segments.isNotEmpty()) {
+                if (segments.isEmpty()) {
+                    // День (за визначенням Tepera, не календарна північ) ще не почався — Online,
+                    // категорії й "Решта дня" усі порожні. Без цієї гілки картка рендерила
+                    // ЦІЛКОМ ПОРОЖНЄ тіло (жодного тексту) — реальний баг, знайдений користувачем
+                    // при відкритті вночі/рано-вранці, до першого суттєвого розблокування.
+                    Text(
+                        text = stringResource(R.string.home_no_entries_today),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = HomeCardTextPrimary
+                    )
+                } else {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         // FlowRow: на вузьких екранах (напр. 360dp) плашки переносяться, а не обрізаються.
                         FlowRow(

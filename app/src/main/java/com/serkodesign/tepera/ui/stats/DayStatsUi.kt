@@ -10,9 +10,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhonelinkOff
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,14 +35,19 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.pattern.PatternUiState
+import com.serkodesign.tepera.ui.theme.StatTile
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.roundToInt
 
 // Хронологія: порожні клітинки — ледь помітний темний відтінок, "до початку дня" — ще тихіший.
 private val SlotBlank = Color(0x14003926)
@@ -44,16 +56,17 @@ private val SlotBeforeStart = Color(0x08003926)
 private val SlotPause = Color(0xFF6DBF94)
 
 /**
- * Статистика → День (вчора): чипи меж дня, хронологія доби, паузи, тихий рядок порівняння з власною
- * типовою добою. Усе — нейтральні факти (принцип "застосунок не оцінює"): жодних слів-оцінок,
- * traffic-light кольорів чи порівняння з нормою.
+ * Статистика → День (вчора): картки меж дня, тепловий патерн, хронологія доби, паузи, тихий
+ * рядок порівняння з власною типовою добою. Усе — нейтральні факти (принцип "застосунок не
+ * оцінює"): жодних слів-оцінок, traffic-light кольорів чи порівняння з нормою.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DayDetailsSection(
     details: DayDetailsUiState,
     hasUsageAccess: Boolean,
-    onOpenUsageAccessSettings: () -> Unit
+    onOpenUsageAccessSettings: () -> Unit,
+    patternState: PatternUiState
 ) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
@@ -71,22 +84,39 @@ fun DayDetailsSection(
     }
 
     // Межі дня й розблокування — "деталі дня" (T-14/T-10): лише тут і в Щоденнику, не на Home.
+    // За прямим запитом користувача — три картки в ряд (`StatTile`), не чипи в FlowRow.
     if (details.firstUseMillis != null || details.lastUseMillis != null || details.unlockCount != null) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             details.firstUseMillis?.let {
-                TeperaChip(stringResource(R.string.home_card_first_unlock_label), value = timeFormat.format(Date(it)))
+                StatTile(
+                    label = stringResource(R.string.home_card_first_unlock_label),
+                    value = timeFormat.format(Date(it)),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
             }
             details.lastUseMillis?.let {
-                TeperaChip(stringResource(R.string.diary_last_phone_use_yesterday_label), value = timeFormat.format(Date(it)))
+                StatTile(
+                    label = stringResource(R.string.diary_last_phone_use_yesterday_label),
+                    value = timeFormat.format(Date(it)),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
             }
             details.unlockCount?.let {
-                TeperaChip(stringResource(R.string.diary_unlock_yesterday_label), value = it.toString())
+                StatTile(
+                    label = stringResource(R.string.diary_unlock_yesterday_label),
+                    value = it.toString(),
+                    modifier = Modifier.weight(1f).fillMaxHeight()
+                )
             }
         }
     }
+
+    // За прямим запитом користувача: тепловий патерн переїхав одразу під картки меж дня — вище
+    // хронології/пауз/порівняння, які раніше йшли одразу за чипами.
+    PatternCard(state = patternState, period = StatsPeriod.DAY)
 
     // GAP-9: у день встановлення "вчора" ще не існує — один спокійний рядок замість порожнього екрана чи нулів
     // (розділ 4 SRS: без докору, "Поки порожньо", не "Ти нічого не зафіксував").
@@ -148,17 +178,73 @@ private fun DayTimelineCard(details: DayDetailsUiState) {
             }
         }
 
-        // Тихий рядок порівняння зі своєю типовою добою — частина картки доби, а не окремий текст.
-        details.comparison?.let { c ->
-            Text(
-                text = stringResource(
-                    R.string.stats_day_compare,
-                    durationText(c.yesterdayMinutes), c.daysCount, durationText(c.typicalMinutes)
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = TeperaPalette.buttonBrandDark
+        // Порівняння зі своєю типовою добою — раніше голий рядок тексту, тепер графічно
+        // (за прямим запитом користувача): шкала.
+        details.comparison?.let { OnlineComparisonBar(it) }
+    }
+}
+
+/**
+ * "Вчорашня доба" — порівняння зі своєю типовою добою, раніше голий рядок тексту, тепер графічно
+ * (за прямим запитом користувача): заповнена частина шкали — Online вчора (той самий колір, що
+ * скрізь у застосунку для Online), тиха вертикальна позначка — позиція типового дня (медіана за
+ * N днів), той самий принцип, що позначка орієнтиру на Home (FR-3.10 — тонка лінія БЕЗ підпису,
+ * ніколи не змінює колір, жодного "більше/менше" в кольорі). Підписи під шкалою — точні числа
+ * (FR-P.6: число завжди з контекстом, не голий графік без цифр).
+ */
+@Composable
+private fun OnlineComparisonBar(comparison: OnlineComparison) {
+    val maxMinutes = maxOf(comparison.yesterdayMinutes, comparison.typicalMinutes, 1)
+    val yesterdayFraction = (comparison.yesterdayMinutes.toFloat() / maxMinutes).coerceIn(0f, 1f)
+    val typicalFraction = (comparison.typicalMinutes.toFloat() / maxMinutes).coerceIn(0f, 1f)
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(SlotBlank)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(yesterdayFraction.coerceAtLeast(0.02f))
+                        .fillMaxHeight()
+                        .background(TeperaPalette.onlineCard)
+                )
+                Box(modifier = Modifier.weight((1f - yesterdayFraction).coerceAtLeast(0.001f)).fillMaxHeight())
+            }
+            Box(
+                modifier = Modifier
+                    .comparisonMarkerAt(typicalFraction)
+                    .width(2.dp)
+                    .height(14.dp)
+                    .background(Color.Black.copy(alpha = 0.3f))
             )
         }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                text = stringResource(R.string.stats_day_compare_yesterday, durationText(comparison.yesterdayMinutes)),
+                style = MaterialTheme.typography.bodySmall,
+                color = TeperaPalette.buttonBrandDark
+            )
+            Text(
+                text = stringResource(R.string.stats_day_compare_typical, comparison.daysCount, durationText(comparison.typicalMinutes)),
+                style = MaterialTheme.typography.bodySmall,
+                color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+/** Позиціонує елемент на [fraction] ширини батька, центрований — той самий прийом, що позначка орієнтиру на Home. */
+private fun Modifier.comparisonMarkerAt(fraction: Float): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+    val width = constraints.maxWidth
+    layout(width, placeable.height) {
+        val x = (width * fraction).roundToInt() - placeable.width / 2
+        placeable.placeRelative(x.coerceIn(0, (width - placeable.width).coerceAtLeast(0)), 0)
     }
 }
 
@@ -180,24 +266,109 @@ private fun LegendItem(color: Color, label: String) {
     }
 }
 
+/**
+ * Картка "Паузи без телефону" (за прямим запитом користувача, редизайн): замість двох рядків
+ * голого тексту — чипи (кількість/найдовша, той самий `TeperaChip`, що решта Статистики) + тонка
+ * 24-годинна вісь-"інфографіка" ([PausePositionBar]), що показує, КОЛИ саме в добі сталась
+ * найдовша пауза (не лише скільки), і кольоровий бейдж категорії (той самий стиль 40dp-кружка
+ * з `CategoryPickerDialog`/рядків Щоденника, лише менший — тут другорядна деталь, не головний
+ * елемент рядка), якщо паузу позначили.
+ */
 @Composable
 private fun PausesCard(summary: PauseSummary, timeFormat: SimpleDateFormat) {
     val start = summary.longest.startTime
     val end = start + summary.longest.durationMinutes * 60_000L
     val range = "${timeFormat.format(Date(start))}–${timeFormat.format(Date(end))}"
-    val longestLine = stringResource(
-        R.string.stats_day_pauses_longest,
-        durationText(summary.longest.durationMinutes), range
-    ) + (summary.longestCategory?.let { " · " + categoryDisplayName(it) } ?: "")
+    val category = summary.longestCategory
 
     TeperaCard(title = stringResource(R.string.stats_day_pauses_title)) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                stringResource(R.string.stats_day_pauses_count, summary.count),
-                style = MaterialTheme.typography.bodyMedium,
-                color = TeperaPalette.buttonBrandDark
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TeperaChip(
+                label = stringResource(R.string.stats_day_pauses_count_chip_label),
+                value = summary.count.toString()
             )
-            Text(longestLine, style = MaterialTheme.typography.bodyMedium, color = TeperaPalette.buttonBrandDark)
+            TeperaChip(
+                label = stringResource(R.string.stats_day_pauses_longest_chip_label),
+                value = durationText(summary.longest.durationMinutes)
+            )
+        }
+
+        PausePositionBar(startMillis = start, endMillis = end)
+
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            val badgeColor = category?.let { categoryColor(it.colorHex) } ?: SlotPause
+            Box(
+                modifier = Modifier.size(28.dp).clip(CircleShape).background(badgeColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = category?.let { categoryIcon(it.iconName) } ?: Icons.Filled.PhonelinkOff,
+                    contentDescription = null,
+                    tint = badgeColor,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Column {
+                Text(range, style = MaterialTheme.typography.bodyMedium, color = TeperaPalette.buttonBrandDark)
+                category?.let {
+                    Text(
+                        categoryDisplayName(it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Тонка вісь 00:00-24:00 із підсвіченим сегментом рівно там, де в добі сталась найдовша пауза —
+ * та сама ідея, що хронологія доби вище, лише звужена до одного факту "коли". Трек — `SlotBlank`
+ * (той самий нейтральний відтінок, що порожні клітинки хронології, тож обидва елементи картки
+ * читаються як одна візуальна мова), підсвічений сегмент — `SlotPause`. Мінімальна вага сегмента
+ * (0.008f ≈ 12 хв доби) — щоб навіть коротка (полюс мінімуму FR-D.1, 30 хв) пауза лишалась
+ * видимою смужкою, а не зникала в заокругленні пікселя.
+ */
+@Composable
+private fun PausePositionBar(startMillis: Long, endMillis: Long) {
+    val calendar = remember { Calendar.getInstance() }
+    fun fractionOfDay(millis: Long): Float {
+        calendar.timeInMillis = millis
+        val minutesOfDay = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+        return (minutesOfDay / 1440f).coerceIn(0f, 1f)
+    }
+
+    val startFraction = fractionOfDay(startMillis)
+    val endFractionRaw = fractionOfDay(endMillis)
+    // Пауза, що перетинає північ (напр. 23:50-00:20): "кінець" за годинником менший за "початок" —
+    // трактуємо як таку, що триває до кінця цієї доби (наступна доба — вже інша картка).
+    val endFraction = if (endFractionRaw <= startFraction) 1f else endFractionRaw
+
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(SlotBlank)
+        ) {
+            Box(modifier = Modifier.weight(startFraction.coerceAtLeast(0.001f)).fillMaxHeight())
+            Box(
+                modifier = Modifier
+                    .weight((endFraction - startFraction).coerceAtLeast(0.008f))
+                    .fillMaxHeight()
+                    .background(SlotPause)
+            )
+            Box(modifier = Modifier.weight((1f - endFraction).coerceAtLeast(0.001f)).fillMaxHeight())
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            listOf("0", "6", "12", "18", "24").forEach {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = TeperaPalette.buttonBrandDark.copy(alpha = 0.5f))
+            }
         }
     }
 }

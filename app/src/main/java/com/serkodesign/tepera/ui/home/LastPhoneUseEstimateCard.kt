@@ -68,15 +68,22 @@ fun LastPhoneUseEstimateCard(
                 type = TeperaButtonType.Tertiary
             )
         } else {
-            // FR-D.7b/розділ 2.2: дві цифри поруч, без "пізно"/"рано"/"вдалося"/"варто".
-            Text(
-                stringResource(R.string.weekly_reflection_your_guess_format, lastPhoneUseGuessLabel(state.guess)),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            state.actualMillis?.let { actual ->
-                Text(
-                    stringResource(R.string.weekly_reflection_actual_format, timeFormat.format(Date(actual))),
-                    style = MaterialTheme.typography.bodyLarge
+            // FR-D.7b/розділ 2.2: дві цифри поруч, без "пізно"/"рано"/"вдалося"/"варто". Дані про
+            // фактичний час можуть бути ще недоступні (actualMillis == null) — тоді лише картка
+            // оцінки, на всю ширину, без порожньої другої картки поруч.
+            val actualMillis = state.actualMillis
+            if (actualMillis != null) {
+                GuessRevealRow(
+                    guessValue = lastPhoneUseGuessLabel(state.guess),
+                    actualValue = timeFormat.format(Date(actualMillis))
+                )
+            } else {
+                GuessRevealTile(
+                    label = stringResource(R.string.weekly_reflection_your_guess_label),
+                    value = lastPhoneUseGuessLabel(state.guess),
+                    textColor = HomeCardTextSecondary,
+                    fill = TeperaPalette.surfaceBrandLight.copy(alpha = 0.6f),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
             // Документ: "другим рядком, тихіше — медіана за 7 днів, без підпису й без порівняння".

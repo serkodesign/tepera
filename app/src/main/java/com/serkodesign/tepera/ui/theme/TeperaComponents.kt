@@ -553,6 +553,51 @@ fun TeperaChip(
 }
 
 /**
+ * Компактна картка одного статистичного факту — заміна плоских [TeperaChip] там, де кілька
+ * фактів стоять поруч у ряд (межі доби на Статистиці й у Щоденнику, тижневі підсумки на
+ * Статистиці). За прямим запитом користувача: (1) факти в ряд — картки, не чипи; (2) стилістично
+ * трохи відрізняється від решти карток — [TeperaCard] білий напівпрозорий, тут тональний фон
+ * [TeperaPalette.surfaceBrandLight] (той самий, що вже мав [TeperaChip], тож "чіпове" походження
+ * лишається візуально впізнаваним). **Іконку прибрано (за прямим запитом користувача)** — на
+ * вузьких картках (2-3 в ряд) вона забирала місце в підпису й посилювала перенос тексту на
+ * кілька рядків, що виглядало неохайно; підпис — менший кегль (11sp) саме для того, щоб довші
+ * підписи ("Востаннє брав телефон учора") переносились рідше й акуратніше.
+ * **Однакова висота по найвищій картці ряду:** сам [StatTile] не рахує висоту — Row-контейнер
+ * виклику отримує `Modifier.height(IntrinsicSize.Min)`, кожен [StatTile] — `Modifier.weight(1f)
+ * .fillMaxHeight()` (стандартний Compose-прийом "рівна висота дітей Row за найвищим"); підпис і
+ * значення розводяться до країв цієї спільної висоти через `Arrangement.SpaceBetween`.
+ */
+@Composable
+fun StatTile(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(TeperaPalette.surfaceBrandLight)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            lineHeight = 13.sp,
+            color = TeperaPalette.buttonBrand,
+            maxLines = 2
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = TeperaPalette.buttonBrandDark,
+            maxLines = 1
+        )
+    }
+}
+
+/**
  * Єдиний діалог застосунку (M3 basic dialog у фірмовому виконанні) — ЗАМІСТЬ `AlertDialog` з дефолтною
  * лілово-сірою поверхнею. Контейнер: тональний [TeperaPalette.surfaceBrandLight] (#DCF6ED, на ньому біла
  * Primary-кнопка дизайн-системи читається), радіус 28 (M3 extraLarge), відступ 24, проміжок 16.
