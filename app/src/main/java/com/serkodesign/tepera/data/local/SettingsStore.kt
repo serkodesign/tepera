@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.serkodesign.tepera.data.GapSensitivity
+import com.serkodesign.tepera.util.GateSchedule
+import com.serkodesign.tepera.util.PauseWindow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -27,6 +29,15 @@ private val HISTORY_BACKFILL_COMPLETED_AT_KEY = longPreferencesKey("history_back
 private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
+private val GATES_PAUSED_FROM_KEY = longPreferencesKey("gates_paused_from")
+private val GATE_PAUSE_HISTORY_KEY = stringPreferencesKey("gate_pause_history")
+private val GATE_SCHEDULE_KEY = stringPreferencesKey("gate_schedule")
+private const val GATE_PAUSE_HISTORY_LIMIT = 40
+private val LAST_OPEN_KEY = longPreferencesKey("last_open_millis")
+private val GATE_TEXT_BAG_KEY = stringPreferencesKey("gate_text_bag")
+private val GATE_GROWING_DELAY_KEY = booleanPreferencesKey("gate_growing_delay")
+private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
+private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 
 private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
@@ -193,20 +204,80 @@ class SettingsStore(private val context: Context) {
     }
 
     /**
-     * T-4 (tepera-dev-spec.md): "тимчасове вимкнення воріт на день" — один тап, без підтвердження
-     * (розділ 2.3 документа "автономія важливіша за ефективність"). Зберігає момент, ДО якого
-     * ворота призупинені (кінець поточної календарної доби, рахує викликач) — 0L = не призупинено.
-     * T-5 (майбутня сесія, екран паузи) звірятиме `System.currentTimeMillis() < gatesPausedUntilMillis`
-     * перед показом паузи; сам перемикач і UI — тут, у T-4, за буквальною вимогою списку "Зробити".
+     * Завершені паузи (фактичний початок і кінець) — потрібні, щоб скан обходів воріт (CC-9) міг
+     * дізнатись, чи були ворота активні в минулий момент. Останні [GATE_PAUSE_HISTORY_LIMIT].
      */
-    val gatesPausedUntilMillis: Flow<Long> = context.settingsDataStore.data
-        .map { it[GATES_PAUSED_UNTIL_KEY] ?: 0L }
+    val gatePauseHistory: Flow<List<PauseWindow>> = context.settingsDataStore.data.map { prefs ->
+        prefs[GATE_PAUSE_HISTORY_KEY].orEmpty().split(";").mapNotNull { part ->
+            val pieces = part.split("-")
+            val from = pieces.getOrNull(0)?.toLongOrNull()
+            val until = pieces.getOrNull(1)?.toLongOrNull()
+            if (from != null && until != null) PauseWindow(from, until) else null
+        }
+    }
 
-    suspend fun setGatesPausedUntilMillis(millis: Long) {
-        context.settingsDataStore.edit { it[GATES_PAUSED_UNTIL_KEY] = millis }
+    suspend fun appendGatePauseHistory(window: PauseWindow) {
+        context.settingsDataStore.edit { prefs ->
+            val existing = prefs[GATE_PAUSE_HISTORY_KEY].orEmpty().split(";").filter { it.isNotBlank() }
+            prefs[GATE_PAUSE_HISTORY_KEY] =
+                (existing + "${window.fromMillis}-${window.untilMillis}").takeLast(GATE_PAUSE_HISTORY_LIMIT).joinToString(";")
+        }
+    }
+
+    /** CC-5: розклад воріт (`null` = "завжди"). Формат — [GateSchedule.encode]. */
+    val gateSchedule: Flow<GateSchedule?> = context.settingsDataStore.data
+        .map { GateSchedule.decode(it[GATE_SCHEDULE_KEY]) }
+
+    suspend fun setGateSchedule(schedule: GateSchedule?) {
+        context.settingsDataStore.edit {
+            if (schedule == null) it.remove(GATE_SCHEDULE_KEY) else it[GATE_SCHEDULE_KEY] = schedule.encode()
+        }
+    }
+
+    /** CC-6: «мішок» текстів екрана паузи — індекси, ще не показані в цьому колі (див. [com.serkodesign.tepera.util.GateTexts]). */
+    val gateTextBag: Flow<List<Int>> = context.settingsDataStore.data.map { GateTexts.decode(it[GATE_TEXT_BAG_KEY]) }
+
+    suspend fun setGateTextBag(remaining: List<Int>) {
+        context.settingsDataStore.edit { it[GATE_TEXT_BAG_KEY] = GateTexts.encode(remaining) }
+    }
+
+    /** CC-8: тижневе сповіщення про підсумок; вимкнене за замовчуванням, вмикається лише самою людиною. */
+    val weeklySummaryEnabled: Flow<Boolean> = context.settingsDataStore.data.map { it[WEEKLY_SUMMARY_ENABLED_KEY] ?: false }
+
+    suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[WEEKLY_SUMMARY_ENABLED_KEY] = enabled }
+    }
+
+    /** CC-6: «зростаюча» затримка воріт; за замовчуванням вимкнена. */
+    val gateGrowingDelay: Flow<Boolean> = context.settingsDataStore.data.map { it[GATE_GROWING_DELAY_KEY] ?: false }
+
+    suspend fun setGateGrowingDelay(enabled: Boolean) {
+        context.settingsDataStore.edit { it[GATE_GROWING_DELAY_KEY] = enabled }
     }
 
     /**
+    /**
+     * CC-5: пауза воріт — вікно [from, until). Раніше (T-4) був лише кінець "на сьогодні"
+     * (`gates_paused_until`), тепер до нього додано початок (`gates_paused_from`), бо "на вихідні"
+     * серед тижня починається в суботу. Відсутній `from` (старі значення) = 0, тобто пауза вже діє.
+     * `until` = 0 — не на паузі.
+     */
+    val gatePause: Flow<PauseWindow?> = context.settingsDataStore.data.map { prefs ->
+        val until = prefs[GATES_PAUSED_UNTIL_KEY] ?: 0L
+        if (until > 0L) PauseWindow(prefs[GATES_PAUSED_FROM_KEY] ?: 0L, until) else null
+    }
+
+    suspend fun setGatePause(window: PauseWindow?) {
+        context.settingsDataStore.edit {
+            if (window == null) {
+                it.remove(GATES_PAUSED_UNTIL_KEY)
+                it.remove(GATES_PAUSED_FROM_KEY)
+            } else {
+                it[GATES_PAUSED_FROM_KEY] = window.fromMillis
+                it[GATES_PAUSED_UNTIL_KEY] = window.untilMillis
+            }
+        }
+    }
      * T-13 (tepera-dev-spec.md), "рушій карток": скільки разів поспіль подієва картка (пауза)
      * витіснила тижневу картку-оцінку зі стеку — `CardEngine`/`CardHistoryRepository` звіряють
      * це між викликами `selectVisible()` (не лише в межах одного відкриття Home), щоб правило

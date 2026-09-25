@@ -9,6 +9,10 @@ import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.dao.AppGateDao
 import com.serkodesign.tepera.data.local.entity.AppGateEntity
+import com.serkodesign.tepera.util.GateActivity
+import com.serkodesign.tepera.util.GatePausePresets
+import com.serkodesign.tepera.util.GateSchedule
+import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.util.buildGateShortcutIcon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -135,17 +139,16 @@ class GateRepository(
     }
 
     /**
-     * T-5 (tepera-dev-spec.md, FR-G частина 2): чи пропустити паузу цього разу — або тому, що
-     * ворота вимкнено на сьогодні (T-4, розділ 2.3 документа), або тому, що людина вже пройшла
-     * паузу для цього застосунку менш ніж [PROCEED_DEBOUNCE_MILLIS] тому (буквальна вимога
-     * приймання: "повторний тап протягом 30 с після успішного проходу не показує паузу вдруге").
+     * T-5 (tepera-dev-spec.md, FR-G частина 2) + CC-5: чи пропустити паузу цього разу — або тому, що
+     * ворота зараз НЕ активні ([isGateActiveNow]: поза вікном розкладу або на паузі), або тому, що
+     * людина вже пройшла паузу для цього застосунку менш ніж [PROCEED_DEBOUNCE_MILLIS] тому (буквальна
+     * вимога приймання: "повторний тап протягом 30 с після успішного проходу не показує паузу вдруге").
      * Відсутній рядок гейта (видалили ворота, але старий ярлик ще десь спрацював) теж пропускає
      * паузу — не блокувати людину даними, яких більше нема, розділ 2.3 "автономія важливіша".
      */
     suspend fun shouldSkipPause(packageName: String): Boolean = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        val pausedUntil = settingsStore.gatesPausedUntilMillis.first()
-        if (pausedUntil > now) return@withContext true
+        if (!isGateActiveNow(now)) return@withContext true
         val gate = dao.getByPackageName(packageName) ?: return@withContext true
         now - gate.lastProceedAtMillis <= PROCEED_DEBOUNCE_MILLIS
     }
@@ -153,6 +156,59 @@ class GateRepository(
     suspend fun getDelaySeconds(packageName: String): Int? = withContext(Dispatchers.IO) {
         dao.getByPackageName(packageName)?.delaySeconds
     }
+    val pause: Flow<PauseWindow?> = settingsStore.gatePause
+    val schedule: Flow<GateSchedule?> = settingsStore.gateSchedule
+
+    /**
+     * Ворота активні = зараз вікно розкладу І немає паузи ([GateActivity]). Перед перевіркою
+     * закриває вже закінчену паузу (пише `gate_pause_end`).
+     */
+    suspend fun isGateActiveNow(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        reconcileExpiredPause(nowMillis)
+        val pauses = listOfNotNull(settingsStore.gatePause.first())
+        return GateActivity.isActive(nowMillis, settingsStore.gateSchedule.first(), pauses)
+    }
+
+    /**
+     * Пауза закінчується автоматично: коли ми вперше помічаємо, що вона минула, зберігаємо її в
+     * історії, знімаємо й пишемо `gate_pause_end` з часом ЗАКІНЧЕННЯ паузи (не з часом, коли помітили).
+     * Ідемпотентно; викликається при кожній перевірці активності, відкритті екрана воріт і скані обходів.
+     */
+    suspend fun reconcileExpiredPause(nowMillis: Long = System.currentTimeMillis()) {
+        val current = settingsStore.gatePause.first() ?: return
+        if (nowMillis < current.untilMillis) return
+        settingsStore.appendGatePauseHistory(current)
+        settingsStore.setGatePause(null)
+    }
+
+    /** Ставить паузу ([PauseWindow] з [GatePausePresets]); попередню (якщо була) завершує. */
+    suspend fun startPause(window: PauseWindow, nowMillis: Long = System.currentTimeMillis()) {
+        endPause(nowMillis)
+        settingsStore.setGatePause(window)
+    }
+
+    /** "Увімкнути ворота зараз": скасовує паузу (чинну чи заплановану на майбутнє). */
+    suspend fun endPause(nowMillis: Long = System.currentTimeMillis()) {
+        reconcileExpiredPause(nowMillis)
+        val current = settingsStore.gatePause.first() ?: return
+        if (current.fromMillis < nowMillis) {
+            settingsStore.appendGatePauseHistory(PauseWindow(current.fromMillis, nowMillis))
+        }
+        settingsStore.setGatePause(null)
+    }
+
+    /** `null` = "завжди". Кожне збереження розкладу пишеться як `schedule_changed`. */
+    suspend fun setSchedule(schedule: GateSchedule?) {
+        settingsStore.setGateSchedule(schedule)
+    }
+
+    /** Розклад і паузи (минулі й чинна) для оцінки "чи були ворота активні" в минулому (скан обходів, CC-9). */
+    suspend fun activityContext(): Pair<GateSchedule?, List<PauseWindow>> {
+        reconcileExpiredPause()
+        val pauses = settingsStore.gatePauseHistory.first() + listOfNotNull(settingsStore.gatePause.first())
+        return settingsStore.gateSchedule.first() to pauses
+    }
+
 
     suspend fun setDelaySeconds(packageName: String, delaySeconds: Int) = withContext(Dispatchers.IO) {
         dao.updateDelaySeconds(packageName, delaySeconds)

@@ -219,7 +219,6 @@
     <string name="widget_settings_reset">Restore automatic order</string>
     <string name="gates_screen_title">Apps with a delay</string>
     <string name="gates_hint">Selected apps open only through a new shortcut, with a pause before launch</string>
-    <string name="gates_pause_today_label">Turn off delay for today</string>
     <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — gates aren\'t available on this device</string>
     <string name="gates_section_active">Apps with a delay</string>
     <string name="gates_section_add">Add an app</string>
@@ -241,6 +240,31 @@
     <string name="gate_pause_continue_action">Continue</string>
     <string name="gate_pause_exit_action">Exit</string>
 
+    <string name="gates_pause_label">Pause</string>
+    <string name="gates_pause_none">Not paused</string>
+    <string name="gates_pause_until_format">until %1$s</string>
+    <string name="gates_pause_from_until_format">%1$s – %2$s</string>
+    <string name="gates_pause_dialog_title">Pause the gates</string>
+    <string name="gates_pause_dialog_confirm">Pause</string>
+    <string name="gates_pause_choice_today">Today</string>
+    <string name="gates_pause_choice_weekend">For the weekend</string>
+    <string name="gates_pause_choice_date">Until a date…</string>
+    <string name="gates_pause_end_now">Turn the gates on now</string>
+    <string name="gates_schedule_label">Schedule</string>
+    <string name="gates_schedule_always">Always</string>
+    <string name="gates_schedule_custom">On a schedule</string>
+    <string name="gate_schedule_title">Gate schedule</string>
+    <string name="gate_schedule_always">Always active</string>
+    <string name="gate_schedule_always_hint">The gates work at any time when not paused.</string>
+    <string name="gate_schedule_custom_hint">The gates work only in the chosen periods. Outside them the shortcut opens the app right away. Times are local.</string>
+    <string name="gate_schedule_day_off">The gates are off on this day</string>
+    <string name="gate_schedule_add_interval">Add a period</string>
+    <string name="gate_schedule_copy_all">To all days</string>
+    <string name="gate_schedule_remove_interval">Remove period</string>
+    <string name="gate_schedule_from">From</string>
+    <string name="gate_schedule_to">To</string>
+    <string name="gate_schedule_note_whole_day">All day</string>
+    <string name="gate_schedule_note_next_day">Ends the next day</string>
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>
     <string name="categories_section_active">Active</string>
