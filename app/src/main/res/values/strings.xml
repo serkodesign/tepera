@@ -90,6 +90,11 @@
     <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не надійде. Дозволити можна в системних налаштуваннях застосунку — усе інше працює як раніше.</string>
     <string name="weekly_summary_channel_name">Тижневий підсумок</string>
     <string name="weekly_summary_notification_text">Підсумок твого тижня готовий.</string>
+    <string name="settings_pro_interest_action">Tepera Pro</string>
+    <string name="pro_interest_screen_title">Tepera Pro</string>
+    <string name="pro_interest_title">Tepera Pro — у розробці</string>
+    <string name="pro_interest_body">Ми думаємо, чи потрібна окрема розширена версія Tepera. Поки її немає, зараз це лише питання до тебе. Без цін і без оплат. Якщо цікаво — розкажи, що було б корисним.</string>
+    <string name="pro_interest_action">Хочу дізнатись</string>
     <string name="widget_suggestion_title">Додай віджет на головний екран</string>
     <string name="widget_suggestion_body">Структура дня й швидкий тап-таймер під рукою, без відкриття застосунку.</string>
     <string name="widget_suggestion_add_action">Додати віджет</string>

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Timer
@@ -71,6 +72,7 @@ fun SettingsScreen(
     onOpenGates: () -> Unit,
     onOpenWidgetSettings: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenProInterest: () -> Unit,
     onOpenSpikeT1: () -> Unit = {},
     onOpenSpikeT15: () -> Unit = {},
     onBack: () -> Unit
@@ -176,6 +178,13 @@ fun SettingsScreen(
                 WeeklySummaryToggle(settingsStore = (context.applicationContext as com.serkodesign.tepera.TeperaApp).settingsStore)
                 // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
                 CrashReportsToggle()
+                // CC-11: fake door — «Tepera Pro — у розробці», без цін і оплат.
+                GlassRow(
+                    label = stringResource(R.string.settings_pro_interest_action),
+                    onClick = onOpenProInterest,
+                    leading = { TeperaIconCircle(Icons.Filled.AutoAwesome) },
+                    trailing = { NavChevron() }
+                )
                     label = stringResource(R.string.settings_about_action),
                     onClick = onOpenAbout,
                     leading = { TeperaIconCircle(Icons.Filled.Info) },

@@ -81,6 +81,11 @@
          node 14:791), shown on both branches of "access granted? yes/no". -->
     <string name="widget_suggestion_title">Add the widget to your home screen</string>
     <string name="widget_suggestion_body">Your day structure and a quick tap-timer within reach, without opening the app.</string>
+    <string name="settings_pro_interest_action">Tepera Pro</string>
+    <string name="pro_interest_screen_title">Tepera Pro</string>
+    <string name="pro_interest_title">Tepera Pro — in development</string>
+    <string name="pro_interest_body">We\'re wondering whether Tepera needs a separate extended version. It doesn\'t exist yet — right now this is only a question for you. No prices, no payments. If you\'re curious, tell us what would be useful.</string>
+    <string name="pro_interest_action">I want to know more</string>
     <string name="widget_suggestion_add_action">Add widget</string>
 
 

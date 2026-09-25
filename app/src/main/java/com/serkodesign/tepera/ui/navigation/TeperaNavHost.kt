@@ -96,6 +96,7 @@ import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
 import com.serkodesign.tepera.ui.settings.AboutScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
+import com.serkodesign.tepera.ui.settings.ProInterestScreen
 import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
@@ -124,11 +125,11 @@ private object Routes {
     const val ABOUT = "about"
     const val STATS = "stats"
     const val DIARY = "diary"
+    const val PRO_INTEREST = "pro_interest"
+    const val GATE_SCHEDULE = "gate_schedule"
     const val SPIKE_T1 = "spike_t1"
     const val SPIKE_T15 = "spike_t15"
     const val GATES = "gates"
-    const val PRO_INTEREST = "pro_interest"
-    const val GATE_SCHEDULE = "gate_schedule"
     const val WIDGET_SETTINGS = "widget_settings"
     const val KNOWLEDGE_BASE = "knowledge_base"
     const val KNOWLEDGE_SCROLLING = "knowledge_scrolling"
@@ -454,6 +455,7 @@ fun TeperaNavHost(
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
                     onOpenSpikeT15 = { navController.navigate(Routes.SPIKE_T15) },
+                    onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -507,6 +509,15 @@ fun TeperaNavHost(
             }
             composable(Routes.ABOUT) {
                 AboutScreen(
+            composable(Routes.GATE_SCHEDULE) {
+                GateScheduleScreen(
+                    gateRepository = gateRepository,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.PRO_INTEREST) {
+                ProInterestScreen(onBack = { navController.popBackStack() })
+            }
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onBack = { navController.popBackStack() }
                 )
@@ -526,15 +537,6 @@ fun TeperaNavHost(
  * "Таблетка" нижнього навбару — точна відповідність Figma-фрейму "Everyday_Designs", node
  * 2146:320 (get_design_context + get_variable_defs): біла картка (Surface/surface-card,
  * замінила попередню суцільну темно-зелену з node 1951:4017 — `TeperaPalette.navPillDark`
-            composable(Routes.GATE_SCHEDULE) {
-                GateScheduleScreen(
-                    gateRepository = gateRepository,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.PRO_INTEREST) {
-                ProInterestScreen(onBack = { navController.popBackStack() })
-            }
  * лишений у палітрі як історія рішення), 3 РІВНОВЕЛИКІ вкладки Home/Diary/Stats (у цьому
  * порядку — Diary посередині, не праворуч). Вибрана вкладка — м'ятна підсвітка (Brand/200) з
  * текстом і темно-зеленою іконкою (Brand/800), невибрані — лише сіра іконка (Text/text-
