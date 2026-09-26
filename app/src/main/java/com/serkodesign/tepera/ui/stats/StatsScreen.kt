@@ -60,7 +60,7 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.pattern.HourlyHeatGrid
+import com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
@@ -251,7 +251,14 @@ internal fun PatternCard(state: PatternUiState, period: StatsPeriod) {
         if (!state.hasEnoughData) {
             Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
         }
-        HourlyHeatGrid(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null)
+        // Висока сітка 6×4 з підписами годин — той самий вигляд, що на Home; фіксована висота, бо в прокручуваному
+        // Column нема "вільної" висоти для weight.
+        Box(modifier = Modifier.fillMaxWidth().height(184.dp)) {
+            HourlyHeatGridTall(
+                hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
@@ -354,7 +361,7 @@ private fun CategoryBreakdownCard(
                                 text = durationText,
                                 color = TeperaPalette.buttonBrandDark,
                                 fontFamily = TeperaPalette.headlineFont,
-                                fontWeight = FontWeight.Normal,
+                                fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
                                 letterSpacing = 0.25.sp,

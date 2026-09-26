@@ -572,17 +572,21 @@ fun StatTile(
             .padding(12.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // Ієрархія як на картках Home: невеликий підпис (12sp, було 11 — нижче за мінімум 12sp для змістовного
+        // тексту) і головне число великим шрифтом. Три плитки в ряд — довгі підписи ("Востаннє брав телефон
+        // учора") займають до трьох рядків.
         Text(
             text = label,
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
-            color = TeperaPalette.buttonBrand,
-            maxLines = 2
+            style = MaterialTheme.typography.bodySmall,
+            color = TeperaPalette.buttonBrandDark.copy(alpha = 0.75f),
+            maxLines = 3
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+            fontFamily = TeperaPalette.headlineFont,
+            fontWeight = FontWeight.Medium,
+            fontSize = 22.sp,
+            lineHeight = 26.sp,
             color = TeperaPalette.buttonBrandDark,
             maxLines = 1
         )
