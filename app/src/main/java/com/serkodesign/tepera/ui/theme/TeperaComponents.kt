@@ -681,7 +681,7 @@ fun TeperaChip(
         modifier = modifier
             .heightIn(min = if (compact) 24.dp else 32.dp)
             .clip(RoundedCornerShape(100.dp))
-            .background(Color(0xFFEFFAF5))
+            .background(Color.White)
             .padding(horizontal = if (compact) 10.dp else 12.dp, vertical = if (compact) 4.dp else 6.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically

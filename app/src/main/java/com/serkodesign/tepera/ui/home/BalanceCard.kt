@@ -179,6 +179,7 @@ private fun DayHeader(dayStartMillis: Long, dayLengthMinutes: Int) {
     }
 }
 
+private val LegendDotSize = 8.dp // кружок-маркер у легенді (за запитом користувача)
 private val BarTrackHeight = 20.dp
 private val BarTotalHeight = 44.dp // висота з виступами маркерів над/під смугою
 private val SegmentGap = 2.dp
@@ -323,7 +324,7 @@ private fun TargetLegendRow(targetMinutes: Int, compact: Boolean) {
         horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(if (compact) 10.dp else 12.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(LegendDotSize), contentAlignment = Alignment.Center) {
             Text("▼", color = TeperaPalette.buttonBrandDark, fontSize = 10.sp, lineHeight = 10.sp)
         }
         Text(
@@ -345,7 +346,7 @@ private fun LegendRow(segment: DaySegment, compact: Boolean, modifier: Modifier 
         horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(if (compact) 10.dp else 12.dp).clip(CircleShape).background(segment.color))
+        Box(Modifier.size(LegendDotSize).clip(CircleShape).background(segment.color))
         Text(
             text = segment.label,
             modifier = Modifier.weight(1f),

@@ -246,7 +246,7 @@ private fun formatClockTime(millis: Long): String =
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
+internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
     val accentColor = categoryColor(item.category.colorHex)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val endMillis = item.entry.startTime + item.entry.durationMinutes * 60_000L
@@ -340,7 +340,7 @@ internal fun EntryChip(
     text: String,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = 12.sp,
-    background: Color = TeperaPalette.surfaceBrandLight,
+    background: Color = Color.White,
     horizontalPadding: Dp = 8.dp
 ) {
     Box(
