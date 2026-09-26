@@ -478,8 +478,6 @@
     <string name="settings_sleep_window_hint">Unlocks in this window do not start your day.</string>
     <string name="settings_gap_sensitivity_hint_format">Suggests breaks of %1$d min or more, at most %2$d a day.</string>
     <string name="widget_button_running_format">%1$s, timer running</string>
-    <string name="gate_pause_animation_stop">Stop animation</string>
-    <string name="gate_pause_animation_resume">Resume animation</string>
     <string name="heat_grid_description_peak">Online by hour of the day. Most: %1$s.</string>
     <string name="heat_grid_description_none">Online by hour of the day: no data yet.</string>
     <string name="trend_chart_description">Online by day: %1$s.</string>

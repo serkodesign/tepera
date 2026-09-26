@@ -491,8 +491,6 @@
     <string name="settings_sleep_window_hint">Розблокування у цьому вікні не починають твій день.</string>
     <string name="settings_gap_sensitivity_hint_format">Пропонує паузи від %1$d хв, не більше %2$d на день.</string>
     <string name="widget_button_running_format">%1$s, таймер іде</string>
-    <string name="gate_pause_animation_stop">Зупинити анімацію</string>
-    <string name="gate_pause_animation_resume">Відновити анімацію</string>
     <string name="heat_grid_description_peak">Online за годинами доби. Найбільше: %1$s.</string>
     <string name="heat_grid_description_none">Online за годинами доби: даних поки немає.</string>
     <string name="trend_chart_description">Online за днями: %1$s.</string>

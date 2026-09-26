@@ -6,7 +6,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -107,18 +110,10 @@ fun GatePauseScreen(
         modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 120.dp, bottom = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = state.appLabel,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = TeperaPalette.buttonBrand
-        )
-
-        // Системне "прибрати анімації" (шкала 0) — стартуємо зупиненими: при нульовій шкалі анімація ще й мигала б
-        // стрибками (див. історію Huawei P9). Далі користувач може сам зупинити/відновити анімацію кнопкою нижче.
+        // Системне "прибрати анімації" (шкала 0) — анімація стоїть: при нульовій шкалі вона ще й мигала б стрибками
+        // (див. історію Huawei P9). Окремої кнопки "зупинити анімацію" нема (за запитом користувача).
         val animationsOff = remember { Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f }
-        var animationPaused by remember { mutableStateOf(animationsOff) }
-        val breath = rememberBreathState(paused = animationPaused)
+        val breath = rememberBreathState(paused = animationsOff)
         val gateText = stringArrayResource(R.array.gate_texts).getOrElse(state.textIndex) { "" }.format(state.appLabel)
 
         Column(
@@ -126,7 +121,15 @@ fun GatePauseScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            BreathingBadge(scale = breath.scale, number = state.remainingSeconds)
+            // Назва застосунку — прямо над бейджем; відступ 32dp такий самий, як від бейджа до цитати нижче.
+            Text(
+                text = state.appLabel,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = TeperaPalette.buttonBrand,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+            BreathingBadge(scale = breath.scale, outerScale = breath.outerScale, number = state.remainingSeconds)
             Text(
                 text = gateText,
                 fontSize = 24.sp,
@@ -135,15 +138,6 @@ fun GatePauseScreen(
                 fontWeight = FontWeight.Medium,
                 color = TeperaPalette.buttonBrandDark,
                 modifier = Modifier.padding(top = 32.dp)
-            )
-            TeperaButton(
-                text = stringResource(
-                    if (animationPaused) R.string.gate_pause_animation_resume else R.string.gate_pause_animation_stop
-                ),
-                onClick = { animationPaused = !animationPaused },
-                modifier = Modifier.padding(top = 8.dp),
-                size = TeperaButtonSize.Small,
-                type = TeperaButtonType.Tertiary
             )
         }
 
@@ -200,7 +194,18 @@ private val BADGE_SIZE = 215.dp
 private val BADGE_FILL = Color(0xFFDCF6ED)
 private val BADGE_NUMBER = Color(0xFF005E3E)
 
-private data class BreathState(val scale: Animatable<Float, AnimationVector1D>, val inhaling: Boolean)
+// Зовнішня напівпрозора «квітка» (Figma node 2:3526, Star 2): та сама форма, 50% прозорості, повернута на 15°; розмір як в основної
+// (263.32/215) за основну. Дихає в тому самому ритмі, але з відставанням — виглядає як хвиля, що розходиться від центру.
+private const val OUTER_LAG_MILLIS = 800L
+private const val OUTER_SCALE_RATIO = 1f // розмір як в основної (215dp); у макеті було 263.32/215, за запитом користувача зменшено
+private const val OUTER_ROTATION_DEGREES = 15f
+private const val OUTER_ALPHA = 0.5f
+
+private data class BreathState(
+    val scale: Animatable<Float, AnimationVector1D>,
+    val outerScale: Animatable<Float, AnimationVector1D>,
+    val inhaling: Boolean
+)
 
 /**
  * Дихальна анімація — чисто UI-стан (`Animatable`, не `ViewModel`): починає рости ВІДРАЗУ з
@@ -224,19 +229,31 @@ private data class BreathState(val scale: Animatable<Float, AnimationVector1D>, 
 @Composable
 private fun rememberBreathState(paused: Boolean): BreathState {
     val scale = remember { Animatable(BREATH_SCALE_SMALL) }
+    val outerScale = remember { Animatable(BREATH_SCALE_SMALL) }
     var inhaling by remember { mutableStateOf(true) }
     // paused = true (WCAG 2.2.2): анімація зупиняється на поточному розмірі — ефект скасовується, а Animatable
     // тримає значення.
     LaunchedEffect(paused) {
         if (paused) return@LaunchedEffect
-        while (true) {
-            inhaling = true
-            scale.animateTo(BREATH_SCALE_LARGE, tween(BREATH_DIRECTION_MILLIS, easing = LinearEasing))
-            inhaling = false
-            scale.animateTo(BREATH_SCALE_SMALL, tween(BREATH_DIRECTION_MILLIS, easing = LinearEasing))
+        coroutineScope {
+            launch {
+                while (true) {
+                    inhaling = true
+                    scale.animateTo(BREATH_SCALE_LARGE, tween(BREATH_DIRECTION_MILLIS, easing = EaseInOut))
+                    inhaling = false
+                    scale.animateTo(BREATH_SCALE_SMALL, tween(BREATH_DIRECTION_MILLIS, easing = EaseInOut))
+                }
+            }
+            launch {
+                delay(OUTER_LAG_MILLIS)
+                while (true) {
+                    outerScale.animateTo(BREATH_SCALE_LARGE, tween(BREATH_DIRECTION_MILLIS, easing = EaseInOut))
+                    outerScale.animateTo(BREATH_SCALE_SMALL, tween(BREATH_DIRECTION_MILLIS, easing = EaseInOut))
+                }
+            }
         }
     }
-    return BreathState(scale, inhaling)
+    return BreathState(scale, outerScale, inhaling)
 }
 
 /**
@@ -248,12 +265,30 @@ private fun rememberBreathState(paused: Boolean): BreathState {
  * (цифра зникає, дихальна анімація лишається й далі крутиться).
  */
 @Composable
-private fun BreathingBadge(scale: Animatable<Float, AnimationVector1D>, number: Int?, modifier: Modifier = Modifier) {
+private fun BreathingBadge(
+    scale: Animatable<Float, AnimationVector1D>,
+    outerScale: Animatable<Float, AnimationVector1D>,
+    number: Int?,
+    modifier: Modifier = Modifier
+) {
     val diameterPx = with(LocalDensity.current) { BADGE_SIZE.toPx() }
     val path = remember(diameterPx) {
         scallopedBlobPath(diameter = diameterPx, lobes = 12, wobbleFraction = 0.07f)
     }
     Box(modifier = modifier.size(BADGE_SIZE), contentAlignment = Alignment.Center) {
+        // Зовнішня напівпрозора форма — під основною (малюється першою), повернута на 15°, дихає із відставанням.
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = outerScale.value * OUTER_SCALE_RATIO
+                    scaleY = outerScale.value * OUTER_SCALE_RATIO
+                    rotationZ = OUTER_ROTATION_DEGREES
+                    alpha = OUTER_ALPHA
+                }
+        ) {
+            drawPath(path, color = BADGE_FILL)
+        }
         // Масштабується лише сама форма; цифра нижче лишається фіксованого розміру (Figma: "5" —
         // 96px в обох станах).
         Canvas(
