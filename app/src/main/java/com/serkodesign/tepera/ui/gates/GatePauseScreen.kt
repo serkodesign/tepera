@@ -54,6 +54,7 @@ import com.serkodesign.tepera.util.findActivity
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.scallopedBlobPath
 import kotlin.math.cos
 import kotlin.math.sin
 /**
@@ -312,19 +313,3 @@ private fun BreathingBadge(
     }
 }
 
-private fun scallopedBlobPath(diameter: Float, lobes: Int, wobbleFraction: Float): Path {
-    val path = Path()
-    val center = diameter / 2f
-    val baseRadius = diameter / 2f
-    val segments = 200
-    for (i in 0..segments) {
-        val t = i / segments.toFloat()
-        val angle = t * 2f * Math.PI.toFloat()
-        val r = baseRadius * (1f - wobbleFraction + wobbleFraction * cos(lobes * angle))
-        val x = center + r * cos(angle)
-        val y = center + r * sin(angle)
-        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
-    }
-    path.close()
-    return path
-}

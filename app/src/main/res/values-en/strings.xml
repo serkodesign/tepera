@@ -483,4 +483,5 @@
     <string name="trend_chart_description">Online by day: %1$s.</string>
     <string name="timeline_description_prefix">Timeline of the previous day, approximately: %1$s.</string>
     <string name="balance_target_label">Reference</string>
+    <string name="loading_description">Loading</string>
 </resources>
