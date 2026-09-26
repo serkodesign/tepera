@@ -67,9 +67,9 @@ internal fun HomeCardSurface(
     )
 }
 
-/** Заголовок 18sp + ⓘ (пояснення) + "×" (закрити, доки не з'явиться нове вікно даних). */
+/** Заголовок 18sp + ⓘ (пояснення). Кнопки "×" нема — картки "Патерн" і "Цей тиждень" не закриваються (за запитом користувача). */
 @Composable
-internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit, onDismiss: () -> Unit) {
+internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = title,
@@ -84,14 +84,6 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit, onDismiss: () -
                 TeperaSymbols.Info,
                 contentDescription = stringResource(R.string.home_card_info_action),
                 modifier = Modifier.size(20.dp)
-            )
-        }
-        Spacer(Modifier.weight(1f))
-        IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-            Icon(
-                TeperaSymbols.Close,
-                contentDescription = stringResource(R.string.context_card_dismiss_action),
-                modifier = Modifier.size(16.dp)
             )
         }
     }

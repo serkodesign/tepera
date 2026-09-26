@@ -422,10 +422,10 @@ fun HomeScreen(
                         )
                     }
                     if (CardType.PATTERN in visibleCards) {
-                        add { PatternMiniCard(state = patternState, onDismiss = patternViewModel::dismiss) }
+                        add { PatternMiniCard(state = patternState) }
                     }
                     if (CardType.WEEKLY_DIGEST in visibleCards) {
-                        add { WeeklyDigestCard(state = weeklyDigestState, onDismiss = weeklyDigestViewModel::dismiss) }
+                        add { WeeklyDigestCard(state = weeklyDigestState) }
                     }
                 }
             )

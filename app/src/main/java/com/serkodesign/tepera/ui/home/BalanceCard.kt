@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +29,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
@@ -34,7 +39,6 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 import kotlin.math.roundToInt
@@ -109,30 +113,14 @@ fun MyDayCard(
                         color = HomeCardTextPrimary
                     )
                 } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        // FlowRow: на вузьких екранах (напр. 360dp) плашки переносяться, а не обрізаються.
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            if (state.dayStartMillis > 0L) {
-                                TeperaChip(
-                                    label = stringResource(R.string.home_card_first_unlock_label),
-                                    value = formatClock(state.dayStartMillis)
-                                )
-                            }
-                            TeperaChip(
-                                label = stringResource(R.string.home_card_day_last_label),
-                                value = formatBalanceDuration(state.dayLengthMinutes)
-                            )
-                        }
-                        DayStructureBar(
-                            segments = segments,
-                            targetMinutes = state.targetMinutes,
-                            daySpanMinutes = state.daySpanMinutes,
-                            dayLengthMinutes = state.dayLengthMinutes
-                        )
-                    }
+                    DayHeader(dayStartMillis = state.dayStartMillis, dayLengthMinutes = state.dayLengthMinutes)
+                    DayStructureBar(
+                        segments = segments,
+                        targetMinutes = state.targetMinutes,
+                        daySpanMinutes = state.daySpanMinutes,
+                        dayLengthMinutes = state.dayLengthMinutes,
+                        dayStartMillis = state.dayStartMillis
+                    )
                     DayStructureLegend(segments = segments)
                 }
             }
@@ -155,45 +143,85 @@ private fun daySegments(state: BalanceUiState): List<DaySegment> {
         state.categorySegments.forEach {
             add(DaySegment(categoryDisplayName(it.category), categoryColor(it.category.colorHex), it.minutes))
         }
-        if (state.restOfDayMinutes > 0) add(DaySegment(restLabel, TeperaPalette.restOfDayCard, state.restOfDayMinutes))
+        if (state.restOfDayMinutes > 0) add(DaySegment(restLabel, RestSegmentColor, state.restOfDayMinutes))
     }
 }
 
+/**
+ * Шапка картки за M3-ієрархією: підпис (label, 14sp) → головне число (headline, 22sp). Підпис і число
+ * читаються одним реченням — "З 07:31 минуло / 5 год 45 хв": слово "минуло" і час початку прямо кажуть, що
+ * це ВЕСЬ день, а не час у телефоні (велике число поруч із рядком "Online 45 хв" легко прочитати як
+ * екранний час). Без часу початку — старий підпис "День триває".
+ */
+@Composable
+private fun DayHeader(dayStartMillis: Long, dayLengthMinutes: Int) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = if (dayStartMillis > 0L) {
+                stringResource(R.string.home_card_day_since_format, formatClock(dayStartMillis))
+            } else {
+                stringResource(R.string.home_card_day_last_label)
+            },
+            style = MaterialTheme.typography.labelLarge,
+            color = HomeCardTextSecondary
+        )
+        Text(
+            text = formatBalanceDuration(dayLengthMinutes),
+            color = TeperaPalette.buttonBrandDark,
+            fontFamily = TeperaPalette.headlineFont,
+            fontWeight = FontWeight.Medium,
+            fontSize = 22.sp,
+            lineHeight = 26.sp
+        )
+    }
+}
+
+private val BarTrackHeight = 20.dp
+private val BarTotalHeight = 32.dp // висота з виступами маркерів над/під смугою
+private val SegmentGap = 2.dp
+
+// Кольори за запитом користувача: сегмент "решта дня" (те, що ще попереду) — світло-зелений
+// "Офлайн-життя" (#C5E2CB), а пройдений сегмент "Без телефону" — глибокий зелений. Так пройдена
+// частина читається темнішою й чітко відділена від решти, а в легенді кружок "Без телефону" теж темний.
+private val BarTrackColor = TeperaPalette.restOfDayCard
+private val RestSegmentColor = Color(0xFF2B5747)
+
+/**
+ * Шкала структури доби: пігулка з сегментів (Online, категорії, "Без телефону" і світла "решта дня" = ще не
+ * прожитий час), розділених проміжками 2dp (сусідні відтінки не зливаються — читається й без розрізнення кольорів, WCAG 1.4.1).
+ * Окремої позначки "зараз" нема: межею є край останнього кольорового сегмента (раніше була чорна
+ * ручка, за запитом користувача прибрана). Під шкалою — підписи країв (початок дня → 00:00), щоб
+ * було ясно, що саме вона показує.
+ *
+ * FR-3.10: тиха засічка орієнтиру — тонка напівпрозора лінія БЕЗ підпису, ніколи не змінює колір
+ * при перевищенні (розділ 4.3–4.4 SRS: "якщо з'явиться спокуса підсвітити перевищення кольором — це
+ * сигнал звірити рішення з розділом 4, не з інтуїцією"). Позиція — частка від повного діапазону
+ * шкали (пробудження → 00:00), а не лише від довжини дня, що минула — інакше засічка "стрибала" б
+ * праворуч разом з ростом дня.
+ */
 @Composable
 private fun DayStructureBar(
     segments: List<DaySegment>,
     targetMinutes: Int?,
     daySpanMinutes: Int,
-    dayLengthMinutes: Int
+    dayLengthMinutes: Int,
+    dayStartMillis: Long
 ) {
-    // FR-3.10: тиха засічка орієнтиру — тонка вертикальна лінія, БЕЗ підпису, ніколи не
-    // змінює колір при перевищенні (розділ 4.3–4.4 SRS: "якщо з'явиться спокуса підсвітити
-    // перевищення кольором — це сигнал звірити рішення з розділом 4, не з інтуїцією"). Позиція —
-    // частка від повного діапазону шкали (пробудження → 00:00, за запитом користувача), а не
-    // лише від довжини дня, що минула, — інакше засічка "стрибала" б праворуч разом з ростом дня.
     val referenceMinutes = maxOf(daySpanMinutes, targetMinutes ?: 0, 1)
     val markerFraction = targetMinutes?.let { (it.toFloat() / referenceMinutes).coerceIn(0f, 1f) }
-
-    // Позначка "Now" — де саме "зараз" на шкалі "пробудження → 00:00". На відміну від засічки
-    // орієнтиру вище, ця позначка РУХАЄТЬСЯ разом із часом — по своїй природі не евалюативна
-    // (просто "де ми на годиннику", не оцінка), тож лишається трикутниками-вказівниками: ▼ зверху
-    // й ▲ знизу шкали (Figma node 192:726).
-    val nowFraction = (dayLengthMinutes.toFloat() / daySpanMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
 
     // Без BoxWithConstraints: він робить субкомпозицію на кожному перевимірі, а слайдер Home
     // перевимірює сторінки на кожному кадрі свайпу — на Huawei P9 це давало 63% рваних кадрів.
     // Позиції маркерів рахує легкий layout-модифікатор [atFraction] (без субкомпозиції).
-    Column(Modifier.fillMaxWidth()) {
-        NowPointer("▼", nowFraction)
-        Box(Modifier.fillMaxWidth()) {
-            // Біла "доріжка" (Figma): те, що ще не сталося (від "Now" до півночі), лишається
-            // незафарбованим — "Офлайн-життя" заповнює лише до позначки "Now".
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Box(Modifier.fillMaxWidth().height(BarTotalHeight)) {
             Row(
                 modifier = Modifier
+                    .align(Alignment.Center)
                     .fillMaxWidth()
-                    .height(16.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.White)
+                    .height(BarTrackHeight)
+                    .clip(RoundedCornerShape(100.dp)),
+                horizontalArrangement = Arrangement.spacedBy(SegmentGap)
             ) {
                 // Сегменти можуть перекриватись (Online + запис + офлайн за об'єднанням у сумі більші за довжину
                 // дня) — їхні ширини нормалізуються до довжини дня, щоб шкала не виходила за позначку "Now".
@@ -208,24 +236,39 @@ private fun DayStructureBar(
                         modifier = Modifier
                             .weight((segment.minutes * scale).coerceAtLeast(1f))
                             .fillMaxHeight()
+                            .clip(RoundedCornerShape(4.dp))
                             .background(segment.color)
                     )
                 }
                 val futureMinutes = (daySpanMinutes - dayLengthMinutes).coerceAtLeast(0)
                 if (futureMinutes > 0) {
-                    Box(modifier = Modifier.weight(futureMinutes.toFloat()).fillMaxHeight())
+                    // Решта дня — такий самий сегмент, як Online і "Без телефону": займає лише свою частку, а не
+                    // лежить суцільною доріжкою під усією шкалою.
+                    Box(
+                        modifier = Modifier
+                            .weight(futureMinutes.toFloat())
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(BarTrackColor)
+                    )
                 }
             }
             // CC-1: без орієнтира засічки на шкалі немає взагалі.
             if (markerFraction != null) Box(
                 modifier = Modifier
-                    .atFraction(markerFraction, centered = false)
-                    .width(1.dp)
-                    .height(16.dp)
-                    .background(Color.Black.copy(alpha = 0.3f))
+                    .atFraction(markerFraction, centered = true)
+                    .width(2.dp)
+                    .height(BarTotalHeight)
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.35f))
             )
         }
-        NowPointer("▲", nowFraction)
+        if (dayStartMillis > 0L) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(formatClock(dayStartMillis), fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextSecondary)
+                Text("00:00", fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextSecondary)
+            }
+        }
     }
 }
 
@@ -235,43 +278,69 @@ private fun Modifier.atFraction(fraction: Float, centered: Boolean): Modifier = 
     val width = constraints.maxWidth
     layout(width, placeable.height) {
         val x = (width * fraction).roundToInt() - if (centered) placeable.width / 2 else 0
-        placeable.placeRelative(x.coerceAtLeast(0), 0)
+        // Не виходимо за краї смуги: ручка "зараз" у самому кінці дня лишається повністю видимою.
+        placeable.placeRelative(x.coerceIn(0, (width - placeable.width).coerceAtLeast(0)), 0)
     }
 }
 
-@Composable
-private fun NowPointer(glyph: String, fraction: Float) {
-    Box(Modifier.fillMaxWidth()) {
-        Text(
-            glyph,
-            color = TeperaPalette.buttonBrandDark,
-            fontSize = 10.sp,
-            lineHeight = 12.sp,
-            modifier = Modifier.atFraction(fraction, centered = true)
-        )
-    }
-}
+/** Скільки рядків легенди влазить в одну колонку; більше — перемикаємось на дві колонки. */
+private const val SINGLE_COLUMN_LEGEND_MAX = 4
 
+/**
+ * Легенда — список "колір · назва · час": кружок, текст, час вирівняний праворуч. Тривалість словами
+ * ("3 год 45 хв"), а не "3:45", яке читається як годинник (FR-P.6: час завжди поруч із назвою, ніколи голий
+ * відсоток). До [SINGLE_COLUMN_LEGEND_MAX] рядків — одна колонка (14sp, читабельніше); більше —
+ * дві колонки (12sp), щоб картка не росла на всю висоту й не розтягувала сусідні картки пейджера.
+ * Довгі назви ("Живе спілкування") у вузькій колонці переносяться на другий рядок.
+ */
 @Composable
 private fun DayStructureLegend(segments: List<DaySegment>) {
-    Column(
-        modifier = Modifier.padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(3.dp)
-    ) {
-        segments.forEach { segment ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(segment.color))
-                    Text(segment.label, fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        if (segments.size <= SINGLE_COLUMN_LEGEND_MAX) {
+            segments.forEach { segment -> LegendRow(segment, compact = false, modifier = Modifier.fillMaxWidth()) }
+        } else {
+            // "Без телефону" — найдовші назва й час ("Без телефону · 4 год 45 хв") — окремим рядком на всю
+            // ширину внизу, щоб у вузькій колонці не обрізатись.
+            val rest = segments.lastOrNull()?.takeIf { it.color == RestSegmentColor }
+            val paired = if (rest != null) segments.dropLast(1) else segments
+            paired.chunked(2).forEach { pair ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    LegendRow(pair[0], compact = true, modifier = Modifier.weight(1f))
+                    if (pair.size > 1) {
+                        LegendRow(pair[1], compact = true, modifier = Modifier.weight(1f))
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
                 }
-                // FR-P.6: час завжди поруч із назвою, ніколи голий відсоток самотужки.
-                Text(formatClockDuration(segment.minutes), fontSize = 12.sp, lineHeight = 16.sp, color = HomeCardTextPrimary)
             }
+            rest?.let { LegendRow(it, compact = true, modifier = Modifier.fillMaxWidth()) }
         }
+    }
+}
+
+@Composable
+private fun LegendRow(segment: DaySegment, compact: Boolean, modifier: Modifier = Modifier) {
+    val style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
+    Row(
+        modifier = modifier.heightIn(min = if (compact) 18.dp else 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(if (compact) 10.dp else 12.dp).clip(CircleShape).background(segment.color))
+        Text(
+            text = segment.label,
+            modifier = Modifier.weight(1f),
+            style = style,
+            color = HomeCardTextPrimary,
+            maxLines = if (compact) 2 else 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = formatBalanceDuration(segment.minutes),
+            style = style.copy(fontWeight = FontWeight.Medium),
+            color = HomeCardTextPrimary,
+            maxLines = 1
+        )
     }
 }
 

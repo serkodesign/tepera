@@ -392,8 +392,8 @@
     <string name="stats_day_pauses_title">Breaks from the phone</string>
     <string name="stats_day_pauses_count_chip_label">Count</string>
     <string name="stats_day_pauses_longest_chip_label">Longest</string>
-    <string name="stats_day_compare_yesterday">Yesterday: %1$s</string>
-    <string name="stats_day_compare_typical">Typical (median of %1$d days): %2$s</string>
+    <string name="stats_day_compare_yesterday">Online yesterday</string>
+    <string name="stats_day_compare_typical">Typical (median of %1$d days)</string>
     <string name="stats_history_edit_action">Edit entry</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 
@@ -419,6 +419,7 @@
     <string name="onboarding_learn_more">Learn more about your data</string>
     <string name="home_card_first_unlock_label">First unlock</string>
     <string name="home_card_day_last_label">Day so far</string>
+    <string name="home_card_day_since_format">Elapsed since %1$s</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
     <string name="day_usage_info_body">Each square is one hour of yesterday; the color shows how many minutes of that hour the phone was online. It is only a picture of yesterday, with no judgement.</string>
