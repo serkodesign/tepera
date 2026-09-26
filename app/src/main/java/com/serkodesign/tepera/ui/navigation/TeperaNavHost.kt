@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -652,7 +653,8 @@ private fun NavPillTab(
             .fillMaxHeight()
             .clip(shape)
             .background(fill)
-            .clickable(onClick = onClick),
+            // Вкладка з роллю Tab і станом selected — скрінрідер озвучує "вкладка, вибрано" (WCAG 4.1.2).
+            .selectable(selected = selected, role = androidx.compose.ui.semantics.Role.Tab, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Row(

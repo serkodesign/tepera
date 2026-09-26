@@ -288,7 +288,10 @@ private fun CategoryButton(
         )
         Image(
             provider = ImageProvider(widgetIconRes(category.iconName, selected = isTracking)),
-            contentDescription = categoryDisplayName(category, context),
+            // Стан (таймер іде) — у описі, бо Glance не має stateDescription: інакше скрінрідер не відрізнить кнопки.
+            contentDescription = categoryDisplayName(category, context).let {
+                if (isTracking) context.getString(R.string.widget_button_running_format, it) else it
+            },
             colorFilter = ColorFilter.tint(ColorProvider(day = glyphColor, night = glyphColor)),
             modifier = GlanceModifier.size(widgetIconGlyphSize(category.iconName))
         )

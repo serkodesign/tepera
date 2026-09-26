@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.gates
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -217,14 +218,22 @@ private fun IntervalRow(interval: TimeInterval, onChange: (TimeInterval) -> Unit
 }
 
 @Composable
-private fun TimeChip(label: String, minute: Int, onSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+internal fun TimeChip(
+    label: String,
+    minute: Int,
+    onSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color = TeperaPalette.surfaceBrandLight,
+    borderColor: Color? = null
+) {
     var showPicker by remember { mutableStateOf(false) }
     val text = remember(minute) { "%02d:%02d".format(minute / 60, minute % 60) }
     Box(
         modifier = modifier
             .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(TeperaPalette.surfaceBrandLight)
+            .background(containerColor)
+            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, RoundedCornerShape(12.dp)) else Modifier)
             .clickable(role = Role.Button) { showPicker = true }
             .semantics { contentDescription = "$label $text" }
             .padding(horizontal = 12.dp, vertical = 6.dp),

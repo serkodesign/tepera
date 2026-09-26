@@ -103,7 +103,8 @@ fun TargetOnboardingScreen(
                         onHoursChange = { hours = it },
                         valueLabel = { value -> stringResource(R.string.settings_target_hours_format, value) },
                         minHours = TargetSuggestion.MIN_HOURS,
-                        maxHours = TargetSuggestion.MAX_HOURS
+                        maxHours = TargetSuggestion.MAX_HOURS,
+                        accessibilityLabel = stringResource(R.string.target_onboarding_title)
                     )
                 }
             }

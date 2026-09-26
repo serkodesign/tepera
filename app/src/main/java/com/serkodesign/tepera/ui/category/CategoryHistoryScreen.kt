@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.category
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -132,7 +133,7 @@ private fun CategoryHistoryEntryRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucent)
-            .clickable(onClick = onEdit)
+            .clickable(role = Role.Button, onClick = onEdit)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically

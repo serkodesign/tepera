@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.addentry
 
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.semantics.error
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.heading
 
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
@@ -337,7 +340,7 @@ private fun CategoryTile(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(tileColor)
-            .clickable(onClick = onClick)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -394,7 +397,7 @@ private fun IntervalSummary(state: AddEntryUiState, onEndNextDay: () -> Unit) {
                     Text(
                         durationText(state.durationMinutes),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = TeperaPalette.timeChipText
+                        color = TeperaPalette.buttonBrand
                     )
                 }
                 IntervalError.END_BEFORE_START -> Text(
@@ -496,12 +499,15 @@ private fun IntervalField(
     val dateText = remember(dayMillis) { SimpleDateFormat("d MMM", Locale.getDefault()).format(Date(dayMillis)) }
     val fullDateText = remember(dayMillis) { SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(Date(dayMillis)) }
     val shape = RoundedCornerShape(16.dp)
+    val invalidMessage = stringResource(R.string.add_entry_interval_invalid)
 
     Column(
         modifier = modifier
             .clip(shape)
             .background(TeperaPalette.cardTranslucentLight)
             .then(if (invalid) Modifier.border(1.dp, MaterialTheme.colorScheme.error, shape) else Modifier)
+            // Помилка прив'язана до самого поля для скрінрідера (WCAG 3.3.1), а не лише окремий текст під формою.
+            .semantics { if (invalid) error(invalidMessage) }
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = TeperaPalette.buttonBrandDark)
@@ -519,7 +525,7 @@ private fun IntervalField(
         Text(
             timeText,
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Medium),
-            color = TeperaPalette.timeChipText,
+            color = TeperaPalette.buttonBrand,
             modifier = Modifier
                 .heightIn(min = 48.dp)
                 .clickable(role = Role.Button) { showTimePicker = true }

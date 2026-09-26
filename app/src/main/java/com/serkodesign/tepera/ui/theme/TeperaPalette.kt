@@ -99,9 +99,9 @@ object TeperaPalette {
     // точні токени фрейму (#220d99 текст/рамка, rgba(34,13,153,0.05) фон, rgba(34,13,153,0.3)
     // рамка). Не той самий colorAccent, що фірмовий зелений brandAccent — свідомо інший відтінок
     // САМЕ для значень часу, за дизайном фрейму.
-    val timeChipText = Color(0xFF220D99)
-    val timeChipBackground = Color(0x0D220D99)
-    val timeChipBorder = Color(0x4D220D99)
+    val timeChipText = Color(0xFF006944)
+    val timeChipBackground = Color(0x0D006944)
+    val timeChipBorder = Color(0x4D006944)
 
     // Тепловий патерн доби, редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR, node
     // 154:287, "Day usage") — дискретні кошики хвилин/годину замість неперервної альфа-шкали

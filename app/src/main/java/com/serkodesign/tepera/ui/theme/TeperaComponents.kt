@@ -1,6 +1,23 @@
 package com.serkodesign.tepera.ui.theme
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.foundation.focusable
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.progressBarRangeInfo
+
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
@@ -38,6 +55,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -90,7 +108,7 @@ fun GlassScreenHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium, fontSize = 24.sp),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).semantics { heading() }
         )
         trailing()
     }
@@ -102,7 +120,7 @@ fun GlassSectionHeader(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium, fontSize = 18.sp),
-        modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+        modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp).semantics { heading() }
     )
 }
 
@@ -123,7 +141,7 @@ fun GlassRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucent)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -221,7 +239,7 @@ fun <T> PillSegmentedControl(
                         .weight(1f)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(100.dp))
-                        .clickable { onSelect(value) },
+                        .selectable(selected = value == selected, role = Role.RadioButton, onClick = { onSelect(value) }),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(label, style = MaterialTheme.typography.bodyMedium)
@@ -246,8 +264,10 @@ fun HourRangeSlider(
     valueLabel: @Composable (Int) -> String,
     modifier: Modifier = Modifier,
     minHours: Int = 1,
-    maxHours: Int = 8
+    maxHours: Int = 8,
+    accessibilityLabel: String? = null
 ) {
+    val valueText = valueLabel(hours)
     fun hoursFromFraction(fraction: Float) =
         (fraction * maxHours).roundToInt().coerceIn(minHours, maxHours)
 
@@ -262,6 +282,33 @@ fun HourRangeSlider(
             .clip(RoundedCornerShape(100.dp))
             .background(TeperaPalette.cardTranslucent)
             .padding(4.dp)
+            // Доступність (WCAG 4.1.2/2.1.1): повзунок з роллю, значенням і кроком для скрінрідера (свайп вгору/вниз
+            // змінює значення) та стрілками клавіатури; без цього кастомний жест був недоступний не-дотиковим способом.
+            .semantics {
+                accessibilityLabel?.let { contentDescription = it }
+                stateDescription = valueText
+                progressBarRangeInfo = ProgressBarRangeInfo(
+                    current = hours.toFloat(),
+                    range = minHours.toFloat()..maxHours.toFloat(),
+                    steps = (maxHours - minHours - 1).coerceAtLeast(0)
+                )
+                setProgress { target ->
+                    onHoursChange(target.roundToInt().coerceIn(minHours, maxHours))
+                    true
+                }
+            }
+            .focusable()
+            .onKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown) {
+                    when (event.key) {
+                        Key.DirectionRight, Key.DirectionUp -> { onHoursChange((hours + 1).coerceAtMost(maxHours)); true }
+                        Key.DirectionLeft, Key.DirectionDown -> { onHoursChange((hours - 1).coerceAtLeast(minHours)); true }
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            }
             .pointerInput(minHours, maxHours) {
                 detectTapGestures { offset ->
                     onHoursChange(hoursFromFraction(offset.x / size.width.toFloat()))
@@ -298,7 +345,7 @@ fun HourRangeSlider(
                 .background(TeperaPalette.cardActive),
             contentAlignment = Alignment.Center
         ) {
-            Text(valueLabel(hours), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+            Text(valueText, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
         }
     }
 }
@@ -358,7 +405,7 @@ fun TeperaButton(
 
     Box(
         modifier = modifier
-            .height(size.height)
+            .heightIn(min = size.height)
             .alpha(stateAlpha)
             .clip(shape)
             .background(background)
@@ -380,7 +427,7 @@ fun TeperaButton(
             lineHeight = lineHeightOverride ?: TextUnit.Unspecified,
             letterSpacing = if (textSizeOverride != null) 0.sp else TextUnit.Unspecified,
             fontWeight = size.fontWeight,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
     }
@@ -436,6 +483,7 @@ fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = title,
+            modifier = Modifier.semantics { heading() },
             color = TeperaPalette.buttonBrandDark,
             fontFamily = TeperaPalette.headlineFont,
             fontWeight = FontWeight.Medium,
@@ -446,12 +494,100 @@ fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Поле пошуку (M3 "search bar" у виконанні застосунку): пігулка 56dp зі скляним фоном, лупа ліворуч, поле вводу,
+ * кнопка "очистити" з'являється лише коли щось введено. Клавіатура з дією "Пошук" (закриває клавіатуру).
+ *
+ * **Активний режим** (M3 "expanded search"): коли поле в фокусі або в ньому є запит, викликач ховає решту екрана й
+ * показує лише видачу під полем — [onFocusChange] повідомляє про фокус, [active] переключає лупу на кнопку
+ * "назад", яка очищає запит і закриває пошук (те саме робить системна "назад"). Фільтрацію робить викликач.
+ */
+@Composable
+fun TeperaSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    active: Boolean = false,
+    onFocusChange: (Boolean) -> Unit = {}
+) {
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val closeSearch = {
+        onQueryChange("")
+        focusManager.clearFocus()
+    }
+    androidx.activity.compose.BackHandler(enabled = active) { closeSearch() }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .background(Color.White.copy(alpha = 0.8f))
+            .padding(start = 16.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (active) {
+            TeperaIconButton(
+                icon = TeperaSymbols.ArrowBack,
+                contentDescription = stringResource(R.string.nav_back),
+                onClick = closeSearch,
+                modifier = Modifier.width(40.dp),
+                shape = CircleShape,
+                containerColor = Color.Transparent,
+                contentColor = TeperaPalette.buttonBrandDark,
+                height = 40.dp,
+                iconSize = 24.dp
+            )
+        } else {
+            Icon(TeperaSymbols.Search, contentDescription = null, tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.75f))
+        }
+        androidx.compose.foundation.text.BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged { onFocusChange(it.isFocused) },
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = TeperaPalette.buttonBrandDark),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(TeperaPalette.buttonBrand),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+            keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { focusManager.clearFocus() }),
+            decorationBox = { inner ->
+                Box(contentAlignment = Alignment.CenterStart) {
+                    if (query.isEmpty()) {
+                        Text(
+                            placeholder,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TeperaPalette.buttonBrandDark.copy(alpha = 0.6f)
+                        )
+                    }
+                    inner()
+                }
+            }
+        )
+        if (query.isNotEmpty()) {
+            TeperaIconButton(
+                icon = TeperaSymbols.Close,
+                contentDescription = stringResource(R.string.search_clear),
+                onClick = { onQueryChange("") },
+                modifier = Modifier.width(40.dp),
+                shape = CircleShape,
+                containerColor = Color.Transparent,
+                contentColor = TeperaPalette.buttonBrandDark,
+                height = 40.dp,
+                iconSize = 20.dp
+            )
+        }
+    }
+}
+
 /** Заголовок екрана онбордингу по центру — той самий стиль, що [TeperaScreenTitle] (Golos Medium 27sp, #003926). */
 @Composable
 fun TeperaOnboardingTitle(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        modifier = modifier,
+        modifier = modifier.semantics { heading() },
         color = TeperaPalette.buttonBrandDark,
         fontFamily = TeperaPalette.headlineFont,
         fontWeight = FontWeight.Medium,
@@ -487,6 +623,7 @@ fun TeperaCard(
                 title?.let {
                     Text(
                         text = it,
+                        modifier = Modifier.semantics { heading() },
                         color = TeperaPalette.buttonBrandDark,
                         fontFamily = TeperaPalette.headlineFont,
                         fontWeight = FontWeight.Medium,
@@ -627,6 +764,7 @@ fun TeperaDialog(
             title?.let {
                 Text(
                     text = it,
+                    modifier = Modifier.semantics { heading() },
                     color = TeperaPalette.buttonBrandDark,
                     fontFamily = TeperaPalette.headlineFont,
                     fontWeight = FontWeight.Medium,
@@ -668,3 +806,13 @@ fun TeperaDialog(
         }
     }
 }
+
+/**
+ * Висота, яку плаваюча "таблетка" нижнього навбару перекриває знизу екрана: сама таблетка (62dp) + відступи (8+8) +
+ * системна навігаційна панель + запас 16dp. Раніше скрізь стояло фіксоване 100dp, і на пристроях з високою
+ * 3-кнопковою панеллю (Huawei P9) нижні елементи залишались під таблеткою — WCAG 2.4.11 (Focus Not Obscured).
+ */
+@Composable
+fun bottomNavClearance(): Dp =
+    62.dp + 16.dp + androidx.compose.foundation.layout.WindowInsets.navigationBars
+        .asPaddingValues().calculateBottomPadding() + 16.dp

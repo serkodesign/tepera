@@ -1,6 +1,11 @@
 package com.serkodesign.tepera.ui.home
 
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.foundation.layout.heightIn
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import android.content.Intent
@@ -465,6 +470,7 @@ fun HomeScreen(
             ) {
                 Text(
                     text = stringResource(R.string.activities_title),
+                    modifier = Modifier.semantics { heading() },
                     fontFamily = TeperaPalette.headlineFont,
                     fontWeight = FontWeight.Medium,
                     fontSize = 22.sp,
@@ -530,7 +536,7 @@ fun HomeScreen(
             // Запас під напівпрозору навбар-"таблетку" знизу (той самий 100.dp, що раніше був
             // bottom-паддінгом сітки) — гарантує, що остання картка прокручується НАД нею, а не
             // впирається в неї впритул.
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(bottomNavClearance()))
         }
     }
 }
@@ -552,7 +558,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
         Text(
             text = stringResource(greetingRes),
             color = TeperaPalette.buttonBrandDark,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).semantics { heading() },
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontFamily = TeperaPalette.headlineFont,
                 fontWeight = FontWeight.Medium,
@@ -631,7 +637,7 @@ private fun CategoryCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(132.dp)
+            .heightIn(min = 132.dp) // зростає разом зі шрифтом (WCAG 1.4.4), а не обрізає назву
             // Без тіні (за прямим запитом користувача — тіней у застосунку немає ніде).
             .clip(shape)
             .background(containerColor)
@@ -639,7 +645,7 @@ private fun CategoryCard(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
-            modifier = Modifier.padding(4.dp).clickable(onClick = onOpenHistory),
+            modifier = Modifier.padding(4.dp).clickable(role = Role.Button, onClick = onOpenHistory),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Box(
@@ -667,9 +673,10 @@ private fun CategoryCard(
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TeperaIconButton(
                 icon = if (isTracking) TeperaSymbols.Pause else TeperaSymbols.PlayArrow,
+                // З назвою категорії: інакше вісім кнопок поспіль озвучуються однаково — "Почати" (WCAG 2.4.6/4.1.2).
                 contentDescription = stringResource(
                     if (isTracking) R.string.category_stop_action else R.string.category_start_action
-                ),
+                ) + ": " + displayName,
                 onClick = onToggleTimer,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(32.dp)

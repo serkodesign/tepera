@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.stats
 
 import android.content.Intent
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -150,8 +151,8 @@ fun StatsScreen(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottomNavClearance()),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             // T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком,

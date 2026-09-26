@@ -1,6 +1,8 @@
 package com.serkodesign.tepera.ui.stats
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -157,10 +159,30 @@ private fun DayTimelineCard(details: DayDetailsUiState) {
         SimpleDateFormat("EEEE, d MMMM", locale).format(Date(details.dayStartMillis)).replaceFirstChar { it.titlecase(locale) }
     }
 
+    // Текстова альтернатива смузі (WCAG 1.1.1): підсумок за типами клітинок (по 30 хв кожна) — приблизно.
+    val onlineLabel = stringResource(R.string.balance_online_label)
+    val pauseLabel = stringResource(R.string.stats_day_legend_pause)
+    val offlineLabel = stringResource(R.string.stats_day_legend_offline)
+    val parts = buildList {
+        timeline.count { it is TimelineSlot.Online }.takeIf { it > 0 }?.let { add(onlineLabel to it * 30) }
+        presentCategories.forEach { c ->
+            val n = timeline.count { it is TimelineSlot.Category && it.categoryId == c.id }
+            if (n > 0) add(categoryDisplayName(c) to n * 30)
+        }
+        timeline.count { it is TimelineSlot.Offline }.takeIf { it > 0 }?.let { add(offlineLabel to it * 30) }
+        timeline.count { it is TimelineSlot.Pause }.takeIf { it > 0 }?.let { add(pauseLabel to it * 30) }
+    }
+    val partsText = parts.map { (name, minutes) -> "$name ${durationText(minutes)}" }.joinToString("; ")
+    val timelineDescription = stringResource(R.string.timeline_description_prefix, partsText)
+
     TeperaCard(title = stringResource(R.string.stats_day_timeline_title), subtitle = dateText) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(40.dp).clip(RoundedCornerShape(100.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(100.dp))
+                    .clearAndSetSemantics { contentDescription = timelineDescription },
                 horizontalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 timeline.forEach { slot ->
@@ -208,76 +230,34 @@ private fun SectionDivider() {
 }
 
 /**
- * Порівняння Online вчора зі своєю типовою добою — шкала й два рядки "ключ — значення" (як таблиця, а не два
- * підписи по краях): заповнена частина шкали — Online вчора (колір Online скрізь у застосунку), тиха
- * вертикальна позначка — типова доба (медіана за N днів). Той самий принцип, що позначка орієнтиру на Home
- * (FR-3.10 — тонка лінія БЕЗ підпису на самій шкалі, ніколи не змінює колір, жодного "більше/менше" в
- * кольорі); пояснення позначки — у рядку легенди нижче з такою самою позначкою. Числа точні (FR-P.6).
+ * Порівняння Online вчора зі своєю типовою добою — лише два рядки "підпис — значення" в годинах (за прямим запитом
+ * користувача шкалу прибрано: вона показувала відносну довжину, а не частку доби, і легко читалась хибно).
+ * Числа точні (FR-P.6), без слів-оцінок і кольорового "більше/менше".
  */
 @Composable
 private fun OnlineComparisonBar(comparison: OnlineComparison) {
-    val maxMinutes = maxOf(comparison.yesterdayMinutes, comparison.typicalMinutes, 1)
-    val yesterdayFraction = (comparison.yesterdayMinutes.toFloat() / maxMinutes).coerceIn(0f, 1f)
-    val typicalFraction = (comparison.typicalMinutes.toFloat() / maxMinutes).coerceIn(0f, 1f)
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Box(Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(20.dp)
-                    .clip(RoundedCornerShape(100.dp))
-                    .background(TeperaPalette.restOfDayCard),
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(yesterdayFraction.coerceAtLeast(0.02f))
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(TeperaPalette.onlineCard)
-                )
-                Box(modifier = Modifier.weight((1f - yesterdayFraction).coerceAtLeast(0.001f)).fillMaxHeight())
-            }
-            Box(
-                modifier = Modifier
-                    .comparisonMarkerAt(typicalFraction)
-                    .width(2.dp)
-                    .height(20.dp)
-                    .clip(RoundedCornerShape(1.dp))
-                    .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.5f))
-            )
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ComparisonRow(
-                marker = { Box(Modifier.size(12.dp).clip(CircleShape).background(TeperaPalette.onlineCard)) },
-                label = stringResource(R.string.stats_day_compare_yesterday),
-                value = durationText(comparison.yesterdayMinutes),
-                emphasized = true
-            )
-            ComparisonRow(
-                marker = {
-                    Box(Modifier.width(12.dp), contentAlignment = Alignment.Center) {
-                        Box(Modifier.width(2.dp).height(12.dp).clip(RoundedCornerShape(1.dp)).background(TeperaPalette.buttonBrandDark.copy(alpha = 0.5f)))
-                    }
-                },
-                label = stringResource(R.string.stats_day_compare_typical, comparison.daysCount),
-                value = durationText(comparison.typicalMinutes),
-                emphasized = false
-            )
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        ComparisonRow(
+            label = stringResource(R.string.stats_day_compare_yesterday),
+            value = durationText(comparison.yesterdayMinutes),
+            emphasized = true
+        )
+        ComparisonRow(
+            label = stringResource(R.string.stats_day_compare_typical, comparison.daysCount),
+            value = durationText(comparison.typicalMinutes),
+            emphasized = false
+        )
     }
 }
 
-/** Рядок "маркер · підпис · значення" з вирівнюванням значення праворуч. */
+/** Рядок "підпис · значення" з вирівнюванням значення праворуч. */
 @Composable
-private fun ComparisonRow(marker: @Composable () -> Unit, label: String, value: String, emphasized: Boolean) {
+private fun ComparisonRow(label: String, value: String, emphasized: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth().heightIn(min = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        marker()
         Text(
             text = label,
             modifier = Modifier.weight(1f),
@@ -289,16 +269,6 @@ private fun ComparisonRow(marker: @Composable () -> Unit, label: String, value: 
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
             color = TeperaPalette.buttonBrandDark
         )
-    }
-}
-
-/** Позиціонує елемент на [fraction] ширини батька, центрований — той самий прийом, що позначка орієнтиру на Home. */
-private fun Modifier.comparisonMarkerAt(fraction: Float): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
-    val width = constraints.maxWidth
-    layout(width, placeable.height) {
-        val x = (width * fraction).roundToInt() - placeable.width / 2
-        placeable.placeRelative(x.coerceIn(0, (width - placeable.width).coerceAtLeast(0)), 0)
     }
 }
 

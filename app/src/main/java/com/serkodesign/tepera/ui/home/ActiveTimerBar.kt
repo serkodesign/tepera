@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -60,7 +63,8 @@ internal fun ActiveTimerBar(
             color = TeperaPalette.buttonBrandDark,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
+            // Поява/зникнення "Йде: X" озвучується скрінрідером (WCAG 4.1.3): старт і стоп таймера інакше нічим не позначені.
+            modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite }
         )
         TeperaButton(
             text = stringResource(R.string.home_active_timer_stop),

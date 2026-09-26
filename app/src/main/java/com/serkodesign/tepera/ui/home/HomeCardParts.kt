@@ -1,6 +1,8 @@
 package com.serkodesign.tepera.ui.home
 
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.background
@@ -73,6 +75,7 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = title,
+            modifier = Modifier.semantics { heading() },
             fontFamily = TeperaPalette.headlineFont,
             fontWeight = FontWeight.Medium,
             fontSize = 18.sp,

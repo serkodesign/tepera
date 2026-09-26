@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.home
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
@@ -128,7 +129,7 @@ private fun PauseGapRow(gap: PauseUiGap, onClick: () -> Unit, onDismiss: () -> U
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucent)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

@@ -1,6 +1,8 @@
 package com.serkodesign.tepera.ui.pattern
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -52,9 +54,31 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  */
 @Composable
 fun HourlyHeatGrid(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val description = heatGridDescription(hourlyMinutes)
+    Column(
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         HeatGridRows(hourlyMinutes)
         HeatGridLegend()
+    }
+}
+
+/**
+ * Текстова альтернатива сітці (WCAG 1.1.1): інформація в сітці лише кольором клітинок, тож скрінрідеру віддаємо
+ * головне — три години з найбільшим Online-часом (за зростанням годин). Самі клітинки й легенда для нього
+ * приховані ([clearAndSetSemantics]).
+ */
+@Composable
+private fun heatGridDescription(hourlyMinutes: List<Int>?): String {
+    val top = hourlyMinutes?.withIndex()?.filter { it.value > 0 }?.sortedByDescending { it.value }?.take(3)
+    return if (top.isNullOrEmpty()) {
+        stringResource(R.string.heat_grid_description_none)
+    } else {
+        stringResource(
+            R.string.heat_grid_description_peak,
+            top.sortedBy { it.index }.joinToString(", ") { "%02d:00".format(it.index) }
+        )
     }
 }
 
@@ -71,7 +95,11 @@ fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier)
         List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it) } }
     }
     val gap = 3.dp
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val description = heatGridDescription(hourlyMinutes)
+    Column(
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(gap)) {
                 listOf(0, 6, 12, 18).forEach { hour ->
@@ -191,7 +219,7 @@ private fun HeatGridLegend() {
                         .clip(RoundedCornerShape(2.dp))
                         .background(color)
                 )
-                Text(label, style = MaterialTheme.typography.labelSmall, softWrap = false)
+                Text(label, style = MaterialTheme.typography.bodySmall, softWrap = false)
             }
         }
     }

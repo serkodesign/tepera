@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.gates
 
 import android.app.Activity
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -113,7 +114,11 @@ fun GatePauseScreen(
             color = TeperaPalette.buttonBrand
         )
 
-        val breath = rememberBreathState()
+        // Системне "прибрати анімації" (шкала 0) — стартуємо зупиненими: при нульовій шкалі анімація ще й мигала б
+        // стрибками (див. історію Huawei P9). Далі користувач може сам зупинити/відновити анімацію кнопкою нижче.
+        val animationsOff = remember { Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f }
+        var animationPaused by remember { mutableStateOf(animationsOff) }
+        val breath = rememberBreathState(paused = animationPaused)
         val gateText = stringArrayResource(R.array.gate_texts).getOrElse(state.textIndex) { "" }.format(state.appLabel)
 
         Column(
@@ -130,6 +135,15 @@ fun GatePauseScreen(
                 fontWeight = FontWeight.Medium,
                 color = TeperaPalette.buttonBrandDark,
                 modifier = Modifier.padding(top = 32.dp)
+            )
+            TeperaButton(
+                text = stringResource(
+                    if (animationPaused) R.string.gate_pause_animation_resume else R.string.gate_pause_animation_stop
+                ),
+                onClick = { animationPaused = !animationPaused },
+                modifier = Modifier.padding(top = 8.dp),
+                size = TeperaButtonSize.Small,
+                type = TeperaButtonType.Tertiary
             )
         }
 
@@ -208,10 +222,13 @@ private data class BreathState(val scale: Animatable<Float, AnimationVector1D>, 
  * трансформації шару.
  */
 @Composable
-private fun rememberBreathState(): BreathState {
+private fun rememberBreathState(paused: Boolean): BreathState {
     val scale = remember { Animatable(BREATH_SCALE_SMALL) }
     var inhaling by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
+    // paused = true (WCAG 2.2.2): анімація зупиняється на поточному розмірі — ефект скасовується, а Animatable
+    // тримає значення.
+    LaunchedEffect(paused) {
+        if (paused) return@LaunchedEffect
         while (true) {
             inhaling = true
             scale.animateTo(BREATH_SCALE_LARGE, tween(BREATH_DIRECTION_MILLIS, easing = LinearEasing))

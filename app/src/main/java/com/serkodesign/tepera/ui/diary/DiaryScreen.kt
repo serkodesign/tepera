@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.diary
 
 import androidx.compose.foundation.background
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -122,7 +126,7 @@ fun DiaryScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 100.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = bottomNavClearance()),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 HistoryContent(
@@ -198,7 +202,7 @@ private fun HistoryContent(
                     isYesterday -> stringResource(R.string.stats_history_yesterday)
                     else -> dateFormat.format(Date(dayStart)).replaceFirstChar { it.titlecase(locale) }
                 },
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier.padding(horizontal = 8.dp).semantics { heading() },
                 color = TeperaPalette.buttonBrandDark,
                 fontFamily = TeperaPalette.headlineFont,
                 fontWeight = FontWeight.Medium,
@@ -211,35 +215,75 @@ private fun HistoryContent(
                 // компонент, що межі доби на Статистиці. Без іконок (за прямим запитом користувача —
                 // на вузьких картках вони посилювали перенос підпису на кілька рядків).
                 if (unlockCount != null || lastPhoneUseMillis != null) {
-                    Row(
-                        modifier = Modifier.padding(bottom = 4.dp).fillMaxWidth().height(IntrinsicSize.Min),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    val stats = buildList {
                         unlockCount?.let { count ->
-                            StatTile(
-                                label = stringResource(
+                            add(
+                                stringResource(
                                     when {
                                         isToday -> R.string.diary_unlock_today_label
                                         isYesterday -> R.string.diary_unlock_yesterday_label
                                         else -> R.string.diary_unlock_label
                                     }
-                                ),
-                                value = count.toString(),
-                                modifier = Modifier.weight(1f).fillMaxHeight()
+                                ) to count.toString()
                             )
                         }
                         lastPhoneUseMillis?.let { millis ->
-                            StatTile(
-                                label = stringResource(R.string.diary_last_phone_use_yesterday_label),
-                                value = formatClockTime(millis),
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
+                            add(stringResource(R.string.diary_last_phone_use_yesterday_label) to formatClockTime(millis))
                         }
                     }
+                    DayStatsCard(stats = stats, modifier = Modifier.padding(bottom = 4.dp))
                 }
                 group?.items?.forEach { item ->
                     HistoryEntryRow(item = item, onEdit = { onEditEntry(item.entry.id) })
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Підсумок доби одним тональним блоком (замість двох окремих плиток, з яких одна на "Сьогодні" розтягувалась на
+ * всю ширину майже порожньою): факти в рядок, розділені тонкою лінією; значення — першим і великим (28sp), підпис
+ * під ним дрібніше — "число, а потім що це". Один факт займає блок зліва, без штучного розтягування.
+ */
+@Composable
+private fun DayStatsCard(stats: List<Pair<String, String>>, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .clip(RoundedCornerShape(20.dp))
+            // Темно-зелений фон #006944 і світлий текст #DCF6ED (за запитом користувача; контраст ≈5.9:1).
+            .background(TeperaPalette.buttonBrand)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        // Top: значення різних фактів стоять на одному рівні, навіть коли підпис одного займає два рядки.
+        verticalAlignment = Alignment.Top
+    ) {
+        stats.forEachIndexed { index, (label, value) ->
+            if (index > 0) {
+                Box(
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(TeperaPalette.surfaceBrandLight.copy(alpha = 0.35f))
+                )
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = value,
+                    color = TeperaPalette.surfaceBrandLight,
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 28.sp,
+                    lineHeight = 32.sp,
+                    maxLines = 1
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TeperaPalette.surfaceBrandLight
+                )
             }
         }
     }
@@ -268,7 +312,7 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White.copy(alpha = 0.8f))
-            .clickable(onClick = onEdit)
+            .clickable(role = Role.Button, onClick = onEdit)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically

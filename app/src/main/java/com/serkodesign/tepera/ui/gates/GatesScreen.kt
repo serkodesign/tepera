@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.gates
 
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.Image
@@ -37,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,6 +81,7 @@ import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.diary.EntryChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaSearchField
 import kotlinx.coroutines.launch
 
 // Тривалість затримки: чіп у списку воріт перемикає їх по колу; старе значення поза набором (20 с з
@@ -109,6 +114,10 @@ fun GatesScreen(
         onPauseOrDispose { }
     }
 
+    var query by rememberSaveable { mutableStateOf("") }
+    var searchFocused by remember { mutableStateOf(false) }
+    // Пошук активний (в фокусі або є запит) — решта екрана зникає, видача одразу під полем (M3 expanded search).
+    val searchActive = searchFocused || query.isNotEmpty()
     var pendingApp by remember { mutableStateOf<InstalledAppInfo?>(null) }
     var instructionApp by remember { mutableStateOf<InstalledAppInfo?>(null) }
     var pinFailed by remember { mutableStateOf(false) }
@@ -118,7 +127,22 @@ fun GatesScreen(
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            GlassScreenHeader(title = stringResource(R.string.gates_screen_title), onBack = onBack)
+            if (!searchActive) {
+                GlassScreenHeader(title = stringResource(R.string.gates_screen_title), onBack = onBack)
+            }
+
+            // Пошук закріплений угорі: інакше при вводі клавіатура закривала б список під полем. Діє на обидва
+            // списки — уже додані й доступні для додавання.
+            if (!state.loading && state.pinShortcutSupported) {
+                TeperaSearchField(
+                    query = query,
+                    onQueryChange = { query = it },
+                    placeholder = stringResource(R.string.search_apps_placeholder),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    active = searchActive,
+                    onFocusChange = { searchFocused = it }
+                )
+            }
 
             when {
                 state.loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -130,14 +154,14 @@ fun GatesScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    item {
+                    if (!searchActive) item {
                         Text(
                             text = stringResource(R.string.gates_hint),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                         )
                     }
-                    item {
+                    if (!searchActive) item {
                         // CC-5: ворота активні = зараз вікно розкладу І немає паузи.
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             GlassRow(
@@ -198,8 +222,25 @@ fun GatesScreen(
                         return@LazyColumn
                     }
 
-                    item { GlassSectionHeader(stringResource(R.string.gates_section_active)) }
-                    if (state.gates.isEmpty()) {
+                    val needle = query.trim()
+                    val visibleGates = state.gates.filter { needle.isEmpty() || it.app.label.contains(needle, ignoreCase = true) }
+                    val visibleApps = state.availableApps.filter { needle.isEmpty() || it.label.contains(needle, ignoreCase = true) }
+                    if (needle.isNotEmpty() && visibleGates.isEmpty() && visibleApps.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.search_no_results),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
+                                    .semantics { liveRegion = LiveRegionMode.Polite }
+                            )
+                        }
+                        return@LazyColumn
+                    }
+
+                    if (!searchActive || visibleGates.isNotEmpty()) {
+                        item { GlassSectionHeader(stringResource(R.string.gates_section_active)) }
+                    }
+                    if (!searchActive && state.gates.isEmpty()) {
                         item {
                             Text(
                                 text = stringResource(R.string.gates_empty),
@@ -208,7 +249,7 @@ fun GatesScreen(
                             )
                         }
                     }
-                    items(state.gates, key = { it.gate.packageName }) { gateState ->
+                    items(visibleGates, key = { it.gate.packageName }) { gateState ->
                         GateRow(
                             gateState = gateState,
                             onMarkHandled = { viewModel.markOriginalIconHandled(gateState.gate.packageName) },
@@ -217,13 +258,18 @@ fun GatesScreen(
                         )
                     }
 
-                    item { GlassSectionHeader(stringResource(R.string.gates_section_add)) }
-                    items(state.availableApps, key = { it.packageName }) { app ->
+                    if (!searchActive || visibleApps.isNotEmpty()) {
+                        item { GlassSectionHeader(stringResource(R.string.gates_section_add)) }
+                    }
+                    items(visibleApps, key = { it.packageName }) { app ->
                         GlassRow(
                             label = app.label,
                             onClick = { pendingApp = app },
                             leading = { AppIcon(app) },
-                            trailing = {}
+                            // "+" справа — підказка, що тап додає застосунок (весь рядок клікабельний, іконка декоративна).
+                            trailing = {
+                                Icon(TeperaSymbols.Add, contentDescription = null, tint = TeperaPalette.buttonBrand)
+                            }
                         )
                     }
                 }
@@ -331,7 +377,7 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                     .padding(start = 16.dp, top = 4.dp)
                     .clip(MaterialTheme.shapes.small)
                     .background(TeperaPalette.cardTranslucent)
-                    .clickable(onClick = onMarkHandled)
+                    .clickable(role = Role.Button, onClick = onMarkHandled)
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

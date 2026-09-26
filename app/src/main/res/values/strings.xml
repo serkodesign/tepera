@@ -485,4 +485,16 @@
     <string name="scrolling_notes_5_title">Як це стосується Tepera</string>
     <string name="scrolling_notes_5_body">Tepera не робить висновків про тебе з цих питань. Вона лише показує, як ти користуєшся телефоном, а що з цим робити — вирішуєш ти.</string>
     <string name="scrolling_notes_reviewed">Текст востаннє переглянуто: 21.09.2026</string>
+    <string name="search_apps_placeholder">Пошук застосунків</string>
+    <string name="search_no_results">Нічого не знайдено</string>
+    <string name="search_clear">Очистити пошук</string>
+    <string name="settings_sleep_window_hint">Розблокування у цьому вікні не починають твій день.</string>
+    <string name="settings_gap_sensitivity_hint_format">Пропонує паузи від %1$d хв, не більше %2$d на день.</string>
+    <string name="widget_button_running_format">%1$s, таймер іде</string>
+    <string name="gate_pause_animation_stop">Зупинити анімацію</string>
+    <string name="gate_pause_animation_resume">Відновити анімацію</string>
+    <string name="heat_grid_description_peak">Online за годинами доби. Найбільше: %1$s.</string>
+    <string name="heat_grid_description_none">Online за годинами доби: даних поки немає.</string>
+    <string name="trend_chart_description">Online за днями: %1$s.</string>
+    <string name="timeline_description_prefix">Хронологія вчорашньої доби, приблизно: %1$s.</string>
 </resources>
