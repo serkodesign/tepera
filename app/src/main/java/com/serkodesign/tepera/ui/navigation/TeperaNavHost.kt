@@ -57,6 +57,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
@@ -209,6 +211,14 @@ fun TeperaNavHost(
     LaunchedEffect(pendingGateRequestNonce) {
         if (pendingGateTargetPackage != null) {
             navController.navigate(Routes.gatePause(pendingGateTargetPackage))
+        }
+    }
+
+    // Ворота, з яких пішли без вибору («Додому», інший застосунок, блокування екрана), не лишаються в стеку: інакше
+    // наступне відкриття Tepera з лаунчера показало б стару паузу замість Home. Подію рішення не пишемо — вибору не було.
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        if (navController.currentDestination?.route == Routes.GATE_PAUSE) {
+            navController.popBackStack(Routes.HOME, inclusive = false)
         }
     }
 
