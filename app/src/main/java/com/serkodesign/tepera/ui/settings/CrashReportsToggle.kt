@@ -3,8 +3,6 @@ package com.serkodesign.tepera.ui.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -17,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
@@ -35,7 +34,7 @@ fun CrashReportsToggle(modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         GlassRow(
             label = stringResource(R.string.crash_reports_label),
-            leading = { TeperaIconCircle(Icons.Filled.BugReport) },
+            leading = { TeperaIconCircle(TeperaSymbols.BugReport) },
             trailing = {
                 Switch(
                     checked = enabled,

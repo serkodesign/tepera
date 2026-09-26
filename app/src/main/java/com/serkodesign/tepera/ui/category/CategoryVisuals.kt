@@ -1,20 +1,10 @@
 package com.serkodesign.tepera.ui.category
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.outlined.Bedtime
-import androidx.compose.material.icons.outlined.Brush
-import androidx.compose.material.icons.outlined.Checklist
-import androidx.compose.material.icons.outlined.Coffee
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.Groups
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Park
-import androidx.compose.material.icons.outlined.Pets
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -27,19 +17,19 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
  * кастомної категорії — той самий набір, той самий iconName -> ImageVector резолвер.
  */
 private val iconCatalog: Map<String, ImageVector> = mapOf(
-    "nature" to Icons.Outlined.Park,
-    "reading" to Icons.AutoMirrored.Outlined.MenuBook,
-    "hobby" to Icons.Outlined.Palette,
-    "movement" to Icons.AutoMirrored.Outlined.DirectionsRun,
-    "social" to Icons.Outlined.Groups,
-    "errands" to Icons.Outlined.Checklist, // T-8 (tepera-dev-spec.md): нейтральна 6-та дефолтна категорія
-    "sleep" to Icons.Outlined.Bedtime, // legacy, лише для вже заархівованих записів (v2.4)
-    "star" to Icons.Outlined.Star,
-    "favorite" to Icons.Outlined.Favorite,
-    "coffee" to Icons.Outlined.Coffee,
-    "music" to Icons.Outlined.MusicNote,
-    "brush" to Icons.Outlined.Brush,
-    "pets" to Icons.Outlined.Pets
+    "nature" to TeperaSymbols.Park,
+    "reading" to TeperaSymbols.MenuBook,
+    "hobby" to TeperaSymbols.Palette,
+    "movement" to TeperaSymbols.DirectionsRun,
+    "social" to TeperaSymbols.Groups,
+    "errands" to TeperaSymbols.Checklist, // T-8 (tepera-dev-spec.md): нейтральна 6-та дефолтна категорія
+    "sleep" to TeperaSymbols.Bedtime, // legacy, лише для вже заархівованих записів (v2.4)
+    "star" to TeperaSymbols.Star,
+    "favorite" to TeperaSymbols.Favorite,
+    "coffee" to TeperaSymbols.Coffee,
+    "music" to TeperaSymbols.MusicNote,
+    "brush" to TeperaSymbols.Brush,
+    "pets" to TeperaSymbols.Pets
 )
 
 /** Іконки, доступні користувачу при створенні кастомної категорії (FR-2.2, "іконка з набору"). */
@@ -51,7 +41,7 @@ val customCategoryColorChoices: List<String> = listOf(
     "#4E7A51", "#4A6FA5", "#B08968", "#C9704F", "#5C6B73", "#7A5C7A", "#8A8F5C"
 )
 
-fun categoryIcon(iconName: String): ImageVector = iconCatalog[iconName] ?: Icons.Outlined.Star
+fun categoryIcon(iconName: String): ImageVector = iconCatalog[iconName] ?: TeperaSymbols.Star
 
 /**
  * Контурні "widget"-іконки (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, той самий набір book_5/
@@ -74,6 +64,40 @@ fun categoryLineArtIconRes(iconName: String): Int? = when (iconName) {
 
 fun categoryColor(colorHex: String): Color = runCatching { Color(android.graphics.Color.parseColor(colorHex)) }
     .getOrDefault(Color.Gray)
+
+/** WCAG 2.x 1.4.11 (Non-text Contrast): графічні об'єкти, зокрема іконки, — не менше 3:1 до фону. */
+const val MIN_GLYPH_CONTRAST = 3f
+
+/** Світла поверхня, на якій лежать плашки іконок (картка активності Home #EBFAE6 — найтемніша з типових). */
+private val GlyphSurface = Color(0xFFEBFAE6)
+
+/** Коефіцієнт контрасту WCAG 2.x між двома непрозорими кольорами: (L1 + 0.05) / (L2 + 0.05). */
+fun contrastRatio(a: Color, b: Color): Float {
+    val l1 = a.luminance()
+    val l2 = b.luminance()
+    return (maxOf(l1, l2) + 0.05f) / (minOf(l1, l2) + 0.05f)
+}
+
+/**
+ * Колір гліфа категорії на її плашці (сам колір категорії з прозорістю [badgeAlpha] поверх світлої
+ * поверхні). Яскраві кольори (бірюзовий, рожевий, салатовий…) на власній 20%-й плашці мають
+ * контраст ~1.5–2:1 — гліф майже зливається. Якщо контраст нижче [MIN_GLYPH_CONTRAST], колір
+ * затемнюється до чорного кроками по 5%, доки не досягне порогу; тон лишається тим самим, тож
+ * категорію все ще видно за кольором. Кольори, що вже проходять, лишаються без змін.
+ */
+fun categoryGlyphColor(base: Color, badgeAlpha: Float = 0.2f): Color {
+    val badge = base.copy(alpha = badgeAlpha).compositeOver(GlyphSurface)
+    var step = 0
+    var color = base
+    while (contrastRatio(color, badge) < MIN_GLYPH_CONTRAST && step < 20) {
+        step++
+        color = lerp(base, Color.Black, step * 0.05f)
+    }
+    return color
+}
+
+fun categoryGlyphColor(colorHex: String, badgeAlpha: Float = 0.2f): Color =
+    categoryGlyphColor(categoryColor(colorHex), badgeAlpha)
 
 /**
  * Локалізована назва категорії: для дефолтних резолвиться через nameKey у strings.xml

@@ -2,9 +2,6 @@ package com.serkodesign.tepera.ui.theme
 
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -84,7 +81,7 @@ fun TeperaTimePickerDialog(
             )
         }
         TeperaIconButton(
-            icon = if (keyboardMode) Icons.Filled.Schedule else Icons.Filled.Keyboard,
+            icon = if (keyboardMode) TeperaSymbols.Schedule else TeperaSymbols.Keyboard,
             contentDescription = stringResource(
                 if (keyboardMode) R.string.add_entry_time_mode_dial else R.string.add_entry_time_mode_keyboard
             ),

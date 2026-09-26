@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.category
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,9 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -126,7 +124,7 @@ fun CategoriesScreen(
                         GlassRow(
                             label = stringResource(R.string.category_add_custom),
                             onClick = { showCreateDialog = true },
-                            leading = { TeperaIconCircle(Icons.Filled.Add) },
+                            leading = { TeperaIconCircle(TeperaSymbols.Add) },
                             trailing = { }
                         )
                     }
@@ -190,7 +188,7 @@ private fun CategoryRow(
             TeperaIconCircle(
                 icon = categoryIcon(category.iconName),
                 background = categoryColor(category.colorHex).copy(alpha = 0.2f),
-                tint = categoryColor(category.colorHex)
+                tint = categoryGlyphColor(category.colorHex)
             )
         },
         trailing = {
@@ -199,7 +197,7 @@ private fun CategoryRow(
                 // категорій (звільняє слот ліміту T-8), дефолтні лишаються архів/розархівувати-
                 // only (пересіваються щозапуску за фіксованим id, "видалення" воскресло б).
                 if (category.isCustom) {
-                    TeperaIconButton(icon = Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.category_delete_action), onClick = onDelete)
+                    TeperaIconButton(icon = TeperaSymbols.Delete, contentDescription = stringResource(R.string.category_delete_action), onClick = onDelete)
                 }
                 Switch(
                     checked = !isArchived,

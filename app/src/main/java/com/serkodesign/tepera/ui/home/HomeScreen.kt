@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import android.content.Intent
@@ -30,11 +31,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreTime
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -87,6 +83,7 @@ import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
@@ -625,7 +622,7 @@ private fun CategoryCard(
     val badgeColor by animateColorAsState(
         if (isTracking) Color.White.copy(alpha = 0.2f) else accentColor.copy(alpha = 0.2f), colorSpec, label = "cardBadge"
     )
-    val glyphColor by animateColorAsState(if (isTracking) Color.White else accentColor, colorSpec, label = "cardGlyph")
+    val glyphColor by animateColorAsState(if (isTracking) Color.White else categoryGlyphColor(accentColor), colorSpec, label = "cardGlyph")
     val nameSize by animateFloatAsState(
         targetValue = if (isTracking) 18f else 16f,
         animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), label = "cardNameSize"
@@ -669,7 +666,7 @@ private fun CategoryCard(
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TeperaIconButton(
-                icon = if (isTracking) Icons.Filled.Pause else Icons.Outlined.PlayArrow,
+                icon = if (isTracking) TeperaSymbols.Pause else TeperaSymbols.PlayArrow,
                 contentDescription = stringResource(
                     if (isTracking) R.string.category_stop_action else R.string.category_start_action
                 ),
@@ -687,7 +684,7 @@ private fun CategoryCard(
                 Row {
                     Spacer(Modifier.width(4.dp))
                     TeperaIconButton(
-                        icon = Icons.Filled.MoreTime,
+                        icon = TeperaSymbols.MoreTime,
                         contentDescription = stringResource(R.string.add_time_action_format, displayName),
                         onClick = onAddTime,
                         containerColor = TeperaPalette.activityMoreTime,

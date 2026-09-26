@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PhonelinkOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,9 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.theme.StatTile
@@ -305,9 +305,9 @@ private fun PausesCard(summary: PauseSummary, timeFormat: SimpleDateFormat) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = category?.let { categoryIcon(it.iconName) } ?: Icons.Filled.PhonelinkOff,
+                    imageVector = category?.let { categoryIcon(it.iconName) } ?: TeperaSymbols.PhonelinkOff,
                     contentDescription = null,
-                    tint = badgeColor,
+                    tint = categoryGlyphColor(badgeColor),
                     modifier = Modifier.size(16.dp)
                 )
             }

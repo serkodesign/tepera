@@ -23,9 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwitchDefaults
@@ -83,7 +80,7 @@ fun GlassScreenHeader(
         horizontalArrangement = Arrangement.spacedBy(13.dp)
     ) {
         TeperaIconButton(
-            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            icon = TeperaSymbols.ArrowBack,
             contentDescription = stringResource(R.string.nav_back),
             onClick = onBack,
             shape = CircleShape,
@@ -162,7 +159,7 @@ fun TeperaIconCircle(
 @Composable
 fun NavChevron(modifier: Modifier = Modifier) {
     Icon(
-        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+        TeperaSymbols.ChevronRight,
         contentDescription = null,
         modifier = modifier
     )

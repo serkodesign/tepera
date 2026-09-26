@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.gates
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.Image
@@ -23,13 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PauseCircle
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -149,7 +143,7 @@ fun GatesScreen(
                             GlassRow(
                                 label = stringResource(R.string.gates_pause_label),
                                 onClick = { showPauseDialog = true },
-                                leading = { TeperaIconCircle(Icons.Filled.PauseCircle) },
+                                leading = { TeperaIconCircle(TeperaSymbols.PauseCircle) },
                                 trailing = {
                                     Text(
                                         text = pauseSummary(state.pause),
@@ -161,7 +155,7 @@ fun GatesScreen(
                             GlassRow(
                                 label = stringResource(R.string.gates_schedule_label),
                                 onClick = onOpenSchedule,
-                                leading = { TeperaIconCircle(Icons.Filled.Schedule) },
+                                leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
                                 trailing = {
                                     Text(
                                         text = stringResource(
@@ -176,7 +170,7 @@ fun GatesScreen(
                             // CC-6: опційна «зростаюча» затримка; лічильник повторних відкриттів ніде не показується.
                             GlassRow(
                                 label = stringResource(R.string.gates_growing_delay_label),
-                                leading = { TeperaIconCircle(Icons.Filled.Timer) },
+                                leading = { TeperaIconCircle(TeperaSymbols.Timer) },
                                 trailing = {
                                     Switch(
                                         checked = growingDelay,
@@ -326,7 +320,7 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                         type = TeperaButtonType.Secondary
                     )
                     Spacer(Modifier.width(8.dp))
-                    TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)
+                    TeperaIconButton(icon = TeperaSymbols.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)
                 }
             }
         )
@@ -342,7 +336,7 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.WarningAmber,
+                    TeperaSymbols.Warning,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = TeperaPalette.brandAccent
@@ -404,7 +398,7 @@ private fun AppIcon(app: InstalledAppInfo) {
                 modifier = Modifier.size(40.dp).clip(CircleShape)
             )
         } else {
-            Icon(Icons.Filled.Apps, contentDescription = null, tint = TeperaPalette.brandAccent)
+            Icon(TeperaSymbols.Apps, contentDescription = null, tint = TeperaPalette.brandAccent)
         }
     }
 }

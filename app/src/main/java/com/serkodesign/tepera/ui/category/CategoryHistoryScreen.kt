@@ -141,7 +141,7 @@ private fun CategoryHistoryEntryRow(
             modifier = Modifier.size(40.dp).clip(CircleShape).background(accentColor.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(categoryIcon(category.iconName), contentDescription = null, tint = accentColor)
+            Icon(categoryIcon(category.iconName), contentDescription = null, tint = categoryGlyphColor(accentColor))
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(

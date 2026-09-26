@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
@@ -138,7 +137,7 @@ private fun AppIcon(app: InstalledAppInfo) {
                 modifier = Modifier.size(40.dp).clip(CircleShape)
             )
         } else {
-            Icon(Icons.Filled.Apps, contentDescription = null, tint = TeperaPalette.brandAccent)
+            Icon(TeperaSymbols.Apps, contentDescription = null, tint = TeperaPalette.brandAccent)
         }
     }
 }

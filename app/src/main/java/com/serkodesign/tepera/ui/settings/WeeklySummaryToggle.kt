@@ -7,8 +7,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -24,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.WeeklySummaryWorker
 import com.serkodesign.tepera.data.local.SettingsStore
@@ -64,7 +63,7 @@ fun WeeklySummaryToggle(settingsStore: SettingsStore, modifier: Modifier = Modif
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         GlassRow(
             label = stringResource(R.string.weekly_summary_label),
-            leading = { TeperaIconCircle(Icons.Filled.Notifications) },
+            leading = { TeperaIconCircle(TeperaSymbols.Notifications) },
             trailing = {
                 Switch(
                     checked = enabled,

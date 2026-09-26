@@ -21,8 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.util.localStartOfDay
 import com.serkodesign.tepera.util.startOfTodayMillis
 import androidx.compose.ui.Alignment
@@ -56,6 +55,7 @@ import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.StatTile
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
@@ -135,7 +135,7 @@ fun DiaryScreen(
         }
 
         TeperaIconButton(
-            icon = Icons.Filled.Add,
+            icon = TeperaSymbols.Add,
             contentDescription = stringResource(R.string.diary_add_entry_action),
             onClick = onAddEntry,
             modifier = Modifier
@@ -279,9 +279,9 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
         ) {
             val lineArt = categoryLineArtIconRes(item.category.iconName)
             if (lineArt != null) {
-                Icon(painterResource(lineArt), contentDescription = null, tint = accentColor, modifier = Modifier.size(24.dp))
+                Icon(painterResource(lineArt), contentDescription = null, tint = categoryGlyphColor(accentColor), modifier = Modifier.size(24.dp))
             } else {
-                Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = accentColor, modifier = Modifier.size(24.dp))
+                Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = categoryGlyphColor(accentColor), modifier = Modifier.size(24.dp))
             }
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {

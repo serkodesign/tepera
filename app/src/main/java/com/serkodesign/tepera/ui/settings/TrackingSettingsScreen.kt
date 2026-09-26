@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.layout.Arrangement
@@ -12,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -131,7 +130,7 @@ fun TrackingSettingsScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         IconButton(onClick = { showTargetInfo = true }, modifier = Modifier.size(20.dp)) {
-                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_target_info))
+                            Icon(TeperaSymbols.Info, contentDescription = stringResource(R.string.settings_target_info))
                         }
                         Spacer(Modifier.weight(1f))
                         // CC-1: орієнтир можна вимкнути зовсім. Вмикаючи, стартуємо від середнього самої
@@ -187,7 +186,7 @@ fun TrackingSettingsScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         IconButton(onClick = { showSleepWindowInfo = true }, modifier = Modifier.size(20.dp)) {
-                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_sleep_window_info))
+                            Icon(TeperaSymbols.Info, contentDescription = stringResource(R.string.settings_sleep_window_info))
                         }
                     }
                     Text(
@@ -233,7 +232,7 @@ fun TrackingSettingsScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         IconButton(onClick = { showGapSensitivityInfo = true }, modifier = Modifier.size(20.dp)) {
-                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.settings_gap_sensitivity_info))
+                            Icon(TeperaSymbols.Info, contentDescription = stringResource(R.string.settings_gap_sensitivity_info))
                         }
                     }
                     val sensitivityOptions = listOf(

@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.background
@@ -20,9 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -83,7 +81,7 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit, onDismiss: () -
         Spacer(Modifier.width(8.dp))
         IconButton(onClick = onInfo, modifier = Modifier.size(20.dp)) {
             Icon(
-                Icons.Outlined.Info,
+                TeperaSymbols.Info,
                 contentDescription = stringResource(R.string.home_card_info_action),
                 modifier = Modifier.size(20.dp)
             )
@@ -91,7 +89,7 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit, onDismiss: () -
         Spacer(Modifier.weight(1f))
         IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
             Icon(
-                Icons.Filled.Close,
+                TeperaSymbols.Close,
                 contentDescription = stringResource(R.string.context_card_dismiss_action),
                 modifier = Modifier.size(16.dp)
             )

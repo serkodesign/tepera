@@ -3,7 +3,6 @@ package com.serkodesign.tepera.ui.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -43,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavBackStackEntry
 import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
@@ -555,16 +553,11 @@ private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRep
 }
 
 /**
- * "Таблетка" нижнього навбару — точна відповідність Figma-фрейму "Everyday_Designs", node
- * 2146:320 (get_design_context + get_variable_defs): біла картка (Surface/surface-card,
- * замінила попередню суцільну темно-зелену з node 1951:4017 — `TeperaPalette.navPillDark`
- * лишений у палітрі як історія рішення), 3 РІВНОВЕЛИКІ вкладки Home/Diary/Stats (у цьому
- * порядку — Diary посередині, не праворуч). Вибрана вкладка — м'ятна підсвітка (Brand/200) з
- * текстом і темно-зеленою іконкою (Brand/800), невибрані — лише сіра іконка (Text/text-
- * secondary), без підпису. Іконки — `TeperaIcons` (SVG-точні вектори з того самого фрейму, не
- * найближчі глифи material-icons-extended). Кнопки "+"/"Незабаром" по центру більше нема —
- * заглушку прибрано (за запитом користувача), додавання часу лишається per-категорійним
- * (HomeScreen.CategoryCard).
+ * "Таблетка" нижнього навбару — Figma "App concept", node 274:530 (Navbar / Today, Diary, Stats):
+ * біла картка (Surface/surface-card) заввишки 62 з радіусом 32 і відступом 6, три рівні вкладки
+ * Home/Diary/Stats. Вибрана — заливка Brand/200 з іконкою (Filled) і підписом Brand/800, невибрані —
+ * лише сіра (Outlined) іконка. Іконки — `TeperaIcons` (SVG 1:1 з компонента "Navbar icons", node
+ * 274:484). Додавання часу лишається per-категорійним (HomeScreen.CategoryCard).
  */
 @Composable
 private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostController) {
@@ -582,15 +575,13 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillCard)
             .padding(6.dp),
-        // Figma "App concept" node 192:726: проміжок 6dp між вкладками, тримаються рівними частками.
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        // Figma "App concept" node 274:369: три рівні частки без проміжків (justify-between).
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavPillTab(
             icon = if (currentRoute == Routes.HOME) TeperaIcons.HomeFilled else TeperaIcons.HomeOutlined,
             label = stringResource(R.string.home_screen_title),
             selected = currentRoute == Routes.HOME,
-            idleCorners = NavTabCorners(topStart = 40.dp, bottomStart = 40.dp, topEnd = 16.dp, bottomEnd = 16.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.HOME) {
@@ -606,7 +597,6 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             icon = if (currentRoute == Routes.DIARY) TeperaIcons.BallotFilled else TeperaIcons.BallotOutlined,
             label = stringResource(R.string.diary_nav_action),
             selected = currentRoute == Routes.DIARY,
-            idleCorners = NavTabCorners(16.dp, 16.dp, 16.dp, 16.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.DIARY) {
@@ -622,7 +612,6 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             icon = if (currentRoute == Routes.STATS) TeperaIcons.LeaderboardFilled else TeperaIcons.LeaderboardOutlined,
             label = stringResource(R.string.stats_nav_action),
             selected = currentRoute == Routes.STATS,
-            idleCorners = NavTabCorners(topStart = 16.dp, bottomStart = 16.dp, topEnd = 40.dp, bottomEnd = 40.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.STATS) {
@@ -642,29 +631,22 @@ private fun NavPillTab(
     icon: ImageVector,
     label: String,
     selected: Boolean,
-    idleCorners: NavTabCorners,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726 (підписи й іконки —
-    // ті самі, змінено лише оформлення): вибрана — суцільний #006944 з світлим текстом/іконкою
-    // (#DCF6ED), радіус 40; невибрана — сіра пілюля #F0F3F4 з сірою іконкою, радіус залежить від
-    // позиції (крайні вкладки мають 40 із зовнішнього боку, 16 — із внутрішнього).
-    // Анімація M3 (emphasized): колір заливки й вмісту, чотири кути (форма пілюлі "перетікає" між
-    // 16 і 40dp) і поява/зникнення підпису — розтягування по ширині + fade.
+    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 274:530 (Navbar / Today, Diary,
+    // Stats): вибрана — заливка Brand/200 (#B2E5D3), радіус 40, іконка й підпис Brand/800 (#003926);
+    // невибрана — без заливки, лише сіра (#505050) іконка. Анімація M3 (emphasized): колір заливки й
+    // вмісту та поява/зникнення підпису — розтягування по ширині + fade.
     val contentColor by animateColorAsState(
-        if (selected) TeperaPalette.navTabSelectedContent else TeperaPalette.navPillUnselectedIcon,
+        if (selected) TeperaPalette.navPillSelectedContent else TeperaPalette.navPillUnselectedIcon,
         TeperaSpecs.effects(), label = "navTabContent"
     )
     val fill by animateColorAsState(
-        if (selected) TeperaPalette.buttonBrand else TeperaPalette.navTabIdleFill,
+        if (selected) TeperaPalette.navPillSelected else Color.Transparent,
         TeperaSpecs.effects(), label = "navTabFill"
     )
-    val topStart by animateDpAsState(if (selected) 40.dp else idleCorners.topStart, TeperaSpecs.spatial(), label = "navTabTS")
-    val topEnd by animateDpAsState(if (selected) 40.dp else idleCorners.topEnd, TeperaSpecs.spatial(), label = "navTabTE")
-    val bottomEnd by animateDpAsState(if (selected) 40.dp else idleCorners.bottomEnd, TeperaSpecs.spatial(), label = "navTabBE")
-    val bottomStart by animateDpAsState(if (selected) 40.dp else idleCorners.bottomStart, TeperaSpecs.spatial(), label = "navTabBS")
-    val shape = RoundedCornerShape(topStart = topStart, topEnd = topEnd, bottomEnd = bottomEnd, bottomStart = bottomStart)
+    val shape = RoundedCornerShape(40.dp)
     Box(
         modifier = modifier
             .fillMaxHeight()
@@ -705,9 +687,6 @@ private fun NavPillTab(
         }
     }
 }
-
-/** Радіуси кутів невибраної вкладки навбару (у вибраному стані всі чотири анімуються до 40dp). */
-private data class NavTabCorners(val topStart: Dp, val bottomStart: Dp, val topEnd: Dp, val bottomEnd: Dp)
 
 /** Перехід між двома вкладками навбару (Home/Diary/Stats) — для них M3 "fade through". */
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.isTopLevelSwitch(): Boolean =

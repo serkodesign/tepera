@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -36,6 +34,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.ui.theme.GlassRow
@@ -201,7 +200,7 @@ private fun IntervalRow(interval: TimeInterval, onChange: (TimeInterval) -> Unit
                 modifier = Modifier.weight(1f)
             )
             TeperaIconButton(
-                icon = Icons.Filled.Close,
+                icon = TeperaSymbols.Close,
                 contentDescription = stringResource(R.string.gate_schedule_remove_interval),
                 onClick = onRemove
             )

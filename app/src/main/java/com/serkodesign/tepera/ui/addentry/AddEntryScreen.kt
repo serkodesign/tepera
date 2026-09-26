@@ -2,6 +2,7 @@ package com.serkodesign.tepera.ui.addentry
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.animation.animateColorAsState
@@ -29,11 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerDefaults
@@ -86,6 +82,7 @@ import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -157,7 +154,7 @@ fun AddEntryScreen(
                 onBack = onBack,
                 trailing = {
                     if (viewModel.isEditing) {
-                        TeperaIconButton(icon = Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.edit_entry_delete_action), onClick = { showDeleteConfirm = true })
+                        TeperaIconButton(icon = TeperaSymbols.Delete, contentDescription = stringResource(R.string.edit_entry_delete_action), onClick = { showDeleteConfirm = true })
                     }
                 }
             )
@@ -353,14 +350,14 @@ private fun CategoryTile(
                 Icon(
                     painter = painterResource(lineArtRes),
                     contentDescription = null,
-                    tint = accentColor,
+                    tint = categoryGlyphColor(accentColor, badgeAlpha = 0.5f),
                     modifier = Modifier.size(16.dp)
                 )
             } else {
                 Icon(
                     imageVector = categoryIcon(category.iconName),
                     contentDescription = null,
-                    tint = accentColor,
+                    tint = categoryGlyphColor(accentColor, badgeAlpha = 0.5f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -516,7 +513,7 @@ private fun IntervalField(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Icon(Icons.Filled.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TeperaPalette.buttonBrandDark)
+            Icon(TeperaSymbols.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TeperaPalette.buttonBrandDark)
             Text(dateText, style = MaterialTheme.typography.bodyLarge, color = TeperaPalette.buttonBrandDark)
         }
         Text(

@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import android.net.Uri
@@ -11,10 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -187,13 +184,13 @@ fun BackupRestoreScreen(
                         val timestamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
                         exportLauncher.launch("tepera-backup-$timestamp.json")
                     },
-                    leading = { TeperaIconCircle(Icons.Filled.FileDownload) },
+                    leading = { TeperaIconCircle(TeperaSymbols.FileDownload) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.backup_import_action),
                     onClick = { importPickerLauncher.launch(arrayOf("application/json")) },
-                    leading = { TeperaIconCircle(Icons.Filled.FileUpload) },
+                    leading = { TeperaIconCircle(TeperaSymbols.FileUpload) },
                     trailing = { NavChevron() }
                 )
                 // CH-06 / FR-6.2: чесно про те, що файл не містить усіх налаштувань.
@@ -207,7 +204,7 @@ fun BackupRestoreScreen(
                 GlassRow(
                     label = stringResource(R.string.backup_delete_action),
                     onClick = { deleteStep = 1 },
-                    leading = { TeperaIconCircle(Icons.Filled.DeleteForever) },
+                    leading = { TeperaIconCircle(TeperaSymbols.DeleteForever) },
                     trailing = { NavChevron() }
                 )
             }
