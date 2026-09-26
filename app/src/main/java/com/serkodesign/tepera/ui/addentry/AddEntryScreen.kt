@@ -1,7 +1,11 @@
 package com.serkodesign.tepera.ui.addentry
 
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.semantics.error
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.heading
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.animation.animateColorAsState
@@ -16,6 +20,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -24,9 +33,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerDefaults
@@ -36,10 +42,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -52,6 +58,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -60,10 +72,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaDatePickerDialog
+import com.serkodesign.tepera.ui.theme.TeperaTimePickerDialog
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
@@ -72,9 +85,9 @@ import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
-import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import com.serkodesign.tepera.util.localStartOfDayToUtcMidnight
@@ -97,10 +110,12 @@ import java.util.Locale
  *   віджета з ТОГО САМОГО набору Figma-асетів; кастомні категорії не мають такого стилю й
  *   падають на звичайні `categoryIcon()` Material-глyфи. Колір кружка — реальний колір категорії
  *   (`categoryColor()`), не фіксована палітра макета.
- * - Вибір дати (для запису заднім числом) — макет його не показує; лишили функціонал, лише
- *   перемалювали під новий "скляний" рядок (іконка календаря + дата + шеврон).
- * - Manual-поле — те саме поле цілих ХВИЛИН, що й раніше (не формат Год:Хв, як натякає
- *   плейсхолдер "00:00" у макеті) — лише новий візуальний стиль.
+ * - Дата початку й кінця — окремі тапабельні рядки в полях інтервалу (макет дати не показує; функціонал лишили).
+ * - **Час вводиться лише інтервалом (початок → кінець)** — за прямим запитом користувача (21.09.2026)
+ *   пресети й ручні хвилини прибрані. Два великі тапабельні поля, M3-діалог часу (циферблат або
+ *   клавіатура), тривалість і помилка інтервалу оновлюються наживо, початок тягне кінець за собою.
+ * - **Активність може тривати кілька діб (до 7):** кінець має власну дату; при збереженні запис ділиться на
+ *   частини по логічних добах (`ActivityRepository.saveInterval`), а редагування збирає їх назад.
  * - Редагування запису (Щоденник/Stats) отримує той самий новий стиль, і сітка категорій
  *   лишається видимою й змінюваною (як і раніше) — на відміну від "додати час" з картки
  *   категорії на Home/віджеті, де сітку СХОВАНО за прямим запитом користувача.
@@ -142,7 +157,7 @@ fun AddEntryScreen(
                 onBack = onBack,
                 trailing = {
                     if (viewModel.isEditing) {
-                        TeperaIconButton(icon = Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.edit_entry_delete_action), onClick = { showDeleteConfirm = true })
+                        TeperaIconButton(icon = TeperaSymbols.Delete, contentDescription = stringResource(R.string.edit_entry_delete_action), onClick = { showDeleteConfirm = true })
                     }
                 }
             )
@@ -155,8 +170,6 @@ fun AddEntryScreen(
                     .padding(top = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                DateRow(dateMillis = state.dateMillis, onDateSelected = viewModel::setDate)
-
                 if (showCategoryGrid) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Text(
@@ -183,65 +196,34 @@ fun AddEntryScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        stringResource(R.string.add_entry_duration_type_label),
+                        stringResource(R.string.add_entry_time_label),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium, fontSize = 18.sp)
                     )
-                    PillSegmentedControl(
-                        options = DurationMode.entries.map { it to modeLabel(it) },
-                        selected = state.mode,
-                        onSelect = viewModel::selectMode
-                    )
-
-                    when (state.mode) {
-                        DurationMode.PRESETS -> {
-                            GlassTimeChip(
-                                label = stringResource(R.string.add_entry_start_time_label),
-                                minuteOfDay = state.startMinuteOfDay,
-                                onMinuteSelected = viewModel::setStartMinuteOfDay
-                            )
-                            PresetGrid(minutes = state.presetMinutes, onAdd = viewModel::addPresetMinutes)
-                            DurationSummaryRow(totalMinutes = state.presetMinutes, onReset = viewModel::resetPresetMinutes)
-                        }
-                        DurationMode.MANUAL -> {
-                            GlassTimeChip(
-                                label = stringResource(R.string.add_entry_start_time_label),
-                                minuteOfDay = state.startMinuteOfDay,
-                                onMinuteSelected = viewModel::setStartMinuteOfDay
-                            )
-                            GlassTextField(
-                                value = state.manualMinutesText,
-                                onValueChange = viewModel::setManualMinutes,
-                                placeholder = stringResource(R.string.add_entry_duration_minutes_label),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true
-                            )
-                        }
-                        DurationMode.INTERVAL -> {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                GlassTimeChip(
-                                    label = stringResource(R.string.add_entry_start_time_label),
-                                    minuteOfDay = state.startMinuteOfDay,
-                                    onMinuteSelected = viewModel::setStartMinuteOfDay,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                GlassTimeChip(
-                                    label = stringResource(R.string.add_entry_end_time_label),
-                                    minuteOfDay = state.endMinuteOfDay,
-                                    onMinuteSelected = viewModel::setEndMinuteOfDay,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            if (state.intervalInvalidError) {
-                                Text(
-                                    stringResource(R.string.add_entry_interval_invalid),
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IntervalField(
+                            label = stringResource(R.string.add_entry_start_time_label),
+                            dayMillis = state.startDayMillis,
+                            minuteOfDay = state.startMinuteOfDay,
+                            onDateSelected = viewModel::setStartDate,
+                            onMinuteSelected = viewModel::setStartMinuteOfDay,
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
+                        IntervalField(
+                            label = stringResource(R.string.add_entry_end_time_label),
+                            dayMillis = state.endDayMillis,
+                            minuteOfDay = state.endMinuteOfDay,
+                            onDateSelected = viewModel::setEndDate,
+                            onMinuteSelected = viewModel::setEndMinuteOfDay,
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            minDayMillis = state.startDayMillis,
+                            maxDayMillis = state.maxEndDayMillis,
+                            invalid = !state.intervalValid
+                        )
                     }
+                    IntervalSummary(state = state, onEndNextDay = viewModel::endNextDay)
                 }
 
                 GlassTextField(
@@ -269,35 +251,19 @@ fun AddEntryScreen(
                     .padding(top = 12.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(TeperaPalette.cardActive)
-                        .clickable(onClick = onBack),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        stringResource(R.string.dialog_cancel),
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(TeperaPalette.brandAccent)
-                        .clickable { viewModel.save() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        stringResource(R.string.add_entry_save),
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
-                    )
-                }
+                TeperaButton(
+                    text = stringResource(R.string.dialog_cancel),
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f),
+                    type = TeperaButtonType.Secondary
+                )
+                TeperaButton(
+                    text = stringResource(R.string.add_entry_save),
+                    onClick = { viewModel.save() },
+                    modifier = Modifier.weight(1f),
+                    type = TeperaButtonType.Primary,
+                    enabled = state.intervalValid
+                )
             }
         }
     }
@@ -326,13 +292,6 @@ fun AddEntryScreen(
             dismissText = stringResource(R.string.dialog_cancel)
         )
     }
-}
-
-@Composable
-private fun modeLabel(mode: DurationMode): String = when (mode) {
-    DurationMode.PRESETS -> stringResource(R.string.add_entry_mode_presets)
-    DurationMode.MANUAL -> stringResource(R.string.add_entry_mode_manual)
-    DurationMode.INTERVAL -> stringResource(R.string.add_entry_mode_interval)
 }
 
 /** 3 колонки, рядки добудовуються вручну (chunked) — категорій завжди небагато (до 6 дефолтних
@@ -381,7 +340,7 @@ private fun CategoryTile(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(tileColor)
-            .clickable(onClick = onClick)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -394,14 +353,14 @@ private fun CategoryTile(
                 Icon(
                     painter = painterResource(lineArtRes),
                     contentDescription = null,
-                    tint = accentColor,
+                    tint = categoryGlyphColor(accentColor, badgeAlpha = 0.5f),
                     modifier = Modifier.size(16.dp)
                 )
             } else {
                 Icon(
                     imageVector = categoryIcon(category.iconName),
                     contentDescription = null,
-                    tint = accentColor,
+                    tint = categoryGlyphColor(accentColor, badgeAlpha = 0.5f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -409,64 +368,57 @@ private fun CategoryTile(
         Text(
             categoryDisplayName(category),
             // Довгі назви ("Хобі/творчість", "Живе спілкування") переносяться на другий рядок, а не обрізаються "…".
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, lineHeight = 13.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 14.sp),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
     }
 }
 
-/** Один рядок, 4 кнопки Fill-шириною (за прямим запитом користувача, відхилення від 2×2-сітки
- * макета) — кожна ділить ширину порівну, висота фіксована 48.dp. */
+/**
+ * Підсумок під полями інтервалу: тривалість, що перераховується наживо, або — замість неї — спокійне
+ * пояснення, чому інтервал некоректний (`liveRegion` — скрінрідер озвучує зміну сам). Коли кінець
+ * раніше за початок у межах ОДНІЄЇ дати, пропонує найчастіше виправлення одним тапом:
+ * "закінчилась наступного дня" (23:00 → 01:00).
+ */
 @Composable
-private fun PresetGrid(minutes: Int, onAdd: (Int) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        listOf(15, 30, 60, 120).forEach { preset ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(TeperaPalette.cardTranslucentLight)
-                    .clickable { onAdd(preset) },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    presetLabel(preset),
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+private fun IntervalSummary(state: AddEntryUiState, onEndNextDay: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+                .semantics { liveRegion = LiveRegionMode.Polite },
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            when (state.intervalError) {
+                IntervalError.NONE -> {
+                    Text(stringResource(R.string.add_entry_duration_word), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        durationText(state.durationMinutes),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TeperaPalette.buttonBrand
+                    )
+                }
+                IntervalError.END_BEFORE_START -> Text(
+                    stringResource(R.string.add_entry_interval_invalid),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+                IntervalError.TOO_LONG -> Text(
+                    stringResource(R.string.add_entry_interval_too_long, MAX_INTERVAL_DAYS),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun presetLabel(minutes: Int): String =
-    if (minutes % 60 == 0) stringResource(R.string.add_entry_preset_hours_format, minutes / 60)
-    else stringResource(R.string.add_entry_preset_format, minutes)
-
-@Composable
-private fun DurationSummaryRow(totalMinutes: Int, onReset: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(stringResource(R.string.add_entry_duration_word), style = MaterialTheme.typography.bodyLarge)
-            Text(durationText(totalMinutes), style = MaterialTheme.typography.bodyLarge, color = TeperaPalette.timeChipText)
+        if (state.intervalError == IntervalError.END_BEFORE_START && state.endDayMillis == state.startDayMillis) {
+            TeperaButton(
+                text = stringResource(R.string.add_entry_end_next_day_action),
+                onClick = onEndNextDay,
+                type = TeperaButtonType.Secondary
+            )
         }
-        Text(
-            stringResource(R.string.add_entry_reset_duration),
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
-            color = TeperaPalette.brandAccent,
-            modifier = Modifier.clickable(onClick = onReset)
-        )
     }
 }
 
@@ -522,137 +474,82 @@ private fun GlassTextField(
     }
 }
 
-/** Мітка + окрема бордюрована "чіп"-капсула зі значенням часу (Figma node 61:3516) — тап
- * відкриває той самий TimePickerDialog, що й раніше, лише сам тригер тепер не суцільна кнопка. */
+/**
+ * Поле моменту інтервалу: підпис, дата (тап — календар) і велике значення часу (тап — M3-діалог
+ * часу). Дві окремі тапабельні зони в одній "скляній" картці, кожна ≥48dp. У діалозі часу за
+ * замовчуванням циферблат, а кнопка-перемикач дає клавіатурний ввід (`TimeInput`): швидше, коли
+ * людина вже знає точний час.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GlassTimeChip(
+private fun IntervalField(
     label: String,
+    dayMillis: Long,
     minuteOfDay: Int,
+    onDateSelected: (Long) -> Unit,
     onMinuteSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    minDayMillis: Long? = null,
+    maxDayMillis: Long? = null,
+    invalid: Boolean = false
 ) {
-    var showPicker by remember { mutableStateOf(false) }
-    val formatted = remember(minuteOfDay) {
-        "%02d:%02d".format(minuteOfDay / 60, minuteOfDay % 60)
-    }
+    var showTimePicker by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val timeText = remember(minuteOfDay) { "%02d:%02d".format(minuteOfDay / 60, minuteOfDay % 60) }
+    val dateText = remember(dayMillis) { SimpleDateFormat("d MMM", Locale.getDefault()).format(Date(dayMillis)) }
+    val fullDateText = remember(dayMillis) { SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(Date(dayMillis)) }
+    val shape = RoundedCornerShape(16.dp)
+    val invalidMessage = stringResource(R.string.add_entry_interval_invalid)
 
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f, fill = false))
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(TeperaPalette.timeChipBackground)
-                .border(1.dp, TeperaPalette.timeChipBorder, RoundedCornerShape(4.dp))
-                .clickable { showPicker = true }
-                .padding(horizontal = 4.dp, vertical = 2.dp)
-        ) {
-            Text(formatted, color = TeperaPalette.timeChipText, style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-
-    if (showPicker) {
-        val pickerState = rememberTimePickerState(
-            initialHour = minuteOfDay / 60,
-            initialMinute = minuteOfDay % 60,
-            is24Hour = true
-        )
-        TeperaDialog(
-            onDismissRequest = { showPicker = false },
-            confirmText = stringResource(R.string.dialog_save),
-            onConfirm = {
-                onMinuteSelected(pickerState.hour * 60 + pickerState.minute)
-                showPicker = false
-            },
-            dismissText = stringResource(R.string.dialog_cancel)
-        ) {
-            TimePicker(
-                state = pickerState,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                colors = TimePickerDefaults.colors(
-                    clockDialColor = Color.White,
-                    clockDialSelectedContentColor = Color.White,
-                    clockDialUnselectedContentColor = TeperaPalette.buttonBrandDark,
-                    selectorColor = TeperaPalette.buttonBrand,
-                    containerColor = Color.Transparent,
-                    periodSelectorBorderColor = TeperaPalette.buttonBrandDark,
-                    periodSelectorSelectedContainerColor = TeperaPalette.buttonBrand,
-                    periodSelectorUnselectedContainerColor = Color.Transparent,
-                    periodSelectorSelectedContentColor = Color.White,
-                    periodSelectorUnselectedContentColor = TeperaPalette.buttonBrandDark,
-                    timeSelectorSelectedContainerColor = TeperaPalette.buttonBrand,
-                    timeSelectorUnselectedContainerColor = Color.White,
-                    timeSelectorSelectedContentColor = Color.White,
-                    timeSelectorUnselectedContentColor = TeperaPalette.buttonBrandDark
-                )
-            )
-        }
-    }
-}
-
-/** "Скляний" рядок вибору дня (макет його не показує — функціонал лишається, за прямим запитом
- * користувача, лише новий стиль). */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DateRow(dateMillis: Long, onDateSelected: (Long) -> Unit) {
-    var showPicker by remember { mutableStateOf(false) }
-    val formatted = remember(dateMillis) {
-        SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(Date(dateMillis))
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+    Column(
+        modifier = modifier
+            .clip(shape)
             .background(TeperaPalette.cardTranslucentLight)
-            .clickable { showPicker = true }
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .then(if (invalid) Modifier.border(1.dp, MaterialTheme.colorScheme.error, shape) else Modifier)
+            // Помилка прив'язана до самого поля для скрінрідера (WCAG 3.3.1), а не лише окремий текст під формою.
+            .semantics { if (invalid) error(invalidMessage) }
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Icon(Icons.Filled.CalendarMonth, contentDescription = null)
-        Text(formatted, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = TeperaPalette.buttonBrandDark)
+        Row(
+            modifier = Modifier
+                .heightIn(min = 40.dp)
+                .clickable(role = Role.Button) { showDatePicker = true }
+                .semantics(mergeDescendants = true) { contentDescription = "$label, $fullDateText" },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(TeperaSymbols.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TeperaPalette.buttonBrandDark)
+            Text(dateText, style = MaterialTheme.typography.bodyLarge, color = TeperaPalette.buttonBrandDark)
+        }
+        Text(
+            timeText,
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Medium),
+            color = TeperaPalette.buttonBrand,
+            modifier = Modifier
+                .heightIn(min = 48.dp)
+                .clickable(role = Role.Button) { showTimePicker = true }
+                .semantics { contentDescription = "$label, $timeText" }
+                .wrapContentHeight(Alignment.CenterVertically)
+        )
     }
 
-    if (showPicker) {
-        val pickerState = rememberDatePickerState(initialSelectedDateMillis = localStartOfDayToUtcMidnight(dateMillis))
-        val pickerColors = DatePickerDefaults.colors(
-            containerColor = TeperaPalette.surfaceBrandLight,
-            titleContentColor = TeperaPalette.buttonBrandDark,
-            headlineContentColor = TeperaPalette.buttonBrandDark,
-            weekdayContentColor = TeperaPalette.buttonBrand,
-            subheadContentColor = TeperaPalette.buttonBrandDark,
-            navigationContentColor = TeperaPalette.buttonBrandDark,
-            yearContentColor = TeperaPalette.buttonBrandDark,
-            currentYearContentColor = TeperaPalette.buttonBrand,
-            selectedYearContentColor = Color.White,
-            selectedYearContainerColor = TeperaPalette.buttonBrand,
-            dayContentColor = TeperaPalette.buttonBrandDark,
-            selectedDayContentColor = Color.White,
-            selectedDayContainerColor = TeperaPalette.buttonBrand,
-            todayContentColor = TeperaPalette.buttonBrand,
-            todayDateBorderColor = TeperaPalette.buttonBrand,
-            dividerColor = TeperaPalette.buttonBrand.copy(alpha = 0.2f)
+    if (showDatePicker) {
+        TeperaDatePickerDialog(
+            dayMillis = dayMillis,
+            minDayMillis = minDayMillis,
+            maxDayMillis = maxDayMillis,
+            onSelected = { onDateSelected(it); showDatePicker = false },
+            onDismiss = { showDatePicker = false }
         )
-        DatePickerDialog(
-            onDismissRequest = { showPicker = false },
-            shape = RoundedCornerShape(28.dp),
-            colors = pickerColors,
-            confirmButton = {
-                TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
-                    pickerState.selectedDateMillis?.let { onDateSelected(utcMidnightToLocalStartOfDay(it)) }
-                    showPicker = false
-                })
-            },
-            dismissButton = {
-                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = { showPicker = false }, type = TeperaButtonType.Secondary)
-            }
-        ) {
-            DatePicker(state = pickerState, colors = pickerColors)
-        }
+    }
+
+    if (showTimePicker) {
+        TeperaTimePickerDialog(
+            title = label,
+            minuteOfDay = minuteOfDay,
+            onSelected = { onMinuteSelected(it); showTimePicker = false },
+            onDismiss = { showTimePicker = false }
+        )
     }
 }

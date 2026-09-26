@@ -1,6 +1,10 @@
 package com.serkodesign.tepera.ui.stats
 
 import androidx.compose.foundation.Canvas
+import com.serkodesign.tepera.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -57,7 +61,13 @@ fun OnlineTrendChart(
     val topHours = max(12, (ceil(maxHours / 3f) * 3f).toInt())
     val labelStyleColor = TeperaPalette.buttonBrandDark
 
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    // Текстова альтернатива графіку (WCAG 1.1.1): "Пн 3 год; Вт 2 год …" — скрінрідер не бачить Canvas.
+    val summary = dayLabels.zip(minutesPerDay).map { (label, minutes) -> "$label ${durationText(minutes)}" }.joinToString("; ")
+    val chartDescription = stringResource(R.string.trend_chart_description, summary)
+    Column(
+        modifier = modifier.clearAndSetSemantics { contentDescription = chartDescription },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
             // Figma 210:1905: підписи осі Y — justify-between на всю висоту графіка, по правому краю.
             Column(

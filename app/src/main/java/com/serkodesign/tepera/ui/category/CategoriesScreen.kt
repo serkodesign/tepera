@@ -1,5 +1,14 @@
 package com.serkodesign.tepera.ui.category
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,9 +35,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -126,7 +132,7 @@ fun CategoriesScreen(
                         GlassRow(
                             label = stringResource(R.string.category_add_custom),
                             onClick = { showCreateDialog = true },
-                            leading = { TeperaIconCircle(Icons.Filled.Add) },
+                            leading = { TeperaIconCircle(TeperaSymbols.Add) },
                             trailing = { }
                         )
                     }
@@ -190,7 +196,7 @@ private fun CategoryRow(
             TeperaIconCircle(
                 icon = categoryIcon(category.iconName),
                 background = categoryColor(category.colorHex).copy(alpha = 0.2f),
-                tint = categoryColor(category.colorHex)
+                tint = categoryGlyphColor(category.colorHex)
             )
         },
         trailing = {
@@ -199,7 +205,7 @@ private fun CategoryRow(
                 // категорій (звільняє слот ліміту T-8), дефолтні лишаються архів/розархівувати-
                 // only (пересіваються щозапуску за фіксованим id, "видалення" воскресло б).
                 if (category.isCustom) {
-                    TeperaIconButton(icon = Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.category_delete_action), onClick = onDelete)
+                    TeperaIconButton(icon = TeperaSymbols.Delete, contentDescription = stringResource(R.string.category_delete_action), onClick = onDelete)
                 }
                 Switch(
                     checked = !isArchived,
@@ -220,6 +226,7 @@ internal fun CreateCategoryDialog(
     var selectedIcon by remember { mutableStateOf(customCategoryIconChoices.first()) }
     var selectedColor by remember { mutableStateOf(customCategoryColorChoices.first()) }
     var showNameError by remember { mutableStateOf(false) }
+    val nameRequiredMessage = stringResource(R.string.category_name_required)
 
     TeperaDialog(
         onDismissRequest = onDismiss,
@@ -254,14 +261,14 @@ internal fun CreateCategoryDialog(
                     unfocusedTextColor = TeperaPalette.buttonBrandDark,
                     cursorColor = TeperaPalette.buttonBrand
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().semantics { if (showNameError) error(nameRequiredMessage) }
             )
             if (showNameError) {
                 Text(
-                    stringResource(R.string.category_name_required),
+                    nameRequiredMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp).semantics { liveRegion = LiveRegionMode.Polite }
                 )
             }
         }
@@ -308,7 +315,12 @@ internal fun CreateCategoryDialog(
                                     Modifier.border(BorderStroke(2.dp, TeperaPalette.buttonBrandDark), CircleShape)
                                 } else Modifier
                             )
-                            .clickable { selectedColor = colorHex }
+                            .selectable(
+                                selected = selectedColor == colorHex,
+                                role = Role.RadioButton,
+                                onClick = { selectedColor = colorHex }
+                            )
+                            .semantics { contentDescription = colorHex }
                     )
                 }
             }
@@ -322,7 +334,7 @@ private fun SwatchPickable(selected: Boolean, onClick: () -> Unit, content: @Com
         modifier = Modifier
             .size(40.dp)
             .background(if (selected) TeperaPalette.buttonBrand else Color.White, CircleShape)
-            .clickable(onClick = onClick),
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
         contentAlignment = Alignment.Center
     ) { content(if (selected) Color.White else TeperaPalette.buttonBrandDark) }
 }

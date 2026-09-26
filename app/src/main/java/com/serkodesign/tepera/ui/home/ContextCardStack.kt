@@ -2,6 +2,7 @@ package com.serkodesign.tepera.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import androidx.compose.animation.expandVertically
@@ -12,8 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -86,8 +85,13 @@ fun ContextCardStack(
     onSelectLastPhoneUseGuess: (LastPhoneUseGuess) -> Unit,
     onDismissLastPhoneUseEstimate: () -> Unit,
     gateEventsSummaryState: GateEventsSummaryUiState,
-    onDismissGateEventsSummary: () -> Unit
+    onDismissGateEventsSummary: () -> Unit,
+    welcomeBackState: WelcomeBackUiState,
+    onDismissWelcomeBack: () -> Unit
 ) {
+    ContextCardSlot(visible = CardType.WELCOME_BACK in visibleCards) {
+        WelcomeBackCard(state = welcomeBackState, onDismiss = onDismissWelcomeBack)
+    }
     ContextCardSlot(visible = CardType.ONLINE_ESTIMATE_REVEAL in visibleCards) {
         OnlineEstimateRevealCard(state = onlineEstimateRevealState, onDismiss = onDismissOnlineEstimateReveal)
     }
@@ -147,7 +151,7 @@ internal fun ContextCardHeader(
         Text(title, style = titleStyle)
         IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
             Icon(
-                Icons.Filled.Close,
+                TeperaSymbols.Close,
                 contentDescription = stringResource(R.string.context_card_dismiss_action),
                 modifier = Modifier.size(16.dp)
             )

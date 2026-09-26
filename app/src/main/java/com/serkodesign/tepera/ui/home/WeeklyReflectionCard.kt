@@ -63,14 +63,7 @@ fun WeeklyReflectionCard(state: WeeklyReflectionUiState, onSelectGuess: (WeeklyO
             )
         } else {
             // FR-P.6: дві цифри поруч, без "вище/нижче" — рефлексію робить сама людина.
-            Text(
-                stringResource(R.string.weekly_reflection_your_guess_format, guessLabel(state.guess)),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                stringResource(R.string.weekly_reflection_actual_format, formatDuration(state.actualMinutes)),
-                style = MaterialTheme.typography.bodyLarge
-            )
+            GuessRevealRow(guessValue = guessLabel(state.guess), actualValue = formatDuration(state.actualMinutes))
             TeperaButton(
                 text = stringResource(R.string.weekly_reflection_done),
                 onClick = onDismiss,

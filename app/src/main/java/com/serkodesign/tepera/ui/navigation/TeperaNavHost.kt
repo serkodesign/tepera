@@ -1,11 +1,9 @@
 package com.serkodesign.tepera.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -37,12 +35,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavBackStackEntry
 import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
@@ -57,11 +57,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.debug.SpikeT1Screen
 import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
@@ -85,14 +86,18 @@ import com.serkodesign.tepera.ui.diary.DiaryScreen
 import com.serkodesign.tepera.ui.knowledge.KnowledgeBaseScreen
 import com.serkodesign.tepera.ui.gates.GatePauseScreen
 import com.serkodesign.tepera.ui.gates.GatesScreen
+import com.serkodesign.tepera.ui.gates.GateScheduleScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.PermissionsBackground
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
-import com.serkodesign.tepera.ui.onboarding.ValuesOnboardingScreen
+import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
+import androidx.compose.ui.platform.LocalContext
+import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.settings.AboutScreen
+import com.serkodesign.tepera.ui.settings.ProInterestScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
@@ -111,9 +116,9 @@ private object Routes {
     const val EDIT_ENTRY = "edit_entry/{entryId}"
     const val CATEGORIES = "categories"
     const val ONBOARDING = "onboarding"
-    const val VALUES_ONBOARDING = "values_onboarding"
     const val CATEGORY_ONBOARDING = "category_onboarding"
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
+    const val TARGET_ONBOARDING = "target_onboarding"
     const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
@@ -121,16 +126,12 @@ private object Routes {
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val ABOUT = "about"
+    const val PRO_INTEREST = "pro_interest"
+    const val GATE_SCHEDULE = "gate_schedule"
     const val STATS = "stats"
     const val DIARY = "diary"
-    const val SPIKE_T1 = "spike_t1"
-    const val SPIKE_T15 = "spike_t15"
     const val GATES = "gates"
     const val WIDGET_SETTINGS = "widget_settings"
-    const val SUPPORT = "support"
-    const val PRO = "pro"
-    const val PRO_PAYWALL = "pro_paywall"
-    const val PRO_CUSTOMER_CENTER = "pro_customer_center"
     const val KNOWLEDGE_BASE = "knowledge_base"
     const val KNOWLEDGE_SCROLLING = "knowledge_scrolling"
     const val CATEGORY_HISTORY = "category_history/{categoryId}"
@@ -153,10 +154,10 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, GATES, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
-        ONBOARDING, VALUES_ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING,
-        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, SUPPORT, PRO
+        ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
+        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -185,8 +186,6 @@ fun TeperaNavHost(
     activeTimerStore: ActiveTimerStore,
     backupRepository: BackupRepository,
     gateRepository: GateRepository,
-    supportRepository: com.serkodesign.tepera.data.billing.SupportRepository,
-    proRepository: com.serkodesign.tepera.data.billing.ProRepository,
     gateEventRepository: GateEventRepository,
     cardHistoryRepository: CardHistoryRepository,
     navController: NavHostController = rememberNavController(),
@@ -200,7 +199,8 @@ fun TeperaNavHost(
     // без унікального nonce на кожен тап LaunchedEffect(pendingGateTargetPackage) не перезапустився
     // б, якщо застосунок збігається з попереднім.
     pendingGateTargetPackage: String? = null,
-    pendingGateRequestNonce: Long? = null
+    pendingGateRequestNonce: Long? = null,
+    pendingWeeklySummaryNonce: Long? = null
 ) {
     LaunchedEffect(Unit) {
         if (pendingOpenAddEntry) {
@@ -211,6 +211,34 @@ fun TeperaNavHost(
     LaunchedEffect(pendingGateRequestNonce) {
         if (pendingGateTargetPackage != null) {
             navController.navigate(Routes.gatePause(pendingGateTargetPackage))
+        }
+    }
+
+    // Ворота, з яких пішли без вибору («Додому», інший застосунок, блокування екрана), не лишаються в стеку: інакше
+    // наступне відкриття Tepera з лаунчера показало б стару паузу замість Home. Подію рішення не пишемо — вибору не було.
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        if (navController.currentDestination?.route == Routes.GATE_PAUSE) {
+            navController.popBackStack(Routes.HOME, inclusive = false)
+        }
+    }
+
+    // CC-8: тап по тижневому сповіщенню — повернутися на Home, де лежить картка «Цей тиждень».
+    LaunchedEffect(pendingWeeklySummaryNonce) {
+        if (pendingWeeklySummaryNonce != null) navController.popBackStack(Routes.HOME, inclusive = false)
+    }
+
+    // Онбординг — єдиний ланцюжок: кожен крок веде просто до наступного (з заміною себе в стеку),
+    // Home між кроками не показується. Порядок і умови (доступ до статистики визначає, чи буде
+    // крок дозволу або орієнтиру) — у [nextOnboardingRoute]; коли кроків не лишилось — назад на Home.
+    val onboardingScope = rememberCoroutineScope()
+    fun advanceOnboarding(from: String) {
+        onboardingScope.launch {
+            val next = nextOnboardingRoute(settingsStore, balanceRepository)
+            if (next == null) {
+                navController.popBackStack(Routes.HOME, inclusive = false)
+            } else {
+                navController.navigate(next) { popUpTo(from) { inclusive = true } }
+            }
         }
     }
 
@@ -263,34 +291,34 @@ fun TeperaNavHost(
                 ),
                 enterTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing)) +
+                        fadeIn(TeperaSpecs.enterFade()) +
                             scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized), initialScale = 0.92f)
                     } else {
                         slideInHorizontally(TeperaSpecs.spatial()) { slidePx } +
-                            fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing))
+                            fadeIn(TeperaSpecs.enterFade())
                     }
                 },
                 exitTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeOut(tween(90, easing = LinearEasing))
+                        fadeOut(TeperaSpecs.exitFade())
                     } else {
-                        slideOutHorizontally(TeperaSpecs.spatial()) { -slidePx } + fadeOut(tween(90, easing = LinearEasing))
+                        slideOutHorizontally(TeperaSpecs.spatial()) { -slidePx } + fadeOut(TeperaSpecs.exitFade())
                     }
                 },
                 popEnterTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing)) +
+                        fadeIn(TeperaSpecs.enterFade()) +
                             scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized), initialScale = 0.92f)
                     } else {
                         slideInHorizontally(TeperaSpecs.spatial()) { -slidePx } +
-                            fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing))
+                            fadeIn(TeperaSpecs.enterFade())
                     }
                 },
                 popExitTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeOut(tween(90, easing = LinearEasing))
+                        fadeOut(TeperaSpecs.exitFade())
                     } else {
-                        slideOutHorizontally(TeperaSpecs.spatial()) { slidePx } + fadeOut(tween(90, easing = LinearEasing))
+                        slideOutHorizontally(TeperaSpecs.spatial()) { slidePx } + fadeOut(TeperaSpecs.exitFade())
                     }
                 }
             ) {
@@ -313,9 +341,9 @@ fun TeperaNavHost(
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
-                    onShowValuesOnboarding = { navController.navigate(Routes.VALUES_ONBOARDING) },
                     onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
                     onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
+                    onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
                     onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) }
                 )
             }
@@ -409,34 +437,34 @@ fun TeperaNavHost(
                 OnboardingScreen(
                     settingsStore = settingsStore,
                     balanceRepository = balanceRepository,
-                    onDone = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.VALUES_ONBOARDING) {
-                ValuesOnboardingScreen(
-                    categoryRepository = categoryRepository,
-                    settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.ONBOARDING) }
                 )
             }
             composable(Routes.CATEGORY_ONBOARDING) {
                 CategoryOnboardingScreen(
                     categoryRepository = categoryRepository,
                     settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.CATEGORY_ONBOARDING) }
                 )
             }
             composable(Routes.ONLINE_ESTIMATE_ONBOARDING) {
                 OnlineEstimateOnboardingScreen(
                     settingsStore = settingsStore,
                     userEstimateRepository = userEstimateRepository,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.ONLINE_ESTIMATE_ONBOARDING) }
+                )
+            }
+            composable(Routes.TARGET_ONBOARDING) {
+                TargetOnboardingScreen(
+                    settingsStore = settingsStore,
+                    balanceRepository = balanceRepository,
+                    onDone = { advanceOnboarding(Routes.TARGET_ONBOARDING) }
                 )
             }
             composable(Routes.WIDGET_SUGGESTION_ONBOARDING) {
                 WidgetSuggestionScreen(
                     settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.WIDGET_SUGGESTION_ONBOARDING) }
                 )
             }
             composable(Routes.SETTINGS) {
@@ -448,11 +476,8 @@ fun TeperaNavHost(
                     onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
-                    onOpenSupport = { navController.navigate(Routes.SUPPORT) },
-                    onOpenPro = { navController.navigate(Routes.PRO) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
-                    onOpenSpikeT1 = { navController.navigate(Routes.SPIKE_T1) },
-                    onOpenSpikeT15 = { navController.navigate(Routes.SPIKE_T15) },
+                    onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -460,43 +485,18 @@ fun TeperaNavHost(
                 TrackingSettingsScreen(
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
+                    balanceRepository = balanceRepository,
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.LANGUAGE_SETTINGS) {
                 LanguageSettingsScreen(onBack = { navController.popBackStack() })
             }
-            composable(Routes.SPIKE_T15) {
-                com.serkodesign.tepera.debug.SpikeT15Screen(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.SPIKE_T1) {
-                SpikeT1Screen(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.PRO) {
-                com.serkodesign.tepera.ui.pro.ProScreen(
-                    proRepository = proRepository,
-                    onOpenPaywall = { navController.navigate(Routes.PRO_PAYWALL) },
-                    onOpenCustomerCenter = { navController.navigate(Routes.PRO_CUSTOMER_CENTER) },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.PRO_PAYWALL) {
-                com.serkodesign.tepera.ui.pro.PaywallScreen(onClose = { navController.popBackStack() })
-            }
-            composable(Routes.PRO_CUSTOMER_CENTER) {
-                com.serkodesign.tepera.ui.pro.CustomerCenterScreen(onClose = { navController.popBackStack() })
-            }
-            composable(Routes.SUPPORT) {
-                com.serkodesign.tepera.ui.support.SupportScreen(
-                    supportRepository = supportRepository,
-                    onBack = { navController.popBackStack() }
-                )
-            }
             composable(Routes.GATES) {
                 GatesScreen(
                     gateRepository = gateRepository,
                     installedAppsProvider = installedAppsProvider,
-                    settingsStore = settingsStore,
+                    onOpenSchedule = { navController.navigate(Routes.GATE_SCHEDULE) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -523,6 +523,15 @@ fun TeperaNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(Routes.GATE_SCHEDULE) {
+                GateScheduleScreen(
+                    gateRepository = gateRepository,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.PRO_INTEREST) {
+                ProInterestScreen(onBack = { navController.popBackStack() })
+            }
             composable(Routes.ABOUT) {
                 AboutScreen(
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
@@ -541,16 +550,25 @@ fun TeperaNavHost(
 }
 
 /**
- * "Таблетка" нижнього навбару — точна відповідність Figma-фрейму "Everyday_Designs", node
- * 2146:320 (get_design_context + get_variable_defs): біла картка (Surface/surface-card,
- * замінила попередню суцільну темно-зелену з node 1951:4017 — `TeperaPalette.navPillDark`
- * лишений у палітрі як історія рішення), 3 РІВНОВЕЛИКІ вкладки Home/Diary/Stats (у цьому
- * порядку — Diary посередині, не праворуч). Вибрана вкладка — м'ятна підсвітка (Brand/200) з
- * текстом і темно-зеленою іконкою (Brand/800), невибрані — лише сіра іконка (Text/text-
- * secondary), без підпису. Іконки — `TeperaIcons` (SVG-точні вектори з того самого фрейму, не
- * найближчі глифи material-icons-extended). Кнопки "+"/"Незабаром" по центру більше нема —
- * заглушку прибрано (за запитом користувача), додавання часу лишається per-категорійним
- * (HomeScreen.CategoryCard).
+ * Наступний непройдений крок онбордингу або null, коли всі пройдені: категорії → оцінка Online →
+ * дозвіл (лише без доступу) → орієнтир (лише з доступом) → пропозиція віджета.
+ */
+private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository): String? {
+    if (!settingsStore.categoryOnboardingSeen.first()) return Routes.CATEGORY_ONBOARDING
+    if (!settingsStore.onlineEstimateOnboardingSeen.first()) return Routes.ONLINE_ESTIMATE_ONBOARDING
+    val hasAccess = balanceRepository.hasUsageAccess()
+    if (!hasAccess && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING
+    if (hasAccess && !settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
+    if (!settingsStore.widgetSuggestionSeen.first()) return Routes.WIDGET_SUGGESTION_ONBOARDING
+    return null
+}
+
+/**
+ * "Таблетка" нижнього навбару — Figma "App concept", node 274:530 (Navbar / Today, Diary, Stats):
+ * біла картка (Surface/surface-card) заввишки 62 з радіусом 32 і відступом 6, три рівні вкладки
+ * Home/Diary/Stats. Вибрана — заливка Brand/200 з іконкою (Filled) і підписом Brand/800, невибрані —
+ * лише сіра (Outlined) іконка. Іконки — `TeperaIcons` (SVG 1:1 з компонента "Navbar icons", node
+ * 274:484). Додавання часу лишається per-категорійним (HomeScreen.CategoryCard).
  */
 @Composable
 private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostController) {
@@ -563,20 +581,18 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp + navigationBarInset)
+            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillCard)
             .padding(6.dp),
-        // Figma "App concept" node 192:726: проміжок 6dp між вкладками, тримаються рівними частками.
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        // Figma "App concept" node 274:369: три рівні частки без проміжків (justify-between).
         verticalAlignment = Alignment.CenterVertically
     ) {
         NavPillTab(
             icon = if (currentRoute == Routes.HOME) TeperaIcons.HomeFilled else TeperaIcons.HomeOutlined,
             label = stringResource(R.string.home_screen_title),
             selected = currentRoute == Routes.HOME,
-            idleCorners = NavTabCorners(topStart = 40.dp, bottomStart = 40.dp, topEnd = 16.dp, bottomEnd = 16.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.HOME) {
@@ -592,7 +608,6 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             icon = if (currentRoute == Routes.DIARY) TeperaIcons.BallotFilled else TeperaIcons.BallotOutlined,
             label = stringResource(R.string.diary_nav_action),
             selected = currentRoute == Routes.DIARY,
-            idleCorners = NavTabCorners(16.dp, 16.dp, 16.dp, 16.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.DIARY) {
@@ -608,7 +623,6 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
             icon = if (currentRoute == Routes.STATS) TeperaIcons.LeaderboardFilled else TeperaIcons.LeaderboardOutlined,
             label = stringResource(R.string.stats_nav_action),
             selected = currentRoute == Routes.STATS,
-            idleCorners = NavTabCorners(topStart = 16.dp, bottomStart = 16.dp, topEnd = 40.dp, bottomEnd = 40.dp),
             modifier = Modifier.weight(1f).fillMaxHeight(),
             onClick = {
                 if (currentRoute != Routes.STATS) {
@@ -628,35 +642,29 @@ private fun NavPillTab(
     icon: ImageVector,
     label: String,
     selected: Boolean,
-    idleCorners: NavTabCorners,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726 (підписи й іконки —
-    // ті самі, змінено лише оформлення): вибрана — суцільний #006944 з світлим текстом/іконкою
-    // (#DCF6ED), радіус 40; невибрана — сіра пілюля #F0F3F4 з сірою іконкою, радіус залежить від
-    // позиції (крайні вкладки мають 40 із зовнішнього боку, 16 — із внутрішнього).
-    // Анімація M3 (emphasized): колір заливки й вмісту, чотири кути (форма пілюлі "перетікає" між
-    // 16 і 40dp) і поява/зникнення підпису — розтягування по ширині + fade.
+    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 274:530 (Navbar / Today, Diary,
+    // Stats): вибрана — заливка Brand/200 (#B2E5D3), радіус 40, іконка й підпис Brand/800 (#003926);
+    // невибрана — без заливки, лише сіра (#505050) іконка. Анімація M3 (emphasized): колір заливки й
+    // вмісту та поява/зникнення підпису — розтягування по ширині + fade.
     val contentColor by animateColorAsState(
-        if (selected) TeperaPalette.navTabSelectedContent else TeperaPalette.navPillUnselectedIcon,
+        if (selected) TeperaPalette.navPillSelectedContent else TeperaPalette.navPillUnselectedIcon,
         TeperaSpecs.effects(), label = "navTabContent"
     )
     val fill by animateColorAsState(
-        if (selected) TeperaPalette.buttonBrand else TeperaPalette.navTabIdleFill,
+        if (selected) TeperaPalette.navPillSelected else Color.Transparent,
         TeperaSpecs.effects(), label = "navTabFill"
     )
-    val topStart by animateDpAsState(if (selected) 40.dp else idleCorners.topStart, TeperaSpecs.spatial(), label = "navTabTS")
-    val topEnd by animateDpAsState(if (selected) 40.dp else idleCorners.topEnd, TeperaSpecs.spatial(), label = "navTabTE")
-    val bottomEnd by animateDpAsState(if (selected) 40.dp else idleCorners.bottomEnd, TeperaSpecs.spatial(), label = "navTabBE")
-    val bottomStart by animateDpAsState(if (selected) 40.dp else idleCorners.bottomStart, TeperaSpecs.spatial(), label = "navTabBS")
-    val shape = RoundedCornerShape(topStart = topStart, topEnd = topEnd, bottomEnd = bottomEnd, bottomStart = bottomStart)
+    val shape = RoundedCornerShape(40.dp)
     Box(
         modifier = modifier
             .fillMaxHeight()
             .clip(shape)
             .background(fill)
-            .clickable(onClick = onClick),
+            // Вкладка з роллю Tab і станом selected — скрінрідер озвучує "вкладка, вибрано" (WCAG 4.1.2).
+            .selectable(selected = selected, role = androidx.compose.ui.semantics.Role.Tab, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -691,9 +699,6 @@ private fun NavPillTab(
         }
     }
 }
-
-/** Радіуси кутів невибраної вкладки навбару (у вибраному стані всі чотири анімуються до 40dp). */
-private data class NavTabCorners(val topStart: Dp, val bottomStart: Dp, val topEnd: Dp, val bottomEnd: Dp)
 
 /** Перехід між двома вкладками навбару (Home/Diary/Stats) — для них M3 "fade through". */
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.isTopLevelSwitch(): Boolean =

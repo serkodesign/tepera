@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.category
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,10 +30,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.ui.diary.HistoryEntryItem
+import com.serkodesign.tepera.ui.diary.HistoryEntryRow
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -81,21 +87,33 @@ fun CategoryHistoryScreen(
                         .padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState())
                         .padding(bottom = 32.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
+                    // Той самий вигляд, що у Щоденнику: заголовок доби (18sp Medium #003926), під ним картки записів
+                    // ([HistoryEntryRow]) з проміжком 4dp; між добами 32dp.
                     state.groups.forEach { group ->
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(
                                 text = formatDayLabel(group.dayStartMillis),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold
+                                modifier = Modifier.padding(horizontal = 8.dp).semantics { heading() },
+                                color = TeperaPalette.buttonBrandDark,
+                                fontFamily = TeperaPalette.headlineFont,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 18.sp,
+                                lineHeight = 19.8.sp,
+                                letterSpacing = 0.018.sp
                             )
-                            group.entries.forEach { entry ->
-                                CategoryHistoryEntryRow(
-                                    entry = entry,
-                                    category = category,
-                                    onEdit = { onEditEntry(entry.id) }
-                                )
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                group.entries.forEach { entry ->
+                                    HistoryEntryRow(
+                                        item = HistoryEntryItem(
+                                            entry = entry,
+                                            category = category,
+                                            seriesRange = entry.seriesId?.let(state.seriesRanges::get)
+                                        ),
+                                        onEdit = { onEditEntry(entry.id) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -107,57 +125,3 @@ fun CategoryHistoryScreen(
 
 private fun formatDayLabel(dayStartMillis: Long): String =
     SimpleDateFormat("d MMMM", Locale.getDefault()).format(Date(dayStartMillis))
-
-@Composable
-private fun CategoryHistoryEntryRow(
-    entry: ActivityEntryEntity,
-    category: CategoryEntity,
-    onEdit: () -> Unit
-) {
-    val accentColor = categoryColor(category.colorHex)
-    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val endMillis = entry.startTime + entry.durationMinutes * 60_000L
-    val (hours, remainderMinutes) = roundToQuarterHour(entry.durationMinutes)
-    val durationText = when {
-        hours <= 0 -> stringResource(R.string.minutes_short_format, remainderMinutes)
-        remainderMinutes == 0 -> stringResource(R.string.hours_short_format, hours)
-        else -> stringResource(R.string.hours_minutes_short_format, hours, remainderMinutes)
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardTranslucent)
-            .clickable(onClick = onEdit)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(accentColor.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(categoryIcon(category.iconName), contentDescription = null, tint = accentColor)
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                stringResource(
-                    R.string.history_entry_row_format,
-                    timeFormat.format(Date(entry.startTime)),
-                    timeFormat.format(Date(endMillis)),
-                    durationText
-                ),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            if (!entry.note.isNullOrBlank()) {
-                Text(
-                    text = entry.note,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
-                )
-            }
-        }
-    }
-}

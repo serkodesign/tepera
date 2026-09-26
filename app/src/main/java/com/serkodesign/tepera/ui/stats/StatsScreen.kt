@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.stats
 
 import android.content.Intent
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -47,18 +49,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
-import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
-import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
-import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
-import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
-import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
-import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -71,22 +61,16 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.pattern.HourlyHeatGrid
+import com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
+import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.ui.theme.TeperaCard
-import com.serkodesign.tepera.ui.theme.TeperaChip
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
-
-private val categoryLabelKey = ExtraStore.Key<List<String>>()
-private val dayLabelKey = ExtraStore.Key<List<String>>()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,9 +92,15 @@ fun StatsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // За прямим запитом користувача екран щоразу відкривається на "Вчора", а не на останньому
+    // обраному періоді (ViewModel переживає перемикання вкладок навбару, тож без цього лишався б "Тиждень").
+    LaunchedEffect(Unit) {
+        if (state.period != StatsPeriod.DAY) viewModel.selectPeriod(StatsPeriod.DAY)
+    }
+
     // FR-D.8/D.9: власний інстанс (окремий від Home, кожен зі своїм refresh-циклом). За прямим
     // запитом користувача тепер РЕАГУЄ на PeriodSelector — initialPeriodDays узгоджений із
-    // дефолтним period == WEEK у StatsUiState(), LaunchedEffect(state.period) нижче тримає їх
+    // дефолтним period == DAY у StatsUiState(), LaunchedEffect(state.period) нижче тримає їх
     // синхронізованими далі.
     val patternViewModel: PatternViewModel = viewModel(
         factory = PatternViewModel.Factory(
@@ -161,47 +151,38 @@ fun StatsScreen(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottomNavClearance()),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             // T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком,
             // без виділення" — саме тут (Stats, period == WEEK), НЕ на Home (розділ 2.2 забороняє
             // пасивний показ на головному екрані). null = нема доступу/API < 28 — рядок відсутній,
-            // не "0".
+            // не "0". За прямим запитом користувача — дві картки в ряд (`StatTile`), не чипи.
             if (state.period == StatsPeriod.WEEK) {
-              @OptIn(ExperimentalLayoutApi::class)
-              FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-              ) {
-                state.unlockStats.weekCount?.let { count ->
-                    TeperaChip(
-                        label = stringResource(R.string.stats_unlock_week_label),
-                        value = count.toString()
-                    )
+                val weekStats = buildList {
+                    state.unlockStats.weekCount?.let { add(stringResource(R.string.stats_unlock_week_label) to it.toString()) }
+                    // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard — тут серед фактів Stats.
+                    state.lastPhoneUseStats.weekMedianMillis?.let {
+                        add(stringResource(R.string.stats_last_phone_use_week_label) to formatClockTime(it))
+                    }
                 }
-                // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard — тут
-                // звичайним підписаним рядком, бо це самостійний факт серед інших рядків Stats,
-                // не другорядна деталь під двома щойно показаними числами.
-                state.lastPhoneUseStats.weekMedianMillis?.let { millis ->
-                    TeperaChip(
-                        label = stringResource(R.string.stats_last_phone_use_week_label),
-                        value = formatClockTime(millis)
-                    )
-                }
-              }
+                if (weekStats.isNotEmpty()) TeperaStatsBar(stats = weekStats)
+                // За прямим запитом користувача: тепловий патерн одразу під картками вище.
+                PatternCard(state = patternState, period = state.period)
             }
 
             // "День" = вчора: замість тренду з однією точкою — деталі доби (межі, хронологія, паузи,
-            // порівняння зі своєю типовою добою). Тиждень лишається без змін.
+            // порівняння зі своєю типовою добою). Тепловий патерн для Дня рендериться всередині
+            // DayDetailsSection, одразу під картками меж дня (той самий принцип, що Тиждень вище).
             if (state.period == StatsPeriod.DAY) {
                 DayDetailsSection(
                     details = state.dayDetails,
                     hasUsageAccess = state.hasUsageAccess,
                     onOpenUsageAccessSettings = {
                         context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                    }
+                    },
+                    patternState = patternState
                 )
             }
 
@@ -221,8 +202,6 @@ fun StatsScreen(
                     }
                 )
             }
-
-            PatternCard(state = patternState, period = state.period)
         }
         }
     }
@@ -247,7 +226,7 @@ private fun formatClockTime(millis: Long): String =
  * днів, не "вчора" — "Добовий патерн використання" (той самий рядок, що тепер завжди на Home).
  */
 @Composable
-private fun PatternCard(state: PatternUiState, period: StatsPeriod) {
+internal fun PatternCard(state: PatternUiState, period: StatsPeriod) {
     if (!state.visible) return
 
     TeperaCard(
@@ -258,7 +237,14 @@ private fun PatternCard(state: PatternUiState, period: StatsPeriod) {
         if (!state.hasEnoughData) {
             Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
         }
-        HourlyHeatGrid(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null)
+        // Висока сітка 6×4 з підписами годин — той самий вигляд, що на Home; фіксована висота, бо в прокручуваному
+        // Column нема "вільної" висоти для weight.
+        Box(modifier = Modifier.fillMaxWidth().height(184.dp)) {
+            HourlyHeatGridTall(
+                hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
@@ -361,7 +347,7 @@ private fun CategoryBreakdownCard(
                                 text = durationText,
                                 color = TeperaPalette.buttonBrandDark,
                                 fontFamily = TeperaPalette.headlineFont,
-                                fontWeight = FontWeight.Normal,
+                                fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp,
                                 letterSpacing = 0.25.sp,

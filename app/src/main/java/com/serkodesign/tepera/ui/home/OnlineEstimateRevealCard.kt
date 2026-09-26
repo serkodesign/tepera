@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -39,13 +38,9 @@ fun OnlineEstimateRevealCard(state: OnlineEstimateRevealUiState, onDismiss: () -
     ) {
         ContextCardHeader(title = stringResource(R.string.online_estimate_reveal_title), onDismiss = onDismiss)
         val guess = DailyOnlineGuess.fromRepresentativeMinutes(state.estimatedMinutes)
-        Text(
-            stringResource(R.string.weekly_reflection_your_guess_format, guess?.let { dailyGuessLabel(it) } ?: formatDuration(state.estimatedMinutes)),
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Text(
-            stringResource(R.string.weekly_reflection_actual_format, formatDuration(state.actualMinutes)),
-            style = MaterialTheme.typography.bodyLarge
+        GuessRevealRow(
+            guessValue = guess?.let { dailyGuessLabel(it) } ?: formatDuration(state.estimatedMinutes),
+            actualValue = formatDuration(state.actualMinutes)
         )
     }
 }

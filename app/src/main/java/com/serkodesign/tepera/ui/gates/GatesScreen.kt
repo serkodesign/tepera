@@ -1,10 +1,16 @@
 package com.serkodesign.tepera.ui.gates
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -21,21 +27,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material3.CircularProgressIndicator
+import com.serkodesign.tepera.ui.theme.TeperaLoadingIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,19 +58,30 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.repository.GateRepository
+import com.serkodesign.tepera.ui.theme.NavChevron
+import com.serkodesign.tepera.ui.theme.teperaSwitchColors
+import com.serkodesign.tepera.ui.theme.TeperaDatePickerDialog
+import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.util.PauseWindow
+import com.serkodesign.tepera.util.startOfTodayMillis
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.util.Date
+import java.util.Locale
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
-import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.diary.EntryChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
-import com.serkodesign.tepera.ui.theme.teperaSwitchColors
+import com.serkodesign.tepera.ui.theme.TeperaSearchField
 import kotlinx.coroutines.launch
 
 // Тривалість затримки: чіп у списку воріт перемикає їх по колу; старе значення поза набором (20 с з
@@ -81,13 +97,14 @@ private val DELAY_OPTIONS = listOf(3, 5, 10)
 fun GatesScreen(
     gateRepository: GateRepository,
     installedAppsProvider: InstalledAppsProvider,
-    settingsStore: SettingsStore,
+    onOpenSchedule: () -> Unit,
     onBack: () -> Unit
 ) {
     val viewModel: GatesViewModel = viewModel(
-        factory = GatesViewModel.Factory(gateRepository, installedAppsProvider, settingsStore)
+        factory = GatesViewModel.Factory(gateRepository, installedAppsProvider)
     )
     val state by viewModel.uiState.collectAsState()
+    val growingDelay by viewModel.growingDelay.collectAsState()
     val scope = rememberCoroutineScope()
 
     // Видалення ярлика воріт відбувається поза застосунком (long-press на робочому столі) — без
@@ -97,19 +114,39 @@ fun GatesScreen(
         onPauseOrDispose { }
     }
 
+    var query by rememberSaveable { mutableStateOf("") }
+    var searchFocused by remember { mutableStateOf(false) }
+    // Пошук активний (в фокусі або є запит) — решта екрана зникає, видача одразу під полем (M3 expanded search).
+    val searchActive = searchFocused || query.isNotEmpty()
     var pendingApp by remember { mutableStateOf<InstalledAppInfo?>(null) }
     var instructionApp by remember { mutableStateOf<InstalledAppInfo?>(null) }
     var pinFailed by remember { mutableStateOf(false) }
 
-    val isPaused = state.gatesPausedUntilMillis > System.currentTimeMillis()
+    var showPauseDialog by remember { mutableStateOf(false) }
+    var showPauseDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            GlassScreenHeader(title = stringResource(R.string.gates_screen_title), onBack = onBack)
+            if (!searchActive) {
+                GlassScreenHeader(title = stringResource(R.string.gates_screen_title), onBack = onBack)
+            }
+
+            // Пошук закріплений угорі: інакше при вводі клавіатура закривала б список під полем. Діє на обидва
+            // списки — уже додані й доступні для додавання.
+            if (!state.loading && state.pinShortcutSupported) {
+                TeperaSearchField(
+                    query = query,
+                    onQueryChange = { query = it },
+                    placeholder = stringResource(R.string.search_apps_placeholder),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    active = searchActive,
+                    onFocusChange = { searchFocused = it }
+                )
+            }
 
             when {
                 state.loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    TeperaLoadingIndicator()
                 }
 
                 else -> LazyColumn(
@@ -117,26 +154,61 @@ fun GatesScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    item {
+                    if (!searchActive) item {
                         Text(
                             text = stringResource(R.string.gates_hint),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                         )
                     }
-                    item {
-                        // Розділ 2.3 документа: один тап, без підтвердження, без пояснювального тексту.
-                        GlassRow(
-                            label = stringResource(R.string.gates_pause_today_label),
-                            leading = {},
-                            trailing = {
-                                Switch(
-                                    checked = isPaused,
-                                    onCheckedChange = { viewModel.toggleGatesPausedForToday() },
-                                    colors = teperaSwitchColors()
-                                )
-                            }
-                        )
+                    if (!searchActive) item {
+                        // CC-5: ворота активні = зараз вікно розкладу І немає паузи.
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            GlassRow(
+                                label = stringResource(R.string.gates_pause_label),
+                                onClick = { showPauseDialog = true },
+                                leading = { TeperaIconCircle(TeperaSymbols.PauseCircle) },
+                                trailing = {
+                                    Text(
+                                        text = pauseSummary(state.pause),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    NavChevron()
+                                }
+                            )
+                            GlassRow(
+                                label = stringResource(R.string.gates_schedule_label),
+                                onClick = onOpenSchedule,
+                                leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
+                                trailing = {
+                                    Text(
+                                        text = stringResource(
+                                            if (state.schedule == null) R.string.gates_schedule_always
+                                            else R.string.gates_schedule_custom
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    NavChevron()
+                                }
+                            )
+                            // CC-6: опційна «зростаюча» затримка; лічильник повторних відкриттів ніде не показується.
+                            GlassRow(
+                                label = stringResource(R.string.gates_growing_delay_label),
+                                leading = { TeperaIconCircle(TeperaSymbols.Timer) },
+                                trailing = {
+                                    Switch(
+                                        checked = growingDelay,
+                                        onCheckedChange = { viewModel.setGrowingDelay(it) },
+                                        colors = teperaSwitchColors()
+                                    )
+                                }
+                            )
+                            Text(
+                                text = stringResource(R.string.gates_growing_delay_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                        }
                     }
 
                     if (!state.pinShortcutSupported) {
@@ -150,8 +222,25 @@ fun GatesScreen(
                         return@LazyColumn
                     }
 
-                    item { GlassSectionHeader(stringResource(R.string.gates_section_active)) }
-                    if (state.gates.isEmpty()) {
+                    val needle = query.trim()
+                    val visibleGates = state.gates.filter { needle.isEmpty() || it.app.label.contains(needle, ignoreCase = true) }
+                    val visibleApps = state.availableApps.filter { needle.isEmpty() || it.label.contains(needle, ignoreCase = true) }
+                    if (needle.isNotEmpty() && visibleGates.isEmpty() && visibleApps.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.search_no_results),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
+                                    .semantics { liveRegion = LiveRegionMode.Polite }
+                            )
+                        }
+                        return@LazyColumn
+                    }
+
+                    if (!searchActive || visibleGates.isNotEmpty()) {
+                        item { GlassSectionHeader(stringResource(R.string.gates_section_active)) }
+                    }
+                    if (!searchActive && state.gates.isEmpty()) {
                         item {
                             Text(
                                 text = stringResource(R.string.gates_empty),
@@ -160,7 +249,7 @@ fun GatesScreen(
                             )
                         }
                     }
-                    items(state.gates, key = { it.gate.packageName }) { gateState ->
+                    items(visibleGates, key = { it.gate.packageName }) { gateState ->
                         GateRow(
                             gateState = gateState,
                             onMarkHandled = { viewModel.markOriginalIconHandled(gateState.gate.packageName) },
@@ -169,18 +258,56 @@ fun GatesScreen(
                         )
                     }
 
-                    item { GlassSectionHeader(stringResource(R.string.gates_section_add)) }
-                    items(state.availableApps, key = { it.packageName }) { app ->
+                    if (!searchActive || visibleApps.isNotEmpty()) {
+                        item { GlassSectionHeader(stringResource(R.string.gates_section_add)) }
+                    }
+                    items(visibleApps, key = { it.packageName }) { app ->
                         GlassRow(
                             label = app.label,
                             onClick = { pendingApp = app },
                             leading = { AppIcon(app) },
-                            trailing = {}
+                            // "+" справа — підказка, що тап додає застосунок (весь рядок клікабельний, іконка декоративна).
+                            trailing = {
+                                Icon(TeperaSymbols.Add, contentDescription = null, tint = TeperaPalette.buttonBrand)
+                            }
                         )
                     }
                 }
             }
         }
+    }
+
+    if (showPauseDialog) {
+        PauseDialog(
+            isPaused = state.pause != null,
+            onChoose = { choice ->
+                showPauseDialog = false
+                when (choice) {
+                    PauseChoice.TODAY -> viewModel.pauseToday()
+                    PauseChoice.WEEKEND -> viewModel.pauseWeekend()
+                    PauseChoice.UNTIL_DATE -> showPauseDatePicker = true
+                }
+            },
+            onEndPause = {
+                showPauseDialog = false
+                viewModel.endPause()
+            },
+            onDismiss = { showPauseDialog = false }
+        )
+    }
+
+    if (showPauseDatePicker) {
+        val today = startOfTodayMillis()
+        TeperaDatePickerDialog(
+            dayMillis = today,
+            minDayMillis = today,
+            maxDayMillis = null,
+            onSelected = { dayMillis ->
+                showPauseDatePicker = false
+                viewModel.pauseUntil(Instant.ofEpochMilli(dayMillis).atZone(ZoneId.systemDefault()).toLocalDate())
+            },
+            onDismiss = { showPauseDatePicker = false }
+        )
     }
 
     pendingApp?.let { app ->
@@ -229,17 +356,17 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                     val currentDelay = gateState.gate.delaySeconds
                     // Тап по чіпу перемикає тривалість по колу (DELAY_OPTIONS); indexOf == -1 для значення поза
                     // набором дає перший елемент.
-                    EntryChip(
+                    TeperaButton(
                         text = stringResource(R.string.gates_delay_format, currentDelay),
-                        fontSize = 14.sp,
-                        background = Color(0xFFCBE8DE),
-                        horizontalPadding = 12.dp,
-                        modifier = Modifier.height(32.dp).clickable(role = Role.Button) {
+                        onClick = {
                             onDelayChange(DELAY_OPTIONS[(DELAY_OPTIONS.indexOf(currentDelay) + 1) % DELAY_OPTIONS.size])
-                        }
+                        },
+                        modifier = Modifier.width(72.dp),
+                        size = TeperaButtonSize.Small,
+                        type = TeperaButtonType.Secondary
                     )
                     Spacer(Modifier.width(8.dp))
-                    TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)
+                    TeperaIconButton(icon = TeperaSymbols.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)
                 }
             }
         )
@@ -250,12 +377,12 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                     .padding(start = 16.dp, top = 4.dp)
                     .clip(MaterialTheme.shapes.small)
                     .background(TeperaPalette.cardTranslucent)
-                    .clickable(onClick = onMarkHandled)
+                    .clickable(role = Role.Button, onClick = onMarkHandled)
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.WarningAmber,
+                    TeperaSymbols.Warning,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = TeperaPalette.brandAccent
@@ -317,7 +444,74 @@ private fun AppIcon(app: InstalledAppInfo) {
                 modifier = Modifier.size(40.dp).clip(CircleShape)
             )
         } else {
-            Icon(Icons.Filled.Apps, contentDescription = null, tint = TeperaPalette.brandAccent)
+            Icon(TeperaSymbols.Apps, contentDescription = null, tint = TeperaPalette.brandAccent)
+        }
+    }
+}
+
+@Composable
+private fun pauseSummary(pause: PauseWindow?): String {
+    if (pause == null) return stringResource(R.string.gates_pause_none)
+    val now = System.currentTimeMillis()
+    val format = remember { SimpleDateFormat("d MMM", Locale.getDefault()) }
+    // Кінець паузи — початок наступного дня, тож людині показуємо останній день паузи.
+    val lastDay = format.format(Date(pause.untilMillis - 1))
+    return if (pause.fromMillis > now) {
+        stringResource(R.string.gates_pause_from_until_format, format.format(Date(pause.fromMillis)), lastDay)
+    } else {
+        stringResource(R.string.gates_pause_until_format, lastDay)
+    }
+}
+
+private enum class PauseChoice { TODAY, WEEKEND, UNTIL_DATE }
+
+/** CC-5: вибір паузи — "сьогодні", "на вихідні" або "до дати"; чинну паузу можна скасувати одним тапом. */
+@Composable
+private fun PauseDialog(
+    isPaused: Boolean,
+    onChoose: (PauseChoice) -> Unit,
+    onEndPause: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var selected by remember { mutableStateOf(PauseChoice.TODAY) }
+    TeperaDialog(
+        onDismissRequest = onDismiss,
+        title = stringResource(R.string.gates_pause_dialog_title),
+        confirmText = stringResource(R.string.gates_pause_dialog_confirm),
+        onConfirm = { onChoose(selected) },
+        dismissText = stringResource(R.string.dialog_cancel)
+    ) {
+        listOf(
+            PauseChoice.TODAY to R.string.gates_pause_choice_today,
+            PauseChoice.WEEKEND to R.string.gates_pause_choice_weekend,
+            PauseChoice.UNTIL_DATE to R.string.gates_pause_choice_date
+        ).forEach { (choice, label) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .selectable(selected = selected == choice, role = Role.RadioButton) { selected = choice },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selected == choice,
+                    onClick = null,
+                    modifier = Modifier.padding(12.dp),
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = TeperaPalette.buttonBrand,
+                        unselectedColor = TeperaPalette.buttonBrandDark
+                    )
+                )
+                Text(text = stringResource(label), style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        if (isPaused) {
+            TeperaButton(
+                text = stringResource(R.string.gates_pause_end_now),
+                onClick = onEndPause,
+                type = TeperaButtonType.Secondary,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

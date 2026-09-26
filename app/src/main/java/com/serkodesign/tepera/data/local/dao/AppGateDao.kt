@@ -32,4 +32,7 @@ interface AppGateDao {
 
     @Query("UPDATE app_gates SET lastProceedAtMillis = :millis WHERE packageName = :packageName")
     suspend fun updateLastProceedAtMillis(packageName: String, millis: Long)
+
+    @Query("UPDATE app_gates SET repeatCount = :repeatCount, lastShownAtMillis = :shownAt WHERE packageName = :packageName")
+    suspend fun updateShowState(packageName: String, repeatCount: Int, shownAt: Long)
 }

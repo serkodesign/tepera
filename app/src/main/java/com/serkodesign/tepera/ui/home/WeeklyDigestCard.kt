@@ -3,14 +3,13 @@ package com.serkodesign.tepera.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,17 +28,17 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 
-// Кольори плиток — токени Figma "App concept" (node 192:726, "This week"): текст + фон 10%.
+// Кольори чисел у плитках — ті самі відтінки, що були в плашках Figma (node 192:726, "This week"), тепер як
+// колір великого числа на білій плитці (усі ≥ 4.5:1 до білого).
 private val MovementText = Color(0xFF026813)
-private val MovementFill = Color(0x1A026813)
 private val ReadingText = Color(0xFF220D99)
-private val ReadingFill = Color(0x1A65A5FF)
 private val HobbyText = Color(0xFF750D99)
-private val HobbyFill = Color(0x1AD765FF)
 private val DayStartText = Color(0xFF986800)
-private val DayStartFill = Color(0x26E9B12F)
 
 private const val HOBBY_WINDOW_DAYS = 7
+
+/** Одна плитка: підпис, головне число (великий шрифт) і необов'язкове пояснення поруч (приглушене). */
+private class DigestItem(val label: String, val main: String, val mainColor: Color, val note: String? = null)
 
 /**
  * "Цей тиждень" — третя сторінка горизонтального пейджера Home (Figma "App concept"
@@ -48,78 +47,56 @@ private const val HOBBY_WINDOW_DAYS = 7
  * — за запитом користувача метрика з макета повернена; знаменник 7 = довжина вікна, орієнтира
  * користувача нема), "День зазвичай починається" (середня точка старту). Плитка без даних не
  * показується (незалогованість ніколи не подається як докір, FR-3.4-подібний принцип).
- * "×" — закриття, якщо прочитав, до наступної доби.
+ * Кнопки закриття "×" нема (за запитом користувача).
+ *
+ * Розкладка під спільну висоту карток пейджера: ряди плиток ділять усю вільну висоту порівну
+ * (`weight(1f)`), а всередині плитки підпис зверху й число знизу — на вищій картці плитки просто
+ * вищі, а не з порожнечею під вмістом. Число — великим шрифтом замість дрібних кольорових плашок.
  */
 @Composable
-fun WeeklyDigestCard(state: WeeklyDigestUiState, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) {
     var showInfo by remember { mutableStateOf(false) }
 
-    val tiles = buildList<@Composable RowScope.() -> Unit> {
+    val items = buildList {
         if (state.movementCount > 0) {
-            add {
-                DigestTile(label = stringResource(R.string.category_movement)) {
-                    HomeTintChip(state.movementCount.toString(), MovementText, MovementFill)
-                }
-            }
+            add(DigestItem(stringResource(R.string.category_movement), state.movementCount.toString(), MovementText))
         }
         if (state.readingCount > 0) {
-            add {
-                DigestTile(label = stringResource(R.string.category_reading)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        HomeTintChip(state.readingCount.toString(), ReadingText, ReadingFill)
-                        HomeTintChip(
-                            text = formatDuration(state.readingMinutes),
-                            textColor = TeperaPalette.timeChipText,
-                            fill = TeperaPalette.timeChipBackground,
-                            borderColor = TeperaPalette.timeChipBorder
-                        )
-                    }
-                }
-            }
+            add(
+                DigestItem(
+                    stringResource(R.string.category_reading), state.readingCount.toString(), ReadingText,
+                    note = "· " + formatDuration(state.readingMinutes)
+                )
+            )
         }
         if (state.hobbyDays > 0) {
-            add {
-                DigestTile(label = stringResource(R.string.category_hobby)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        HomeTintChip(state.hobbyDays.toString(), HobbyText, HobbyFill)
-                        Text(
-                            stringResource(R.string.weekly_digest_hobby_between),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = HomeCardTextPrimary
-                        )
-                        HomeTintChip(HOBBY_WINDOW_DAYS.toString(), HobbyText, HobbyFill)
-                        val suffix = stringResource(R.string.weekly_digest_hobby_suffix)
-                        if (suffix.isNotEmpty()) {
-                            Text(suffix, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = HomeCardTextPrimary)
-                        }
-                    }
-                }
-            }
+            val between = stringResource(R.string.weekly_digest_hobby_between)
+            val suffix = stringResource(R.string.weekly_digest_hobby_suffix)
+            add(
+                DigestItem(
+                    stringResource(R.string.category_hobby), state.hobbyDays.toString(), HobbyText,
+                    note = listOf(between, HOBBY_WINDOW_DAYS.toString(), suffix).filter { it.isNotEmpty() }.joinToString(" ")
+                )
+            )
         }
         state.dayUsuallyStartsMinuteOfDay?.let { minuteOfDay ->
-            add {
-                DigestTile(label = stringResource(R.string.weekly_digest_day_start_label)) {
-                    HomeTintChip(formatTimeOfDay(minuteOfDay), DayStartText, DayStartFill)
-                }
-            }
+            add(DigestItem(stringResource(R.string.weekly_digest_day_start_label), formatTimeOfDay(minuteOfDay), DayStartText))
         }
     }
 
     HomeCardSurface(modifier = modifier, containerColor = TeperaPalette.homeCardFill) {
         HomeCardTitleRow(
             title = stringResource(R.string.weekly_digest_card_title),
-            onInfo = { showInfo = true },
-            onDismiss = onDismiss
+            onInfo = { showInfo = true }
         )
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            tiles.chunked(2).forEach { rowTiles ->
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            items.chunked(2).forEach { rowItems ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    modifier = Modifier.fillMaxWidth().weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    rowTiles.forEach { tile -> tile() }
-                    if (rowTiles.size < 2) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                    rowItems.forEach { item -> DigestTile(item, Modifier.weight(1f).fillMaxHeight()) }
+                    if (rowItems.size < 2) Spacer(Modifier.weight(1f))
                 }
             }
         }
@@ -134,20 +111,37 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, onDismiss: () -> Unit, modifier
     }
 }
 
-/** Біла плитка (радіус 8, паддінг 8): підпис 12sp зверху, плашки значень знизу. */
+/** Біла плитка (радіус 12, відступ 12): підпис (labelLarge) зверху, число 24sp + пояснення знизу. */
 @Composable
-private fun RowScope.DigestTile(label: String, content: @Composable () -> Unit) {
+private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
-            .weight(1f)
-            .fillMaxHeight()
-            .clip(RoundedCornerShape(8.dp))
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
             .background(TeperaPalette.cardActive)
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, fontSize = 12.sp, color = HomeCardTextSecondary, maxLines = 1)
-        content()
+        Text(item.label, style = MaterialTheme.typography.labelLarge, color = HomeCardTextSecondary, maxLines = 1)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = item.main,
+                color = item.mainColor,
+                fontFamily = TeperaPalette.headlineFont,
+                fontWeight = FontWeight.Medium,
+                fontSize = 24.sp,
+                lineHeight = 28.sp,
+                maxLines = 1
+            )
+            item.note?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = HomeCardTextSecondary,
+                    modifier = Modifier.padding(bottom = 3.dp),
+                    maxLines = 1
+                )
+            }
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import android.content.Context
 import com.serkodesign.tepera.data.GapDetectionConfig
 import com.serkodesign.tepera.data.GapSensitivity
 import com.serkodesign.tepera.data.local.dao.DetectedGapDao
+import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
 import com.serkodesign.tepera.util.SleepWindowCalculator
@@ -172,6 +173,39 @@ class PauseRepository(
     /** FR-D.3, FR-D.5: паузи в проміжку, ще не позначені й не пропущені користувачем. */
     suspend fun getUnresolvedGaps(from: Long, to: Long): List<DetectedGapEntity> =
         gapDao.getUnresolvedInRange(from, to)
+
+    /**
+     * Захисний фільтр (реальний баг, знайдений користувачем): [getUnresolvedGaps] довіряє лише
+     * власному полю [DetectedGapEntity.labeledEntryId], яке виставляється ЛИШЕ через [markLabeled]
+     * (тап по картці пауз). Якщо користувач замість цього вручну додав активність на той самий
+     * час (звичайний "+Додати"/редагування, а не тап по паузі) — або лишився старий, ще не
+     * позначений рядок з часів ДО T-2-бекфілу чи попередньої версії пресету чутливості (T-11) —
+     * пауза лишалась "непозначеною" в БД НАЗАВЖДИ й пропонувалась знову щоразу, коли вікно
+     * опитування (FR-D.3) знову накривало той самий проміжок, хоча час насправді вже заповнений.
+     * Тут пауза, чий інтервал ПЕРЕТИНАЄТЬСЯ з будь-яким уже наявним записом активності (незалежно
+     * від джерела), ретроактивно позначається позначеною (той самий [markLabeled], що й ручний
+     * тап) — не лише ховається з поточного списку, а й більше не спливе в наступних запитах.
+     */
+    suspend fun reconcileWithEntries(
+        gaps: List<DetectedGapEntity>,
+        entries: List<ActivityEntryEntity>
+    ): List<DetectedGapEntity> {
+        if (gaps.isEmpty() || entries.isEmpty()) return gaps
+        val stillUnresolved = mutableListOf<DetectedGapEntity>()
+        for (gap in gaps) {
+            val gapEnd = gap.startTime + gap.durationMinutes * 60_000L
+            val covering = entries.firstOrNull { entry ->
+                val entryEnd = entry.startTime + entry.durationMinutes * 60_000L
+                entry.startTime < gapEnd && entryEnd > gap.startTime
+            }
+            if (covering != null) {
+                gapDao.markLabeled(gap.id, covering.id)
+            } else {
+                stillUnresolved.add(gap)
+            }
+        }
+        return stillUnresolved
+    }
 
     suspend fun markLabeled(gapId: String, entryId: String) = gapDao.markLabeled(gapId, entryId)
 

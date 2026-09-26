@@ -3,7 +3,9 @@ package com.serkodesign.tepera.ui.gates
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.util.GatePausePresets
+import com.serkodesign.tepera.util.GateSchedule
+import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.data.local.entity.AppGateEntity
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
@@ -15,7 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import java.time.LocalDate
 
 private const val DEFAULT_DELAY_SECONDS = 10
 
@@ -29,7 +31,8 @@ data class GatesUiState(
     val pinShortcutSupported: Boolean = true,
     val gates: List<GateUiState> = emptyList(),
     val availableApps: List<InstalledAppInfo> = emptyList(),
-    val gatesPausedUntilMillis: Long = 0L
+    val pause: PauseWindow? = null,
+    val schedule: GateSchedule? = null
 )
 
 /**
@@ -40,8 +43,7 @@ data class GatesUiState(
  */
 class GatesViewModel(
     private val gateRepository: GateRepository,
-    private val installedAppsProvider: InstalledAppsProvider,
-    private val settingsStore: SettingsStore
+    private val installedAppsProvider: InstalledAppsProvider
 ) : ViewModel() {
 
     private val _availableApps = MutableStateFlow<List<InstalledAppInfo>>(emptyList())
@@ -51,8 +53,9 @@ class GatesViewModel(
         gateRepository.gates,
         _availableApps,
         _loading,
-        settingsStore.gatesPausedUntilMillis
-    ) { gates, availableApps, loading, pausedUntil ->
+        gateRepository.pause,
+        gateRepository.schedule
+    ) { gates, availableApps, loading, pause, schedule ->
         val appsByPackage = availableApps.associateBy { it.packageName }
         val gatedPackages = gates.map { it.packageName }.toSet()
         GatesUiState(
@@ -64,9 +67,18 @@ class GatesViewModel(
                 GateUiState(gate, app)
             },
             availableApps = availableApps.filterNot { it.packageName in gatedPackages },
-            gatesPausedUntilMillis = pausedUntil
+            pause = pause,
+            schedule = schedule
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GatesUiState())
+
+    /** CC-6: опційна «зростаюча» затримка (вимкнена за замовчуванням). */
+    val growingDelay: StateFlow<Boolean> = gateRepository.growingDelay
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setGrowingDelay(enabled: Boolean) {
+        viewModelScope.launch { gateRepository.setGrowingDelay(enabled) }
+    }
 
     init {
         refresh()
@@ -87,6 +99,7 @@ class GatesViewModel(
             // За прямим запитом користувача: синхронізувати список воріт з реальним станом
             // закріплених ярликів ПЕРЕД тим, як список узагалі відобразиться — інакше рядок
             // для вже видаленого з робочого столу ярлика встиг би на мить показатись.
+            gateRepository.reconcileExpiredPause()
             gateRepository.pruneRemovedShortcuts()
             _availableApps.value = installedAppsProvider.listUsedApps()
             _loading.value = false
@@ -107,33 +120,34 @@ class GatesViewModel(
     fun markOriginalIconHandled(packageName: String) {
         viewModelScope.launch { gateRepository.markOriginalIconHandled(packageName) }
     }
+    /**
+     * CC-5: пауза воріт — "сьогодні" / "на вихідні" / "до дати" (розділ 2.3 документа: автономія
+     * важливіша за ефективність, тож без підтвердження й пояснень); закінчується автоматично.
+     */
+    fun pauseToday() = startPause { GatePausePresets.today(it) }
 
-    /** Розділ 2.3 документа ("автономія важливіша за ефективність") — один тап, без підтвердження. */
-    fun toggleGatesPausedForToday() {
+    fun pauseWeekend() = startPause { GatePausePresets.weekend(it) }
+
+    fun pauseUntil(date: LocalDate) = startPause { GatePausePresets.untilDate(it, date) }
+
+    fun endPause() {
+        viewModelScope.launch { gateRepository.endPause() }
+    }
+
+    private fun startPause(window: (Long) -> PauseWindow) {
         viewModelScope.launch {
-            val currentlyPaused = uiState.value.gatesPausedUntilMillis > System.currentTimeMillis()
-            settingsStore.setGatesPausedUntilMillis(if (currentlyPaused) 0L else endOfTodayMillis())
+            val now = System.currentTimeMillis()
+            gateRepository.startPause(window(now), now)
         }
     }
 
-    private fun endOfTodayMillis(): Long {
-        val calendar = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_YEAR, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return calendar.timeInMillis
-    }
 
     class Factory(
         private val gateRepository: GateRepository,
-        private val installedAppsProvider: InstalledAppsProvider,
-        private val settingsStore: SettingsStore
+        private val installedAppsProvider: InstalledAppsProvider
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            GatesViewModel(gateRepository, installedAppsProvider, settingsStore) as T
+            GatesViewModel(gateRepository, installedAppsProvider) as T
     }
 }

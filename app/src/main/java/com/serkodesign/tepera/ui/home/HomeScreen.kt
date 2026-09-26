@@ -1,13 +1,15 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.foundation.layout.heightIn
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
-import android.Manifest
 import android.content.Intent
-import android.os.Build
 import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -34,11 +36,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreTime
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,7 +46,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.alpha
 import com.serkodesign.tepera.ui.category.CategoryViewModel
 import com.serkodesign.tepera.ui.category.CreateCategoryDialog
 import com.serkodesign.tepera.ui.category.CreateCategoryResult
@@ -62,7 +58,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -92,6 +87,7 @@ import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
@@ -130,9 +126,9 @@ fun HomeScreen(
     onAddEntryForCategory: (String) -> Unit,
     onOpenCategoryHistory: (String) -> Unit,
     onShowOnboarding: () -> Unit,
-    onShowValuesOnboarding: () -> Unit,
     onShowCategoryOnboarding: () -> Unit,
     onShowOnlineEstimateOnboarding: () -> Unit,
+    onShowTargetOnboarding: () -> Unit,
     onShowWidgetSuggestion: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
@@ -249,6 +245,14 @@ fun HomeScreen(
         factory = GateEventsSummaryViewModel.Factory(gateEventRepository, cardHistoryRepository)
     )
     val gateEventsSummaryState by gateEventsSummaryViewModel.uiState.collectAsState()
+    val welcomeBackViewModel: WelcomeBackViewModel = viewModel(
+        factory = WelcomeBackViewModel.Factory(
+            (LocalContext.current.applicationContext as com.serkodesign.tepera.TeperaApp).welcomeBackRepository,
+            settingsStore,
+            cardHistoryRepository
+        )
+    )
+    val welcomeBackState by welcomeBackViewModel.uiState.collectAsState()
 
     // T-13 (tepera-dev-spec.md): "рушій карток" — вирішує, яку саме множину з готових-до-показу
     // карток (isDue/visible нижче) реально видно на екрані, застосовуючи глобальний бюджет
@@ -284,10 +288,11 @@ fun HomeScreen(
     // місце для наступної в черзі, без очікування наступного LifecycleResumeEffect).
     LaunchedEffect(
         onlineEstimateRevealState, pauseState, weeklyReflectionState, unlockEstimateState,
-        lastPhoneUseEstimateState, weeklyDigestState, patternState, gateEventsSummaryState
+        lastPhoneUseEstimateState, weeklyDigestState, patternState, gateEventsSummaryState, welcomeBackState
     ) {
         cardStackViewModel.evaluate(
             listOf(
+                CardSource(CardType.WELCOME_BACK, priority = -1, minIntervalDays = null, dataReady = welcomeBackState.visible),
                 CardSource(CardType.ONLINE_ESTIMATE_REVEAL, priority = 0, minIntervalDays = null, dataReady = onlineEstimateRevealState.visible),
                 CardSource(CardType.PAUSE, priority = 1, minIntervalDays = null, dataReady = pauseState.visible),
                 CardSource(CardType.WEEKLY_REFLECTION, priority = 2, minIntervalDays = 7, dataReady = weeklyReflectionState.isDue),
@@ -300,21 +305,12 @@ fun HomeScreen(
         )
     }
 
-    // FR-P.2: питання про цінності ЗАВЖДИ показується першим при першому запуску — окремий
-    // ефект, що не залежить від стану доступу до статистики.
-    val valuesOnboardingSeen by settingsStore.valuesOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(valuesOnboardingSeen) {
-        if (!valuesOnboardingSeen) {
-            onShowValuesOnboarding()
-        }
-    }
-
-    // T-8 (tepera-dev-spec.md), крок 2 "Порядку першого запуску": одразу після питання про
-    // цінності, перед онбординг-оцінкою Online-часу — логічне продовження "що ти цінуєш" у
-    // "що саме відмічатимеш" (документ: попередні 5 категорій самі по собі норма, FR-P.5).
+    // T-8 (tepera-dev-spec.md), крок 2 "Порядку першого запуску": першим кроком онбордингу, перед
+    // онбординг-оцінкою Online-часу — вибір "що саме відмічатимеш"
+    // (документ: попередні 5 категорій самі по собі норма, FR-P.5).
     val categoryOnboardingSeen by settingsStore.categoryOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(valuesOnboardingSeen, categoryOnboardingSeen) {
-        if (valuesOnboardingSeen && !categoryOnboardingSeen) {
+    LaunchedEffect(categoryOnboardingSeen) {
+        if (!categoryOnboardingSeen) {
             onShowCategoryOnboarding()
         }
     }
@@ -322,18 +318,18 @@ fun HomeScreen(
     // T-3, крок 3 "Порядку першого запуску": одразу після вибору категорій (T-8), ще до
     // пояснення дозволу нижче — не залежить від стану доступу до статистики, той самий принцип.
     val onlineEstimateOnboardingSeen by settingsStore.onlineEstimateOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
-        if (valuesOnboardingSeen && categoryOnboardingSeen && !onlineEstimateOnboardingSeen) {
+    LaunchedEffect(categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
+        if (categoryOnboardingSeen && !onlineEstimateOnboardingSeen) {
             onShowOnlineEstimateOnboarding()
         }
     }
 
-    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як питання про цінності, вибір
+    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як вибір
     // категорій (T-8) і онбординг-оцінка Online-часу (T-3) вже показані, інакше кілька ефектів
     // могли б спробувати навігувати одночасно на першому запуску.
     val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
-        if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
             onShowOnboarding()
         }
     }
@@ -342,11 +338,26 @@ fun HomeScreen(
     // крок онбордингу, ОБИДВІ гілки "доступ надано? так/ні" сходяться сюди. "Крок дозволу
     // розв'язаний" — доступ уже надано (permissionScreen вище й не показувався) АБО сам
     // permission-екран уже показувався (onboardingSeen), незалежно від того, чим скінчилось.
+    // CC-1: крок "Орієнтир на день" — ПІСЛЯ кроку дозволу й лише коли доступ до статистики реально є
+    // (потрібна історія для власного середнього). Той самий race "Home оживає між popBackStack()/navigate()",
+    // що й нижче, тож перед переходом невелика затримка.
+    val targetOnboardingSeen by settingsStore.targetOnboardingSeen.collectAsState(initial = true)
+    LaunchedEffect(balanceState.hasUsageAccess, categoryOnboardingSeen, onlineEstimateOnboardingSeen, targetOnboardingSeen) {
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
+            balanceState.hasUsageAccess == true && !targetOnboardingSeen
+        ) {
+            delay(1000)
+            onShowTargetOnboarding()
+        }
+    }
+    // Пропозиція віджета чекає на цей крок, поки він реально належить до ланцюжка (є доступ і крок ще не пройдено).
+    val targetStepDone = targetOnboardingSeen || balanceState.hasUsageAccess == false
+
     val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, valuesOnboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen) {
+    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen, targetStepDone) {
         val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
-        if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && !widgetSuggestionSeen) {
-            // Той самий race, що описаний нижче для POST_NOTIFICATIONS: OnboardingScreen
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && targetStepDone && !widgetSuggestionSeen) {
+            // Race "Home оживає між popBackStack()/navigate()": OnboardingScreen
             // (пояснення дозволу) виставляє onboardingSeen=true у своєму LaunchedEffect(Unit)
             // ОДРАЗУ при монтуванні, не чекаючи дії користувача — і Home встигає прочитати це
             // на тому самому короткому "оживанні" між popBackStack()/navigate(), перш ніж
@@ -355,41 +366,6 @@ fun HomeScreen(
             // дозволу (знайдено живим тестом на Samsung S23, T-3 переставав показуватись).
             delay(1000)
             onShowWidgetSuggestion()
-        }
-    }
-
-    // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker, за 4 год роботи тап-таймера) потребує
-    // звичайного runtime-дозволу POST_NOTIFICATIONS на Android 13+ — запитується РІВНО раз, без
-    // окремого пояснювального екрана (не protected/sensitive дозвіл, на відміну від статистики
-    // використання застосунків). **Реальний баг, знайдений під час перевірки цієї сесії, у два
-    // заходи:** без gating на онбординг-ланцюжок системний діалог міг з'явитись ПОВЕРХ будь-якого
-    // проміжного екрана онбордингу — Home коротко "прокидається" між кожним `popBackStack()` і
-    // наступним `navigate()` у ланцюжку (кожен крок повертається на Home перед тим, як той одразу
-    // штовхає на наступний), і саме в цю мить встигає прочитати вже оновлений прапорець і
-    // запустити `launch()`. Перший фікс (gating на `widgetSuggestionSeen`) не позбувся проблеми
-    // повністю — той прапорець виставляється в LaunchedEffect(Unit) самого WidgetSuggestionScreen
-    // одразу при монтуванні, тож той самий стан "Home ще встигає це побачити" повторився,
-    // просто зсунувшись на крок пізніше (підтверджено повторним живим тестом). Другий фікс —
-    // невеликий `delay()` ПЕРЕД самим launch(): якщо Home справді покидає композицію (навігація
-    // пішла далі), корутина LaunchedEffect скасовується автоматично й до launch() просто не
-    // доходить; якщо ж Home і справді лишився видимим (реальний фінал онбордингу), затримка
-    // непомітна для користувача.
-    if (Build.VERSION.SDK_INT >= 33) {
-        val notificationPermissionRequested by settingsStore.notificationPermissionRequested.collectAsState(initial = true)
-        val notificationPermissionLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { }
-        LaunchedEffect(
-            notificationPermissionRequested, valuesOnboardingSeen, categoryOnboardingSeen,
-            onlineEstimateOnboardingSeen, widgetSuggestionSeen
-        ) {
-            if (valuesOnboardingSeen && categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
-                widgetSuggestionSeen && !notificationPermissionRequested
-            ) {
-                delay(1000)
-                settingsStore.setNotificationPermissionRequested()
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
         }
     }
 
@@ -450,10 +426,10 @@ fun HomeScreen(
                         )
                     }
                     if (CardType.PATTERN in visibleCards) {
-                        add { PatternMiniCard(state = patternState, onDismiss = patternViewModel::dismiss) }
+                        add { PatternMiniCard(state = patternState) }
                     }
                     if (CardType.WEEKLY_DIGEST in visibleCards) {
-                        add { WeeklyDigestCard(state = weeklyDigestState, onDismiss = weeklyDigestViewModel::dismiss) }
+                        add { WeeklyDigestCard(state = weeklyDigestState) }
                     }
                 }
             )
@@ -479,18 +455,21 @@ fun HomeScreen(
                 onSelectLastPhoneUseGuess = lastPhoneUseEstimateViewModel::selectGuess,
                 onDismissLastPhoneUseEstimate = lastPhoneUseEstimateViewModel::dismiss,
                 gateEventsSummaryState = gateEventsSummaryState,
-                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss
+                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss,
+                welcomeBackState = welcomeBackState,
+                onDismissWelcomeBack = welcomeBackViewModel::dismiss
             )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp),
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = stringResource(R.string.activities_title),
+                    modifier = Modifier.semantics { heading() },
                     fontFamily = TeperaPalette.headlineFont,
                     fontWeight = FontWeight.Medium,
                     fontSize = 22.sp,
@@ -503,11 +482,9 @@ fun HomeScreen(
                     text = stringResource(R.string.home_add_category),
                     onClick = { if (customSlotAvailable) showCreateCategoryDialog = true else showCategoryLimitNotice = true },
                     size = TeperaButtonSize.Small,
-                    textSizeOverride = 18.sp,
-                    lineHeightOverride = 20.sp,
-                    contentColorOverride = TeperaPalette.buttonBrand,
-                    type = TeperaButtonType.Tertiary,
-                    modifier = Modifier.alpha(if (customSlotAvailable) 1f else 0.5f)
+                    textSizeOverride = 14.sp,
+                    type = TeperaButtonType.Filled,
+                    leadingIcon = TeperaSymbols.Add
                 )
             }
 
@@ -556,7 +533,7 @@ fun HomeScreen(
             // Запас під напівпрозору навбар-"таблетку" знизу (той самий 100.dp, що раніше був
             // bottom-паддінгом сітки) — гарантує, що остання картка прокручується НАД нею, а не
             // впирається в неї впритул.
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(bottomNavClearance()))
         }
     }
 }
@@ -578,7 +555,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
         Text(
             text = stringResource(greetingRes),
             color = TeperaPalette.buttonBrandDark,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).semantics { heading() },
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontFamily = TeperaPalette.headlineFont,
                 fontWeight = FontWeight.Medium,
@@ -648,7 +625,7 @@ private fun CategoryCard(
     val badgeColor by animateColorAsState(
         if (isTracking) Color.White.copy(alpha = 0.2f) else accentColor.copy(alpha = 0.2f), colorSpec, label = "cardBadge"
     )
-    val glyphColor by animateColorAsState(if (isTracking) Color.White else accentColor, colorSpec, label = "cardGlyph")
+    val glyphColor by animateColorAsState(if (isTracking) Color.White else categoryGlyphColor(accentColor), colorSpec, label = "cardGlyph")
     val nameSize by animateFloatAsState(
         targetValue = if (isTracking) 18f else 16f,
         animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), label = "cardNameSize"
@@ -657,26 +634,15 @@ private fun CategoryCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(132.dp)
-            // Тінь Figma (0 16 20 @5%) — лише Android 10+: на Huawei P9 (Android 8) 6 елевейшн-тіней
-            // на картках давали ~12 пунктів рваних кадрів прокрутки Home, а різниця майже непомітна (5%).
-            .then(
-                if (Build.VERSION.SDK_INT >= 29) {
-                    Modifier.shadow(
-                        8.dp, shape,
-                        ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f)
-                    )
-                } else {
-                    Modifier
-                }
-            )
+            .heightIn(min = 132.dp) // зростає разом зі шрифтом (WCAG 1.4.4), а не обрізає назву
+            // Без тіні (за прямим запитом користувача — тіней у застосунку немає ніде).
             .clip(shape)
             .background(containerColor)
             .padding(8.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
-            modifier = Modifier.padding(4.dp).clickable(onClick = onOpenHistory),
+            modifier = Modifier.padding(4.dp).clickable(role = Role.Button, onClick = onOpenHistory),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Box(
@@ -703,10 +669,11 @@ private fun CategoryCard(
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TeperaIconButton(
-                icon = if (isTracking) Icons.Filled.Pause else Icons.Outlined.PlayArrow,
+                icon = if (isTracking) TeperaSymbols.Pause else TeperaSymbols.PlayArrow,
+                // З назвою категорії: інакше вісім кнопок поспіль озвучуються однаково — "Почати" (WCAG 2.4.6/4.1.2).
                 contentDescription = stringResource(
                     if (isTracking) R.string.category_stop_action else R.string.category_start_action
-                ),
+                ) + ": " + displayName,
                 onClick = onToggleTimer,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(32.dp)
@@ -721,7 +688,7 @@ private fun CategoryCard(
                 Row {
                     Spacer(Modifier.width(4.dp))
                     TeperaIconButton(
-                        icon = Icons.Filled.MoreTime,
+                        icon = TeperaSymbols.MoreTime,
                         contentDescription = stringResource(R.string.add_time_action_format, displayName),
                         onClick = onAddTime,
                         containerColor = TeperaPalette.activityMoreTime,

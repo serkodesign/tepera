@@ -1,12 +1,7 @@
 package com.serkodesign.tepera.ui.onboarding
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,7 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.R
@@ -65,7 +59,6 @@ import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.drawBlurredBlob
 import com.serkodesign.tepera.util.findActivity
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -80,11 +73,6 @@ import kotlinx.coroutines.launch
  * галкою #003926) і кнопка "Продовжити" (TeperaButton Primary Medium; напівпрозора, поки
  * дозволені не обидва). За рішенням користувача під кнопкою лишено тихий текстовий
  * "Пропустити" — застосунок має працювати й без доступу до статистики (fallback).
- *
- * Екран також бере на себе запит POST_NOTIFICATIONS (рядок "Сповіщення"): перший тап — системний
- * діалог, наступні (після відмови) — налаштування сповіщень застосунку. Запит на Home
- * (`notificationPermissionRequested`) лишається лише як запобіжник для тих, хто цього екрана не
- * бачив, і не повторюється, якщо запит уже зроблено тут.
  */
 @Composable
 fun OnboardingScreen(
@@ -117,45 +105,42 @@ fun OnboardingScreen(
         }
     }
 
-    fun notificationsAllowedNow(): Boolean =
-        Build.VERSION.SDK_INT < 33 ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-
     var usageGranted by remember { mutableStateOf(false) }
-    var notificationsGranted by remember { mutableStateOf(notificationsAllowedNow()) }
 
     // Дозволи змінюються поза застосунком (системні налаштування) — перечитуємо при поверненні.
     LifecycleResumeEffect(Unit) {
         scope.launch { usageGranted = balanceRepository.hasUsageAccess() }
-        notificationsGranted = notificationsAllowedNow()
         onPauseOrDispose { }
     }
 
-    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        notificationsGranted = granted
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Figma 208:1230: логотип — 64sp, letter-spacing 0.64, #DCF6ED, верх на 179 від краю кадру.
-        Text(
-            text = "Tepera",
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Figma 208:1230: логотип — 64sp, letter-spacing 0.64, #DCF6ED. Розташований по центру вільного
+        // місця над блоком дозволів (а не на фіксованих 179dp від верху): на низьких екранах (360x640)
+        // фіксований відступ клав його поверх заголовка.
+        Box(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
-                .padding(top = (179.dp - WindowInsets.statusBars.asPaddingValues().calculateTopPadding()).coerceAtLeast(0.dp)),
-            color = TeperaPalette.surfaceBrandLight,
-            fontFamily = FontFamily(Font(R.font.indie_flower)),
-            fontSize = 64.sp,
-            lineHeight = 70.4.sp,
-            letterSpacing = 0.64.sp,
-            textAlign = TextAlign.Center
-        )
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Tepera",
+                modifier = Modifier.fillMaxWidth(),
+                color = TeperaPalette.surfaceBrandLight,
+                fontFamily = FontFamily(Font(R.font.indie_flower)),
+                fontSize = 64.sp,
+                lineHeight = 70.4.sp,
+                letterSpacing = 0.64.sp,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(start = 16.dp, end = 16.dp, bottom = 52.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Figma 50:1626: padding 8, gap 16, по центру, білий текст.
@@ -203,34 +188,13 @@ fun OnboardingScreen(
                         context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                     }
                 )
-                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.3f)))
-                PermissionRow(
-                    label = stringResource(R.string.perm_notifications_label),
-                    granted = notificationsGranted,
-                    onClick = {
-                        scope.launch {
-                            val alreadyAsked = settingsStore.notificationPermissionRequested.first()
-                            if (!alreadyAsked) {
-                                settingsStore.setNotificationPermissionRequested()
-                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            } else {
-                                // Системний діалог після відмови вже не показується — відкриваємо
-                                // налаштування сповіщень застосунку.
-                                context.startActivity(
-                                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                                        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                )
-                            }
-                        }
-                    }
-                )
             }
             Spacer(Modifier.height(23.dp))
 
             TeperaButton(
                 text = stringResource(R.string.perm_continue),
                 onClick = onDone,
-                enabled = usageGranted && notificationsGranted,
+                enabled = usageGranted,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(4.dp))

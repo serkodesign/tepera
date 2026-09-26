@@ -1,12 +1,16 @@
 package com.serkodesign.tepera.ui.pattern
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +31,7 @@ import androidx.compose.runtime.remember
 import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
@@ -49,8 +54,85 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  */
 @Composable
 fun HourlyHeatGrid(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val description = heatGridDescription(hourlyMinutes)
+    Column(
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         HeatGridRows(hourlyMinutes)
+        HeatGridLegend()
+    }
+}
+
+/**
+ * Текстова альтернатива сітці (WCAG 1.1.1): інформація в сітці лише кольором клітинок, тож скрінрідеру віддаємо
+ * головне — три години з найбільшим Online-часом (за зростанням годин). Самі клітинки й легенда для нього
+ * приховані ([clearAndSetSemantics]).
+ */
+@Composable
+private fun heatGridDescription(hourlyMinutes: List<Int>?): String {
+    val top = hourlyMinutes?.withIndex()?.filter { it.value > 0 }?.sortedByDescending { it.value }?.take(3)
+    return if (top.isNullOrEmpty()) {
+        stringResource(R.string.heat_grid_description_none)
+    } else {
+        stringResource(
+            R.string.heat_grid_description_peak,
+            top.sortedBy { it.index }.joinToString(", ") { "%02d:00".format(it.index) }
+        )
+    }
+}
+
+/**
+ * Висока версія патерну для картки Home, де є вільна висота (усі картки пейджера однієї висоти, тож
+ * "Патерн" отримує стільки, скільки займає найвища): 6 колонок × 4 рядки — рядок = 6 годин
+ * (00–05, 06–11, 12–17, 18–23), підписи початку рядка ліворуч. Клітинки більші й читаються краще,
+ * ніж 24 квадрати 12×2. Висоту бере у батька (`Modifier.weight(1f)`), легенда — внизу. Ті самі кошики й
+ * кольори, що [HourlyHeatGrid] (Stats лишається 12×2). Один Canvas на сітку — з тієї ж причини (P9).
+ */
+@Composable
+fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
+    val colors = remember(hourlyMinutes) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it) } }
+    }
+    val gap = 3.dp
+    val description = heatGridDescription(hourlyMinutes)
+    Column(
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(gap)) {
+                listOf(0, 6, 12, 18).forEach { hour ->
+                    Box(modifier = Modifier.weight(1f).width(20.dp), contentAlignment = Alignment.CenterStart) {
+                        Text("%02d".format(hour), fontSize = 12.sp, lineHeight = 14.sp, color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f))
+                    }
+                }
+            }
+            Canvas(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                val gapPx = gap.toPx()
+                val cellW = (size.width - gapPx * 5) / 6f
+                val cellH = (size.height - gapPx * 3) / 4f
+                val radius = CornerRadius(4.dp.toPx())
+                val cellSize = Size(cellW, cellH)
+                for (hour in 0 until 24) {
+                    val topLeft = Offset((hour % 6) * (cellW + gapPx), (hour / 6) * (cellH + gapPx))
+                    val color = colors[hour]
+                    if (color == null) {
+                        drawRoundRect(TeperaPalette.heatmapNoDataFill, topLeft, cellSize, radius)
+                        val stroke = 1.dp.toPx()
+                        drawRoundRect(
+                            TeperaPalette.heatmapNoDataBorder,
+                            Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
+                            Size(cellW - stroke, cellH - stroke),
+                            CornerRadius(radius.x - stroke / 2),
+                            style = Stroke(stroke)
+                        )
+                    } else {
+                        drawRoundRect(color, topLeft, cellSize, radius)
+                    }
+                }
+            }
+        }
         HeatGridLegend()
     }
 }
@@ -137,7 +219,7 @@ private fun HeatGridLegend() {
                         .clip(RoundedCornerShape(2.dp))
                         .background(color)
                 )
-                Text(label, style = MaterialTheme.typography.labelSmall, softWrap = false)
+                Text(label, style = MaterialTheme.typography.bodySmall, softWrap = false)
             }
         }
     }

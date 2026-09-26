@@ -1,7 +1,9 @@
 package com.serkodesign.tepera.ui.home
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.animation.animateContentSize
@@ -17,8 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +40,7 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
@@ -86,7 +87,7 @@ fun PauseCard(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             IconButton(onClick = onDismissCard, modifier = Modifier.size(24.dp)) {
                 Icon(
-                    Icons.Filled.Close,
+                    TeperaSymbols.Close,
                     contentDescription = stringResource(R.string.context_card_dismiss_action),
                     modifier = Modifier.size(16.dp)
                 )
@@ -128,7 +129,7 @@ private fun PauseGapRow(gap: PauseUiGap, onClick: () -> Unit, onDismiss: () -> U
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucent)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -142,7 +143,7 @@ private fun PauseGapRow(gap: PauseUiGap, onClick: () -> Unit, onDismiss: () -> U
             ),
             style = MaterialTheme.typography.bodyMedium
         )
-        TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.pause_gap_dismiss_action), onClick = onDismiss)
+        TeperaIconButton(icon = TeperaSymbols.Close, contentDescription = stringResource(R.string.pause_gap_dismiss_action), onClick = onDismiss)
     }
 }
 
@@ -181,7 +182,7 @@ private fun CategoryPickerDialog(
                         Icon(
                             imageVector = categoryIcon(category.iconName),
                             contentDescription = null,
-                            tint = accentColor,
+                            tint = categoryGlyphColor(accentColor),
                             modifier = Modifier.size(24.dp)
                         )
                     }

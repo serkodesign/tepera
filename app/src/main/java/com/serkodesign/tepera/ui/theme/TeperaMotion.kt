@@ -22,4 +22,15 @@ object TeperaMotion {
 object TeperaSpecs {
     fun <T> spatial() = androidx.compose.animation.core.tween<T>(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized)
     fun <T> effects() = androidx.compose.animation.core.tween<T>(TeperaMotion.SHORT4, easing = TeperaMotion.Emphasized)
+
+    // Переходи між екранами (M3 "fade through" / "shared axis"): поява — з затримкою після зникнення
+    // попереднього, щоб вони не накладались.
+    const val EXIT_FADE_MILLIS = 90
+    const val ENTER_FADE_MILLIS = 210
+    fun <T> enterFade() = androidx.compose.animation.core.tween<T>(
+        ENTER_FADE_MILLIS, delayMillis = EXIT_FADE_MILLIS, easing = androidx.compose.animation.core.LinearOutSlowInEasing
+    )
+    fun <T> exitFade() = androidx.compose.animation.core.tween<T>(
+        EXIT_FADE_MILLIS, easing = androidx.compose.animation.core.LinearEasing
+    )
 }

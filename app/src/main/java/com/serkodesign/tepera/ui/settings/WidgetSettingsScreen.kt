@@ -7,10 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,11 +29,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -122,7 +120,7 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                                 leading = {
                                     // Ручка перетягування — ліворуч, перед іконкою категорії.
                                     Icon(
-                                        imageVector = Icons.Filled.DragHandle,
+                                        imageVector = TeperaSymbols.DragHandle,
                                         contentDescription = stringResource(R.string.widget_settings_drag_handle),
                                         modifier = Modifier.pointerInput(id) {
                                             detectDragGestures(
@@ -156,7 +154,7 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                                 },
                                 trailing = {
                                     TeperaIconButton(
-                                        icon = Icons.Filled.Close,
+                                        icon = TeperaSymbols.Close,
                                         contentDescription = stringResource(R.string.widget_settings_remove),
                                         onClick = { persist(order - id) }
                                     )
@@ -182,7 +180,7 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                             onClick = if (full) null else ({ persist(order + category.id) }),
                             leading = { CategoryCircle(category) },
                             trailing = {
-                                if (!full) Icon(Icons.Filled.Add, contentDescription = null)
+                                if (!full) Icon(TeperaSymbols.Add, contentDescription = null)
                             }
                         )
                     }
@@ -206,7 +204,7 @@ private fun CategoryCircle(category: CategoryEntity) {
     TeperaIconCircle(
         icon = categoryIcon(category.iconName),
         background = color.copy(alpha = 0.2f),
-        tint = color
+        tint = categoryGlyphColor(color)
     )
 }
 

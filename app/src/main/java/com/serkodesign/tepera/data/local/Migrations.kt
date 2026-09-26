@@ -165,3 +165,63 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         db.execSQL("UPDATE app_gates SET shortcutId = 'gate_' || packageName WHERE shortcutId = ''")
     }
 }
+
+/**
+ * Версія 10: активність, що триває через кілька діб, зберігається кількома записами (по одному на
+ * логічну добу, див. `splitAtDayRollover`), пов'язаними спільним `seriesId`. NULL — звичайний
+ * запис, старі рядки лишаються як були.
+ */
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE activity_entries ADD COLUMN seriesId TEXT")
+    }
+}
+
+/** Версія 11 (CC-9): `metric_events` — локальні метрики використання, лише тип і час. */
+val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `metric_events` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`type` TEXT NOT NULL, " +
+                "`timestamp` INTEGER NOT NULL)"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_metric_events_timestamp` ON `metric_events` (`timestamp`)")
+    }
+}
+
+/** Версія 12 (CC-4): `daily_snapshots` — щоденний знімок Online-хвилин. */
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `daily_snapshots` (" +
+                "`dayEpoch` INTEGER NOT NULL, " +
+                "`onlineMinutes` INTEGER NOT NULL, " +
+                "`capturedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`dayEpoch`))"
+        )
+    }
+}
+
+/** Версія 13: прибрано `daily_snapshots` (додана у версії 12) — щоденні фонові знімки скасовано (D-25). */
+val MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS `daily_snapshots`")
+    }
+}
+
+/** Версія 14: прибрано `metric_events` (додана у версії 11) — локальні метрики скасовано (D-27). */
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS `metric_events`")
+        db.execSQL("DELETE FROM gate_events WHERE result = 'PASSED_THROUGH'") // результат існував лише для скану обходів
+    }
+}
+
+/** Версія 15 (CC-6): лічильник повторних відкриттів воріт для опційної «зростаючої» затримки. */
+val MIGRATION_14_15 = object : Migration(14, 15) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE app_gates ADD COLUMN repeatCount INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE app_gates ADD COLUMN lastShownAtMillis INTEGER NOT NULL DEFAULT 0")
+    }
+}

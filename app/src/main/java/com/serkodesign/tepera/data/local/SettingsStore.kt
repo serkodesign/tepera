@@ -8,15 +8,17 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.serkodesign.tepera.data.GapSensitivity
+import com.serkodesign.tepera.util.GateSchedule
+import com.serkodesign.tepera.util.GateTexts
+import com.serkodesign.tepera.util.PauseWindow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val TARGET_MINUTES_KEY = intPreferencesKey("target_minutes")
+private val TARGET_ONBOARDING_SEEN_KEY = booleanPreferencesKey("target_onboarding_seen")
 private val ONBOARDING_USAGE_ACCESS_SEEN_KEY = booleanPreferencesKey("onboarding_usage_access_seen")
-private val VALUES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("values_onboarding_seen")
-private val VALUED_CATEGORY_ID_KEY = stringPreferencesKey("valued_category_id")
 private val FIRST_LAUNCH_AT_KEY = longPreferencesKey("first_launch_at")
 private val PATTERN_CARD_DISMISSED_KEY = longPreferencesKey("pattern_card_dismissed_key")
 private val WEEKLY_DIGEST_CARD_DISMISSED_KEY = longPreferencesKey("weekly_digest_card_dismissed_key")
@@ -27,12 +29,19 @@ private val ONLINE_ESTIMATE_REVEAL_DISMISSED_ID_KEY = stringPreferencesKey("onli
 private val GAP_SENSITIVITY_KEY = stringPreferencesKey("gap_sensitivity")
 private val HISTORY_BACKFILL_COMPLETED_AT_KEY = longPreferencesKey("history_backfill_completed_at")
 private val GATES_PAUSED_UNTIL_KEY = longPreferencesKey("gates_paused_until")
+private val GATES_PAUSED_FROM_KEY = longPreferencesKey("gates_paused_from")
+private val GATE_PAUSE_HISTORY_KEY = stringPreferencesKey("gate_pause_history")
+private val GATE_SCHEDULE_KEY = stringPreferencesKey("gate_schedule")
+private const val GATE_PAUSE_HISTORY_LIMIT = 40
+private val LAST_OPEN_KEY = longPreferencesKey("last_open_millis")
+private val GATE_TEXT_BAG_KEY = stringPreferencesKey("gate_text_bag")
+private val GATE_GROWING_DELAY_KEY = booleanPreferencesKey("gate_growing_delay")
+private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
+private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
-private val NOTIFICATION_PERMISSION_REQUESTED_KEY = booleanPreferencesKey("notification_permission_requested")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 
-private const val DEFAULT_TARGET_MINUTES = 180 // FR-3.10
 
 /**
  * FR-3.10 (орієнтир Online-часу), FR-7.1 (чи вже показаний онбординг доступу до статистики).
@@ -46,11 +55,26 @@ class SettingsStore(private val context: Context) {
         context.settingsDataStore.edit { it.clear() }
     }
 
-    val targetMinutes: Flow<Int> = context.settingsDataStore.data
-        .map { it[TARGET_MINUTES_KEY] ?: DEFAULT_TARGET_MINUTES }
+    /**
+     * CC-1: орієнтир Online-часу на день (хвилини). `null` — орієнтира немає: значення за замовчуванням
+     * (раніше 180 хв) прибране, людина або задає його сама (крок онбордингу "Орієнтир на день",
+     * Налаштування), або живе без нього. Без орієнтира ніде не показується жодне число-ціль.
+     */
+    val targetMinutes: Flow<Int?> = context.settingsDataStore.data
+        .map { it[TARGET_MINUTES_KEY] }
 
-    suspend fun setTargetMinutes(minutes: Int) {
-        context.settingsDataStore.edit { it[TARGET_MINUTES_KEY] = minutes }
+    suspend fun setTargetMinutes(minutes: Int?) {
+        context.settingsDataStore.edit {
+            if (minutes == null) it.remove(TARGET_MINUTES_KEY) else it[TARGET_MINUTES_KEY] = minutes
+        }
+    }
+
+    /** CC-1: чи вже показаний крок онбордингу "Орієнтир на день" (після дозволу на доступ до статистики). */
+    val targetOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[TARGET_ONBOARDING_SEEN_KEY] ?: false }
+
+    suspend fun setTargetOnboardingSeen() {
+        context.settingsDataStore.edit { it[TARGET_ONBOARDING_SEEN_KEY] = true }
     }
 
     val onboardingUsageAccessSeen: Flow<Boolean> = context.settingsDataStore.data
@@ -61,27 +85,8 @@ class SettingsStore(private val context: Context) {
     }
 
     /**
-     * FR-P.2: чи вже показане одноразове онбординг-питання про цінності ("Що ти хотів би
-     * робити більше?"). Показується ЗАВЖДИ першим при першому запуску — HomeScreen перевіряє
-     * цей прапорець РАНІШЕ за onboardingUsageAccessSeen (FR-7.1).
-     */
-    val valuesOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
-        .map { it[VALUES_ONBOARDING_SEEN_KEY] ?: false }
-
-    /** [categoryId] null, якщо користувач пропустив питання — це теж валідний вибір. */
-    suspend fun setValuesOnboardingAnswer(categoryId: String?) {
-        context.settingsDataStore.edit {
-            it[VALUES_ONBOARDING_SEEN_KEY] = true
-            if (categoryId != null) it[VALUED_CATEGORY_ID_KEY] = categoryId
-        }
-    }
-
-    val valuedCategoryId: Flow<String?> = context.settingsDataStore.data
-        .map { it[VALUED_CATEGORY_ID_KEY] }
-
-    /**
      * T-8 (tepera-dev-spec.md): чи вже показаний одноразовий вибір категорій на онбордингу
-     * (`CategoryOnboardingScreen`) — між питанням про цінності (FR-P.2) і онбординг-оцінкою
+     * (`CategoryOnboardingScreen`) — першим кроком, перед онбординг-оцінкою
      * Online-часу (T-3), той самий принцип "показано" фіксується одразу при відкритті екрана.
      */
     val categoryOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
@@ -128,19 +133,6 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWidgetCategoryIds(ids: List<String>) {
         context.settingsDataStore.edit { it[WIDGET_CATEGORY_IDS_KEY] = ids.joinToString(",") }
-    }
-
-    /**
-     * `POST_NOTIFICATIONS` (Android 13+) — потрібен для сповіщення "усе ще цим займаєшся?"
-     * (`TimerCheckWorker`). Запитується РІВНО раз (HomeScreen) незалежно від відповіді
-     * користувача — системний діалог і так не з'явиться вдруге після відмови без цього
-     * прапорця, він лише запобігає повторному виклику `launch()` при кожному відкритті Home.
-     */
-    val notificationPermissionRequested: Flow<Boolean> = context.settingsDataStore.data
-        .map { it[NOTIFICATION_PERMISSION_REQUESTED_KEY] ?: false }
-
-    suspend fun setNotificationPermissionRequested() {
-        context.settingsDataStore.edit { it[NOTIFICATION_PERMISSION_REQUESTED_KEY] = true }
     }
 
     /**
@@ -226,20 +218,97 @@ class SettingsStore(private val context: Context) {
     suspend fun setHistoryBackfillCompletedAt(millis: Long) {
         context.settingsDataStore.edit { it[HISTORY_BACKFILL_COMPLETED_AT_KEY] = millis }
     }
+    /**
+     * CC-5: пауза воріт — вікно [from, until). Раніше (T-4) був лише кінець "на сьогодні"
+     * (`gates_paused_until`), тепер до нього додано початок (`gates_paused_from`), бо "на вихідні"
+     * серед тижня починається в суботу. Відсутній `from` (старі значення) = 0, тобто пауза вже діє.
+     * `until` = 0 — не на паузі.
+     */
+    val gatePause: Flow<PauseWindow?> = context.settingsDataStore.data.map { prefs ->
+        val until = prefs[GATES_PAUSED_UNTIL_KEY] ?: 0L
+        if (until > 0L) PauseWindow(prefs[GATES_PAUSED_FROM_KEY] ?: 0L, until) else null
+    }
+
+    suspend fun setGatePause(window: PauseWindow?) {
+        context.settingsDataStore.edit {
+            if (window == null) {
+                it.remove(GATES_PAUSED_UNTIL_KEY)
+                it.remove(GATES_PAUSED_FROM_KEY)
+            } else {
+                it[GATES_PAUSED_FROM_KEY] = window.fromMillis
+                it[GATES_PAUSED_UNTIL_KEY] = window.untilMillis
+            }
+        }
+    }
 
     /**
-     * T-4 (tepera-dev-spec.md): "тимчасове вимкнення воріт на день" — один тап, без підтвердження
-     * (розділ 2.3 документа "автономія важливіша за ефективність"). Зберігає момент, ДО якого
-     * ворота призупинені (кінець поточної календарної доби, рахує викликач) — 0L = не призупинено.
-     * T-5 (майбутня сесія, екран паузи) звірятиме `System.currentTimeMillis() < gatesPausedUntilMillis`
-     * перед показом паузи; сам перемикач і UI — тут, у T-4, за буквальною вимогою списку "Зробити".
+     * Завершені паузи (фактичний початок і кінець) — потрібні, щоб скан обходів воріт (CC-9) міг
+     * дізнатись, чи були ворота активні в минулий момент. Останні [GATE_PAUSE_HISTORY_LIMIT].
      */
-    val gatesPausedUntilMillis: Flow<Long> = context.settingsDataStore.data
-        .map { it[GATES_PAUSED_UNTIL_KEY] ?: 0L }
-
-    suspend fun setGatesPausedUntilMillis(millis: Long) {
-        context.settingsDataStore.edit { it[GATES_PAUSED_UNTIL_KEY] = millis }
+    val gatePauseHistory: Flow<List<PauseWindow>> = context.settingsDataStore.data.map { prefs ->
+        prefs[GATE_PAUSE_HISTORY_KEY].orEmpty().split(";").mapNotNull { part ->
+            val pieces = part.split("-")
+            val from = pieces.getOrNull(0)?.toLongOrNull()
+            val until = pieces.getOrNull(1)?.toLongOrNull()
+            if (from != null && until != null) PauseWindow(from, until) else null
+        }
     }
+
+    suspend fun appendGatePauseHistory(window: PauseWindow) {
+        context.settingsDataStore.edit { prefs ->
+            val existing = prefs[GATE_PAUSE_HISTORY_KEY].orEmpty().split(";").filter { it.isNotBlank() }
+            prefs[GATE_PAUSE_HISTORY_KEY] =
+                (existing + "${window.fromMillis}-${window.untilMillis}").takeLast(GATE_PAUSE_HISTORY_LIMIT).joinToString(";")
+        }
+    }
+
+    /** CC-5: розклад воріт (`null` = "завжди"). Формат — [GateSchedule.encode]. */
+    val gateSchedule: Flow<GateSchedule?> = context.settingsDataStore.data
+        .map { GateSchedule.decode(it[GATE_SCHEDULE_KEY]) }
+
+    suspend fun setGateSchedule(schedule: GateSchedule?) {
+        context.settingsDataStore.edit {
+            if (schedule == null) it.remove(GATE_SCHEDULE_KEY) else it[GATE_SCHEDULE_KEY] = schedule.encode()
+        }
+    }
+
+    /** CC-6: «мішок» текстів екрана паузи — індекси, ще не показані в цьому колі (див. [com.serkodesign.tepera.util.GateTexts]). */
+    val gateTextBag: Flow<List<Int>> = context.settingsDataStore.data.map { GateTexts.decode(it[GATE_TEXT_BAG_KEY]) }
+
+    suspend fun setGateTextBag(remaining: List<Int>) {
+        context.settingsDataStore.edit { it[GATE_TEXT_BAG_KEY] = GateTexts.encode(remaining) }
+    }
+
+    /** CC-8: тижневе сповіщення про підсумок; вимкнене за замовчуванням, вмикається лише самою людиною. */
+    val weeklySummaryEnabled: Flow<Boolean> = context.settingsDataStore.data.map { it[WEEKLY_SUMMARY_ENABLED_KEY] ?: false }
+
+    suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[WEEKLY_SUMMARY_ENABLED_KEY] = enabled }
+    }
+
+    /** CC-6: «зростаюча» затримка воріт; за замовчуванням вимкнена. */
+    val gateGrowingDelay: Flow<Boolean> = context.settingsDataStore.data.map { it[GATE_GROWING_DELAY_KEY] ?: false }
+
+    suspend fun setGateGrowingDelay(enabled: Boolean) {
+        context.settingsDataStore.edit { it[GATE_GROWING_DELAY_KEY] = enabled }
+    }
+
+    /** CC-4: момент попереднього справжнього відкриття Tepera (0 — ще ніколи). */
+    val lastOpenMillis: Flow<Long> = context.settingsDataStore.data.map { it[LAST_OPEN_KEY] ?: 0L }
+
+    suspend fun setLastOpenMillis(millis: Long) {
+        context.settingsDataStore.edit { it[LAST_OPEN_KEY] = millis }
+    }
+
+    /** CC-4: початок перерви (момент попереднього відкриття), для якої ще чекає підсумок; 0 — нема. */
+    val welcomeBackPendingFrom: Flow<Long> = context.settingsDataStore.data.map { it[WELCOME_BACK_PENDING_FROM_KEY] ?: 0L }
+
+    suspend fun setWelcomeBackPendingFrom(millis: Long) {
+        context.settingsDataStore.edit {
+            if (millis <= 0L) it.remove(WELCOME_BACK_PENDING_FROM_KEY) else it[WELCOME_BACK_PENDING_FROM_KEY] = millis
+        }
+    }
+
 
     /**
      * T-13 (tepera-dev-spec.md), "рушій карток": скільки разів поспіль подієва картка (пауза)

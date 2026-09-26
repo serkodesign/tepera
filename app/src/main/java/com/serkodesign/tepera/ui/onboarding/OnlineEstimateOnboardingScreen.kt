@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.EstimateType
@@ -47,8 +48,8 @@ enum class DailyOnlineGuess(val representativeMinutes: Long) {
 }
 
 /**
- * T-3, крок 2 з "Порядку першого запуску": між питанням про цінності (FR-P.2,
- * [ValuesOnboardingScreen]) і поясненням дозволу (FR-7.1, [OnboardingScreen]). Вибір діапазону
+ * T-3, крок 2 з "Порядку першого запуску": між вибором категорій ([CategoryOnboardingScreen])
+ * і поясненням дозволу (FR-7.1, [OnboardingScreen]). Вибір діапазону
  * зберігається як `UserEstimateEntity` (розділ 2.2 документа — "принцип пасивного сорому":
  * реальне число з'явиться пізніше поруч з оцінкою, ContextCardStack, не пасивно й не одразу).
  * "Пропустити" — одна видима кнопка, не зберігає жодного рядка (нема з чим порівнювати пізніше).
@@ -84,22 +85,19 @@ fun OnlineEstimateOnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = stringResource(R.string.online_estimate_onboarding_title),
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
-            Row(
+            TeperaOnboardingTitle(text = stringResource(R.string.online_estimate_onboarding_title))
+            // Варіанти один під одним на всю ширину: у ряд третій ("Понад 3 год") обрізався до "Понад …".
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 DailyOnlineGuess.entries.forEach { guess ->
                     TeperaButton(
                         text = dailyGuessLabel(guess),
                         onClick = { finish(guess) },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         type = TeperaButtonType.Secondary
                     )
                 }

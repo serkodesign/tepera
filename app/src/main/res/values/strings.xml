@@ -56,21 +56,47 @@
          "Решта дня" — без окремої відсоткової оцінки (FR-P.6). -->
     <string name="my_day_title_format">Твій день: %1$s</string>
     <string name="balance_online_label">Online</string>
-    <string name="stats_offline_label">Офлайн</string>
+    <string name="stats_offline_label">Без телефону</string>
     <string name="stats_below_five_min">&lt;5 хв</string>
-    <string name="balance_rest_of_day_label">Офлайн-життя</string>
+    <string name="balance_rest_of_day_label">Без телефону</string>
     <string name="activities_title">Активності</string>
-    <string name="home_add_category">+ Додати</string>
+    <string name="home_add_category">Додати</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
     <string name="onboarding_screen_title">Структура твого дня</string>
-    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив офлайн, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього офлайн-логування лишається повністю робочим.</string>
+    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив у записах, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього записи активностей лишаються повністю робочими.</string>
     <string name="onboarding_skip">Пропустити</string>
     <string name="perm_title">Перед тим як почати</string>
-    <string name="perm_body">Ми не збираємо ніякі дані і не відправляємо на сервери. Вся обробка виключно на смартфоні</string>
+    <string name="perm_body">Твої записи й час у застосунках лишаються на телефоні. З телефону виходять лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
     <string name="perm_usage_label">Доступ до статистики</string>
-    <string name="perm_notifications_label">Сповіщення</string>
     <string name="perm_continue">Продовжити</string>
+    <string name="target_onboarding_title">Орієнтир на день</string>
+    <string name="target_onboarding_body">Орієнтир — необов\'язкова тиха риска на шкалі дня. Він нічого не оцінює й не змінює кольорів. Можна задати зараз або пізніше в Налаштуваннях.</string>
+    <string name="target_onboarding_average_format">За останні %1$d дн. у середньому %2$s онлайн на день. Це лише точка відліку — обери своє.</string>
+    <string name="target_onboarding_later">Пізніше</string>
+    <string name="target_onboarding_set">Задати</string>
+    <string name="settings_target_off_hint">Орієнтира немає — на шкалі дня нічого не позначається.</string>
+    <string name="welcome_back_title">Ось як минули ці дні</string>
+    <plurals name="welcome_back_period">
+        <item quantity="one">За %d день</item>
+        <item quantity="few">За %d дні</item>
+        <item quantity="many">За %d днів</item>
+        <item quantity="other">За %d дня</item>
+    </plurals>
+    <string name="welcome_back_logged_format">Відмічено: %1$s</string>
+    <string name="welcome_back_online_format">Online в середньому: %1$s на день</string>
+    <string name="weekly_summary_label">Тижневий підсумок</string>
+    <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері, — одне тихе сповіщення. Тап відкриває підсумок тижня. Інших сповіщень немає.</string>
+    <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не надійде. Дозволити можна в системних налаштуваннях застосунку — усе інше працює як раніше.</string>
+    <string name="weekly_summary_channel_name">Тижневий підсумок</string>
+    <string name="weekly_summary_notification_text">Підсумок твого тижня готовий.</string>
+    <string name="settings_pro_interest_action">Tepera Pro</string>
+    <string name="pro_interest_screen_title">Tepera Pro</string>
+    <string name="pro_interest_title">Tepera Pro — у розробці</string>
+    <string name="pro_interest_body">Ми думаємо, чи потрібна окрема розширена версія Tepera. Поки її немає, зараз це лише питання до тебе. Без цін і без оплат. Якщо цікаво — розкажи, що було б корисним.</string>
+    <string name="pro_interest_action">Хочу дізнатись</string>
+    <string name="crash_reports_label">Звіти про збої</string>
+    <string name="crash_reports_explanation">Під час тестування Tepera надсилає розробнику анонімні звіти, коли застосунок падає (через Firebase Crashlytics від Google). У звіті — модель телефону, версія Android і технічний опис збою; твоїх записів, категорій і часу в застосунках там немає. Це можна вимкнути в Налаштуваннях у будь-який момент.</string>
 
     <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), показується обома гілками "доступ надано? так/ні". -->
@@ -78,16 +104,8 @@
     <string name="widget_suggestion_body">Структура дня й швидкий тап-таймер під рукою, без відкриття застосунку.</string>
     <string name="widget_suggestion_add_action">Додати віджет</string>
 
-    <!-- Сповіщення "усе ще цим займаєшся?" через 4 год тап-таймера (Figma user-flow
-         k6s4prQ9oK9x2uUvzHRghR, node 14:791) — за прямим рішенням користувача ЛИШЕ сповіщення,
-         таймер не зупиняється автоматично. -->
-    <string name="timer_check_channel_name">Перевірка активного таймера</string>
-    <string name="timer_check_notification_body">Усе ще цим займаєшся?</string>
-    <string name="timer_check_action_yes">Так</string>
-    <string name="timer_check_action_no">Ні</string>
 
     <!-- Онбординг про цінності (FR-P.2) -->
-    <string name="values_onboarding_title">Що ти хотів би робити більше?</string>
 
     <!-- T-8 (tepera-dev-spec.md): вибір категорій на онбордингу, одразу після питання про цінності -->
     <string name="category_onboarding_title">Що з цього про твій день?</string>
@@ -126,8 +144,8 @@
     <string name="weekly_reflection_range_10_20">10–20 год</string>
     <string name="weekly_reflection_range_over_20">Понад 20 год</string>
     <string name="weekly_reflection_skip">Можна пропустити</string>
-    <string name="weekly_reflection_your_guess_format">Твоя оцінка: %1$s</string>
-    <string name="weekly_reflection_actual_format">Насправді: %1$s</string>
+    <string name="weekly_reflection_your_guess_label">Твоя оцінка</string>
+    <string name="weekly_reflection_actual_label">Насправді</string>
     <string name="weekly_reflection_done">Гаразд</string>
 
     <!-- Картка виявлених пауз (FR-D.1–D.5, SRS v2.6) -->
@@ -180,15 +198,13 @@
     <string name="settings_tracking_screen_title">Відстеження</string>
     <string name="settings_language_action">Мова</string>
     <string name="settings_language_screen_title">Мова</string>
-    <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, без оцінки перевищення.</string>
+    <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, нічого не оцінює.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_sleep_window_label">Вікно сну</string>
-    <string name="settings_sleep_window_info">Час у цьому вікні не входить у розрахунок структури доби і не породжує пауз — це технічний параметр, не показаний на шкалі. Онови межі, якщо працюєш ночами.</string>
+    <string name="settings_sleep_window_info">Це не облік сну — лише технічний параметр розрахунку. Він змінює: початок дня (нічні розблокування у вікні не починають день), довжину неспаного дня в структурі доби, пошук пауз (паузи у вікні не шукаються), рядок «Без телефону» у Статистиці й лічильник розблокувань. На шкалі вікно не показується. Онови межі, якщо працюєш ночами.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
     <string name="settings_sleep_window_start_label">Початок</string>
     <string name="settings_sleep_window_end_label">Кінець</string>
-    <string name="settings_sleep_window_second_label">Друге вікно</string>
-    <string name="settings_sleep_window_second_hint">Для плаваючого графіка — за замовчуванням вимкнене.</string>
 
     <!-- T-11 (tepera-dev-spec.md): пресет чутливості детекції пауз -->
     <string name="settings_gap_sensitivity_label">Чутливість детекції пауз</string>
@@ -199,35 +215,6 @@
 
     <!-- "Запропонувати функцію" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Запропонувати функцію</string>
-    <string name="settings_support_action">Пригостити розробника кавою</string>
-    <string name="settings_pro_action">Tepera Pro</string>
-    <string name="pro_screen_title">Tepera Pro</string>
-    <string name="pro_intro">Tepera безкоштовна. Pro — необов\'язкова підписка чи разова покупка; поки вона нічого не змінює в застосунку.</string>
-    <string name="pro_status_active">Pro активний</string>
-    <string name="pro_status_active_lifetime">Pro активний назавжди</string>
-    <string name="pro_status_active_renews">Pro активний · поновиться %1$s</string>
-    <string name="pro_status_active_ends">Pro активний · діє до %1$s</string>
-    <string name="pro_status_inactive">Pro не активний</string>
-    <string name="pro_status_loading">Перевіряємо…</string>
-    <string name="pro_status_load_failed">Не вдалося перевірити. Показуємо останній відомий стан.</string>
-    <string name="pro_unavailable">Поки що недоступно. Спробуй пізніше.</string>
-    <string name="pro_view_action">Переглянути Pro</string>
-    <string name="pro_manage_action">Керувати підпискою</string>
-    <string name="pro_restore_action">Відновити покупки</string>
-    <string name="pro_restore_done">Pro відновлено.</string>
-    <string name="pro_restore_nothing">Немає що відновлювати.</string>
-    <string name="pro_restore_failed">Не вдалося відновити. Спробуй пізніше.</string>
-    <string name="support_screen_title">Кава для розробника</string>
-    <string name="support_intro">Tepera безкоштовна й без реклами. Якщо вона тобі корисна, можеш пригостити розробника кавою. Це добровільно: нічого не відкривається й не змінюється в застосунку.</string>
-    <string name="support_tier_small">Маленька кава</string>
-    <string name="support_tier_medium">Кава</string>
-    <string name="support_tier_large">Кава з десертом</string>
-    <string name="support_action">Підтримати</string>
-    <string name="support_loading">Завантажуємо варіанти…</string>
-    <string name="support_unavailable">Поки що недоступно. Спробуй пізніше.</string>
-    <string name="support_thanks">Дякую за підтримку.</string>
-    <string name="support_pending">Оплата очікує підтвердження Google Play.</string>
-    <string name="support_failed">Не вдалося завершити. Спробуй ще раз пізніше.</string>
     <string name="settings_suggest_feature_confirm_title">Відкрити форму в браузері?</string>
     <string name="settings_suggest_feature_confirm_body">Зараз відкриється браузер із формою Google. Форму приймає Google — не Tepera.</string>
     <string name="settings_suggest_feature_confirm_action">Відкрити</string>
@@ -236,12 +223,13 @@
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Експортувати дані (JSON)</string>
     <string name="backup_import_action">Імпортувати дані (JSON)</string>
+    <string name="backup_not_included_note">У файл потрапляють категорії, записи, виключені застосунки й орієнтир. Не переносяться: вікно сну, позначені паузи, застосунки з затримкою, кнопки віджета, чутливість пауз, мова й лічильники секунд — їх треба налаштувати заново.</string>
     <string name="backup_export_success">Дані експортовано</string>
     <string name="backup_export_failure">Не вдалося експортувати дані</string>
     <string name="backup_import_success">Дані імпортовано</string>
     <string name="backup_import_failure">Не вдалося імпортувати дані — перевірте файл</string>
     <string name="backup_import_confirm_title">Замінити всі дані?</string>
-    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й орієнтир поточними даними з файлу. Це не можна скасувати.</string>
+    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи активностей, виключені застосунки й орієнтир поточними даними з файлу. Це не можна скасувати. Вікно сну, позначені паузи, застосунки з затримкою, кнопки віджета й чутливість пауз з файлу не відновлюються.</string>
     <string name="backup_import_confirm_action">Імпортувати</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -264,8 +252,32 @@
     <string name="widget_settings_drag_handle">Змінити порядок</string>
     <string name="widget_settings_reset">Повернути автоматичний порядок</string>
     <string name="gates_screen_title">Застосунки з затримкою</string>
+    <string name="gates_pause_label">Пауза</string>
+    <string name="gates_pause_none">Не на паузі</string>
+    <string name="gates_pause_until_format">до %1$s</string>
+    <string name="gates_pause_from_until_format">%1$s – %2$s</string>
+    <string name="gates_pause_dialog_title">Призупинити ворота</string>
+    <string name="gates_pause_dialog_confirm">Призупинити</string>
+    <string name="gates_pause_choice_today">Сьогодні</string>
+    <string name="gates_pause_choice_weekend">На вихідні</string>
+    <string name="gates_pause_choice_date">До дати…</string>
+    <string name="gates_pause_end_now">Увімкнути ворота зараз</string>
+    <string name="gates_schedule_label">Розклад</string>
+    <string name="gates_schedule_always">Завжди</string>
+    <string name="gates_schedule_custom">За розкладом</string>
+    <string name="gate_schedule_title">Розклад воріт</string>
+    <string name="gate_schedule_always">Завжди активні</string>
+    <string name="gate_schedule_always_hint">Ворота працюють у будь-який час, коли не на паузі.</string>
+    <string name="gate_schedule_custom_hint">Ворота працюють лише в обраних проміжках. Поза ними ярлик одразу відкриває застосунок. Час — локальний.</string>
+    <string name="gate_schedule_day_off">Цього дня ворота не діють</string>
+    <string name="gate_schedule_add_interval">Додати проміжок</string>
+    <string name="gate_schedule_copy_all">На всі дні</string>
+    <string name="gate_schedule_remove_interval">Прибрати проміжок</string>
+    <string name="gate_schedule_from">Початок</string>
+    <string name="gate_schedule_to">Кінець</string>
+    <string name="gate_schedule_note_whole_day">Весь день</string>
+    <string name="gate_schedule_note_next_day">Закінчується наступного дня</string>
     <string name="gates_hint">Обрані застосунки відкриваються лише через новий ярлик, з паузою перед запуском</string>
-    <string name="gates_pause_today_label">Вимкнути затримку на сьогодні</string>
     <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — ворота недоступні на цьому пристрої</string>
     <string name="gates_section_active">Застосунки з затримкою</string>
     <string name="gates_section_add">Додати застосунок</string>
@@ -276,22 +288,46 @@
     <string name="gates_delay_picker_title">Тривалість паузи</string>
     <string name="gates_delay_picker_confirm">Створити ворота</string>
     <string name="gates_delay_picker_cancel">Скасувати</string>
-    <string name="gates_pin_failed">Не вдалося створити ярлик — спробуй ще раз</string>
+    <string name="gates_pin_failed">Не вдалося створити ярлик — повтори дію</string>
     <string name="gates_instruction_title">Ярлик створено</string>
     <string name="gates_instruction_body">Android не дозволяє нам прибрати оригінальну іконку %1$s за тебе. Зроби це вручну: затримай іконку на робочому столі й перетягни у "Видалити".</string>
     <string name="gates_instruction_done">Готово</string>
     <string name="gates_instruction_later">Зроблю пізніше</string>
     <!-- Редизайн екрана паузи за наданим макетом (за прямим запитом користувача, не T-5) -->
-    <string name="gate_pause_inhale">Вдих…</string>
-    <string name="gate_pause_exhale">Видих…</string>
-    <string name="gate_pause_continue_action">Продовжити</string>
-    <string name="gate_pause_exit_action">Вийти</string>
-    <plurals name="gate_pause_attempts_text">
-        <item quantity="one">Ти намагався відкрити цей застосунок %d раз</item>
-        <item quantity="few">Ти намагався відкрити цей застосунок %d рази</item>
-        <item quantity="many">Ти намагався відкрити цей застосунок %d разів</item>
-        <item quantity="other">Ти намагався відкрити цей застосунок %d раза</item>
-    </plurals>
+    <string name="gate_pause_exit_action">Не зараз</string>
+    <!-- CC-6: тексти екрана паузи воріт (ротація «мішком»); %1$s — назва застосунку; 25–27 (кінець масиву) — нічні -->
+    <string-array name="gate_texts">
+        <item>Вдих. Видих. Далі — як вирішиш.</item>
+        <item>Кілька секунд тиші.</item>
+        <item>Один повільний вдих.</item>
+        <item>Опусти плечі. Розслаб щелепу.</item>
+        <item>Поки чекаємо — глянь у вікно.</item>
+        <item>Відчуй, як ти зараз сидиш чи стоїш.</item>
+        <item>Що хочеш там знайти?</item>
+        <item>Одна справа — і назад?</item>
+        <item>По справі чи відпочити? Обидва варіанти ок.</item>
+        <item>%1$s нікуди не дінеться.</item>
+        <item>Знаєш, що саме хочеш перевірити?</item>
+        <item>Якщо відкриваєш — хай це буде свідомо.</item>
+        <item>Можна відкрити. Можна й не відкривати.</item>
+        <item>Тут немає неправильної відповіді.</item>
+        <item>Ці секунди — твої.</item>
+        <item>Нічого не станеться, якщо зачекати.</item>
+        <item>Ці ворота поставив ти. Вони лише нагадують.</item>
+        <item>Відкрити — теж нормально.</item>
+        <item>Тепер — гарний момент помітити, де ти.</item>
+        <item>Що чути навколо просто зараз?</item>
+        <item>Знайди поглядом три речі поруч.</item>
+        <item>Як ти зараз? Просто чесно.</item>
+        <item>Стрічка оновиться і без тебе.</item>
+        <item>Там, мабуть, нічого нового. Мабуть.</item>
+        <item>Уже пізно. Екран може почекати до ранку.</item>
+        <item>Не спиться? Полежати в тиші — теж відпочинок.</item>
+        <item>До ранку кілька годин. %1$s теж дочекається.</item>
+    </string-array>
+    <string name="gate_pause_open_format">Відкрити %1$s</string>
+    <string name="gates_growing_delay_label">Зростаюча затримка</string>
+    <string name="gates_growing_delay_hint">Якщо відкривати ті самі ворота знову й знову, затримка трохи росте — до 20 с, і скидається за пів години без відкриттів.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>
@@ -321,24 +357,21 @@
     <string name="edit_entry_delete_confirm_body">Цю дію не можна скасувати.</string>
     <string name="add_entry_category_label">Категорія</string>
     <string name="add_entry_category_empty">Немає активних категорій</string>
-    <string name="add_entry_mode_presets">Пресети</string>
-    <string name="add_entry_mode_manual">Вручну</string>
-    <string name="add_entry_mode_interval">Інтервал</string>
-    <string name="add_entry_duration_label">Тривалість: %1$d хв</string>
     <string name="add_entry_duration_word">Тривалість</string>
-    <string name="add_entry_duration_type_label">Тип</string>
-    <string name="add_entry_duration_minutes_label">Хвилини</string>
-    <string name="add_entry_reset_duration">Скинути</string>
-    <string name="add_entry_preset_format">+%d хв</string>
-    <string name="add_entry_preset_hours_format">+%d год</string>
     <string name="add_entry_start_time_label">Початок</string>
     <string name="add_entry_end_time_label">Кінець</string>
+    <string name="add_entry_time_label">Час</string>
+    <string name="add_entry_time_mode_keyboard">Ввести час з клавіатури</string>
+    <string name="add_entry_time_mode_dial">Обрати час на циферблаті</string>
     <string name="time_field_format">%1$s: %2$s</string>
     <string name="add_entry_note_label">Нотатка (необов\'язково)</string>
     <string name="add_entry_note_counter">%1$d/%2$d</string>
     <string name="add_entry_save">Зберегти</string>
     <string name="add_entry_select_category_first">Спершу оберіть категорію</string>
     <string name="add_entry_interval_invalid">Час завершення має бути пізніше початку</string>
+    <string name="add_entry_interval_too_long">Один запис — не довше %1$d діб</string>
+    <string name="add_entry_end_next_day_action">Закінчилась наступного дня</string>
+    <string name="entry_series_caption">Одна активність: %1$s — %2$s</string>
     <string name="add_entry_overlap_title">Перекриття часу</string>
     <string name="add_entry_overlap_body">У цій категорії вже є запис, що перекривається за часом. Зберегти все одно?</string>
     <string name="add_entry_overlap_confirm">Зберегти все одно</string>
@@ -368,11 +401,12 @@
     <string name="stats_history_yesterday">Вчора</string>
     <string name="stats_day_timeline_title">Вчорашня доба</string>
     <string name="stats_day_legend_pause">Пауза</string>
-    <string name="stats_day_legend_offline">Офлайн без запису</string>
+    <string name="stats_day_legend_offline">Без телефону, без запису</string>
     <string name="stats_day_pauses_title">Паузи без телефону</string>
-    <string name="stats_day_pauses_count">Пауз: %1$d</string>
-    <string name="stats_day_pauses_longest">Найдовша: %1$s (%2$s)</string>
-    <string name="stats_day_compare">Online вчора %1$s · твій типовий день (медіана за %2$d дн.) %3$s</string>
+    <string name="stats_day_pauses_count_chip_label">Кількість</string>
+    <string name="stats_day_pauses_longest_chip_label">Найдовша</string>
+    <string name="stats_day_compare_yesterday">Online вчора</string>
+    <string name="stats_day_compare_typical">Типово (медіана за %1$d дн.)</string>
     <string name="stats_history_edit_action">Редагувати запис</string>
     <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 
@@ -390,14 +424,15 @@
     <string name="knowledge_base_section_1_title">Звідки беруться дані</string>
     <string name="knowledge_base_section_1_body">Online-час і структура дня рахуються через системний дозвіл Android «Доступ до статистики використання» (Налаштування → Спеціальний доступ, не спливаюче вікно). Дозвіл дає доступ лише до назв застосунків і моментів, коли вони виходять на передній план чи йдуть у фон. Без нього ручне логування активностей лишається повністю робочим — просто без автоматичного Online-часу.\n\nTepera не бачить зміст екрана: не текст повідомлень, не те, що саме ти читаєш чи дивишся, не скролінг усередині застосунку — хвилина читання виглядає так само, як хвилина гортання стрічки. Усі дані лишаються на телефоні; єдиний вихід у мережу — кнопка «Запропонувати функцію», яка відкриває браузер, не сам застосунок.</string>
     <string name="knowledge_base_section_2_title">Паузи та ворота</string>
-    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: пропущена пауза нікуди не записується як показник.\n\nВорота (Налаштування → Застосунки із затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож ворота працюють через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути ворота на сьогодні можна одним тапом, без пояснень.</string>
+    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: якщо паузу не позначити, це нікуди не записується як показник.\n\nВорота (Налаштування → Застосунки із затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож ворота працюють через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути ворота на сьогодні можна одним тапом, без пояснень.</string>
     <string name="knowledge_base_section_3_title">Вікно сну</string>
-    <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ти спав. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань. Можна задати до двох вікон — друге для плаваючого графіка, вимкнене за замовчуванням.</string>
+    <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ти спав. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань.</string>
     <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>
     <string name="knowledge_base_section_4_body">Tepera не надсилає сповіщень, що кличуть повернутись, не рахує серій днів поспіль і не видає балів чи бейджів за використання. Числа на екранах — це факти про час, який уже минув, не ціль, до якої треба дотягнутись: тому в застосунку немає слова «ціль», лише «орієнтир», і кольори ніколи не стають «тривожними», скільки б часу не минуло. Порівняння — лише з власною історією, ніколи з середніми показниками інших людей.</string>
     <string name="onboarding_learn_more">Дізнатись більше про дані</string>
     <string name="home_card_first_unlock_label">Початок</string>
     <string name="home_card_day_last_label">День триває</string>
+    <string name="home_card_day_since_format">З %1$s минуло</string>
     <string name="home_card_info_action">Про цю картку</string>
     <string name="home_card_info_close">Зрозуміло</string>
     <string name="day_usage_info_body">Кожен квадрат — одна година вчорашньої доби; колір показує, скільки хвилин за цю годину телефон був у Online. Це лише картина вчорашнього дня, без оцінки.</string>
@@ -450,4 +485,16 @@
     <string name="scrolling_notes_5_title">Як це стосується Tepera</string>
     <string name="scrolling_notes_5_body">Tepera не робить висновків про тебе з цих питань. Вона лише показує, як ти користуєшся телефоном, а що з цим робити — вирішуєш ти.</string>
     <string name="scrolling_notes_reviewed">Текст востаннє переглянуто: 21.09.2026</string>
+    <string name="search_apps_placeholder">Пошук застосунків</string>
+    <string name="search_no_results">Нічого не знайдено</string>
+    <string name="search_clear">Очистити пошук</string>
+    <string name="settings_sleep_window_hint">Розблокування у цьому вікні не починають твій день.</string>
+    <string name="settings_gap_sensitivity_hint_format">Пропонує паузи від %1$d хв, не більше %2$d на день.</string>
+    <string name="widget_button_running_format">%1$s, таймер іде</string>
+    <string name="heat_grid_description_peak">Online за годинами доби. Найбільше: %1$s.</string>
+    <string name="heat_grid_description_none">Online за годинами доби: даних поки немає.</string>
+    <string name="trend_chart_description">Online за днями: %1$s.</string>
+    <string name="timeline_description_prefix">Хронологія вчорашньої доби, приблизно: %1$s.</string>
+    <string name="balance_target_label">Орієнтир</string>
+    <string name="loading_description">Завантаження</string>
 </resources>

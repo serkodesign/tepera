@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import android.content.ActivityNotFoundException
@@ -12,19 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.WorkspacePremium
-import androidx.compose.material.icons.filled.Coffee
-import androidx.compose.material.icons.filled.Feedback
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Widgets
-import androidx.compose.material.icons.filled.TrackChanges
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -72,11 +60,8 @@ fun SettingsScreen(
     onOpenBackupRestore: () -> Unit,
     onOpenGates: () -> Unit,
     onOpenWidgetSettings: () -> Unit,
-    onOpenSupport: () -> Unit,
-    onOpenPro: () -> Unit,
     onOpenAbout: () -> Unit,
-    onOpenSpikeT1: () -> Unit = {},
-    onOpenSpikeT15: () -> Unit = {},
+    onOpenProInterest: () -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -127,31 +112,31 @@ fun SettingsScreen(
                 GlassRow(
                     label = stringResource(R.string.settings_tracking_action),
                     onClick = onOpenTracking,
-                    leading = { TeperaIconCircle(Icons.Filled.TrackChanges) },
+                    leading = { TeperaIconCircle(TeperaSymbols.TrackChanges) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.settings_categories_action),
                     onClick = onOpenCategories,
-                    leading = { TeperaIconCircle(Icons.Filled.Category) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Category) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.settings_exclusion_list_action),
                     onClick = onOpenExclusionList,
-                    leading = { TeperaIconCircle(Icons.Filled.VisibilityOff) },
+                    leading = { TeperaIconCircle(TeperaSymbols.VisibilityOff) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.settings_gates_action),
                     onClick = onOpenGates,
-                    leading = { TeperaIconCircle(Icons.Filled.Timer) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Timer) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.settings_widget_action),
                     onClick = onOpenWidgetSettings,
-                    leading = { TeperaIconCircle(Icons.Filled.Widgets) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Widgets) },
                     trailing = { NavChevron() }
                 )
 
@@ -159,13 +144,13 @@ fun SettingsScreen(
                 GlassRow(
                     label = stringResource(R.string.settings_language_action),
                     onClick = onOpenLanguage,
-                    leading = { TeperaIconCircle(Icons.Filled.Language) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Language) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.settings_backup_restore_action),
                     onClick = onOpenBackupRestore,
-                    leading = { TeperaIconCircle(Icons.Filled.Archive) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Archive) },
                     trailing = { NavChevron() }
                 )
                 // FR-6.4: чесне попередження перед відкриттям браузера. Свідомо без бейджа й без
@@ -173,53 +158,27 @@ fun SettingsScreen(
                 GlassRow(
                     label = stringResource(R.string.settings_suggest_feature_action),
                     onClick = { showSuggestFeatureConfirm = true },
-                    leading = { TeperaIconCircle(Icons.Filled.Feedback) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Feedback) },
                     trailing = { NavChevron() }
                 )
-                // Tepera Pro (RevenueCat entitlement tepera_pro): стан, Paywall, Customer Center — тихий рядок.
-                // Прихований на фазі запуску (RevenueCatConfig.PRO_ENTRY_ENABLED = false).
-                if (com.serkodesign.tepera.data.billing.RevenueCatConfig.PRO_ENTRY_ENABLED) {
+                // CC-8: тижневий підсумок — одне тихе сповіщення раз на тиждень, вимкнене за замовчуванням.
+                WeeklySummaryToggle(settingsStore = (context.applicationContext as com.serkodesign.tepera.TeperaApp).settingsStore)
+                // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
+                CrashReportsToggle()
+                // CC-11: fake door — «Tepera Pro — у розробці», без цін і оплат.
                 GlassRow(
-                    label = stringResource(R.string.settings_pro_action),
-                    onClick = onOpenPro,
-                    leading = { TeperaIconCircle(Icons.Filled.WorkspacePremium) },
-                    trailing = { NavChevron() }
-                )
-                }
-                // Добровільна підтримка розробника (RevenueCat) — тихий рядок без бейджа й нагадувань.
-                GlassRow(
-                    label = stringResource(R.string.settings_support_action),
-                    onClick = onOpenSupport,
-                    leading = { TeperaIconCircle(Icons.Filled.Coffee) },
+                    label = stringResource(R.string.settings_pro_interest_action),
+                    onClick = onOpenProInterest,
+                    leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
                     trailing = { NavChevron() }
                 )
                 // GAP-8: посилання на Privacy Policy, версія й контакт — вимога Google Play.
                 GlassRow(
                     label = stringResource(R.string.settings_about_action),
                     onClick = onOpenAbout,
-                    leading = { TeperaIconCircle(Icons.Filled.Info) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Info) },
                     trailing = { NavChevron() }
                 )
-                // Debug-only вхід у T-1 (tepera-dev-spec.md) — інструмент спайку, не
-                // продакшн-функція. Перевірка FLAG_DEBUGGABLE, а не BuildConfig.DEBUG:
-                // buildFeatures.buildConfig не увімкнено в app/build.gradle.kts, а вмикати
-                // його заради одного прапорця в debug-only коді — зайва зміна білд-конфігу.
-                val isDebuggable = (context.applicationInfo.flags and
-                    android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
-                if (isDebuggable) {
-                    GlassRow(
-                        label = "T-1: спайк видимості пакетів (debug)",
-                        onClick = onOpenSpikeT1,
-                        leading = { TeperaIconCircle(Icons.Filled.Info) },
-                        trailing = { NavChevron() }
-                    )
-                    GlassRow(
-                        label = "T-15: сирі події в CSV (debug)",
-                        onClick = onOpenSpikeT15,
-                        leading = { TeperaIconCircle(Icons.Filled.Info) },
-                        trailing = { NavChevron() }
-                    )
-                }
             }
         }
     }

@@ -41,7 +41,7 @@ data class BalanceUiState(
     val restOfDayMinutes: Int = 0,
     val dayLengthMinutes: Int = 0,
     val daySpanMinutes: Int = 1,
-    val targetMinutes: Int = 180,
+    val targetMinutes: Int? = null,
     val denominatorMinutes: Int = 180,
     /** Точка старту дня (перше суттєве розблокування) — для плашки "Перше розблокування" на Home. */
     val dayStartMillis: Long = 0L

@@ -32,17 +32,18 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
 
 /**
  * T-8 (tepera-dev-spec.md): "На онбордингу показати 5 дефолтних плюс нейтральну «Справи»;
- * користувач вмикає потрібні." Показується між питанням про цінності (FR-P.2,
- * [ValuesOnboardingScreen], ЗАВЖДИ перше) і онбординг-оцінкою Online-часу (T-3,
- * [OnlineEstimateOnboardingScreen]) — логічне продовження "що ти цінуєш" у "що саме
- * відмічатимеш", перед тим, як розмова переходить до Online-часу й дозволу.
+ * користувач вмикає потрібні." Показується першим кроком онбордингу, перед онбординг-оцінкою
+ * Online-часу (T-3, [OnlineEstimateOnboardingScreen]): спершу "що саме відмічатимеш", потім
+ * Online-час й дозвіл.
  *
  * **Обґрунтування документа:** попередні 5 категорій самі по собі є нормою "чим варто
  * заповнювати вільний час" (FR-P.5 забороняє норми) — людина, чий день переважно робота/дорога/
@@ -99,11 +100,7 @@ fun CategoryOnboardingScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = stringResource(R.string.category_onboarding_title),
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
+            TeperaOnboardingTitle(text = stringResource(R.string.category_onboarding_title))
             Text(
                 text = stringResource(R.string.category_onboarding_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
@@ -133,6 +130,9 @@ fun CategoryOnboardingScreen(
                         }
                     )
                 }
+                // D-15: чесне повідомлення про звіти про збої одразу на початку, з можливістю вимкнути.
+                // Усередині спільної прокрутки: довгий пояснювальний текст не має відбирати місце у списку.
+                CrashReportsToggle(modifier = Modifier.padding(top = 8.dp))
             }
 
             TeperaButton(

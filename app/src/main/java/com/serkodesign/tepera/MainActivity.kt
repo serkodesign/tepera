@@ -14,7 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.serkodesign.tepera.data.repository.GateRepository
+import kotlinx.coroutines.launch
 import com.serkodesign.tepera.ui.navigation.TeperaNavHost
 import com.serkodesign.tepera.ui.theme.TeperaTheme
 import com.serkodesign.tepera.util.LocaleStore
@@ -26,6 +28,8 @@ class MainActivity : ComponentActivity() {
         // FR-4.1: тап по кнопці категорії на віджеті. FR-4.4: тап по Quick Settings tile.
         const val EXTRA_OPEN_ADD_ENTRY = "open_add_entry"
         const val EXTRA_CATEGORY_ID = "category_id"
+        // CC-8: тап по тижневому сповіщенню — відкрити Home з карткою підсумку тижня.
+        const val EXTRA_OPEN_WEEKLY_SUMMARY = "open_weekly_summary"
     }
 
     /**
@@ -40,6 +44,13 @@ class MainActivity : ComponentActivity() {
     data class GateRequest(val packageName: String, val nonce: Long)
 
     private var pendingGateRequest by mutableStateOf<GateRequest?>(null)
+
+    // CC-8: nonce тапу по тижневому сповіщенню — TeperaNavHost повертає на Home.
+    private var weeklySummaryNonce by mutableStateOf<Long?>(null)
+
+    // CC-4: відкриття через ворота (це не "відкрив Tepera") і перестворення
+    // активності (зміна мови) не рахуються.
+    private var skipNextOpen = false
 
     // Застосовує збережений вибір мови (Налаштування → Мова застосунку) ДО того, як
     // з'явиться будь-який ресурс/рядок цієї Activity — LocaleStore.kt пояснює, чому це
@@ -64,6 +75,8 @@ class MainActivity : ComponentActivity() {
         val categoryId = intent.getStringExtra(EXTRA_CATEGORY_ID)
         val openAddEntry = intent.getBooleanExtra(EXTRA_OPEN_ADD_ENTRY, false) || categoryId != null
         pendingGateRequest = gateRequestFromIntent(intent)
+        skipNextOpen = savedInstanceState != null || pendingGateRequest != null
+        handleWeeklySummaryIntent(intent)
         setContent {
             ProvideAppLocale {
             TeperaTheme {
@@ -83,17 +96,28 @@ class MainActivity : ComponentActivity() {
                         activeTimerStore = app.activeTimerStore,
                         backupRepository = app.backupRepository,
                         gateRepository = app.gateRepository,
-                        supportRepository = app.supportRepository,
-                        proRepository = app.proRepository,
                         gateEventRepository = app.gateEventRepository,
                         cardHistoryRepository = app.cardHistoryRepository,
                         pendingOpenAddEntry = openAddEntry,
                         pendingCategoryId = categoryId,
                         pendingGateTargetPackage = pendingGateRequest?.packageName,
-                        pendingGateRequestNonce = pendingGateRequest?.nonce
+                        pendingGateRequestNonce = pendingGateRequest?.nonce,
+                        pendingWeeklySummaryNonce = weeklySummaryNonce
                     )
                 }
             }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (skipNextOpen) {
+            skipNextOpen = false
+        } else {
+            val welcomeBack = (application as TeperaApp).welcomeBackRepository
+            lifecycleScope.launch {
+                welcomeBack.onAppOpened() // CC-4: перерва ≥ 3 діб → підсумок на Home
             }
         }
     }
@@ -102,6 +126,16 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingGateRequest = gateRequestFromIntent(intent)
+        skipNextOpen = pendingGateRequest != null
+        handleWeeklySummaryIntent(intent)
+    }
+
+    /** CC-8: тап по тижневому сповіщенню — знімаємо приховування картки «Цей тиждень» і повертаємо на Home. */
+    private fun handleWeeklySummaryIntent(intent: Intent) {
+        if (!intent.getBooleanExtra(EXTRA_OPEN_WEEKLY_SUMMARY, false)) return
+        intent.removeExtra(EXTRA_OPEN_WEEKLY_SUMMARY)
+        weeklySummaryNonce = System.nanoTime()
+        lifecycleScope.launch { (application as TeperaApp).settingsStore.setWeeklyDigestCardDismissedKey(-1L) }
     }
 
     private fun gateRequestFromIntent(intent: Intent): GateRequest? =

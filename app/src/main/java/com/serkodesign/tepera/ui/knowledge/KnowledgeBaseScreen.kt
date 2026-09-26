@@ -19,14 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 private data class KnowledgeSection(val titleRes: Int, val bodyRes: Int)
@@ -78,7 +77,7 @@ fun KnowledgeBaseScreen(onOpenScrollingNotes: () -> Unit, onBack: () -> Unit) {
                 GlassRow(
                     label = stringResource(R.string.scrolling_notes_row),
                     onClick = onOpenScrollingNotes,
-                    leading = { TeperaIconCircle(Icons.Filled.Info) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Info) },
                     trailing = { NavChevron() }
                 )
             }

@@ -108,7 +108,9 @@ class PauseViewModel(
                     val now = System.currentTimeMillis()
                     val scan = pauseRepository.scan(todayDayStart, now, sleepWindows, config)
                     pauseRepository.persist(todayDayStart, now, scan.gaps)
-                    val gaps = pauseRepository.getUnresolvedGaps(todayDayStart, now)
+                    val rawGaps = pauseRepository.getUnresolvedGaps(todayDayStart, now)
+                    val entries = activityRepository.observeEntriesInRange(todayDayStart, now).first()
+                    val gaps = pauseRepository.reconcileWithEntries(rawGaps, entries)
                     _uiState.value = PauseCardUiState(
                         visible = gaps.isNotEmpty(),
                         mode = mode,
@@ -134,7 +136,9 @@ class PauseViewModel(
                     }
                     val scan = pauseRepository.scan(yesterdayDayStart, todayDayStart, sleepWindows, config)
                     pauseRepository.persist(yesterdayDayStart, todayDayStart, scan.gaps)
-                    val gaps = pauseRepository.getUnresolvedGaps(yesterdayDayStart, todayDayStart)
+                    val rawGaps = pauseRepository.getUnresolvedGaps(yesterdayDayStart, todayDayStart)
+                    val entries = activityRepository.observeEntriesInRange(yesterdayDayStart, todayDayStart).first()
+                    val gaps = pauseRepository.reconcileWithEntries(rawGaps, entries)
                     _uiState.value = PauseCardUiState(
                         visible = gaps.isNotEmpty(),
                         mode = mode,
@@ -168,18 +172,29 @@ class PauseViewModel(
             )
             activityRepository.addEntry(entry, forceOverwrite = true)
             pauseRepository.markLabeled(gap.id, entry.id)
-            _uiState.value = _uiState.value.let { state ->
-                state.copy(gaps = state.gaps.filterNot { it.id == gap.id })
-            }
+            removeGapFromState(gap)
         }
     }
 
     fun dismissGap(gap: PauseUiGap) {
         viewModelScope.launch {
             pauseRepository.dismiss(gap.id)
-            _uiState.value = _uiState.value.let { state ->
-                state.copy(gaps = state.gaps.filterNot { it.id == gap.id })
-            }
+            removeGapFromState(gap)
+        }
+    }
+
+    /**
+     * Реальний баг, знайдений користувачем: раніше цей код лишав `visible = true` навіть коли
+     * [PauseCardUiState.gaps] ставав порожнім (наприклад, останню паузу позначено/пропущено) —
+     * `PauseCard` (з "×" у заголовку, але БЕЗ жодного рядка паузи) лишалась на Home, доки
+     * користувач не закривав її вручну, замість автоматично зникнути. `CardType.PAUSE` у
+     * `HomeScreen` бере видимість саме з [PauseCardUiState.visible] (`dataReady`), тож оновлення
+     * лише списку `gaps` без цього поля не звільняло місце для наступної картки в черзі.
+     */
+    private fun removeGapFromState(gap: PauseUiGap) {
+        _uiState.value = _uiState.value.let { state ->
+            val remaining = state.gaps.filterNot { it.id == gap.id }
+            state.copy(gaps = remaining, visible = remaining.isNotEmpty())
         }
     }
 

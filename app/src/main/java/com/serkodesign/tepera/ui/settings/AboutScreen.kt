@@ -10,10 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -81,13 +78,13 @@ fun AboutScreen(
                 GlassRow(
                     label = stringResource(R.string.about_privacy_policy),
                     onClick = { open(Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_POLICY_URL))) },
-                    leading = { TeperaIconCircle(Icons.Filled.PrivacyTip) },
+                    leading = { TeperaIconCircle(TeperaSymbols.PrivacyTip) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
                     label = stringResource(R.string.settings_knowledge_base_action),
                     onClick = onOpenKnowledgeBase,
-                    leading = { TeperaIconCircle(Icons.AutoMirrored.Filled.MenuBook) },
+                    leading = { TeperaIconCircle(TeperaSymbols.MenuBook) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(
@@ -98,7 +95,7 @@ fun AboutScreen(
                                 .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.app_name))
                         )
                     },
-                    leading = { TeperaIconCircle(Icons.Filled.Email) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Mail) },
                     trailing = { NavChevron() }
                 )
             }

@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.diary
 
 import androidx.compose.foundation.background
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,9 +11,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -19,15 +24,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.util.localStartOfDay
 import com.serkodesign.tepera.util.startOfTodayMillis
 import androidx.compose.ui.Alignment
@@ -54,12 +59,13 @@ import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
-import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaScreenTitle
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.util.roundToQuarterHour
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -80,8 +86,9 @@ import java.util.Locale
  * Medium) з тривалістю й інтервалом, кнопка редагування — іконка 24dp без фону. За відповідями
  * користувача: чіпи однакові для сьогодні й вчора (у макеті вчора було білим із сірим текстом),
  * кружок категорії — 20% її кольору (не 10-30% з макета), гліф — сам колір категорії; лічильники
- * розблокувань і "востаннє брав телефон" (яких нема в макеті) лишились, оформлені плашками
- * `TeperaChip` (спільний чіп застосунку), як "Початок"/"День триває" на Home; нотатка запису — третім рядком.
+ * розблокувань і "востаннє брав телефон" (яких нема в макеті) лишились, оформлені картками
+ * `StatTile` (за прямим запитом користувача — заміна плоских чипів картками, той самий компонент,
+ * що межі доби на Статистиці); нотатка запису — третім рядком.
  *
  * Кругла кнопка "+" (за прямим запитом користувача) — єдиний вхід на Щоденнику для ЗАГАЛЬНОГО
  * додавання активності (без попередньо обраної категорії, на відміну від кнопки "додати час"
@@ -119,7 +126,7 @@ fun DiaryScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 100.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = bottomNavClearance()),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 HistoryContent(
@@ -132,7 +139,7 @@ fun DiaryScreen(
         }
 
         TeperaIconButton(
-            icon = Icons.Filled.Add,
+            icon = TeperaSymbols.Add,
             contentDescription = stringResource(R.string.diary_add_entry_action),
             onClick = onAddEntry,
             modifier = Modifier
@@ -195,7 +202,7 @@ private fun HistoryContent(
                     isYesterday -> stringResource(R.string.stats_history_yesterday)
                     else -> dateFormat.format(Date(dayStart)).replaceFirstChar { it.titlecase(locale) }
                 },
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier.padding(horizontal = 8.dp).semantics { heading() },
                 color = TeperaPalette.buttonBrandDark,
                 fontFamily = TeperaPalette.headlineFont,
                 fontWeight = FontWeight.Medium,
@@ -204,31 +211,27 @@ private fun HistoryContent(
                 letterSpacing = 0.018.sp
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                // За прямим запитом користувача — картки (`StatTile`), не плоскі чипи; той самий
+                // компонент, що межі доби на Статистиці. Без іконок (за прямим запитом користувача —
+                // на вузьких картках вони посилювали перенос підпису на кілька рядків).
                 if (unlockCount != null || lastPhoneUseMillis != null) {
-                    FlowRow(
-                        modifier = Modifier.padding(bottom = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
+                    val stats = buildList {
                         unlockCount?.let { count ->
-                            TeperaChip(
-                                label = stringResource(
+                            add(
+                                stringResource(
                                     when {
                                         isToday -> R.string.diary_unlock_today_label
                                         isYesterday -> R.string.diary_unlock_yesterday_label
                                         else -> R.string.diary_unlock_label
                                     }
-                                ),
-                                value = count.toString()
+                                ) to count.toString()
                             )
                         }
                         lastPhoneUseMillis?.let { millis ->
-                            TeperaChip(
-                                label = stringResource(R.string.diary_last_phone_use_yesterday_label),
-                                value = formatClockTime(millis)
-                            )
+                            add(stringResource(R.string.diary_last_phone_use_yesterday_label) to formatClockTime(millis))
                         }
                     }
+                    TeperaStatsBar(stats = stats, modifier = Modifier.padding(bottom = 4.dp))
                 }
                 group?.items?.forEach { item ->
                     HistoryEntryRow(item = item, onEdit = { onEditEntry(item.entry.id) })
@@ -243,7 +246,7 @@ private fun formatClockTime(millis: Long): String =
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
+internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
     val accentColor = categoryColor(item.category.colorHex)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val endMillis = item.entry.startTime + item.entry.durationMinutes * 60_000L
@@ -261,7 +264,7 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White.copy(alpha = 0.8f))
-            .clickable(onClick = onEdit)
+            .clickable(role = Role.Button, onClick = onEdit)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -272,9 +275,9 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
         ) {
             val lineArt = categoryLineArtIconRes(item.category.iconName)
             if (lineArt != null) {
-                Icon(painterResource(lineArt), contentDescription = null, tint = accentColor, modifier = Modifier.size(24.dp))
+                Icon(painterResource(lineArt), contentDescription = null, tint = categoryGlyphColor(accentColor), modifier = Modifier.size(24.dp))
             } else {
-                Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = accentColor, modifier = Modifier.size(24.dp))
+                Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = categoryGlyphColor(accentColor), modifier = Modifier.size(24.dp))
             }
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -295,6 +298,14 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
                 EntryChip(durationText)
                 EntryChip(rangeText)
             }
+            item.seriesRange?.let { range ->
+                Text(
+                    text = seriesRangeText(range),
+                    fontSize = 12.sp,
+                    lineHeight = 15.6.sp,
+                    color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+                )
+            }
             if (!item.entry.note.isNullOrBlank()) {
                 Text(
                     text = item.entry.note,
@@ -306,20 +317,16 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             }
         }
         // Figma 208:1564: область 40x40, іконка edit 24dp (#1C1B1F), без фону.
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .clickable(role = Role.Button, onClick = onEdit),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = TeperaIcons.Edit,
-                contentDescription = stringResource(R.string.stats_history_edit_action),
-                tint = Color(0xFF1C1B1F),
-                modifier = Modifier.size(24.dp)
-            )
-        }
+        TeperaIconButton(
+            icon = TeperaIcons.Edit,
+            contentDescription = stringResource(R.string.stats_history_edit_action),
+            onClick = onEdit,
+            modifier = Modifier.width(40.dp),
+            shape = CircleShape,
+            containerColor = Color.Transparent,
+            contentColor = Color(0xFF1C1B1F),
+            height = 40.dp
+        )
     }
 }
 
@@ -332,8 +339,8 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
 internal fun EntryChip(
     text: String,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = 11.sp,
-    background: Color = TeperaPalette.surfaceBrandLight,
+    fontSize: TextUnit = 12.sp,
+    background: Color = Color.White,
     horizontalPadding: Dp = 8.dp
 ) {
     Box(
@@ -355,4 +362,18 @@ internal fun EntryChip(
             maxLines = 1
         )
     }
+}
+
+/**
+ * Підпис частини багатодобової активності: "Одна активність: 19 вер 19:00 — 20 вер 12:00". Дні розбиті
+ * лише для рахунку (див. `splitAtDayRollover`), а людині це одна активність — показуємо її цілком.
+ */
+@Composable
+internal fun seriesRangeText(range: Pair<Long, Long>): String {
+    val format = remember { SimpleDateFormat("d MMM HH:mm", Locale.getDefault()) }
+    return stringResource(
+        R.string.entry_series_caption,
+        format.format(Date(range.first)),
+        format.format(Date(range.second))
+    )
 }

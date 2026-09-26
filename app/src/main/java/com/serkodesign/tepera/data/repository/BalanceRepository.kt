@@ -7,6 +7,7 @@ import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
 import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import com.serkodesign.tepera.util.SleepWindowCalculator
+import com.serkodesign.tepera.util.TargetSuggestion
 import com.serkodesign.tepera.util.TimeSpan
 import com.serkodesign.tepera.util.mergeTimeSpans
 import com.serkodesign.tepera.util.systemExclusionPackages
@@ -81,6 +82,26 @@ class BalanceRepository(
         }
     }
 
+
+    /** Середнє Online за завершені доби з даних: [minutesPerDay] і скільки діб ([days]) увійшло. */
+    data class OnlineAverage(val minutesPerDay: Int, val days: Int)
+
+    /**
+     * CC-1: середнє Online на день за останні [maxDays] ЗАВЕРШЕНИХ логічних діб (без сьогоднішньої).
+     * Доба, що починається ДО найдавнішої події в системній історії, покрита неповністю і не
+     * враховується (нуль там був би хибним фактом) — той самий принцип, що "типовий день" у
+     * Статистиці. `null`, якщо жодної повної доби ще нема або нема доступу до статистики.
+     */
+    suspend fun averageDailyOnline(maxDays: Int = 7): OnlineAverage? = withContext(Dispatchers.IO) {
+        val today = startOfTodayMillis()
+        val dayMillis = 24L * 60 * 60 * 1000
+        val earliest = earliestUsageEventMillis(today - maxDays * dayMillis) ?: return@withContext null
+        val perDay = (1..maxDays)
+            .map { today - it * dayMillis }
+            .filter { it >= earliest }
+            .map { getOnlineMinutes(it, it + dayMillis) }
+        TargetSuggestion.average(perDay)?.let { OnlineAverage(it, perDay.size) }
+    }
     /**
      * Проміжки Online у [from, to) — ті самі правила виключень (Exclusion List, лаунчер, клавіатура), що
      * в [getOnlineMinutes], але не сума хвилин, а самі інтервали: паралельні застосунки (PiP, split-screen)

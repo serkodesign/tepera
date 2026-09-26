@@ -1,5 +1,8 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import androidx.compose.foundation.background
@@ -8,20 +11,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -47,7 +51,7 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
 internal val HomeCardTextPrimary = Color(0xFF0F0F10) // Text/text-primary
 internal val HomeCardTextSecondary = Color(0xFF505050) // Text/text-secondary
 
-/** Картка пейджера: заливка, радіус 24, паддінги 16/12/12/12 і мінімальна висота 182dp (як у макеті). */
+/** Картка пейджера (M3 filled card): заливка, радіус 28 (extra large — як картки активностей), відступ 16, проміжок 12, мінімальна висота 182dp. */
 @Composable
 internal fun HomeCardSurface(
     modifier: Modifier = Modifier,
@@ -58,39 +62,34 @@ internal fun HomeCardSurface(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 182.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .background(containerColor)
-            .padding(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 12.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         content = content
     )
 }
 
-/** Заголовок 18sp + ⓘ (пояснення) + "×" (закрити, доки не з'явиться нове вікно даних). */
+/** Заголовок 18sp + ⓘ (пояснення). Кнопки "×" нема — картки "Патерн" і "Цей тиждень" не закриваються (за запитом користувача). */
 @Composable
-internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit, onDismiss: () -> Unit) {
+internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = title,
-            fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Medium,
-            fontSize = 18.sp,
-            color = HomeCardTextPrimary
+            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = TeperaPalette.headlineFont,
+                fontWeight = FontWeight.Medium
+            ),
+            color = TeperaPalette.buttonBrandDark
         )
         Spacer(Modifier.width(8.dp))
         IconButton(onClick = onInfo, modifier = Modifier.size(20.dp)) {
             Icon(
-                Icons.Outlined.Info,
+                TeperaSymbols.Info,
                 contentDescription = stringResource(R.string.home_card_info_action),
+                tint = TeperaPalette.buttonBrand,
                 modifier = Modifier.size(20.dp)
-            )
-        }
-        Spacer(Modifier.weight(1f))
-        IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = stringResource(R.string.context_card_dismiss_action),
-                modifier = Modifier.size(16.dp)
             )
         }
     }
@@ -116,6 +115,56 @@ internal fun HomeTintChip(
         contentAlignment = Alignment.Center
     ) {
         Text(text, fontSize = fontSize.sp, fontWeight = FontWeight.Medium, color = textColor, maxLines = 1)
+    }
+}
+
+/**
+ * "Оцінка → реальність" — дві картки поруч замість голого тексту (за прямим запитом користувача:
+ * "по всьому застосунку оформлення такого контенту зроби більш графічно"). Спільний вигляд для
+ * [WeeklyReflectionCard]/[UnlockEstimateCard]/[LastPhoneUseEstimateCard]/[OnlineEstimateRevealCard] —
+ * усі документовані як "той самий формат". "Твоя оцінка" — приглушений нейтральний тон (це
+ * здогад), "Насправді" — фірмовий тон (це підтверджений факт): контраст кольору сам передає
+ * різницю функцій рядків, без жодного слова-оцінки "вгадав"/"не вгадав" (FR-P.6/розділ 2.2 —
+ * ніякого порівняння в тексті, лише два факти поруч). Однакова висота обох карток —
+ * `IntrinsicSize.Min` на Row + `fillMaxHeight()` на дітях, той самий прийом, що `StatTile`
+ * на Статистиці/Щоденнику.
+ */
+@Composable
+internal fun GuessRevealRow(guessValue: String, actualValue: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        GuessRevealTile(
+            label = stringResource(R.string.weekly_reflection_your_guess_label),
+            value = guessValue,
+            textColor = HomeCardTextSecondary,
+            fill = Color(0x14003926),
+            modifier = Modifier.weight(1f).fillMaxHeight()
+        )
+        GuessRevealTile(
+            label = stringResource(R.string.weekly_reflection_actual_label),
+            value = actualValue,
+            textColor = TeperaPalette.buttonBrandDark,
+            fill = TeperaPalette.surfaceBrandLight,
+            modifier = Modifier.weight(1f).fillMaxHeight()
+        )
+    }
+}
+
+/** Одна картка [GuessRevealRow] — публічна (не `private`), бо [LastPhoneUseEstimateCard] інколи
+ * має лише "оцінку" без "реальності" (дані ще недоступні) і рендерить саму цю картку окремо. */
+@Composable
+internal fun GuessRevealTile(label: String, value: String, textColor: Color, fill: Color, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(fill)
+            .padding(10.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 12.sp, color = textColor.copy(alpha = 0.7f), maxLines = 1)
+        Text(value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = textColor, maxLines = 2)
     }
 }
 

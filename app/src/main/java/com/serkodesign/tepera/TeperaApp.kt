@@ -11,6 +11,7 @@ import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import androidx.room.Room
 import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.ActiveTimerStore
+import com.serkodesign.tepera.data.WeeklySummaryWorker
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.DeviceIdProvider
 import com.serkodesign.tepera.data.local.MIGRATION_1_2
@@ -21,6 +22,13 @@ import com.serkodesign.tepera.data.local.MIGRATION_5_6
 import com.serkodesign.tepera.data.local.MIGRATION_6_7
 import com.serkodesign.tepera.data.local.MIGRATION_7_8
 import com.serkodesign.tepera.data.local.MIGRATION_8_9
+import com.serkodesign.tepera.data.local.MIGRATION_9_10
+import com.serkodesign.tepera.data.local.MIGRATION_10_11
+import com.serkodesign.tepera.data.local.MIGRATION_11_12
+import com.serkodesign.tepera.data.local.MIGRATION_12_13
+import com.serkodesign.tepera.data.local.MIGRATION_13_14
+import com.serkodesign.tepera.data.local.MIGRATION_14_15
+import com.serkodesign.tepera.data.repository.WelcomeBackRepository
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
@@ -36,15 +44,16 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
 import com.serkodesign.tepera.data.repository.RoomExcludedAppRepository
-import com.serkodesign.tepera.data.createTimerCheckNotificationChannel
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
 import com.serkodesign.tepera.widget.WidgetUpdateWorker
 import com.serkodesign.tepera.widget.WidgetRolloverWorker
+import com.serkodesign.tepera.util.CrashReporting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -59,7 +68,8 @@ class TeperaApp : Application() {
         Room.databaseBuilder(this, AppDatabase::class.java, "tepera.db")
             .addMigrations(
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
-                MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9
+                MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
+                MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15
             )
             .build()
     }
@@ -98,7 +108,7 @@ class TeperaApp : Application() {
 
     val unlockRepository: UnlockRepository by lazy { UnlockRepository(this) }
 
-    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore) }
+    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository) }
 
     val cardHistoryRepository: CardHistoryRepository by lazy {
         CardHistoryRepository(database.cardShowDao(), settingsStore)
@@ -106,27 +116,8 @@ class TeperaApp : Application() {
 
     val gateEventRepository: GateEventRepository by lazy { GateEventRepository(database.gateEventDao()) }
 
-    // RevenueCat налаштовується ЛІНИВО (за запитом користувача): SDK не звертається до мережі, доки не
-    // відкрито екран "Пригостити кавою" — тоді `ensureRevenueCatConfigured()` викликається з
-    // SupportRepository.refresh(). Без ключа SDK лишається вимкненим (див. RevenueCatConfig). Pro
-    // (entitlement tepera_pro) прихований на запуску (PRO_ENTRY_ENABLED = false); коли його ввімкнуть,
-    // SDK налаштовується одразу в onCreate() нижче.
-    private var revenueCatConfigured = false
-
-    /** Налаштувати RevenueCat, якщо ще ні; `true` — SDK готовий до використання. */
-    fun ensureRevenueCatConfigured(): Boolean {
-        if (!revenueCatConfigured) {
-            revenueCatConfigured = com.serkodesign.tepera.data.billing.RevenueCatConfig.configure(this)
-        }
-        return revenueCatConfigured
-    }
-
-    val proRepository: com.serkodesign.tepera.data.billing.ProRepository by lazy {
-        com.serkodesign.tepera.data.billing.RevenueCatProRepository(ensureRevenueCatConfigured())
-    }
-
-    val supportRepository: com.serkodesign.tepera.data.billing.SupportRepository by lazy {
-        com.serkodesign.tepera.data.billing.RevenueCatSupportRepository(::ensureRevenueCatConfigured)
+    val welcomeBackRepository: WelcomeBackRepository by lazy {
+        WelcomeBackRepository(settingsStore, balanceRepository, activityRepository)
     }
 
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }
@@ -143,18 +134,21 @@ class TeperaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Pro вимкнений на запуску — SDK лишається неналаштованим до екрана кави. Якщо Pro увімкнуть, його
-        // репозиторій має ініціалізуватись одразу (делегат onCustomerInfoUpdated до першої покупки).
-        if (com.serkodesign.tepera.data.billing.RevenueCatConfig.PRO_ENTRY_ENABLED) proRepository
+        // D-15: звіти про збої — за збереженим вибором користувача (маніфест за замовчуванням вимикає збір).
+        CrashReporting.apply(this)
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
         // у CategoryDao), тож виклик щозапуску безпечний.
         applicationScope.launch { seedInitialData() }
         // FR-4.3: ~30 хв, KEEP — переживає перезапуск процесу, не дублюється щозапуску.
         WidgetUpdateWorker.schedule(this)
         WidgetRolloverWorker.schedule(this)
-        // Сповіщення "усе ще цим займаєшся?" (TimerCheckWorker) — createNotificationChannel()
-        // ідемпотентний, безпечно викликати щозапуску.
-        createTimerCheckNotificationChannel(this)
+        // CC-8: канал єдиного сповіщення (тижневий підсумок) і планування, якщо людина його вмикала.
+        WeeklySummaryWorker.createChannel(this)
+        applicationScope.launch {
+            if (settingsStore.weeklySummaryEnabled.first()) WeeklySummaryWorker.ensureScheduled(this@TeperaApp)
+        }
+        // D-25: щоденні фонові знімки скасовано; прибираємо роботу, яку могли запланувати ранні збірки.
+        androidx.work.WorkManager.getInstance(this).cancelUniqueWork("daily_snapshot")
         registerWidgetPreviewIfNeeded()
     }
 
@@ -197,6 +191,7 @@ class TeperaApp : Application() {
         deviceIdProvider.clearAll()
         getSharedPreferences("locale_prefs", MODE_PRIVATE).edit().clear().commit()
         getSharedPreferences("widget_prefs", MODE_PRIVATE).edit().clear().commit()
+        CrashReporting.reset(this@TeperaApp)
         seedInitialData()
         WidgetUpdateWorker.schedule(this@TeperaApp)
         WidgetRolloverWorker.schedule(this@TeperaApp)

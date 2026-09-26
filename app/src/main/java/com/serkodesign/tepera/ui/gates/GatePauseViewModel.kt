@@ -18,10 +18,11 @@ import kotlinx.coroutines.launch
 data class GatePauseUiState(
     val loading: Boolean = true,
     val appLabel: String = "",
-    val attemptsToday: Int = 1,
     // null = очікування завершилось (канонічний "нема чого рахувати" стан) — цифра ховається
     // (за прямим запитом користувача).
     val remainingSeconds: Int? = null,
+    // CC-6: індекс тексту з `R.array.gate_texts` (ротація «мішком»); сам рядок підставляє екран — з урахуванням мови застосунку.
+    val textIndex: Int = 0,
     val canContinue: Boolean = false,
     val finished: Boolean = false
 )
@@ -48,9 +49,7 @@ data class GatePauseUiState(
  *    користувача (раніше число саме й було "дихальним циклом", крутилось по колу незалежно від
  *    таймера очікування; тепер навпаки — число рахує ОЧІКУВАННЯ, а дихання крутиться само по
  *    собі, безперервно, з першого кадру екрана).
- * 2. "Ти намагався відкрити цей застосунок N разів" ([attemptsToday],
- *    `GateEventRepository.countAttemptsToday()` + 1 за поточну спробу, що ще не записана).
- * 3. Автозапуск цільового застосунку по завершенню очікування ПРИБРАНО — таймер лише знімає
+ * 2. Автозапуск цільового застосунку по завершенню очікування ПРИБРАНО — таймер лише знімає
  *    [canContinue] у false→true, а сам перехід відбувається виключно по тапу "Продовжити"
  *    ([continueToApp]), кнопка неактивна (і напівпрозора — `GatePauseScreen`), доки очікування
  *    не мине.
@@ -77,18 +76,17 @@ class GatePauseViewModel(
             launchTarget()
             return
         }
-        val delaySeconds = gateRepository.getDelaySeconds(packageName)
+        val delaySeconds = gateRepository.delayForShow(packageName)
         if (delaySeconds == null) {
             launchTarget()
             return
         }
         screenShown = true
-        val attemptsToday = gateEventRepository.countAttemptsToday(packageName) + 1
         _uiState.value = GatePauseUiState(
             loading = false,
             appLabel = resolveLabel(packageName),
-            attemptsToday = attemptsToday,
-            remainingSeconds = delaySeconds
+            remainingSeconds = delaySeconds,
+            textIndex = gateRepository.nextTextIndex()
         )
 
         // Показує delaySeconds..1 (ніколи 0) — по секунді на значення, і лише ПІСЛЯ останньої
@@ -122,7 +120,9 @@ class GatePauseViewModel(
     fun cancel() {
         waitJob?.cancel()
         if (screenShown) {
-            viewModelScope.launch { gateEventRepository.record(packageName, GateEventResult.CANCELLED) }
+            viewModelScope.launch {
+                gateEventRepository.record(packageName, GateEventResult.CANCELLED)
+            }
         }
         _uiState.value = _uiState.value.copy(finished = true)
     }
@@ -155,6 +155,8 @@ class GatePauseViewModel(
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            GatePauseViewModel(context.applicationContext, gateRepository, gateEventRepository, packageName) as T
+            GatePauseViewModel(
+                context.applicationContext, gateRepository, gateEventRepository, packageName
+            ) as T
     }
 }
