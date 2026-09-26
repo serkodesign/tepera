@@ -93,7 +93,7 @@ data class UnlockStatsUiState(val weekCount: Int? = null)
 data class LastPhoneUseStatsUiState(val weekMedianMillis: Long? = null)
 
 data class StatsUiState(
-    val period: StatsPeriod = StatsPeriod.WEEK,
+    val period: StatsPeriod = StatsPeriod.DAY,
     val categoryBreakdown: List<CategoryBreakdownItem> = emptyList(),
     val weeklyTrend: List<DailyBalancePoint> = emptyList(),
     val hasUsageAccess: Boolean = true,
@@ -120,7 +120,7 @@ class StatsViewModel(
     private val subMinuteStore: com.serkodesign.tepera.data.local.SubMinuteStore
 ) : ViewModel() {
 
-    private val period = MutableStateFlow(StatsPeriod.WEEK)
+    private val period = MutableStateFlow(StatsPeriod.DAY)
     private val weeklyTrend = MutableStateFlow<List<DailyBalancePoint>>(emptyList())
     private val hasUsageAccess = MutableStateFlow(true)
     private val unlockStats = MutableStateFlow(UnlockStatsUiState())

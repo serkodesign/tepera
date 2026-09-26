@@ -91,9 +91,15 @@ fun StatsScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // За прямим запитом користувача екран щоразу відкривається на "Вчора", а не на останньому
+    // обраному періоді (ViewModel переживає перемикання вкладок навбару, тож без цього лишався б "Тиждень").
+    LaunchedEffect(Unit) {
+        if (state.period != StatsPeriod.DAY) viewModel.selectPeriod(StatsPeriod.DAY)
+    }
+
     // FR-D.8/D.9: власний інстанс (окремий від Home, кожен зі своїм refresh-циклом). За прямим
     // запитом користувача тепер РЕАГУЄ на PeriodSelector — initialPeriodDays узгоджений із
-    // дефолтним period == WEEK у StatsUiState(), LaunchedEffect(state.period) нижче тримає їх
+    // дефолтним period == DAY у StatsUiState(), LaunchedEffect(state.period) нижче тримає їх
     // синхронізованими далі.
     val patternViewModel: PatternViewModel = viewModel(
         factory = PatternViewModel.Factory(
