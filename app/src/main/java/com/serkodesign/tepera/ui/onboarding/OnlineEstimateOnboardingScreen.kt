@@ -89,17 +89,18 @@ fun OnlineEstimateOnboardingScreen(
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
-            Row(
+            // Варіанти один під одним на всю ширину: у ряд третій ("Понад 3 год") обрізався до "Понад …".
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 DailyOnlineGuess.entries.forEach { guess ->
                     TeperaButton(
                         text = dailyGuessLabel(guess),
                         onClick = { finish(guess) },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         type = TeperaButtonType.Secondary
                     )
                 }

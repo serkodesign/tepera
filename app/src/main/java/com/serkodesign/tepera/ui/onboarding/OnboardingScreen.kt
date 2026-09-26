@@ -113,27 +113,34 @@ fun OnboardingScreen(
         onPauseOrDispose { }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Figma 208:1230: логотип — 64sp, letter-spacing 0.64, #DCF6ED, верх на 179 від краю кадру.
-        Text(
-            text = "Tepera",
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Figma 208:1230: логотип — 64sp, letter-spacing 0.64, #DCF6ED. Розташований по центру вільного
+        // місця над блоком дозволів (а не на фіксованих 179dp від верху): на низьких екранах (360x640)
+        // фіксований відступ клав його поверх заголовка.
+        Box(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
-                .padding(top = (179.dp - WindowInsets.statusBars.asPaddingValues().calculateTopPadding()).coerceAtLeast(0.dp)),
-            color = TeperaPalette.surfaceBrandLight,
-            fontFamily = FontFamily(Font(R.font.indie_flower)),
-            fontSize = 64.sp,
-            lineHeight = 70.4.sp,
-            letterSpacing = 0.64.sp,
-            textAlign = TextAlign.Center
-        )
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Tepera",
+                modifier = Modifier.fillMaxWidth(),
+                color = TeperaPalette.surfaceBrandLight,
+                fontFamily = FontFamily(Font(R.font.indie_flower)),
+                fontSize = 64.sp,
+                lineHeight = 70.4.sp,
+                letterSpacing = 0.64.sp,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(start = 16.dp, end = 16.dp, bottom = 52.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Figma 50:1626: padding 8, gap 16, по центру, білий текст.

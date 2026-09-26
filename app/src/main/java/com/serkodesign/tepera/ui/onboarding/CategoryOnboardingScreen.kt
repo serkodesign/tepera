@@ -133,10 +133,10 @@ fun CategoryOnboardingScreen(
                         }
                     )
                 }
+                // D-15: чесне повідомлення про звіти про збої одразу на початку, з можливістю вимкнути.
+                // Усередині спільної прокрутки: довгий пояснювальний текст не має відбирати місце у списку.
+                CrashReportsToggle(modifier = Modifier.padding(top = 8.dp))
             }
-
-            // D-15: чесне повідомлення про звіти про збої одразу на початку, з можливістю вимкнути.
-            CrashReportsToggle(modifier = Modifier.padding(top = 12.dp))
 
             TeperaButton(
                 text = stringResource(R.string.category_onboarding_continue),

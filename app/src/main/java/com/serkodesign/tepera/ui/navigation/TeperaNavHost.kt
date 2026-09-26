@@ -37,6 +37,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -215,6 +218,21 @@ fun TeperaNavHost(
     // CC-8: тап по тижневому сповіщенню — повернутися на Home, де лежить картка «Цей тиждень».
     LaunchedEffect(pendingWeeklySummaryNonce) {
         if (pendingWeeklySummaryNonce != null) navController.popBackStack(Routes.HOME, inclusive = false)
+    }
+
+    // Онбординг — єдиний ланцюжок: кожен крок веде просто до наступного (з заміною себе в стеку),
+    // Home між кроками не показується. Порядок і умови (доступ до статистики визначає, чи буде
+    // крок дозволу або орієнтиру) — у [nextOnboardingRoute]; коли кроків не лишилось — назад на Home.
+    val onboardingScope = rememberCoroutineScope()
+    fun advanceOnboarding(from: String) {
+        onboardingScope.launch {
+            val next = nextOnboardingRoute(settingsStore, balanceRepository)
+            if (next == null) {
+                navController.popBackStack(Routes.HOME, inclusive = false)
+            } else {
+                navController.navigate(next) { popUpTo(from) { inclusive = true } }
+            }
+        }
     }
 
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -412,34 +430,34 @@ fun TeperaNavHost(
                 OnboardingScreen(
                     settingsStore = settingsStore,
                     balanceRepository = balanceRepository,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.ONBOARDING) }
                 )
             }
             composable(Routes.CATEGORY_ONBOARDING) {
                 CategoryOnboardingScreen(
                     categoryRepository = categoryRepository,
                     settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.CATEGORY_ONBOARDING) }
                 )
             }
             composable(Routes.ONLINE_ESTIMATE_ONBOARDING) {
                 OnlineEstimateOnboardingScreen(
                     settingsStore = settingsStore,
                     userEstimateRepository = userEstimateRepository,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.ONLINE_ESTIMATE_ONBOARDING) }
                 )
             }
             composable(Routes.TARGET_ONBOARDING) {
                 TargetOnboardingScreen(
                     settingsStore = settingsStore,
                     balanceRepository = balanceRepository,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.TARGET_ONBOARDING) }
                 )
             }
             composable(Routes.WIDGET_SUGGESTION_ONBOARDING) {
                 WidgetSuggestionScreen(
                     settingsStore = settingsStore,
-                    onDone = { navController.popBackStack() }
+                    onDone = { advanceOnboarding(Routes.WIDGET_SUGGESTION_ONBOARDING) }
                 )
             }
             composable(Routes.SETTINGS) {
@@ -522,6 +540,20 @@ fun TeperaNavHost(
         }
     }
     }
+}
+
+/**
+ * Наступний непройдений крок онбордингу або null, коли всі пройдені: категорії → оцінка Online →
+ * дозвіл (лише без доступу) → орієнтир (лише з доступом) → пропозиція віджета.
+ */
+private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository): String? {
+    if (!settingsStore.categoryOnboardingSeen.first()) return Routes.CATEGORY_ONBOARDING
+    if (!settingsStore.onlineEstimateOnboardingSeen.first()) return Routes.ONLINE_ESTIMATE_ONBOARDING
+    val hasAccess = balanceRepository.hasUsageAccess()
+    if (!hasAccess && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING
+    if (hasAccess && !settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
+    if (!settingsStore.widgetSuggestionSeen.first()) return Routes.WIDGET_SUGGESTION_ONBOARDING
+    return null
 }
 
 /**
