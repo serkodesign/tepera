@@ -321,20 +321,16 @@ private fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             }
         }
         // Figma 208:1564: область 40x40, іконка edit 24dp (#1C1B1F), без фону.
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .clickable(role = Role.Button, onClick = onEdit),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = TeperaIcons.Edit,
-                contentDescription = stringResource(R.string.stats_history_edit_action),
-                tint = Color(0xFF1C1B1F),
-                modifier = Modifier.size(24.dp)
-            )
-        }
+        TeperaIconButton(
+            icon = TeperaIcons.Edit,
+            contentDescription = stringResource(R.string.stats_history_edit_action),
+            onClick = onEdit,
+            modifier = Modifier.width(40.dp),
+            shape = CircleShape,
+            containerColor = Color.Transparent,
+            contentColor = Color(0xFF1C1B1F),
+            height = 40.dp
+        )
     }
 }
 

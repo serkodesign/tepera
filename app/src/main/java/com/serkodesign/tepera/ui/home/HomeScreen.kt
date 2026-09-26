@@ -3,7 +3,6 @@ package com.serkodesign.tepera.ui.home
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
 import android.content.Intent
-import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -59,7 +58,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -637,18 +635,7 @@ private fun CategoryCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(132.dp)
-            // Тінь Figma (0 16 20 @5%) — лише Android 10+: на Huawei P9 (Android 8) 6 елевейшн-тіней
-            // на картках давали ~12 пунктів рваних кадрів прокрутки Home, а різниця майже непомітна (5%).
-            .then(
-                if (Build.VERSION.SDK_INT >= 29) {
-                    Modifier.shadow(
-                        8.dp, shape,
-                        ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f)
-                    )
-                } else {
-                    Modifier
-                }
-            )
+            // Без тіні (за прямим запитом користувача — тіней у застосунку немає ніде).
             .clip(shape)
             .background(containerColor)
             .padding(8.dp),

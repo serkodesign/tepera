@@ -35,6 +35,7 @@ import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
 
@@ -99,11 +100,7 @@ fun CategoryOnboardingScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = stringResource(R.string.category_onboarding_title),
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
+            TeperaOnboardingTitle(text = stringResource(R.string.category_onboarding_title))
             Text(
                 text = stringResource(R.string.category_onboarding_subtitle),
                 style = MaterialTheme.typography.bodyMedium,

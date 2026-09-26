@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.repository.GateRepository
@@ -315,14 +316,14 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                     val currentDelay = gateState.gate.delaySeconds
                     // Тап по чіпу перемикає тривалість по колу (DELAY_OPTIONS); indexOf == -1 для значення поза
                     // набором дає перший елемент.
-                    EntryChip(
+                    TeperaButton(
                         text = stringResource(R.string.gates_delay_format, currentDelay),
-                        fontSize = 14.sp,
-                        background = Color(0xFFCBE8DE),
-                        horizontalPadding = 12.dp,
-                        modifier = Modifier.height(32.dp).clickable(role = Role.Button) {
+                        onClick = {
                             onDelayChange(DELAY_OPTIONS[(DELAY_OPTIONS.indexOf(currentDelay) + 1) % DELAY_OPTIONS.size])
-                        }
+                        },
+                        modifier = Modifier.width(72.dp),
+                        size = TeperaButtonSize.Small,
+                        type = TeperaButtonType.Secondary
                     )
                     Spacer(Modifier.width(8.dp))
                     TeperaIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(R.string.gates_remove_action), onClick = onRemove)

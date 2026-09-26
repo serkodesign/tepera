@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -83,20 +82,14 @@ fun GlassScreenHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(13.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(TeperaPalette.cardTranslucent)
-                .clickable(onClick = onBack),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.nav_back),
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        TeperaIconButton(
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.nav_back),
+            onClick = onBack,
+            shape = CircleShape,
+            containerColor = TeperaPalette.cardTranslucent,
+            iconSize = 20.dp
+        )
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium, fontSize = 24.sp),
@@ -363,27 +356,13 @@ fun TeperaButton(
         else -> TeperaPalette.buttonBrandDark
     }
 
+    // Без тіней (за прямим запитом користувача — у застосунку їх немає ніде); вимкнення плавне (M3 effects).
+    val stateAlpha by animateFloatAsState(if (enabled) 1f else 0.5f, TeperaSpecs.effects(), label = "buttonAlpha")
+
     Box(
         modifier = modifier
             .height(size.height)
-            .alpha(if (enabled) 1f else 0.5f)
-            .then(
-                when (type) {
-                    // Figma: Primary — drop-shadow 0 0 12 @5%, Secondary — 0 0 24 @5%; у Tertiary тіні нема
-                    // (нема що відкидати — без фону й рамки).
-                    TeperaButtonType.Primary ->
-                        Modifier.shadow(6.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
-                    // Secondary має прозорий фон: на Android 8-9 (API < 28) elevation-тінь просвічує крізь нього й малює сіру пляму
-                    // всередині кнопки (Huawei P9) — тому тінь лише з API 28, на старіших лишається рамка.
-                    TeperaButtonType.Secondary ->
-                        if (android.os.Build.VERSION.SDK_INT >= 28) {
-                            Modifier.shadow(12.dp, shape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
-                        } else {
-                            Modifier
-                        }
-                    TeperaButtonType.Tertiary -> Modifier
-                }
-            )
+            .alpha(stateAlpha)
             .clip(shape)
             .background(background)
             .then(
@@ -429,10 +408,11 @@ fun TeperaIconButton(
     height: Dp = 44.dp,
     iconSize: Dp = 24.dp
 ) {
+    val stateAlpha by animateFloatAsState(if (enabled) 1f else 0.5f, TeperaSpecs.effects(), label = "iconButtonAlpha")
     Box(
         modifier = modifier
             .height(height)
-            .alpha(if (enabled) 1f else 0.5f)
+            .alpha(stateAlpha)
             .clip(shape)
             .background(containerColor)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
@@ -467,6 +447,21 @@ fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
             letterSpacing = 0.027.sp
         )
     }
+}
+
+/** Заголовок екрана онбордингу по центру — той самий стиль, що [TeperaScreenTitle] (Golos Medium 27sp, #003926). */
+@Composable
+fun TeperaOnboardingTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        modifier = modifier,
+        color = TeperaPalette.buttonBrandDark,
+        fontFamily = TeperaPalette.headlineFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 27.sp,
+        lineHeight = 29.7.sp,
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+    )
 }
 
 /**

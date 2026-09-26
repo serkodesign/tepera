@@ -3,8 +3,6 @@ package com.serkodesign.tepera.ui.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
@@ -284,34 +282,34 @@ fun TeperaNavHost(
                 ),
                 enterTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing)) +
+                        fadeIn(TeperaSpecs.enterFade()) +
                             scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized), initialScale = 0.92f)
                     } else {
                         slideInHorizontally(TeperaSpecs.spatial()) { slidePx } +
-                            fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing))
+                            fadeIn(TeperaSpecs.enterFade())
                     }
                 },
                 exitTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeOut(tween(90, easing = LinearEasing))
+                        fadeOut(TeperaSpecs.exitFade())
                     } else {
-                        slideOutHorizontally(TeperaSpecs.spatial()) { -slidePx } + fadeOut(tween(90, easing = LinearEasing))
+                        slideOutHorizontally(TeperaSpecs.spatial()) { -slidePx } + fadeOut(TeperaSpecs.exitFade())
                     }
                 },
                 popEnterTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing)) +
+                        fadeIn(TeperaSpecs.enterFade()) +
                             scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized), initialScale = 0.92f)
                     } else {
                         slideInHorizontally(TeperaSpecs.spatial()) { -slidePx } +
-                            fadeIn(tween(210, delayMillis = 90, easing = LinearOutSlowInEasing))
+                            fadeIn(TeperaSpecs.enterFade())
                     }
                 },
                 popExitTransition = {
                     if (isTopLevelSwitch()) {
-                        fadeOut(tween(90, easing = LinearEasing))
+                        fadeOut(TeperaSpecs.exitFade())
                     } else {
-                        slideOutHorizontally(TeperaSpecs.spatial()) { slidePx } + fadeOut(tween(90, easing = LinearEasing))
+                        slideOutHorizontally(TeperaSpecs.spatial()) { slidePx } + fadeOut(TeperaSpecs.exitFade())
                     }
                 }
             ) {

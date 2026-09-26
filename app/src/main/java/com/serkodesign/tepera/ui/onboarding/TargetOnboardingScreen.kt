@@ -29,6 +29,7 @@ import com.serkodesign.tepera.ui.theme.HourRangeSlider
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.util.TargetSuggestion
 import kotlinx.coroutines.launch
 
@@ -78,11 +79,7 @@ fun TargetOnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = stringResource(R.string.target_onboarding_title),
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
+            TeperaOnboardingTitle(text = stringResource(R.string.target_onboarding_title))
             Text(
                 text = stringResource(R.string.target_onboarding_body),
                 style = MaterialTheme.typography.bodyMedium,

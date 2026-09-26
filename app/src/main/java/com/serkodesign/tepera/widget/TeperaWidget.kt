@@ -71,7 +71,7 @@ import kotlinx.coroutines.flow.first
  * ImageVector). Це не той самий набір, що `ic_widget_*` (їх і далі використовує застосунок).
  * "Прогулянка" (footprint) імпортована для повноти, але не підключена — окремої категорії нема.
  */
-private fun widgetIconRes(iconName: String, selected: Boolean): Int = when (iconName) {
+internal fun widgetIconRes(iconName: String, selected: Boolean): Int = when (iconName) {
     "nature" -> if (selected) R.drawable.ic_widget2_nature_selected else R.drawable.ic_widget2_nature
     "reading" -> if (selected) R.drawable.ic_widget2_reading_selected else R.drawable.ic_widget2_reading
     "hobby" -> if (selected) R.drawable.ic_widget2_hobby_selected else R.drawable.ic_widget2_hobby
@@ -89,10 +89,10 @@ private fun widgetIconGlyphSize(iconName: String): Dp = when (iconName) {
 }
 
 /** Колір кола й темного гліфа вибраної кнопки. */
-private class ButtonTint(val circle: Color, val glyph: Color)
+internal class ButtonTint(val circle: Color, val glyph: Color)
 
 // Точні значення макета (node 234:442): коло / темний гліф вибраного стану.
-private val FIGMA_TINTS = mapOf(
+internal val FIGMA_TINTS = mapOf(
     "reading" to ButtonTint(Color(0xFFECC3F2), Color(0xFF783D83)),
     "movement" to ButtonTint(Color(0xFFFAECCC), Color(0xFF7C5B14)), // "Sport"
     "hobby" to ButtonTint(Color(0xFFFADEEE), Color(0xFF790645)),
@@ -195,8 +195,8 @@ private val PILL_PADDING = 12.dp // макет 236:956 — 8; збільшено
 private val PILL_HEIGHT = CATEGORY_BUTTON_SIZE + PILL_PADDING * 2
 private val BUTTON_GAP = 8.dp
 private val MIN_SPREAD_GAP = 4.dp
-private val WIDGET_GLYPH_UNSELECTED = Color(0xFF505050) // Text/text-secondary
-private val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
+internal val WIDGET_GLYPH_UNSELECTED = Color(0xFF505050) // Text/text-secondary
+internal val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
 
 // Figma node 234:855 (картка сітки в 4x2): відступ 12, проміжок клітинок 3, радіус клітинки 4,
 // клітинка 23.83x23.5 при ширині 343; картка — Surface/surface-card-transparent.

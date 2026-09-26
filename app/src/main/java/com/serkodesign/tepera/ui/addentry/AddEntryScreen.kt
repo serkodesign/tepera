@@ -251,36 +251,19 @@ fun AddEntryScreen(
                     .padding(top = 12.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(TeperaPalette.cardActive)
-                        .clickable(onClick = onBack),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        stringResource(R.string.dialog_cancel),
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .alpha(if (state.intervalValid) 1f else 0.5f)
-                        .background(TeperaPalette.brandAccent)
-                        .clickable(enabled = state.intervalValid) { viewModel.save() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        stringResource(R.string.add_entry_save),
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
-                    )
-                }
+                TeperaButton(
+                    text = stringResource(R.string.dialog_cancel),
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f),
+                    type = TeperaButtonType.Secondary
+                )
+                TeperaButton(
+                    text = stringResource(R.string.add_entry_save),
+                    onClick = { viewModel.save() },
+                    modifier = Modifier.weight(1f),
+                    type = TeperaButtonType.Primary,
+                    enabled = state.intervalValid
+                )
             }
         }
     }
