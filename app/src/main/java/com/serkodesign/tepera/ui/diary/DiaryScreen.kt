@@ -61,11 +61,11 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
-import com.serkodesign.tepera.ui.theme.StatTile
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaScreenTitle
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.util.roundToQuarterHour
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -231,59 +231,11 @@ private fun HistoryContent(
                             add(stringResource(R.string.diary_last_phone_use_yesterday_label) to formatClockTime(millis))
                         }
                     }
-                    DayStatsCard(stats = stats, modifier = Modifier.padding(bottom = 4.dp))
+                    TeperaStatsBar(stats = stats, modifier = Modifier.padding(bottom = 4.dp))
                 }
                 group?.items?.forEach { item ->
                     HistoryEntryRow(item = item, onEdit = { onEditEntry(item.entry.id) })
                 }
-            }
-        }
-    }
-}
-
-/**
- * Підсумок доби одним тональним блоком (замість двох окремих плиток, з яких одна на "Сьогодні" розтягувалась на
- * всю ширину майже порожньою): факти в рядок, розділені тонкою лінією; значення — першим і великим (28sp), підпис
- * під ним дрібніше — "число, а потім що це". Один факт займає блок зліва, без штучного розтягування.
- */
-@Composable
-private fun DayStatsCard(stats: List<Pair<String, String>>, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .clip(RoundedCornerShape(20.dp))
-            // Темно-зелений фон #006944 і світлий текст #DCF6ED (за запитом користувача; контраст ≈5.9:1).
-            .background(TeperaPalette.buttonBrand)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        // Top: значення різних фактів стоять на одному рівні, навіть коли підпис одного займає два рядки.
-        verticalAlignment = Alignment.Top
-    ) {
-        stats.forEachIndexed { index, (label, value) ->
-            if (index > 0) {
-                Box(
-                    Modifier
-                        .padding(horizontal = 16.dp)
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(TeperaPalette.surfaceBrandLight.copy(alpha = 0.35f))
-                )
-            }
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = value,
-                    color = TeperaPalette.surfaceBrandLight,
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 28.sp,
-                    lineHeight = 32.sp,
-                    maxLines = 1
-                )
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TeperaPalette.surfaceBrandLight
-                )
             }
         }
     }

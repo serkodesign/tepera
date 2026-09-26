@@ -111,12 +111,12 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
     }
 }
 
-/** Біла плитка (радіус 16, паддінг 12): підпис 14sp зверху, число 24sp + пояснення знизу. */
+/** Біла плитка (радіус 12, відступ 12): підпис (labelLarge) зверху, число 24sp + пояснення знизу. */
 @Composable
 private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(TeperaPalette.cardActive)
             .padding(12.dp),
         verticalArrangement = Arrangement.SpaceBetween

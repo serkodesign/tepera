@@ -46,7 +46,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.alpha
 import com.serkodesign.tepera.ui.category.CategoryViewModel
 import com.serkodesign.tepera.ui.category.CreateCategoryDialog
 import com.serkodesign.tepera.ui.category.CreateCategoryResult
@@ -464,7 +463,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp),
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -483,11 +482,9 @@ fun HomeScreen(
                     text = stringResource(R.string.home_add_category),
                     onClick = { if (customSlotAvailable) showCreateCategoryDialog = true else showCategoryLimitNotice = true },
                     size = TeperaButtonSize.Small,
-                    textSizeOverride = 18.sp,
-                    lineHeightOverride = 20.sp,
-                    contentColorOverride = TeperaPalette.buttonBrand,
-                    type = TeperaButtonType.Tertiary,
-                    modifier = Modifier.alpha(if (customSlotAvailable) 1f else 0.5f)
+                    textSizeOverride = 14.sp,
+                    type = TeperaButtonType.Filled,
+                    leadingIcon = TeperaSymbols.Add
                 )
             }
 

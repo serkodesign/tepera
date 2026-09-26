@@ -41,7 +41,7 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.pattern.PatternUiState
-import com.serkodesign.tepera.ui.theme.StatTile
+import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -89,34 +89,12 @@ fun DayDetailsSection(
 
     // Межі дня й розблокування — "деталі дня" (T-14/T-10): лише тут і в Щоденнику, не на Home.
     // За прямим запитом користувача — три картки в ряд (`StatTile`), не чипи в FlowRow.
-    if (details.firstUseMillis != null || details.lastUseMillis != null || details.unlockCount != null) {
-        Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            details.firstUseMillis?.let {
-                StatTile(
-                    label = stringResource(R.string.home_card_first_unlock_label),
-                    value = timeFormat.format(Date(it)),
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                )
-            }
-            details.lastUseMillis?.let {
-                StatTile(
-                    label = stringResource(R.string.diary_last_phone_use_yesterday_label),
-                    value = timeFormat.format(Date(it)),
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                )
-            }
-            details.unlockCount?.let {
-                StatTile(
-                    label = stringResource(R.string.diary_unlock_yesterday_label),
-                    value = it.toString(),
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                )
-            }
-        }
+    val boundaryStats = buildList {
+        details.firstUseMillis?.let { add(stringResource(R.string.home_card_first_unlock_label) to timeFormat.format(Date(it))) }
+        details.lastUseMillis?.let { add(stringResource(R.string.diary_last_phone_use_yesterday_label) to timeFormat.format(Date(it))) }
+        details.unlockCount?.let { add(stringResource(R.string.diary_unlock_yesterday_label) to it.toString()) }
     }
+    if (boundaryStats.isNotEmpty()) TeperaStatsBar(stats = boundaryStats)
 
     // За прямим запитом користувача: тепловий патерн переїхав одразу під картки меж дня — вище
     // хронології/пауз/порівняння, які раніше йшли одразу за чипами.

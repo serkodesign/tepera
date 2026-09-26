@@ -29,6 +29,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -356,7 +357,8 @@ enum class TeperaButtonSize(val height: Dp, val textSize: TextUnit, val fontWeig
     Small(32.dp, 12.sp, FontWeight.Normal)
 }
 
-enum class TeperaButtonType { Primary, Secondary, Tertiary }
+/** [Filled] — тональна акцентна дія (M3 filled tonal button): фон #DCF6ED, текст і іконка #006944, повне заокруглення. */
+enum class TeperaButtonType { Primary, Secondary, Tertiary, Filled }
 
 /**
  * Кнопка дизайн-системи — Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 190:639 (3 розміри x
@@ -381,10 +383,11 @@ fun TeperaButton(
     enabled: Boolean = true,
     contentColorOverride: Color? = null, // для темних екранів (напр. онбординг дозволів), де тертиарний #003926 не читається
     textSizeOverride: TextUnit? = null,
-    lineHeightOverride: TextUnit? = null
+    lineHeightOverride: TextUnit? = null,
+    leadingIcon: ImageVector? = null
 ) {
     val big = size == TeperaButtonSize.Big
-    val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else 24.dp)
+    val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else if (type == TeperaButtonType.Filled) 100.dp else 24.dp)
 
     val background: Color = when (type) {
         TeperaButtonType.Primary -> when {
@@ -392,11 +395,13 @@ fun TeperaButton(
             big -> TeperaPalette.buttonBrandDark
             else -> Color.White
         }
+        TeperaButtonType.Filled -> TeperaPalette.surfaceBrandLight.copy(alpha = 0.5f)
         else -> Color.Transparent
     }
     val contentColor: Color = when {
         type == TeperaButtonType.Primary && big -> Color.White
         type == TeperaButtonType.Primary -> TeperaPalette.buttonBrand
+        type == TeperaButtonType.Filled -> TeperaPalette.buttonBrand
         else -> TeperaPalette.buttonBrandDark
     }
 
@@ -417,19 +422,25 @@ fun TeperaButton(
                 }
             )
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            // З іконкою ліворуч лівий відступ вдвічі менший (M3: іконка ближче до краю, ніж текст без іконки).
+            .padding(start = if (leadingIcon != null) 8.dp else 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            color = contentColorOverride ?: contentColor,
-            fontSize = textSizeOverride ?: size.textSize,
-            lineHeight = lineHeightOverride ?: TextUnit.Unspecified,
-            letterSpacing = if (textSizeOverride != null) 0.sp else TextUnit.Unspecified,
-            fontWeight = size.fontWeight,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (leadingIcon != null) {
+                Icon(leadingIcon, contentDescription = null, tint = contentColorOverride ?: contentColor, modifier = Modifier.size(18.dp))
+            }
+            Text(
+                text = text,
+                color = contentColorOverride ?: contentColor,
+                fontSize = textSizeOverride ?: size.textSize,
+                lineHeight = lineHeightOverride ?: TextUnit.Unspecified,
+                letterSpacing = if (textSizeOverride != null) 0.sp else TextUnit.Unspecified,
+                fontWeight = size.fontWeight,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
@@ -656,21 +667,22 @@ fun TeperaCard(
 fun TeperaChip(
     label: String,
     modifier: Modifier = Modifier,
-    value: String? = null
+    value: String? = null,
+    compact: Boolean = false // 24dp заввишки, 12sp — для щільних списків (напр. значення в легенді картки дня)
 ) {
     val labelStyle = androidx.compose.ui.text.TextStyle(
         fontFamily = TeperaPalette.headlineFont,
         fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
+        fontSize = if (compact) 12.sp else 14.sp,
+        lineHeight = if (compact) 16.sp else 20.sp,
         letterSpacing = 0.1.sp
     )
     Row(
         modifier = modifier
-            .heightIn(min = 32.dp)
+            .heightIn(min = if (compact) 24.dp else 32.dp)
             .clip(RoundedCornerShape(100.dp))
-            .background(TeperaPalette.surfaceBrandLight)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .background(Color(0xFFEFFAF5))
+            .padding(horizontal = if (compact) 10.dp else 12.dp, vertical = if (compact) 4.dp else 6.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -682,51 +694,50 @@ fun TeperaChip(
 }
 
 /**
- * Компактна картка одного статистичного факту — заміна плоских [TeperaChip] там, де кілька
- * фактів стоять поруч у ряд (межі доби на Статистиці й у Щоденнику, тижневі підсумки на
- * Статистиці). За прямим запитом користувача: (1) факти в ряд — картки, не чипи; (2) стилістично
- * трохи відрізняється від решти карток — [TeperaCard] білий напівпрозорий, тут тональний фон
- * [TeperaPalette.surfaceBrandLight] (той самий, що вже мав [TeperaChip], тож "чіпове" походження
- * лишається візуально впізнаваним). **Іконку прибрано (за прямим запитом користувача)** — на
- * вузьких картках (2-3 в ряд) вона забирала місце в підпису й посилювала перенос тексту на
- * кілька рядків, що виглядало неохайно; підпис — менший кегль (11sp) саме для того, щоб довші
- * підписи ("Востаннє брав телефон учора") переносились рідше й акуратніше.
- * **Однакова висота по найвищій картці ряду:** сам [StatTile] не рахує висоту — Row-контейнер
- * виклику отримує `Modifier.height(IntrinsicSize.Min)`, кожен [StatTile] — `Modifier.weight(1f)
- * .fillMaxHeight()` (стандартний Compose-прийом "рівна висота дітей Row за найвищим"); підпис і
- * значення розводяться до країв цієї спільної висоти через `Arrangement.SpaceBetween`.
+ * Підсумок одним тональним блоком (замість двох окремих плиток, з яких одна на "Сьогодні" розтягувалась на
+ * всю ширину майже порожньою): факти в рядок, розділені тонкою лінією; значення — першим і великим (28sp), підпис
+ * під ним дрібніше — "число, а потім що це". Один факт займає блок зліва, без штучного розтягування.
  */
 @Composable
-fun StatTile(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
+fun TeperaStatsBar(stats: List<Pair<String, String>>, modifier: Modifier = Modifier) {
+    Row(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.surfaceBrandLight)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .clip(RoundedCornerShape(20.dp))
+            // Темно-зелений фон #006944 і світлий текст #DCF6ED (за запитом користувача; контраст ≈5.9:1).
+            .background(TeperaPalette.buttonBrand)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        // Top: значення різних фактів стоять на одному рівні, навіть коли підпис одного займає два рядки.
+        verticalAlignment = Alignment.Top
     ) {
-        // Ієрархія як на картках Home: невеликий підпис (12sp, було 11 — нижче за мінімум 12sp для змістовного
-        // тексту) і головне число великим шрифтом. Три плитки в ряд — довгі підписи ("Востаннє брав телефон
-        // учора") займають до трьох рядків.
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = TeperaPalette.buttonBrandDark.copy(alpha = 0.75f),
-            maxLines = 3
-        )
-        Text(
-            text = value,
-            fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Medium,
-            fontSize = 22.sp,
-            lineHeight = 26.sp,
-            color = TeperaPalette.buttonBrandDark,
-            maxLines = 1
-        )
+        stats.forEachIndexed { index, (label, value) ->
+            if (index > 0) {
+                Box(
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .width(1.dp)
+                        .fillMaxHeight()
+                        .background(TeperaPalette.surfaceBrandLight.copy(alpha = 0.35f))
+                )
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = value,
+                    color = TeperaPalette.surfaceBrandLight,
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 28.sp,
+                    lineHeight = 32.sp,
+                    maxLines = 1
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TeperaPalette.surfaceBrandLight
+                )
+            }
+        }
     }
 }
 
@@ -815,4 +826,4 @@ fun TeperaDialog(
 @Composable
 fun bottomNavClearance(): Dp =
     62.dp + 16.dp + androidx.compose.foundation.layout.WindowInsets.navigationBars
-        .asPaddingValues().calculateBottomPadding() + 16.dp
+        .asPaddingValues().calculateBottomPadding() + 24.dp

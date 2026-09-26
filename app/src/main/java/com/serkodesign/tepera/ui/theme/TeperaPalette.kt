@@ -31,9 +31,9 @@ import com.serkodesign.tepera.R
  * заголовки) лишається дефолтним sans — про це запиту не було.
  */
 object TeperaPalette {
-    val backgroundBase = Color(0xFFC5E2CB) // Figma "App concept", node 192:726 — база фону
-    val backgroundCreamBlob = Color(0xFFFFFFEA) // Ellipse 6
-    val backgroundGreenBlob = Color(0xFF005122) // Ellipse 7
+    val backgroundBase = Color(0xFFA7D2B0) // Figma "App concept", node 274:531 — база фону
+    val backgroundCreamBlob = Color(0xFFFFFFB1) // Ellipse 6 (50%)
+    val backgroundGreenBlob = Color(0xFF004C51) // Ellipse 7 (20%)
 
     val offlineCard = Color(0x8000C567) // rgba(0,197,103,0.5) — лишається лише для addButtonBackground
     val onlineCard = Color(0xFFF5C401) // #F5C401 — новий колір Online (палітра категорій), непрозорий
@@ -85,14 +85,14 @@ object TeperaPalette {
     val buttonBrandDark = Color(0xFF003926)
 
     // Home (Figma "App concept", node 192:726): картка категорії й кнопки в шапці.
-    val activityCardIdle = Color(0xFFEBFAE6)
+    val activityCardIdle = Color(0xB3EBFAE6) // #EBFAE6 з непрозорістю 70% (за запитом користувача)
     val activityCardActive = Color(0xFF006944)
-    val activityMoreTime = Color(0xFFC5E2CB)
-    val headerButtonFill = Color(0xCCFFFFFF) // rgba(255,255,255,0.8)
+    val activityMoreTime = Color(0xFFB4D8BC)
+    val headerButtonFill = Color(0x80FFFFFF) // білий 50% (було 80% за Figma; змінено за запитом користувача)
     val navTabIdleFill = Color(0xFFF0F3F4) // Surface/surface-background — невибрана вкладка навбару
     val navTabSelectedContent = Color(0xFFDCF6ED) // Surface/surface-brand-light — текст/іконка вибраної
-    val homeCardFill = Color(0xA6FFFFFF) // rgba(255,255,255,0.65) — Day usage / This week
-    val homeCardFillMyDay = Color(0x80FFFFFF) // rgba(255,255,255,0.5) — My day
+    val homeCardFill = Color(0xB3FFFFFF) // білий 70% (було 65% за Figma; за запитом користувача) — Патерн / Цей тиждень
+    val homeCardFillMyDay = Color(0xB3FFFFFF) // білий 70% (було 50% за Figma; за запитом користувача) — Твій день
 
     // "Новий екран додавання активності" (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node
     // 61:3516) — фіолетовий акцент лише для чіпів часу (Початок/Фініш, підсумок тривалості),
@@ -122,9 +122,9 @@ object TeperaPalette {
 }
 
 /**
- * Фон застосунку — Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726 (Home screen): база
- * `#C5E2CB` і два розмиті кола (Ellipse 6 — кремове `#FFFFEA` @50%, зверху праворуч; Ellipse 7 —
- * темно-зелене `#005122` @15%, знизу ліворуч; радіус 302, розмиття σ = 97.55). Положення взято з
+ * Фон застосунку — Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 274:531 (Home screen): база
+ * `#A7D2B0` і два розмиті кола (Ellipse 6 — кремове `#FFFFB1` @50%, зверху праворуч; Ellipse 7 —
+ * темно-зелене `#004C51` @20%, знизу ліворуч; радіус 302, розмиття σ = 97.55). Положення взято з
  * кадру 375x812, 1px = 1dp: центр кремового кола — 6dp від правого й 20dp від верхнього краю,
  * темно-зеленого — 9dp від лівого й 31dp від нижнього. Гауссове розмиття наближено радіальним
  * градієнтом ([drawBlurredBlob]) — працює однаково на всіх API-рівнях (26+), без RenderEffect.
@@ -143,7 +143,7 @@ fun Modifier.teperaGradientBackground(): Modifier = this
         drawBlurredBlob(
             center = Offset(9f * d, size.height - 31f * d),
             radius = 302f * d, sigma = 97.55f * d,
-            color = TeperaPalette.backgroundGreenBlob.copy(alpha = 0.15f)
+            color = TeperaPalette.backgroundGreenBlob.copy(alpha = 0.2f)
         )
     }
 

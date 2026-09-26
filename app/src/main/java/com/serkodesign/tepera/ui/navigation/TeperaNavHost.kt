@@ -571,7 +571,7 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp + navigationBarInset)
+            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillCard)

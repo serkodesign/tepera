@@ -60,7 +60,7 @@
     <string name="stats_below_five_min">&lt;5 хв</string>
     <string name="balance_rest_of_day_label">Без телефону</string>
     <string name="activities_title">Активності</string>
-    <string name="home_add_category">+ Додати</string>
+    <string name="home_add_category">Додати</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
     <string name="onboarding_screen_title">Структура твого дня</string>
@@ -497,4 +497,5 @@
     <string name="heat_grid_description_none">Online за годинами доби: даних поки немає.</string>
     <string name="trend_chart_description">Online за днями: %1$s.</string>
     <string name="timeline_description_prefix">Хронологія вчорашньої доби, приблизно: %1$s.</string>
+    <string name="balance_target_label">Орієнтир</string>
 </resources>

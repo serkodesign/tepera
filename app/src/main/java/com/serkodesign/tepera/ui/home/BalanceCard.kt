@@ -1,6 +1,8 @@
 package com.serkodesign.tepera.ui.home
 
 import com.serkodesign.tepera.ui.theme.TeperaCard
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +41,7 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 import kotlin.math.roundToInt
@@ -121,7 +124,7 @@ fun MyDayCard(
                         dayLengthMinutes = state.dayLengthMinutes,
                         dayStartMillis = state.dayStartMillis
                     )
-                    DayStructureLegend(segments = segments)
+                    DayStructureLegend(segments = segments, targetMinutes = state.targetMinutes)
                 }
             }
         }
@@ -177,7 +180,7 @@ private fun DayHeader(dayStartMillis: Long, dayLengthMinutes: Int) {
 }
 
 private val BarTrackHeight = 20.dp
-private val BarTotalHeight = 32.dp // висота з виступами маркерів над/під смугою
+private val BarTotalHeight = 44.dp // висота з виступами маркерів над/під смугою
 private val SegmentGap = 2.dp
 
 // Кольори за запитом користувача: сегмент "решта дня" (те, що ще попереду) — світло-зелений
@@ -253,15 +256,18 @@ private fun DayStructureBar(
                     )
                 }
             }
-            // CC-1: без орієнтира засічки на шкалі немає взагалі.
-            if (markerFraction != null) Box(
-                modifier = Modifier
-                    .atFraction(markerFraction, centered = true)
-                    .width(2.dp)
-                    .height(BarTotalHeight)
-                    .clip(RoundedCornerShape(1.dp))
-                    .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.35f))
-            )
+            // CC-1: орієнтир — два тихі трикутники над і під шкалою, без підпису і без зміни кольору.
+            if (markerFraction != null) {
+                listOf("▼" to Alignment.TopStart, "▲" to Alignment.BottomStart).forEach { (glyph, align) ->
+                    Text(
+                        text = glyph,
+                        color = TeperaPalette.buttonBrandDark,
+                        fontSize = 10.sp,
+                        lineHeight = 12.sp,
+                        modifier = Modifier.align(align).atFraction(markerFraction, centered = true).clearAndSetSemantics { }
+                    )
+                }
+            }
         }
         if (dayStartMillis > 0L) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -283,43 +289,56 @@ private fun Modifier.atFraction(fraction: Float, centered: Boolean): Modifier = 
     }
 }
 
-/** Скільки рядків легенди влазить в одну колонку; більше — перемикаємось на дві колонки. */
-private const val SINGLE_COLUMN_LEGEND_MAX = 4
-
 /**
- * Легенда — список "колір · назва · час": кружок, текст, час вирівняний праворуч. Тривалість словами
- * ("3 год 45 хв"), а не "3:45", яке читається як годинник (FR-P.6: час завжди поруч із назвою, ніколи голий
- * відсоток). До [SINGLE_COLUMN_LEGEND_MAX] рядків — одна колонка (14sp, читабельніше); більше —
- * дві колонки (12sp), щоб картка не росла на всю висоту й не розтягувала сусідні картки пейджера.
- * Довгі назви ("Живе спілкування") у вузькій колонці переносяться на другий рядок.
+ * Легенда — список "колір · назва · час": кружок, назва, час чіпом праворуч. Завжди ОДНА колонка на всю
+ * ширину (за рішенням користувача): у двох колонках довгі назви ("Кулінарія") ламались посеред слова, а чіпси
+ * різної ширини розсинхронізовували ряди. Тривалість словами ("3 год 45 хв"), а не "3:45", яке читається як
+ * годинник (FR-P.6: час завжди поруч із назвою, ніколи голий відсоток). Картка росте разом зі списком, а
+ * пейджер вирівнює за нею сусідні картки.
  */
 @Composable
-private fun DayStructureLegend(segments: List<DaySegment>) {
+private fun DayStructureLegend(segments: List<DaySegment>, targetMinutes: Int?) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (segments.size <= SINGLE_COLUMN_LEGEND_MAX) {
-            segments.forEach { segment -> LegendRow(segment, compact = false, modifier = Modifier.fillMaxWidth()) }
-        } else {
-            // "Без телефону" — найдовші назва й час ("Без телефону · 4 год 45 хв") — окремим рядком на всю
-            // ширину внизу, щоб у вузькій колонці не обрізатись.
-            val rest = segments.lastOrNull()?.takeIf { it.color == RestSegmentColor }
-            val paired = if (rest != null) segments.dropLast(1) else segments
-            paired.chunked(2).forEach { pair ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    LegendRow(pair[0], compact = true, modifier = Modifier.weight(1f))
-                    if (pair.size > 1) {
-                        LegendRow(pair[1], compact = true, modifier = Modifier.weight(1f))
-                    } else {
-                        Spacer(Modifier.weight(1f))
-                    }
-                }
-            }
-            rest?.let { LegendRow(it, compact = true, modifier = Modifier.fillMaxWidth()) }
+        // Орієнтир (▼ — той самий значок, що на шкалі) дописано в рядок Online, з яким він порівнюється; підпису на самій
+        // шкалі нема (FR-3.10). Без Online-сегмента (0 хв) орієнтир лишається окремим рядком.
+        val onlineLabel = stringResource(R.string.balance_online_label)
+        val onlineIndex = segments.indexOfFirst { it.label == onlineLabel }
+        segments.forEachIndexed { index, segment ->
+            LegendRow(
+                segment,
+                compact = false,
+                modifier = Modifier.fillMaxWidth(),
+                targetMinutes = targetMinutes.takeIf { index == onlineIndex }
+            )
         }
+        if (targetMinutes != null && onlineIndex < 0) TargetLegendRow(targetMinutes, compact = false)
     }
 }
 
 @Composable
-private fun LegendRow(segment: DaySegment, compact: Boolean, modifier: Modifier = Modifier) {
+private fun TargetLegendRow(targetMinutes: Int, compact: Boolean) {
+    val style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = if (compact) 18.dp else 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(if (compact) 10.dp else 12.dp), contentAlignment = Alignment.Center) {
+            Text("▼", color = TeperaPalette.buttonBrandDark, fontSize = 10.sp, lineHeight = 10.sp)
+        }
+        Text(
+            text = stringResource(R.string.balance_target_label),
+            modifier = Modifier.weight(1f),
+            style = style,
+            color = HomeCardTextPrimary,
+            maxLines = 1
+        )
+        TeperaChip(label = formatBalanceDuration(targetMinutes), compact = true)
+    }
+}
+
+@Composable
+private fun LegendRow(segment: DaySegment, compact: Boolean, modifier: Modifier = Modifier, targetMinutes: Int? = null) {
     val style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
     Row(
         modifier = modifier.heightIn(min = if (compact) 18.dp else 20.dp),
@@ -335,12 +354,18 @@ private fun LegendRow(segment: DaySegment, compact: Boolean, modifier: Modifier 
             maxLines = if (compact) 2 else 1,
             overflow = TextOverflow.Ellipsis
         )
-        Text(
-            text = formatBalanceDuration(segment.minutes),
-            style = style.copy(fontWeight = FontWeight.Medium),
-            color = HomeCardTextPrimary,
-            maxLines = 1
-        )
+        if (targetMinutes != null) {
+            val targetText = formatBalanceDuration(targetMinutes)
+            val targetDescription = stringResource(R.string.balance_target_label) + " " + targetText
+            Text(
+                text = "▼ $targetText",
+                modifier = Modifier.clearAndSetSemantics { contentDescription = targetDescription },
+                style = MaterialTheme.typography.bodySmall,
+                color = HomeCardTextSecondary,
+                maxLines = 1
+            )
+        }
+        TeperaChip(label = formatBalanceDuration(segment.minutes), compact = true)
     }
 }
 

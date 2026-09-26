@@ -53,7 +53,7 @@
     <string name="stats_below_five_min">&lt;5 min</string>
     <string name="balance_rest_of_day_label">Away from the phone</string>
     <string name="activities_title">Activities</string>
-    <string name="home_add_category">+ Add</string>
+    <string name="home_add_category">Add</string>
 
     <!-- Usage access onboarding (FR-7.1) -->
     <string name="onboarding_screen_title">Your day\'s structure</string>
@@ -484,4 +484,5 @@
     <string name="heat_grid_description_none">Online by hour of the day: no data yet.</string>
     <string name="trend_chart_description">Online by day: %1$s.</string>
     <string name="timeline_description_prefix">Timeline of the previous day, approximately: %1$s.</string>
+    <string name="balance_target_label">Reference</string>
 </resources>

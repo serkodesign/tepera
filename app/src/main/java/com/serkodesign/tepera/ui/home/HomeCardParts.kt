@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,7 +51,7 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
 internal val HomeCardTextPrimary = Color(0xFF0F0F10) // Text/text-primary
 internal val HomeCardTextSecondary = Color(0xFF505050) // Text/text-secondary
 
-/** Картка пейджера: заливка, радіус 24, паддінги 16/12/12/12 і мінімальна висота 182dp (як у макеті). */
+/** Картка пейджера (M3 filled card): заливка, радіус 28 (extra large — як картки активностей), відступ 16, проміжок 12, мінімальна висота 182dp. */
 @Composable
 internal fun HomeCardSurface(
     modifier: Modifier = Modifier,
@@ -61,9 +62,9 @@ internal fun HomeCardSurface(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 182.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .background(containerColor)
-            .padding(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 12.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         content = content
     )
@@ -76,16 +77,18 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit) {
         Text(
             text = title,
             modifier = Modifier.semantics { heading() },
-            fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Medium,
-            fontSize = 18.sp,
-            color = HomeCardTextPrimary
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = TeperaPalette.headlineFont,
+                fontWeight = FontWeight.Medium
+            ),
+            color = TeperaPalette.buttonBrandDark
         )
         Spacer(Modifier.width(8.dp))
         IconButton(onClick = onInfo, modifier = Modifier.size(20.dp)) {
             Icon(
                 TeperaSymbols.Info,
                 contentDescription = stringResource(R.string.home_card_info_action),
+                tint = TeperaPalette.buttonBrand,
                 modifier = Modifier.size(20.dp)
             )
         }

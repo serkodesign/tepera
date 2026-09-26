@@ -2,6 +2,7 @@ package com.serkodesign.tepera.ui.home
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall
 import com.serkodesign.tepera.ui.pattern.PatternUiState
-import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaChip
 
 /**
  * FR-D.8/D.9, друга сторінка горизонтального пейджера Home (Figma "App concept"
@@ -36,21 +37,15 @@ fun PatternMiniCard(state: PatternUiState, modifier: Modifier = Modifier) {
             onInfo = { showInfo = true }
         )
         if (!state.hasEnoughData) {
-            Text(stringResource(R.string.pattern_empty_state), fontSize = 12.sp, color = HomeCardTextPrimary)
+            Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodySmall, color = HomeCardTextSecondary)
         }
         // Висока сітка 6×4 бере всю вільну висоту картки (усі картки пейджера однакові за висотою).
         HourlyHeatGridTall(hourlyMinutes = if (state.hasEnoughData) state.hourlyMinutes else null, modifier = Modifier.weight(1f))
         state.firstUnlockMinuteOfDay?.let { minuteOfDay ->
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.home_card_first_unlock_label), fontSize = 12.sp, color = HomeCardTextPrimary)
-                HomeTintChip(
-                    text = "%02d:%02d".format(minuteOfDay / 60, minuteOfDay % 60),
-                    textColor = TeperaPalette.timeChipText,
-                    fill = TeperaPalette.timeChipBackground,
-                    borderColor = TeperaPalette.timeChipBorder,
-                    fontSize = 12
-                )
-            }
+            TeperaChip(
+                label = stringResource(R.string.home_card_first_unlock_label),
+                value = "%02d:%02d".format(minuteOfDay / 60, minuteOfDay % 60)
+            )
         }
     }
 

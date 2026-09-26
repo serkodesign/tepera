@@ -65,7 +65,7 @@ import com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
-import com.serkodesign.tepera.ui.theme.StatTile
+import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -160,29 +160,14 @@ fun StatsScreen(
             // пасивний показ на головному екрані). null = нема доступу/API < 28 — рядок відсутній,
             // не "0". За прямим запитом користувача — дві картки в ряд (`StatTile`), не чипи.
             if (state.period == StatsPeriod.WEEK) {
-                if (state.unlockStats.weekCount != null || state.lastPhoneUseStats.weekMedianMillis != null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        state.unlockStats.weekCount?.let { count ->
-                            StatTile(
-                                label = stringResource(R.string.stats_unlock_week_label),
-                                value = count.toString(),
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
-                        // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard —
-                        // тут окремою карткою серед інших фактів Stats, не другорядна деталь.
-                        state.lastPhoneUseStats.weekMedianMillis?.let { millis ->
-                            StatTile(
-                                label = stringResource(R.string.stats_last_phone_use_week_label),
-                                value = formatClockTime(millis),
-                                modifier = Modifier.weight(1f).fillMaxHeight()
-                            )
-                        }
+                val weekStats = buildList {
+                    state.unlockStats.weekCount?.let { add(stringResource(R.string.stats_unlock_week_label) to it.toString()) }
+                    // T-10: та сама медіана, що другий (тихий) рядок LastPhoneUseEstimateCard — тут серед фактів Stats.
+                    state.lastPhoneUseStats.weekMedianMillis?.let {
+                        add(stringResource(R.string.stats_last_phone_use_week_label) to formatClockTime(it))
                     }
                 }
+                if (weekStats.isNotEmpty()) TeperaStatsBar(stats = weekStats)
                 // За прямим запитом користувача: тепловий патерн одразу під картками вище.
                 PatternCard(state = patternState, period = state.period)
             }
