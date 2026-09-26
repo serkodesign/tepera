@@ -704,10 +704,8 @@ fun TeperaStatsBar(stats: List<Pair<String, String>>, modifier: Modifier = Modif
         modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .clip(RoundedCornerShape(20.dp))
-            // Темно-зелений фон #006944 і світлий текст #DCF6ED (за запитом користувача; контраст ≈5.9:1).
-            .background(TeperaPalette.buttonBrand)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            // Без тла, текст #003926 (за запитом користувача) — факти лежать прямо на градієнті сторінки.
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         // Top: значення різних фактів стоять на одному рівні, навіть коли підпис одного займає два рядки.
         verticalAlignment = Alignment.Top
     ) {
@@ -718,13 +716,13 @@ fun TeperaStatsBar(stats: List<Pair<String, String>>, modifier: Modifier = Modif
                         .padding(horizontal = 16.dp)
                         .width(1.dp)
                         .fillMaxHeight()
-                        .background(TeperaPalette.surfaceBrandLight.copy(alpha = 0.35f))
+                        .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.25f))
                 )
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = value,
-                    color = TeperaPalette.surfaceBrandLight,
+                    color = TeperaPalette.buttonBrandDark,
                     fontFamily = TeperaPalette.headlineFont,
                     fontWeight = FontWeight.Medium,
                     fontSize = 28.sp,
@@ -734,7 +732,7 @@ fun TeperaStatsBar(stats: List<Pair<String, String>>, modifier: Modifier = Modif
                 Text(
                     text = label,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TeperaPalette.surfaceBrandLight
+                    color = TeperaPalette.buttonBrandDark
                 )
             }
         }
