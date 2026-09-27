@@ -28,7 +28,10 @@ import com.serkodesign.tepera.data.local.MIGRATION_11_12
 import com.serkodesign.tepera.data.local.MIGRATION_12_13
 import com.serkodesign.tepera.data.local.MIGRATION_13_14
 import com.serkodesign.tepera.data.local.MIGRATION_14_15
+import com.serkodesign.tepera.data.local.MIGRATION_15_16
 import com.serkodesign.tepera.data.repository.WelcomeBackRepository
+import com.serkodesign.tepera.widget.DaySnapshotRepository
+import com.serkodesign.tepera.widget.WeekSnapshotRepository
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BackupRepository
@@ -69,7 +72,8 @@ class TeperaApp : Application() {
             .addMigrations(
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                 MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
-                MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15
+                MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
+                MIGRATION_15_16
             )
             .build()
     }
@@ -118,6 +122,16 @@ class TeperaApp : Application() {
 
     val welcomeBackRepository: WelcomeBackRepository by lazy {
         WelcomeBackRepository(settingsStore, balanceRepository, activityRepository)
+    }
+
+    // W-1 (CLAUDE-CODE-TASK-widgets.md): спільна модель даних для нових віджетів — "Сьогодні"/
+    // "Пульт" читають DaySnapshot, "Тиждень" — WeekSnapshot. Ще не має власного UI-споживача (W-3+).
+    val daySnapshotRepository: DaySnapshotRepository by lazy {
+        DaySnapshotRepository(balanceRepository, pauseRepository, activityRepository, sleepWindowRepository, settingsStore)
+    }
+
+    val weekSnapshotRepository: WeekSnapshotRepository by lazy {
+        WeekSnapshotRepository(balanceRepository)
     }
 
     val deviceIdProvider: DeviceIdProvider by lazy { DeviceIdProvider(this) }

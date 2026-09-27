@@ -27,6 +27,7 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.WeeklySummaryWorker
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.theme.GlassRow
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
@@ -84,11 +85,10 @@ fun WeeklySummaryToggle(settingsStore: SettingsStore, modifier: Modifier = Modif
                 )
             }
         )
-        Text(
+        TeperaHint(
             text = stringResource(
                 if (permissionDenied) R.string.weekly_summary_permission_hint else R.string.weekly_summary_hint
             ),
-            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
     }

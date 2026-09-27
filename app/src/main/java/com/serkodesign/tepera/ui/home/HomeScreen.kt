@@ -136,6 +136,39 @@ fun HomeScreen(
     )
     val summary by viewModel.todaySummary.collectAsState()
 
+    // За прямим запитом користувача: активна категорія переїжджає на початок сітки замість
+    // окремого рядка "Зараз іде: X" над нею (ActiveTimerBar прибрано). Порядок — знімок, а не
+    // жива реакція на trackingStartTime: перераховується лише при поверненні на Home
+    // (resumeGeneration нижче), тож тап по play/pause НЕ смикає сітку під час самого перегляду
+    // екрана. Категорія лишається зверху, навіть якщо таймер зупинили тим самим сеансом — до
+    // наступного відкриття Home.
+    var pinnedCategoryId by remember { mutableStateOf<String?>(null) }
+    // resumeGeneration + capturedGeneration (не читання summary прямо в LifecycleResumeEffect) —
+    // бо todaySummary вантажиться асинхронно (Room/DataStore, StateFlow стартує з emptyList()):
+    // на холодному старті з уже активним таймером (напр. запущеним з віджета, або лишеним із
+    // минулого сеансу) ON_RESUME спрацьовував РАНІШЕ, ніж перший реальний emit Flow — і брав
+    // знімок з ще порожнього списку. Реальний баг, знайдений живим тестом на пристрої. Фікс:
+    // резюм лише позначає "потрібен новий знімок" (resumeGeneration++), а окремий ефект чекає,
+    // доки summary справді завантажиться (isNotEmpty), і бере знімок РІВНО раз на це покоління —
+    // наступні зміни summary в межах того самого покоління (напр. зупинка таймера) вже ігноруються.
+    var resumeGeneration by remember { mutableStateOf(0) }
+    var capturedGeneration by remember { mutableStateOf(-1) }
+    LaunchedEffect(summary, resumeGeneration) {
+        if (summary.isNotEmpty() && capturedGeneration != resumeGeneration) {
+            pinnedCategoryId = summary.firstOrNull { it.trackingStartTime != null }?.category?.id
+            capturedGeneration = resumeGeneration
+        }
+    }
+    val orderedSummary = remember(summary, pinnedCategoryId) {
+        val pinnedId = pinnedCategoryId
+        if (pinnedId == null) {
+            summary
+        } else {
+            val (pinned, rest) = summary.partition { it.category.id == pinnedId }
+            pinned + rest
+        }
+    }
+
     // Кнопка "+ Додати" біля "Активності": створення власної категорії, та сама логіка й діалог,
     // що в Налаштування → Категорії.
     val categoryViewModel: CategoryViewModel = viewModel(factory = CategoryViewModel.Factory(categoryRepository))
@@ -280,6 +313,7 @@ fun HomeScreen(
         weeklyDigestViewModel.refresh()
         onlineEstimateRevealViewModel.refresh()
         backfillViewModel.runIfNeeded()
+        resumeGeneration++
         onPauseOrDispose { }
     }
 
@@ -391,15 +425,6 @@ fun HomeScreen(
         ) {
             HomeHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
 
-            // GAP-5: активний таймер (у т.ч. запущений з віджета) видно одразу й зупиняється звідси.
-            summary.firstOrNull { it.trackingStartTime != null }?.let { active ->
-                ActiveTimerBar(
-                    active = active,
-                    onStop = { viewModel.toggleTimer(active.category.id) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            }
-
             // T-2 (tepera-dev-spec.md): "обробка... з індикатором" — короткий тихий рядок, доки
             // триває одноразовий бекфіл історії пауз (BackfillViewModel), зазвичай зникає
             // за долі секунди.
@@ -507,7 +532,7 @@ fun HomeScreen(
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    summary.chunked(2).forEach { rowItems ->
+                    orderedSummary.chunked(2).forEach { rowItems ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)

@@ -694,6 +694,35 @@ fun TeperaChip(
 }
 
 /**
+ * Єдиний вигляд короткого пояснювального тексту (підказка під рядком/перемикачем, тіло
+ * неруйнівного діалогу) — контурна ⓘ 16dp + bodySmall тим самим приглушеним кольором, що вже
+ * використовує підзаголовок [TeperaCard] (`buttonBrandDark@70%`), замість дефолтного сірого
+ * Material-кольору без іконки. Іконка вирівняна по першому рядку тексту, не по центру всього
+ * блоку — інакше "пливе" вгору при двох і більше рядках.
+ */
+@Composable
+fun TeperaHint(text: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            TeperaSymbols.Info,
+            contentDescription = null,
+            modifier = Modifier
+                .padding(top = 2.dp)
+                .size(16.dp),
+            tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+        )
+    }
+}
+
+/**
  * Підсумок одним тональним блоком (замість двох окремих плиток, з яких одна на "Сьогодні" розтягувалась на
  * всю ширину майже порожньою): факти в рядок, розділені тонкою лінією; значення — першим і великим (28sp), підпис
  * під ним дрібніше — "число, а потім що це". Один факт займає блок зліва, без штучного розтягування.

@@ -8,9 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
@@ -138,75 +140,75 @@ fun WidgetSuggestionScreen(
     }
 }
 
+private const val PREVIEW_GRID_COLUMNS = 12
+private const val PREVIEW_GRID_ROWS = 4
+
 /**
- * Зменшена копія розширеного віджета (Figma "App concept", nodes 236:956 / 234:848): ряд із п'яти
- * кіл-кнопок у напівпрозорій капсулі та картка сітки доби 12×4 — на "шпалерах" (градієнтний фон,
- * бо віджет сам фону не має і лежить прямо на шпалерах). Гліфи й відтінки беруться з віджета
- * ([widgetIconRes], [FIGMA_TINTS]) — перша кнопка вибрана, як на макеті. Лише ілюстрація: не інтерактивна
- * і не читається скрінрідером (сам віджет описано текстом нижче).
+ * Зменшена копія реального віджета (кнопки категорій + сітка доби, `widget/TeperaWidget.kt`) — ті
+ * самі гліфи/відтінки ([FIGMA_TINTS], [widgetIconRes]), тож прев'ю не розходиться з дійсністю.
+ * Лише ілюстрація: не інтерактивна і не читається скрінрідером (сам віджет описано текстом нижче).
  */
 @Composable
 private fun WidgetMiniPreview() {
-    val keys = listOf("nature", "reading", "hobby", "movement", "social")
+    val previewCategories = DefaultCategories.all.take(5)
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(
-                Brush.linearGradient(listOf(Color(0xFF7FBF9C), Color(0xFF1F5A44)))
-            )
-            .padding(16.dp)
+            .background(Brush.linearGradient(listOf(Color(0xFF7FBF9C), Color(0xFF1F5A44))))
+            .padding(20.dp)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Капсула з кнопками: #FFFFFF@30%, радіус 100, відступ 8 (пропорційно зменшена).
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(100.dp))
                     .background(Color.White.copy(alpha = 0.3f))
-                    .padding(6.dp),
+                    .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                keys.forEachIndexed { index, key ->
+                previewCategories.forEachIndexed { index, category ->
                     val selected = index == 0
-                    val tint = FIGMA_TINTS.getValue(key)
+                    val tint = if (selected) FIGMA_TINTS[category.nameKey] else null
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(32.dp)
                             .clip(CircleShape)
-                            .background(if (selected) tint.circle else WIDGET_CIRCLE_UNSELECTED),
+                            .background(tint?.circle ?: WIDGET_CIRCLE_UNSELECTED),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            painter = painterResource(widgetIconRes(key, selected)),
+                            painter = painterResource(widgetIconRes(category.iconName, selected = selected)),
                             contentDescription = null,
-                            tint = if (selected) tint.glyph else WIDGET_GLYPH_UNSELECTED,
-                            modifier = Modifier.size(20.dp)
+                            tint = tint?.glyph ?: WIDGET_GLYPH_UNSELECTED,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
             }
-
-            // Картка сітки доби: #FFFFFF@30%, радіус 16, відступ 12; клітинки — квадрати з проміжком 3.
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color.White.copy(alpha = 0.3f))
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
+                    .padding(8.dp)
             ) {
-                repeat(PREVIEW_GRID_ROWS) { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                        repeat(PREVIEW_GRID_COLUMNS) { column ->
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .aspectRatio(1f)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(previewCellColor(row * PREVIEW_GRID_COLUMNS + column))
-                            )
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    repeat(PREVIEW_GRID_ROWS) { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            repeat(PREVIEW_GRID_COLUMNS) { col ->
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(1f)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(previewCellColor(row, col))
+                                )
+                            }
                         }
                     }
                 }
@@ -215,22 +217,16 @@ private fun WidgetMiniPreview() {
     }
 }
 
-private const val PREVIEW_GRID_COLUMNS = 12
-private const val PREVIEW_GRID_ROWS = 4
-
-/**
- * Демо-доба для прев'ю (те саме, що показує реальний віджет): клітинки до початку дня — фіолетові,
- * далі Online / записи категорій / порожні, решта — майбутнє (напівпрозорий сірий).
- */
-private fun previewCellColor(index: Int): Color = when {
-    index < 12 -> Color(0xFFA172FF)
-    index in 12..14 -> TeperaPalette.onlineCard
-    index in 15..17 -> Color(0xFF00B938)
-    index in 18..19 -> Color.White
-    index in 20..21 -> Color(0xFFD28FDF)
-    index in 22..23 -> TeperaPalette.onlineCard
-    index in 24..26 -> Color(0xFFFD5B5E)
-    index in 27..28 -> Color.White
-    index in 29..30 -> TeperaPalette.onlineCard
-    else -> Color(0x80A7A7A7)
+/** Демо-розфарбування прев'ю сітки: ніч на початку, кілька категорій і Online ближче до вечора. */
+private fun previewCellColor(row: Int, col: Int): Color {
+    val index = row * PREVIEW_GRID_COLUMNS + col
+    return when {
+        index < 14 -> Color(0xFFA172FF) // до точки старту дня
+        index in 16..18 || index in 25..26 -> TeperaPalette.onlineCard
+        index in 20..22 -> Color(0xFFD28FDF) // читання
+        index == 23 -> Color(0xFFFD5B5E) // рух/спорт
+        index == 27 -> Color(0xFF00D8CD) // хобі
+        index in 14..15 || index == 19 || index == 24 || index == 28 -> Color.White
+        else -> Color.White.copy(alpha = 0.5f)
+    }
 }

@@ -18,7 +18,7 @@
     <string name="home_today_summary">Today</string>
     <string name="tile_quick_add">Add activity</string>
     <string name="usage_access_prompt_title">See your day\'s structure</string>
-    <string name="usage_access_prompt_body">To show the structure of your day, enable app usage access in system settings</string>
+    <string name="usage_access_prompt_body">Allow app usage access to see your day\'s structure</string>
     <string name="usage_access_open_settings">Open settings</string>
     <string name="usage_access_learn_more">Why is this needed?</string>
 
@@ -60,11 +60,11 @@
     <string name="onboarding_explanation">Tepera shows the structure of your day: how much time online, how much you\'ve noted in entries, and how much is left for everything else. The online part needs access to app usage statistics — a system permission that can\'t be granted through a normal dialog, only manually in Settings, so it can show a real number next to your estimate. Logging activities stays fully functional without it.</string>
     <string name="onboarding_skip">Skip</string>
     <string name="perm_title">Before we begin</string>
-    <string name="perm_body">Your entries and app usage time stay on your phone. The only thing that leaves it is anonymous crash reports — you can turn them off in Settings</string>
+    <string name="perm_body">Your data stays on your phone. Only anonymous crash reports leave it — turn them off anytime in Settings</string>
     <string name="perm_usage_label">Usage access</string>
     <string name="perm_continue">Continue</string>
     <string name="target_onboarding_title">A reference for your day</string>
-    <string name="target_onboarding_body">A reference is an optional, quiet tick on your day scale. It doesn\'t judge anything and never changes colors. You can set it now or later in Settings.</string>
+    <string name="target_onboarding_body">A reference is a quiet, optional tick on the day scale — it judges nothing. Set it now or later in Settings.</string>
     <string name="target_onboarding_average_format">Over the last %1$d days, about %2$s online per day on average. It\'s only a starting point — pick your own.</string>
     <string name="target_onboarding_later">Later</string>
     <string name="target_onboarding_set">Set</string>
@@ -77,17 +77,17 @@
     <string name="welcome_back_logged_format">Noted: %1$s</string>
     <string name="welcome_back_online_format">Online on average: %1$s per day</string>
     <string name="weekly_summary_label">Weekly summary</string>
-    <string name="weekly_summary_hint">Once a week, on Sunday evening — one quiet notification. Tapping it opens your week\'s summary. There are no other notifications.</string>
-    <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. You can allow it in the app\'s system settings — everything else works as before.</string>
+    <string name="weekly_summary_hint">Once a week, Sunday evening — one quiet notification with your week\'s summary. No other notifications.</string>
+    <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings — everything else still works.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — in development</string>
-    <string name="pro_interest_body">We\'re wondering whether Tepera needs a separate extended version. It doesn\'t exist yet — right now this is only a question for you. No prices, no payments. If you\'re curious, tell us what would be useful.</string>
+    <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments yet — just a question for you. Curious? Tell us what would help.</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="crash_reports_label">Crash reports</string>
-    <string name="crash_reports_explanation">During testing, Tepera sends the developer anonymous reports when the app crashes (via Firebase Crashlytics by Google). A report contains the phone model, Android version and a technical description of the crash; it does not contain your entries, categories or app usage time. You can turn this off in Settings at any time.</string>
+    <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, categories or app usage time in it. Turn it off anytime.</string>
 
     <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), shown on both branches of "access granted? yes/no". -->
@@ -190,14 +190,14 @@
     <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_sleep_window_label">Sleep window</string>
-    <string name="settings_sleep_window_info">This isn\'t sleep tracking — it\'s only a calculation setting. It changes: the start of your day (unlocks inside the window don\'t start the day), the length of your awake day in the day structure, pause detection (no pauses are looked for inside it), the \"Away from the phone\" row in Statistics, and the unlock counter. It is never shown on the scale. Adjust it if you work nights.</string>
+    <string name="settings_sleep_window_info">Not sleep tracking — just a calculation setting. It affects: day start (unlocks inside the window don\'t start it), day length, pause detection, the \"Away from the phone\" row in Stats, and the unlock counter. Never shown on the scale. Work nights? Adjust it.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
     <string name="settings_sleep_window_start_label">Start</string>
     <string name="settings_sleep_window_end_label">End</string>
 
     <!-- T-11 (tepera-dev-spec.md): gap detection sensitivity preset -->
     <string name="settings_gap_sensitivity_label">Pause detection sensitivity</string>
-    <string name="settings_gap_sensitivity_info">How often the app offers to label a break in phone use. Doesn\'t affect logged activity — only how many pauses it offers to label.</string>
+    <string name="settings_gap_sensitivity_info">How often the app suggests labeling pauses. Doesn\'t affect logged activity — only how many it suggests.</string>
     <string name="settings_gap_sensitivity_rare">Rare</string>
     <string name="settings_gap_sensitivity_normal">Normal</string>
     <string name="settings_gap_sensitivity_frequent">Frequent</string>
@@ -205,14 +205,14 @@
     <!-- "Suggest a feature" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Suggest a feature</string>
     <string name="settings_suggest_feature_confirm_title">Open the form in your browser?</string>
-    <string name="settings_suggest_feature_confirm_body">This opens a Google Form in your browser. The form is handled by Google, not Tepera.</string>
+    <string name="settings_suggest_feature_confirm_body">This opens a Google Form in your browser — Google handles it, not Tepera.</string>
     <string name="settings_suggest_feature_confirm_action">Open</string>
     <string name="settings_suggest_feature_no_browser">Couldn\'t find a browser to open the form</string>
 
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>
     <string name="backup_import_action">Import data (JSON)</string>
-    <string name="backup_not_included_note">The file contains categories, entries, excluded apps and the reference. Not transferred: the sleep window, labelled pauses, delayed apps, widget buttons, pause sensitivity, language and the seconds counters — you will need to set those up yourself.</string>
+    <string name="backup_not_included_note">The file includes categories, entries, excluded apps and the reference. Not included: sleep window, pauses, delayed apps, widget buttons, pause sensitivity, language and seconds — set those up again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
@@ -223,7 +223,7 @@
 
     <!-- Exclusion List (FR-3.5) -->
     <string name="exclusion_list_screen_title">Excluded apps</string>
-    <string name="exclusion_list_hint">Checked apps are not counted toward Online time (e.g. maps, e-readers, banking)</string>
+    <string name="exclusion_list_hint">Selected apps don\'t count toward Online time (maps, e-readers, banking, etc.)</string>
     <string name="exclusion_list_empty">No apps with usage history in the last 30 days</string>
     <string name="exclusion_list_section_excluded">Excluded</string>
     <string name="exclusion_list_section_all">All</string>
@@ -232,8 +232,8 @@
     <string name="settings_gates_action">Apps with a delay</string>
     <string name="settings_widget_action">Widget buttons</string>
     <string name="widget_settings_title">Widget buttons</string>
-    <string name="widget_settings_hint">Buttons follow the list order. The 1x1 widget shows the first, 2x1 the first two, larger ones up to five. Drag the handle to reorder.</string>
-    <string name="widget_settings_auto_hint">The order is automatic right now and depends on the time of day. Pick activities to set your own.</string>
+    <string name="widget_settings_hint">Buttons follow the list order: 1x1 shows the first, 2x1 two, larger ones up to five. Drag the handle to reorder.</string>
+    <string name="widget_settings_auto_hint">The order is automatic for now, based on time of day. Pick activities to set your own.</string>
     <string name="widget_settings_selected_section">On the widget</string>
     <string name="widget_settings_available_section">Add to widget</string>
     <string name="widget_settings_limit">The widget holds up to %1$d buttons. Remove one to add another.</string>
@@ -256,8 +256,8 @@
     <string name="gates_schedule_custom">On a schedule</string>
     <string name="gate_schedule_title">Gate schedule</string>
     <string name="gate_schedule_always">Always active</string>
-    <string name="gate_schedule_always_hint">The gates work at any time when not paused.</string>
-    <string name="gate_schedule_custom_hint">The gates work only in the chosen periods. Outside them the shortcut opens the app right away. Times are local.</string>
+    <string name="gate_schedule_always_hint">Active at all times, except while paused.</string>
+    <string name="gate_schedule_custom_hint">Active only in the chosen periods — outside them the shortcut opens the app right away.</string>
     <string name="gate_schedule_day_off">The gates are off on this day</string>
     <string name="gate_schedule_add_interval">Add a period</string>
     <string name="gate_schedule_copy_all">To all days</string>
@@ -266,7 +266,7 @@
     <string name="gate_schedule_to">To</string>
     <string name="gate_schedule_note_whole_day">All day</string>
     <string name="gate_schedule_note_next_day">Ends the next day</string>
-    <string name="gates_hint">Selected apps open only through a new shortcut, with a pause before launch</string>
+    <string name="gates_hint">Selected apps open through a new shortcut, with a pause before launch</string>
     <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — gates aren\'t available on this device</string>
     <string name="gates_section_active">Apps with a delay</string>
     <string name="gates_section_add">Add an app</string>
@@ -279,44 +279,44 @@
     <string name="gates_delay_picker_cancel">Cancel</string>
     <string name="gates_pin_failed">Couldn\'t create the shortcut — please retry</string>
     <string name="gates_instruction_title">Shortcut created</string>
-    <string name="gates_instruction_body">Android doesn\'t let us remove %1$s\'s original icon for you. Do it by hand: long-press the icon on your home screen and drag it to \"Remove\".</string>
+    <string name="gates_instruction_body">Android won\'t let us remove %1$s\'s icon for you — long-press it on your home screen and drag it to \"Remove\".</string>
     <string name="gates_instruction_done">Done</string>
     <string name="gates_instruction_later">I\'ll do it later</string>
     <!-- Gate pause screen redesign per a provided mockup (direct user request, not T-5) -->
     <string name="gate_pause_exit_action">Not now</string>
     <!-- CC-6: gate pause texts (bag rotation); %1$s — app name; 25–27 (end of the array) — night texts -->
     <string-array name="gate_texts">
-        <item>Breathe in. Breathe out. Then it\'s your call.</item>
-        <item>A few seconds of quiet.</item>
-        <item>One slow breath.</item>
-        <item>Drop your shoulders. Unclench your jaw.</item>
-        <item>While we wait, look out the window.</item>
-        <item>Notice how you\'re sitting or standing right now.</item>
-        <item>What are you hoping to find there?</item>
-        <item>One thing, then back?</item>
-        <item>For something, or to unwind? Both are fine.</item>
-        <item>%1$s isn\'t going anywhere.</item>
-        <item>Know what you want to check?</item>
-        <item>If you open it, make it on purpose.</item>
-        <item>You can open it. You can also not.</item>
-        <item>There\'s no wrong answer here.</item>
-        <item>These seconds are yours.</item>
-        <item>Nothing happens if you wait.</item>
-        <item>You set this gate. It only reminds.</item>
-        <item>Opening it is okay too.</item>
-        <item>Now is a good moment to notice where you are.</item>
-        <item>What can you hear right now?</item>
-        <item>Find three things nearby with your eyes.</item>
-        <item>How are you right now? Honestly.</item>
-        <item>The feed will refresh without you.</item>
-        <item>Probably nothing new in there. Probably.</item>
-        <item>It\'s late. The screen can wait till morning.</item>
-        <item>Can\'t sleep? Lying in the quiet counts as rest too.</item>
-        <item>Morning is a few hours away. %1$s can wait too.</item>
+        <item>Breathe in. Breathe out. Repeat.</item>
+        <item>A few seconds of quiet. Time to ground yourself.</item>
+        <item>Breathe in slowly.</item>
+        <item>Drop your shoulders. Relax.</item>
+        <item>Stop staring at the screen. Look around.</item>
+        <item>Feel the ground under your feet.</item>
+        <item>What brings you here?</item>
+        <item>In and out, real quick?</item>
+        <item>Just popping in?</item>
+        <item>%1$s will still be there later today.</item>
+        <item>Do you know why you\'re opening it?</item>
+        <item>Sure about this?</item>
+        <item>You can open it. Or not.</item>
+        <item>There\'s no wrong choice.</item>
+        <item>It\'s your time. You decide what to do with it.</item>
+        <item>Nothing will happen in these few seconds.</item>
+        <item>You set this delay yourself. Remember that.</item>
+        <item>No shame in opening it.</item>
+        <item>Good moment to notice where you are.</item>
+        <item>What\'s happening around you right now?</item>
+        <item>Spot 3 things around you.</item>
+        <item>How are you right now? For real, for real.</item>
+        <item>The reels aren\'t going anywhere.</item>
+        <item>Probably nothing new. Probably.</item>
+        <item>It\'s late. Time for beddy-bye.</item>
+        <item>Can\'t sleep? Now I can\'t either.</item>
+        <item>Hours till morning. Let me nap.</item>
     </string-array>
     <string name="gate_pause_open_format">Open %1$s</string>
     <string name="gates_growing_delay_label">Growing delay</string>
-    <string name="gates_growing_delay_hint">If you open the same gate over and over, the delay grows a little — up to 20 s — and resets after half an hour without openings.</string>
+    <string name="gates_growing_delay_hint">The delay grows a little with each repeat open — up to 20s — and resets after half an hour of quiet.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>
@@ -422,10 +422,11 @@
     <string name="home_card_day_since_format">Elapsed since %1$s</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
-    <string name="day_usage_info_body">Each square is one hour of yesterday; the color shows how many minutes of that hour the phone was online. It is only a picture of yesterday, with no judgement.</string>
-    <string name="weekly_digest_info_body">A short summary of the last 7 days: how many times you logged activities and when your day usually starts. Tiles without data are not shown.</string>
+    <string name="day_usage_info_body">Each square is one hour of yesterday; color shows how many minutes the phone was online. No judgment — just a picture of the day.</string>
+    <string name="weekly_digest_info_body">A summary of the last 7 days: how many times you logged activities and when your day usually starts. Tiles without data aren\'t shown.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
+    <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): widget-picker description — now "Today" (day shape), not category buttons. -->
     <string name="widget_4x1_description">Quick category buttons</string>
     <string name="widget_1x1_description">One activity button</string>
     <string name="widget_2x1_description">Two activity buttons</string>
@@ -484,4 +485,5 @@
     <string name="timeline_description_prefix">Timeline of the previous day, approximately: %1$s.</string>
     <string name="balance_target_label">Reference</string>
     <string name="loading_description">Loading</string>
+    <string name="widget_grid_legend_before_start">Before day start</string>
 </resources>

@@ -89,7 +89,6 @@ import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.gates.GateScheduleScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
-import com.serkodesign.tepera.ui.onboarding.PermissionsBackground
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
@@ -250,18 +249,17 @@ fun TeperaNavHost(
     // країв екрана (status bar/навбар лишаються білою смугою поверх, підтверджено на
     // Samsung S23). Умовний, не глобальний: Налаштування/Категорії/Додати активність — досі
     // дефолтна Material 3 тема, для них Figma-дизайну ще нема.
+    // Екран дозволів (ONBOARDING) — раніше єдиний темний виняток застосунку (#12171F +
+    // PermissionsBackground()); за наданим Figma-редизайном (node 292:1587) перестилізований на той
+    // самий світлий градієнт, що решта GRADIENT_ROUTES — окремого прапорця більше не потрібно.
     val useGradientBackground = currentRoute in Routes.GRADIENT_ROUTES
-    // Екран дозволів — темний і сягає під статус-бар: його фон малюється тут, на зовнішньому Box, а не
-    // всередині екрана (той отримує відступ під статус-бар від Scaffold нижче).
-    val isPermissionsScreen = currentRoute == Routes.ONBOARDING
     Box(
         modifier = if (useGradientBackground) {
             Modifier.teperaGradientBackground()
         } else {
-            Modifier.fillMaxSize().background(if (isPermissionsScreen) Color(0xFF12171F) else MaterialTheme.colorScheme.background)
+            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         }
     ) {
-        if (isPermissionsScreen) PermissionsBackground()
         Scaffold(
             containerColor = Color.Transparent,
             bottomBar = {

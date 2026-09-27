@@ -44,6 +44,7 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -98,11 +99,10 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                TeperaHint(
                     text = stringResource(
                         if (order.isEmpty()) R.string.widget_settings_auto_hint else R.string.widget_settings_hint
                     ),
-                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
 

@@ -225,3 +225,10 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
         db.execSQL("ALTER TABLE app_gates ADD COLUMN lastShownAtMillis INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/** Версія 16 (W-2, `CLAUDE-CODE-TASK-widgets.md`): момент останнього називання паузи — вікно скасування 5 хв. */
+val MIGRATION_15_16 = object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE detected_gaps ADD COLUMN labeledAtMillis INTEGER DEFAULT NULL")
+    }
+}

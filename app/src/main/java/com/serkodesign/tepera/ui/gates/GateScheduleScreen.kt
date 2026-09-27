@@ -43,6 +43,7 @@ import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaTimePickerDialog
@@ -102,11 +103,10 @@ fun GateScheduleScreen(gateRepository: GateRepository, onBack: () -> Unit) {
                         )
                     }
                 )
-                Text(
+                TeperaHint(
                     text = stringResource(
                         if (always) R.string.gate_schedule_always_hint else R.string.gate_schedule_custom_hint
                     ),
-                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
 
@@ -192,13 +192,17 @@ private fun IntervalRow(interval: TimeInterval, onChange: (TimeInterval) -> Unit
                 label = stringResource(R.string.gate_schedule_from),
                 minute = interval.startMinute,
                 onSelected = { onChange(interval.copy(startMinute = it)) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                containerColor = Color.White,
+                borderColor = TimeFieldBorder
             )
             TimeChip(
                 label = stringResource(R.string.gate_schedule_to),
                 minute = interval.endMinute,
                 onSelected = { onChange(interval.copy(endMinute = it)) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                containerColor = Color.White,
+                borderColor = TimeFieldBorder
             )
             TeperaIconButton(
                 icon = TeperaSymbols.Close,
@@ -257,3 +261,5 @@ internal fun TimeChip(
         )
     }
 }
+
+private val TimeFieldBorder = Color(0xFFDDE2E4)

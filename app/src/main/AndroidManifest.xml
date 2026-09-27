@@ -93,7 +93,7 @@
                 android:resource="@xml/life_balance_widget_4x2_info" />
         </receiver>
 
-        <!-- Віджети 1x1 (1 кнопка) і 2x1 (2 кнопки) — обрані в Налаштування → Віджет категорії -->
+        <!-- 1x1: одна кнопка категорії (перша з обраних у налаштуваннях віджета) -->
         <receiver
             android:name=".widget.TeperaWidget1x1Receiver"
             android:exported="false">
@@ -104,6 +104,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/life_balance_widget_1x1_info" />
         </receiver>
+
+        <!-- 2x1: дві кнопки категорій -->
         <receiver
             android:name=".widget.TeperaWidget2x1Receiver"
             android:exported="false">

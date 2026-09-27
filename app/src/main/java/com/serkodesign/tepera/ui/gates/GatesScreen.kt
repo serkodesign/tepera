@@ -66,6 +66,7 @@ import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import com.serkodesign.tepera.ui.theme.TeperaDatePickerDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.util.startOfTodayMillis
 import java.text.SimpleDateFormat
@@ -155,9 +156,8 @@ fun GatesScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (!searchActive) item {
-                        Text(
+                        TeperaHint(
                             text = stringResource(R.string.gates_hint),
-                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                         )
                     }
@@ -203,9 +203,8 @@ fun GatesScreen(
                                     )
                                 }
                             )
-                            Text(
+                            TeperaHint(
                                 text = stringResource(R.string.gates_growing_delay_hint),
-                                style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(horizontal = 12.dp)
                             )
                         }

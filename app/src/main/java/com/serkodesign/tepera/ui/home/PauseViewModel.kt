@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.data.GapDetectionConfig
 import com.serkodesign.tepera.data.local.SettingsStore
-import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
-import com.serkodesign.tepera.data.local.entity.EntrySource
+import com.serkodesign.tepera.data.namePause
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.PauseRepository
@@ -161,17 +160,13 @@ class PauseViewModel(
         }
     }
 
-    /** FR-D.5: тап по паузі → вибір категорії → звичайний запис (forceOverwrite, як і тап-таймер — швидка дія без overlap-діалогу). */
+    /**
+     * FR-D.5 / W-2: тап по паузі → вибір категорії → [namePause] — спільна логіка з майбутньою
+     * кнопкою на віджеті "Пульт" (W-4), яка й не дублює запис при повторному називанні.
+     */
     fun labelGap(gap: PauseUiGap, categoryId: String) {
         viewModelScope.launch {
-            val entry = ActivityEntryEntity(
-                categoryId = categoryId,
-                startTime = gap.startTime,
-                durationMinutes = gap.durationMinutes,
-                source = EntrySource.GAP_LABELED
-            )
-            activityRepository.addEntry(entry, forceOverwrite = true)
-            pauseRepository.markLabeled(gap.id, entry.id)
+            namePause(pauseRepository, activityRepository, gap.startTime, gap.durationMinutes, categoryId)
             removeGapFromState(gap)
         }
     }

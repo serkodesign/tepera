@@ -71,6 +71,8 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * скасовано, версія 13 (`MIGRATION_12_13`) прибирає таблицю. `MIGRATION_11_12` лишається для пристроїв на версії 11.
  * D-27: локальні метрики (`metric_events`, версія 11) скасовано — версія 14 (`MIGRATION_13_14`) прибирає таблицю.
  * CC-6: додано `repeatCount`/`lastShownAtMillis` до AppGateEntity (зростаюча затримка воріт) — версія 15, `MIGRATION_14_15`.
+ * W-2 (`CLAUDE-CODE-TASK-widgets.md`): додано `labeledAtMillis` до DetectedGapEntity (вікно
+ * скасування називання паузи, 5 хв) — версія 16, `MIGRATION_15_16`.
  */
 @Database(
     entities = [
@@ -84,7 +86,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         CardShowEntity::class,
         GateEventEntity::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

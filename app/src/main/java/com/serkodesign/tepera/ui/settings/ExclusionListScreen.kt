@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import com.serkodesign.tepera.ui.theme.TeperaLoadingIndicator
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -115,9 +116,8 @@ fun ExclusionListScreen(
                     ) {
                         if (!searchActive) {
                             item {
-                                Text(
+                                TeperaHint(
                                     text = stringResource(R.string.exclusion_list_hint),
-                                    style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                                 )
                             }

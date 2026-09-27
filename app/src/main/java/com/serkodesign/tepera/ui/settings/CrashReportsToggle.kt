@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.GlassRow
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import com.serkodesign.tepera.util.CrashReporting
@@ -46,9 +47,8 @@ fun CrashReportsToggle(modifier: Modifier = Modifier) {
                 )
             }
         )
-        Text(
+        TeperaHint(
             text = stringResource(R.string.crash_reports_explanation),
-            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
     }

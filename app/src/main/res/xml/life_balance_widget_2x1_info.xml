@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Віджет 2x1: дві кнопки категорій (перші дві з обраних у Налаштування → Віджет). Клас: TeperaWidget2x1. -->
+<!-- 2x1: дві кнопки категорій (перші дві з обраних у налаштуваннях віджета). Клас: TeperaWidget2x1. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="40dp"

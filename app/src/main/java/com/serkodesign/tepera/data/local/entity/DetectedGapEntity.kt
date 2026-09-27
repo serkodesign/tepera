@@ -18,5 +18,13 @@ data class DetectedGapEntity(
     val startTime: Long,
     val durationMinutes: Int, // >= 30 (FR-D.1)
     val labeledEntryId: String? = null, // id створеного ActivityEntry, якщо позначено (FR-D.5)
-    val dismissed: Boolean = false // користувач свідомо пропустив; не питати повторно
+    val dismissed: Boolean = false, // користувач свідомо пропустив; не питати повторно
+    /**
+     * W-2 (`CLAUDE-CODE-TASK-widgets.md`): момент останнього [labeledEntryId], НЕ час самої
+     * паузи — потрібен лише для вікна скасування (5 хв, `data/PauseNaming.kt`). `null`, доки
+     * паузу жодного разу не назвали цим шляхом ([PauseRepository.reconcileWithEntries]
+     * ретроактивне позначення його не виставляє — те не "щойно назвав", скасування там
+     * недоречне).
+     */
+    val labeledAtMillis: Long? = null
 )

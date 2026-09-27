@@ -62,11 +62,6 @@ class ActiveTimerStore(private val context: Context) {
         return startTime
     }
 
-    /**
-     * Просить обидва віджети (4x1 і 4x2) перемалюватись — викликається наприкінці
-     * [com.serkodesign.tepera.data.toggleCategoryTimer], тож охоплює і Home, і кнопки віджета.
-     * Сам стан живих сесій оновлюється потоками (WidgetLiveData) без цього виклику.
-     */
     suspend fun refreshWidgets() {
         TeperaWidget().updateAll(context)
         TeperaWidget4x2().updateAll(context)

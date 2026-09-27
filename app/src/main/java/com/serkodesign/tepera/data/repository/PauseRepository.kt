@@ -5,6 +5,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.serkodesign.tepera.data.GapDetectionConfig
 import com.serkodesign.tepera.data.GapSensitivity
+import com.serkodesign.tepera.data.PauseGapStore
 import com.serkodesign.tepera.data.local.dao.DetectedGapDao
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
@@ -49,7 +50,7 @@ data class ShiftedDayLastUse(val boundaryMillis: Long, val lastUseMillis: Long?)
 class PauseRepository(
     private val context: Context,
     private val gapDao: DetectedGapDao
-) {
+) : PauseGapStore {
 
     /**
      * Один прохід по сирих подіях [from, to): зливає перекривні/суміжні сесії різних застосунків
@@ -210,6 +211,26 @@ class PauseRepository(
     suspend fun markLabeled(gapId: String, entryId: String) = gapDao.markLabeled(gapId, entryId)
 
     suspend fun dismiss(gapId: String) = gapDao.markDismissed(gapId)
+
+    /**
+     * W-2: пауза, стабільно ідентифікована своїми межами (start,end), не Room-рядком — рядок
+     * непозначеної паузи перестворюється при кожному [persist] (T-11, `replaceUnresolvedInRange`),
+     * тож id, який віджет міг закешувати до перескану, до моменту тапу вже міг не існувати.
+     * Якщо рядка з таким [startTime] немає (саме цей випадок), створює його наново з переданих
+     * [durationMinutes] — виклик після цього завжди має на чому працювати.
+     */
+    override suspend fun findOrCreateGap(startTime: Long, durationMinutes: Int): DetectedGapEntity {
+        gapDao.getByStartTime(startTime)?.let { return it }
+        gapDao.insertAll(listOf(DetectedGapEntity(startTime = startTime, durationMinutes = durationMinutes)))
+        return gapDao.getByStartTime(startTime)
+            ?: DetectedGapEntity(startTime = startTime, durationMinutes = durationMinutes) // захист від гонки вставки; наступний виклик побачить уже вставлений рядок
+    }
+
+    override suspend fun findGapByStartTime(startTime: Long): DetectedGapEntity? = gapDao.getByStartTime(startTime)
+
+    override suspend fun markLabeledAt(gapId: String, entryId: String, atMillis: Long) = gapDao.markLabeledAt(gapId, entryId, atMillis)
+
+    override suspend fun clearLabel(gapId: String) = gapDao.clearLabel(gapId)
 
     /**
      * FR-D.7a: найближча межа 02:00 у минулому (включно) відносно [nowMillis] — межа

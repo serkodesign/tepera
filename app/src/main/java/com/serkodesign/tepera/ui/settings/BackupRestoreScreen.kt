@@ -40,6 +40,7 @@ import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaHint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -194,10 +195,8 @@ fun BackupRestoreScreen(
                     trailing = { NavChevron() }
                 )
                 // CH-06 / FR-6.2: чесно про те, що файл не містить усіх налаштувань.
-                Text(
+                TeperaHint(
                     text = stringResource(R.string.backup_not_included_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TeperaPalette.buttonBrandDark,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
                 GlassSectionHeader(stringResource(R.string.backup_delete_section))

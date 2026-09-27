@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -47,6 +48,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.serkodesign.tepera.R
@@ -57,7 +59,6 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import kotlinx.coroutines.flow.first
 
@@ -215,6 +216,23 @@ private val WIDGET_GRID_ONLINE_COLOR = Color(0xFFF5C401) // той самий #F
 private val WIDGET_GRID_BLANK_PAST = Color.White // Grey/0 — минуло, нічого не залоговано
 private val WIDGET_GRID_BLANK_FUTURE = Color(0x80A7A7A7) // rgba(167,167,167,0.5) — ще не настало
 
+// Годинні підмітки й легенда під сіткою (за запитом користувача — не в Figma).
+// Картка напівпрозора (30% білого, widget_card_translucent) — на темних шпалерах ефективний
+// фон лишається темним, тож текст ПОВНІСТЮ непрозорий і Medium-накреслення (не 60% альфа й
+// Normal, як у першій версії — на темних шпалерах це читалось як розмита пляма).
+private val HOUR_ROW_LABELS = listOf(0, 6, 12, 18) // початок кожного з 4 рядків сітки (по 6 год)
+private val HOUR_LABEL_WIDTH = 18.dp
+private val HOUR_LABEL_GAP = 6.dp
+private val HOUR_LABEL_TEXT_SIZE = 11.sp
+private val HOUR_LABEL_COLOR = Color.White
+private const val MAX_LEGEND_ITEMS = 4
+private val LEGEND_ROW_GAP = 6.dp
+private val LEGEND_ROW_HEIGHT = 16.dp
+private val LEGEND_DOT_SIZE = 8.dp
+private val LEGEND_DOT_GAP = 4.dp
+private val LEGEND_ITEM_GAP = 10.dp
+private val LEGEND_TEXT_SIZE = 11.sp
+
 /**
  * Ряд кнопок у напівпрозорій капсулі (Figma node 236:956). Повний ряд (5) на всю ширину віджета —
  * justify-between (Glance Row не має Arrangement.SpaceBetween, той самий ефект дає
@@ -313,6 +331,13 @@ class ToggleCategoryTimerAction : ActionCallback {
  * Картка сітки доби (Figma node 234:855) — напівпрозорий білий прямокутник із радіусом 16 і
  * відступом 12, усередині сітка 12x4 (клітинки 4dp-радіуса, проміжок 3). БЕЗ доступу до статистики —
  * текстовий заклик до дії; Online-клітинки тоді не з'являться, решта лишається коректною.
+ *
+ * **Годинні підмітки й легенда (за запитом користувача — "там зараз нічого не ясно"):** ліворуч
+ * від сітки — підпис початку рядка (00/06/12/18, той самий принцип, що вже є на Home у
+ * [com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall], лише тут рядок = 6 год, бо сітка 12
+ * колонок × 4 ряди, а не одна горизонтальна стрічка з 24 годин) — без цього незрозуміло, який
+ * рядок якій половині доби відповідає. Під сіткою — легенда лише РЕАЛЬНИХ кольорів, що сьогодні
+ * зустрілись у слотах (не фіксований список — категорій, яких сьогодні не було, у легенді нема).
  */
 @Composable
 private fun DailyGridCard(
@@ -335,12 +360,17 @@ private fun DailyGridCard(
             return@Column
         }
 
+        val legendItems = remember(slots, categoriesById) { dailyGridLegendItems(slots, categoriesById, context) }
+
         // Сітка малюється ОДНИМ растровим зображенням (Canvas), а не 12x4 вузлами Box — RemoteViews-хост
         // відкидає зайві діти контейнера (на S23 замість 12 клітинок у ряду було видно 10, а з Spacer-ами
         // між ними ~5). Ширина картинки розтягується на всю ширину картки (FillBounds).
         // Висота клітинки: LocalSize.height у Responsive — найближчий МЕНШИЙ розмір зі списку, а не
         // реальна висота, тож вона наближена; від макетних 23.5dp стеля, знизу — запобіжник.
-        val available = LocalSize.current.height - PILL_HEIGHT - ROW_TO_CARD_GAP - CARD_PADDING * 2
+        // Резервуємо висоту й під новий рядок легенди (LEGEND_ROW_GAP + LEGEND_ROW_HEIGHT), інакше
+        // він або обрізався б, або стискав картку понад доступний розмір лаунчер-гріда.
+        val available = LocalSize.current.height - PILL_HEIGHT - ROW_TO_CARD_GAP - CARD_PADDING * 2 -
+            LEGEND_ROW_GAP - LEGEND_ROW_HEIGHT
         val cellHeight = ((available - DAILY_GRID_GAP * (DAILY_GRID_ROWS - 1)) / DAILY_GRID_ROWS)
             .coerceIn(DAILY_GRID_MIN_CELL, DAILY_GRID_MAX_CELL)
         val density = context.resources.displayMetrics.density
@@ -348,19 +378,99 @@ private fun DailyGridCard(
         val bitmap = renderDailyGridBitmap(
             slots = slots,
             categoriesById = categoriesById,
-            // Номінальна ширина ~343dp (макет) мінус відступи; реальна відрізнятиметься — FillBounds підганяє.
-            widthPx = ((343.dp - CARD_PADDING * 2).value * density).toInt(),
+            // Номінальна ширина ~343dp (макет) мінус відступи й колонку годинних підписів;
+            // реальна відрізнятиметься — FillBounds підганяє.
+            widthPx = ((343.dp - CARD_PADDING * 2 - HOUR_LABEL_WIDTH - HOUR_LABEL_GAP).value * density).toInt(),
             cellHeightPx = cellHeight.value * density,
             gapPx = DAILY_GRID_GAP.value * density,
             cornerRadiusPx = DAILY_GRID_CELL_RADIUS.value * density
         )
-        Image(
-            provider = ImageProvider(bitmap),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = GlanceModifier.fillMaxWidth().height(gridHeight)
-        )
+        Row(modifier = GlanceModifier.fillMaxWidth()) {
+            Column(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH).height(gridHeight)) {
+                HOUR_ROW_LABELS.forEach { hour ->
+                    Box(modifier = GlanceModifier.defaultWeight(), contentAlignment = Alignment.TopStart) {
+                        Text(
+                            text = "%02d".format(hour),
+                            style = TextStyle(
+                                fontSize = HOUR_LABEL_TEXT_SIZE,
+                                fontWeight = FontWeight.Medium,
+                                color = ColorProvider(day = HOUR_LABEL_COLOR, night = HOUR_LABEL_COLOR)
+                            )
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = GlanceModifier.width(HOUR_LABEL_GAP))
+            Image(
+                provider = ImageProvider(bitmap),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = GlanceModifier.defaultWeight().height(gridHeight)
+            )
+        }
+        if (legendItems.isNotEmpty()) {
+            Spacer(modifier = GlanceModifier.height(LEGEND_ROW_GAP))
+            Row(
+                modifier = GlanceModifier.fillMaxWidth().height(LEGEND_ROW_HEIGHT),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Той самий відступ, що колонка годинних підписів + проміжок до сітки вище —
+                // легенда починається РІВНО під першою клітинкою, а не під підписами "00/06/12/18".
+                Spacer(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH + HOUR_LABEL_GAP))
+                legendItems.forEachIndexed { index, (color, label) ->
+                    if (index > 0) Spacer(modifier = GlanceModifier.width(LEGEND_ITEM_GAP))
+                    Box(modifier = GlanceModifier.size(LEGEND_DOT_SIZE), contentAlignment = Alignment.Center) {
+                        Image(
+                            provider = ImageProvider(R.drawable.widget_circle_solid),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(ColorProvider(day = color, night = color)),
+                            modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
+                        )
+                    }
+                    Spacer(modifier = GlanceModifier.width(LEGEND_DOT_GAP))
+                    Text(
+                        text = label,
+                        maxLines = 1,
+                        style = TextStyle(
+                            fontSize = LEGEND_TEXT_SIZE,
+                            fontWeight = FontWeight.Medium,
+                            color = ColorProvider(day = Color.White, night = Color.White)
+                        )
+                    )
+                }
+            }
+        }
     }
+}
+
+/**
+ * Кольори, що реально зустрілись сьогодні в сітці (у хронологічному порядку першої появи),
+ * з людською назвою — легенда лише того, що є, без фіксованого списку "на всяк випадок"
+ * (FR-P.5: не показувати категорії, яких сьогодні не було). Обмежено [MAX_LEGEND_ITEMS], щоб
+ * не переповнити вузьку картку віджета довгими назвами кастомних категорій.
+ */
+private fun dailyGridLegendItems(
+    slots: List<DailyGridSlot>,
+    categoriesById: Map<String, CategoryEntity>,
+    context: Context
+): List<Pair<Color, String>> {
+    val items = LinkedHashMap<String, Pair<Color, String>>()
+    for (slot in slots) {
+        when (slot) {
+            is DailyGridSlot.PreUnlock ->
+                items.getOrPut("pre_unlock") {
+                    WIDGET_GRID_PRE_UNLOCK_COLOR to context.getString(R.string.widget_grid_legend_before_start)
+                }
+            is DailyGridSlot.Online ->
+                items.getOrPut("online") { WIDGET_GRID_ONLINE_COLOR to context.getString(R.string.balance_online_label) }
+            is DailyGridSlot.Category -> {
+                val category = categoriesById[slot.categoryId] ?: continue
+                items.getOrPut(category.id) { categoryColor(category.colorHex) to categoryDisplayName(category, context) }
+            }
+            is DailyGridSlot.Blank -> Unit
+        }
+    }
+    return items.values.take(MAX_LEGEND_ITEMS)
 }
 
 /** Малює сітку доби 12x4 (по рядках зліва направо) у Bitmap — див. коментар у [DailyGridSection]. */

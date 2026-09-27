@@ -33,8 +33,23 @@ interface DetectedGapDao {
     )
     suspend fun deleteUnresolvedInRange(from: Long, to: Long)
 
+    // Ретроактивне позначення (reconcileWithEntries) — НЕ "щойно назвав", labeledAtMillis не
+    // чіпаємо (скасування для такого збігу недоречне).
     @Query("UPDATE detected_gaps SET labeledEntryId = :entryId WHERE id = :gapId")
     suspend fun markLabeled(gapId: String, entryId: String)
+
+    // W-2: справжня дія називання/перейменування — з часом, потрібним для 5-хв вікна скасування.
+    @Query("UPDATE detected_gaps SET labeledEntryId = :entryId, labeledAtMillis = :atMillis WHERE id = :gapId")
+    suspend fun markLabeledAt(gapId: String, entryId: String, atMillis: Long)
+
+    // W-2: скасування — повністю нейтральний стан.
+    @Query("UPDATE detected_gaps SET labeledEntryId = NULL, labeledAtMillis = NULL WHERE id = :gapId")
+    suspend fun clearLabel(gapId: String)
+
+    // W-2: пошук паузи за її межами (startTime) — стабільний ідентифікатор, що переживає
+    // перерахунок (Room-рядок непозначеної паузи перестворюється при кожному replaceUnresolvedInRange).
+    @Query("SELECT * FROM detected_gaps WHERE startTime = :startTime LIMIT 1")
+    suspend fun getByStartTime(startTime: Long): DetectedGapEntity?
 
     @Query("UPDATE detected_gaps SET dismissed = 1 WHERE id = :gapId")
     suspend fun markDismissed(gapId: String)
