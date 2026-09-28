@@ -95,6 +95,12 @@
     <string name="widget_suggestion_body">Your day structure and a quick tap-timer within reach, without opening the app.</string>
     <string name="widget_suggestion_add_action">Add widget</string>
 
+    <string name="onboarding_skip_all">Skip all</string>
+
+    <string name="gates_onboarding_title">Apps with a delay</string>
+    <string name="gates_onboarding_body">You can add a short pause before opening specific apps — a moment to stop and decide on purpose, not out of habit. Set it up anytime in Settings → Apps with a delay.</string>
+    <string name="gates_onboarding_action">Got it</string>
+
 
     <!-- Values onboarding (FR-P.2) -->
 

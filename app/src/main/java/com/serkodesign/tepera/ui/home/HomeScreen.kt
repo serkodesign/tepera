@@ -129,7 +129,8 @@ fun HomeScreen(
     onShowCategoryOnboarding: () -> Unit,
     onShowOnlineEstimateOnboarding: () -> Unit,
     onShowTargetOnboarding: () -> Unit,
-    onShowWidgetSuggestion: () -> Unit
+    onShowWidgetSuggestion: () -> Unit,
+    onShowGatesOnboarding: () -> Unit
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
@@ -400,6 +401,23 @@ fun HomeScreen(
             // дозволу (знайдено живим тестом на Samsung S23, T-3 переставав показуватись).
             delay(1000)
             onShowWidgetSuggestion()
+        }
+    }
+
+    // Останній крок онбордингу (за прямим запитом користувача) — коротка згадка про ворота
+    // ("Застосунки з затримкою"), ПІСЛЯ пропозиції віджета. Та сама затримка й та сама причина
+    // (race "Home оживає між popBackStack()/navigate()"), що й крок вище.
+    val gatesOnboardingSeen by settingsStore.gatesOnboardingSeen.collectAsState(initial = true)
+    LaunchedEffect(
+        balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen,
+        onlineEstimateOnboardingSeen, widgetSuggestionSeen, targetStepDone, gatesOnboardingSeen
+    ) {
+        val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
+        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved &&
+            targetStepDone && widgetSuggestionSeen && !gatesOnboardingSeen
+        ) {
+            delay(1000)
+            onShowGatesOnboarding()
         }
     }
 

@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.onboarding
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
@@ -58,7 +60,8 @@ enum class DailyOnlineGuess(val representativeMinutes: Long) {
 fun OnlineEstimateOnboardingScreen(
     settingsStore: SettingsStore,
     userEstimateRepository: UserEstimateRepository,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    onSkipAll: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -77,9 +80,13 @@ fun OnlineEstimateOnboardingScreen(
     }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(padding)
+                .fillMaxSize()
+        ) {
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -108,6 +115,11 @@ fun OnlineEstimateOnboardingScreen(
                 modifier = Modifier.padding(top = 24.dp),
                 type = TeperaButtonType.Tertiary
             )
+        }
+        OnboardingSkipAllButton(
+            onClick = onSkipAll,
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
         }
     }
 }

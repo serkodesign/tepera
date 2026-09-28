@@ -593,6 +593,25 @@ fun TeperaSearchField(
     }
 }
 
+/**
+ * Тихий вихід з усього ланцюжка онбордингу — за прямим запитом користувача. Кожен екран
+ * онбордингу кладе цей контрол у правий верхній кут (поверх, не всередині вертикально
+ * центрованої колонки контенту — інакше позиція "гуляла" б разом із центруванням різних екранів).
+ * Приглушений колір і відсутність рамки/заливки — це не рівноцінна дія з "Продовжити"/"Пропустити"
+ * конкретного кроку, а рідко потрібна втеча, тому візуально тихіша за решту кнопок.
+ */
+@Composable
+fun OnboardingSkipAllButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.onboarding_skip_all),
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(12.dp),
+        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.6f),
+        style = MaterialTheme.typography.bodyMedium
+    )
+}
+
 /** Заголовок екрана онбордингу по центру — той самий стиль, що [TeperaScreenTitle] (Golos Medium 27sp, #003926). */
 @Composable
 fun TeperaOnboardingTitle(text: String, modifier: Modifier = Modifier) {

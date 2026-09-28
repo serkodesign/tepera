@@ -42,6 +42,7 @@ private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_d
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
+private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
 
 
 /**
@@ -135,6 +136,36 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setSplashScreenSeen() {
         context.settingsDataStore.edit { it[SPLASH_SCREEN_SEEN_KEY] = true }
+    }
+
+    /**
+     * Останній крок онбордингу (за прямим запитом користувача) — коротка згадка про ворота
+     * ("Застосунки з затримкою"), після пропозиції віджета. Сама функція нікуди не зникає без
+     * цього кроку (Налаштування → Застосунки з затримкою) — прапорець лише про те, чи людина вже
+     * бачила повідомлення про її існування.
+     */
+    val gatesOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[GATES_ONBOARDING_SEEN_KEY] ?: false }
+
+    suspend fun setGatesOnboardingSeen() {
+        context.settingsDataStore.edit { it[GATES_ONBOARDING_SEEN_KEY] = true }
+    }
+
+    /**
+     * Тихий вихід з усього ланцюжка онбордингу одним тапом (за прямим запитом користувача) —
+     * позначає кожен крок побаченим за раз, тим самим значенням, що поставив би прохід крок за
+     * кроком. Не зачіпає жодні дані, які кроки могли б записати (категорії лишаються дефолтним
+     * набором, орієнтир — порожнім) — лише прапорці "показано", як і природний прохід.
+     */
+    suspend fun skipAllOnboarding() {
+        context.settingsDataStore.edit {
+            it[CATEGORY_ONBOARDING_SEEN_KEY] = true
+            it[ONLINE_ESTIMATE_ONBOARDING_SEEN_KEY] = true
+            it[ONBOARDING_USAGE_ACCESS_SEEN_KEY] = true
+            it[TARGET_ONBOARDING_SEEN_KEY] = true
+            it[WIDGET_SUGGESTION_SEEN_KEY] = true
+            it[GATES_ONBOARDING_SEEN_KEY] = true
+        }
     }
 
     /**

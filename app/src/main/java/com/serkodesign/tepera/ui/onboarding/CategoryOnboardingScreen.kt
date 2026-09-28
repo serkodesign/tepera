@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.onboarding
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,7 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
+import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
@@ -62,7 +64,8 @@ import kotlinx.coroutines.launch
 fun CategoryOnboardingScreen(
     categoryRepository: CategoryRepository,
     settingsStore: SettingsStore,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    onSkipAll: () -> Unit
 ) {
     val categories by categoryRepository.observeAllCategories().collectAsState(initial = emptyList())
     // Кастомної категорії на цьому кроці ще не існує (онбординг завжди при першому запуску,
@@ -93,9 +96,13 @@ fun CategoryOnboardingScreen(
     }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(padding)
+                .fillMaxSize()
+        ) {
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -141,6 +148,11 @@ fun CategoryOnboardingScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 type = TeperaButtonType.Primary
             )
+        }
+        OnboardingSkipAllButton(
+            onClick = onSkipAll,
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
         }
     }
 }

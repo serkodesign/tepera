@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
+import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
@@ -80,7 +81,8 @@ import kotlinx.coroutines.launch
 fun OnboardingScreen(
     settingsStore: SettingsStore,
     balanceRepository: BalanceRepository,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    onSkipAll: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -99,6 +101,7 @@ fun OnboardingScreen(
         onPauseOrDispose { }
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     Column(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -184,6 +187,13 @@ fun OnboardingScreen(
                 type = TeperaButtonType.Tertiary
             )
         }
+    }
+        OnboardingSkipAllButton(
+            onClick = onSkipAll,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+        )
     }
 }
 

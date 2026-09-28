@@ -94,6 +94,7 @@ import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
+import com.serkodesign.tepera.ui.onboarding.GatesOnboardingScreen
 import androidx.compose.ui.platform.LocalContext
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.settings.AboutScreen
@@ -122,6 +123,7 @@ private object Routes {
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
     const val TARGET_ONBOARDING = "target_onboarding"
     const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
+    const val GATES_ONBOARDING = "gates_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
     const val LANGUAGE_SETTINGS = "language_settings"
@@ -159,7 +161,7 @@ private object Routes {
         SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
-        WIDGET_SUGGESTION_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
+        WIDGET_SUGGESTION_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -270,6 +272,17 @@ fun TeperaNavHost(
             } else {
                 navController.navigate(next) { popUpTo(from) { inclusive = true } }
             }
+        }
+    }
+
+    // Тихий вихід з усього ланцюжка онбордингу одним тапом (за прямим запитом користувача) —
+    // "Пропустити все" у правому верхньому куті кожного кроку. Позначає решту кроків побаченими
+    // одним записом (`skipAllOnboarding()`) і повертає на Home тим самим шляхом, що звичайне
+    // завершення ланцюжка вище — Home уже лежить у стеку під поточним кроком.
+    fun skipAllOnboarding() {
+        onboardingScope.launch {
+            settingsStore.skipAllOnboarding()
+            navController.popBackStack(Routes.HOME, inclusive = false)
         }
     }
 
@@ -386,7 +399,8 @@ fun TeperaNavHost(
                     onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
                     onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
                     onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
-                    onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) }
+                    onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) },
+                    onShowGatesOnboarding = { navController.navigate(Routes.GATES_ONBOARDING) }
                 )
             }
             composable(Routes.STATS) {
@@ -479,34 +493,46 @@ fun TeperaNavHost(
                 OnboardingScreen(
                     settingsStore = settingsStore,
                     balanceRepository = balanceRepository,
-                    onDone = { advanceOnboarding(Routes.ONBOARDING) }
+                    onDone = { advanceOnboarding(Routes.ONBOARDING) },
+                    onSkipAll = ::skipAllOnboarding
                 )
             }
             composable(Routes.CATEGORY_ONBOARDING) {
                 CategoryOnboardingScreen(
                     categoryRepository = categoryRepository,
                     settingsStore = settingsStore,
-                    onDone = { advanceOnboarding(Routes.CATEGORY_ONBOARDING) }
+                    onDone = { advanceOnboarding(Routes.CATEGORY_ONBOARDING) },
+                    onSkipAll = ::skipAllOnboarding
                 )
             }
             composable(Routes.ONLINE_ESTIMATE_ONBOARDING) {
                 OnlineEstimateOnboardingScreen(
                     settingsStore = settingsStore,
                     userEstimateRepository = userEstimateRepository,
-                    onDone = { advanceOnboarding(Routes.ONLINE_ESTIMATE_ONBOARDING) }
+                    onDone = { advanceOnboarding(Routes.ONLINE_ESTIMATE_ONBOARDING) },
+                    onSkipAll = ::skipAllOnboarding
                 )
             }
             composable(Routes.TARGET_ONBOARDING) {
                 TargetOnboardingScreen(
                     settingsStore = settingsStore,
                     balanceRepository = balanceRepository,
-                    onDone = { advanceOnboarding(Routes.TARGET_ONBOARDING) }
+                    onDone = { advanceOnboarding(Routes.TARGET_ONBOARDING) },
+                    onSkipAll = ::skipAllOnboarding
                 )
             }
             composable(Routes.WIDGET_SUGGESTION_ONBOARDING) {
                 WidgetSuggestionScreen(
                     settingsStore = settingsStore,
-                    onDone = { advanceOnboarding(Routes.WIDGET_SUGGESTION_ONBOARDING) }
+                    onDone = { advanceOnboarding(Routes.WIDGET_SUGGESTION_ONBOARDING) },
+                    onSkipAll = ::skipAllOnboarding
+                )
+            }
+            composable(Routes.GATES_ONBOARDING) {
+                GatesOnboardingScreen(
+                    settingsStore = settingsStore,
+                    onDone = { advanceOnboarding(Routes.GATES_ONBOARDING) },
+                    onSkipAll = ::skipAllOnboarding
                 )
             }
             composable(Routes.SETTINGS) {
@@ -602,6 +628,7 @@ private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRep
     if (!hasAccess && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING
     if (hasAccess && !settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
     if (!settingsStore.widgetSuggestionSeen.first()) return Routes.WIDGET_SUGGESTION_ONBOARDING
+    if (!settingsStore.gatesOnboardingSeen.first()) return Routes.GATES_ONBOARDING
     return null
 }
 

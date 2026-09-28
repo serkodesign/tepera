@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -67,7 +68,8 @@ import com.serkodesign.tepera.widget.widgetIconRes
 @Composable
 fun WidgetSuggestionScreen(
     settingsStore: SettingsStore,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    onSkipAll: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -78,9 +80,13 @@ fun WidgetSuggestionScreen(
     }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(padding)
+                .fillMaxSize()
+        ) {
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
         ) {
@@ -136,6 +142,11 @@ fun WidgetSuggestionScreen(
                     type = TeperaButtonType.Tertiary
                 )
             }
+        }
+        OnboardingSkipAllButton(
+            onClick = onSkipAll,
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
         }
     }
 }
