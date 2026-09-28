@@ -104,18 +104,13 @@ fun MyDayCard(
                 }
             }
             true -> {
+                // День (за визначенням Tepera, не календарна північ) ще не почався — Online,
+                // категорії й "Решта дня" усі порожні. HomeScreen тепер не додає цю картку до
+                // пейджера взагалі в такому стані (показує натомість першу сторінку з реальними
+                // даними, напр. Патерн) — гілка нижче лишається як defensive fallback, у
+                // нормальному потоці не виконується.
                 val segments = daySegments(state)
-                if (segments.isEmpty()) {
-                    // День (за визначенням Tepera, не календарна північ) ще не почався — Online,
-                    // категорії й "Решта дня" усі порожні. Без цієї гілки картка рендерила
-                    // ЦІЛКОМ ПОРОЖНЄ тіло (жодного тексту) — реальний баг, знайдений користувачем
-                    // при відкритті вночі/рано-вранці, до першого суттєвого розблокування.
-                    Text(
-                        text = stringResource(R.string.home_no_entries_today),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = HomeCardTextPrimary
-                    )
-                } else {
+                if (segments.isNotEmpty()) {
                     DayHeader(dayStartMillis = state.dayStartMillis, dayLengthMinutes = state.dayLengthMinutes)
                     DayStructureBar(
                         segments = segments,
@@ -132,6 +127,15 @@ fun MyDayCard(
 }
 
 private data class DaySegment(val label: String, val color: Color, val minutes: Int)
+
+/**
+ * True, коли є що показати на шкалі "Мій день" (Online, хоча б одна категорія сьогодні, або
+ * "Решта дня"). HomeScreen використовує це, щоб узагалі не додавати `MyDayCard` до пейджера,
+ * поки день (за точкою старту Tepera) ще не почався — замість порожньої картки одразу
+ * показується перша сторінка з реальними даними (Патерн/Цей тиждень).
+ */
+internal fun BalanceUiState.hasDayData(): Boolean =
+    onlineMinutes > 0 || categorySegments.isNotEmpty() || restOfDayMinutes > 0
 
 /**
  * FR-3.3, FR-3.4: порядок — Online, потім кожна категорія з ненульовим часом сьогодні (своїм

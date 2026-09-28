@@ -439,22 +439,33 @@ fun HomeScreen(
             // Горизонтальний слайдер (Figma "App concept" node 192:726): "Мій день" → "Патерн
             // вчора" → "Цей тиждень". Сторінки з даними додаються за тим самим рушієм карток
             // (`visibleCards`), що й раніше, коли ці картки були в вертикальному стеку.
+            // "Мій день" пропускається, коли день (точка старту Tepera) ще не почався і показати
+            // нема чого (за прямим запитом користувача — раніше картка займала місце порожнім
+            // "Поки порожньо" замість одразу показати першу сторінку з реальними даними, напр.
+            // Патерн — той майже завжди має реальну історію ОС навіть на щойно встановленому
+            // застосунку, T-2). Виняток — стан "доступ не надано/ще перевіряється": там картка й
+            // далі потрібна для самого запиту доступу, це не "нема даних".
             HomeCardsPager(
                 pages = buildList<@Composable () -> Unit> {
-                    add {
-                        MyDayCard(
-                            state = balanceState,
-                            onOpenUsageAccessSettings = {
-                                context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                            },
-                            onLearnMore = onShowOnboarding
-                        )
+                    if (balanceState.hasUsageAccess != true || balanceState.hasDayData()) {
+                        add {
+                            MyDayCard(
+                                state = balanceState,
+                                onOpenUsageAccessSettings = {
+                                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                                },
+                                onLearnMore = onShowOnboarding
+                            )
+                        }
                     }
                     if (CardType.PATTERN in visibleCards) {
                         add { PatternMiniCard(state = patternState) }
                     }
                     if (CardType.WEEKLY_DIGEST in visibleCards) {
                         add { WeeklyDigestCard(state = weeklyDigestState) }
+                    }
+                    if (isEmpty()) {
+                        add { EmptyPagerCard() }
                     }
                 }
             )
