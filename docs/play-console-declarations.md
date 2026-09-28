@@ -5,6 +5,16 @@
 залежності, наявні екрани), яку можна швидко перенести в Play Console вручну. Перевір кожен пункт
 проти актуального інтерфейсу Play Console перед подачею — форми Google міняються з часом.
 
+## Privacy Policy URL
+
+`https://serkodesign.github.io/tepera/privacy-policy` — GitHub Pages з гілки `w-0-audit`, папка
+`/docs` (`docs/privacy-policy.md`, оновлено 28.09.2026, включно з перемикачем "Звіти про збої",
+D-20). Перевірено 28.09.2026: сторінка відкривається без входу в акаунт і відповідає актуальному
+тексту файлу. Цю URL вписати в Play Console **Data Safety → Privacy policy link** і **App content /
+Store listing → Privacy Policy**, а також на екран "Про застосунок" (FR-6.9), якщо там ще стоїть
+заглушка. **Коли `w-0-audit` змерджиться в `main`** — варто перемкнути джерело Pages назад на
+`main`/`/docs` (Settings → Pages), інакше сайт продовжить збиратись зі старої гілки.
+
 ## Важлива знахідка перед заповненням: реальний список дозволів
 
 `app/src/main/AndroidManifest.xml` сам по собі декларує лише `PACKAGE_USAGE_STATS` і
