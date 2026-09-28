@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Базовий колір заставки (`splashGradientBackground()` у TeperaPalette.kt) — той самий
+         зелений, щоб системний Android-спалах (Theme.Tepera.Splash) і Compose-заставка
+         (SplashScreen.kt) виглядали одним безшовним переходом, не двома різними екранами. -->
+    <color name="splash_background">#8AC396</color>
+</resources>

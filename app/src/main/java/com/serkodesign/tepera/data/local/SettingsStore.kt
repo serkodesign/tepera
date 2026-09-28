@@ -41,6 +41,7 @@ private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pen
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
+private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 
 
 /**
@@ -120,6 +121,20 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWidgetSuggestionSeen() {
         context.settingsDataStore.edit { it[WIDGET_SUGGESTION_SEEN_KEY] = true }
+    }
+
+    /**
+     * Заставка (`ui/splash/SplashScreen.kt`) — лише при першому запуску (за прямим запитом
+     * користувача): системний Android-спалах (windowSplashScreenBackground/AnimatedIcon,
+     * MainActivity) уже показується при кожному холодному старті, тож власна Compose-заставка
+     * поверх нього при звичайному перезапуску (застосунок вивантажено з пам'яті) дублювала б той
+     * самий момент двома різними екранами поспіль.
+     */
+    val splashScreenSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[SPLASH_SCREEN_SEEN_KEY] ?: false }
+
+    suspend fun setSplashScreenSeen() {
+        context.settingsDataStore.edit { it[SPLASH_SCREEN_SEEN_KEY] = true }
     }
 
     /**

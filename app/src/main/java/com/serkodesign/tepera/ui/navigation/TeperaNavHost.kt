@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.flow.first
@@ -104,11 +105,13 @@ import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
 import com.serkodesign.tepera.ui.settings.WidgetSettingsScreen
+import com.serkodesign.tepera.ui.splash.SplashScreen
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaGradientBackground
 
 private object Routes {
+    const val SPLASH = "splash"
     const val HOME = "home"
     const val ADD_ENTRY = "add_entry"
     const val ADD_ENTRY_WITH_CATEGORY = "add_entry?categoryId={categoryId}"
@@ -201,14 +204,40 @@ fun TeperaNavHost(
     pendingGateRequestNonce: Long? = null,
     pendingWeeklySummaryNonce: Long? = null
 ) {
+    // Заставка — лише при першому запуску (за прямим запитом користувача): системний
+    // Android-спалах (MainActivity, windowSplashScreenBackground/AnimatedIcon) уже показується
+    // при КОЖНОМУ холодному старті, тож власна Compose-заставка поверх нього на звичайному
+    // перезапуску (застосунок вивантажено з пам'яті) дублювала б той самий момент двома різними
+    // екранами поспіль. `settingsStore.splashScreenSeen` (DataStore) вирішує старт NavHost — поки
+    // перше значення не прийшло (один кадр), NavHost узагалі не композиться: той самий підхід
+    // "мовчати, доки не знаємо", що вже є для `hasUsageAccess == null` на Home.
+    val splashScreenSeen by settingsStore.splashScreenSeen.collectAsState(initial = null)
+    if (splashScreenSeen == null) return
+    val startDestination = if (splashScreenSeen == true) Routes.HOME else Routes.SPLASH
+    val splashScope = rememberCoroutineScope()
+
+    // Заставка (Routes.SPLASH) — стартова точка NavHost, тож ці "натяки" (тап по кнопці
+    // категорії на віджеті/Quick Settings, тап по ярлику воріт) можуть спрацювати ДО того, як
+    // Home взагалі побував у стеку. skipSplash() вставляє Home під цільовий екран замість неї —
+    // інакше системна "назад" повернула б на ще не показану заставку (і повторно запустила б її
+    // таймер), а popBackStack(Routes.HOME, ...) нижче (ворота/тижневе сповіщення) не знайшов би
+    // HOME у стеку взагалі.
+    fun skipSplash() {
+        if (navController.currentDestination?.route == Routes.SPLASH) {
+            navController.navigate(Routes.HOME) { popUpTo(Routes.SPLASH) { inclusive = true } }
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (pendingOpenAddEntry) {
+            skipSplash()
             navController.navigate(Routes.addEntry(pendingCategoryId))
         }
     }
 
     LaunchedEffect(pendingGateRequestNonce) {
         if (pendingGateTargetPackage != null) {
+            skipSplash()
             navController.navigate(Routes.gatePause(pendingGateTargetPackage))
         }
     }
@@ -223,7 +252,10 @@ fun TeperaNavHost(
 
     // CC-8: тап по тижневому сповіщенню — повернутися на Home, де лежить картка «Цей тиждень».
     LaunchedEffect(pendingWeeklySummaryNonce) {
-        if (pendingWeeklySummaryNonce != null) navController.popBackStack(Routes.HOME, inclusive = false)
+        if (pendingWeeklySummaryNonce != null) {
+            skipSplash()
+            navController.popBackStack(Routes.HOME, inclusive = false)
+        }
     }
 
     // Онбординг — єдиний ланцюжок: кожен крок веде просто до наступного (з заміною себе в стеку),
@@ -254,10 +286,12 @@ fun TeperaNavHost(
     // самий світлий градієнт, що решта GRADIENT_ROUTES — окремого прапорця більше не потрібно.
     val useGradientBackground = currentRoute in Routes.GRADIENT_ROUTES
     Box(
-        modifier = if (useGradientBackground) {
-            Modifier.teperaGradientBackground()
-        } else {
-            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+        modifier = when {
+            // Заставка малює власний повний фон (SplashScreen.kt) — тут лишень fillMaxSize,
+            // без подвійного малювання позаду неї.
+            currentRoute == Routes.SPLASH -> Modifier.fillMaxSize()
+            useGradientBackground -> Modifier.teperaGradientBackground()
+            else -> Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
         }
     ) {
         Scaffold(
@@ -281,7 +315,7 @@ fun TeperaNavHost(
             val slidePx = with(LocalDensity.current) { 30.dp.roundToPx() }
             NavHost(
                 navController = navController,
-                startDestination = Routes.HOME,
+                startDestination = startDestination,
                 modifier = Modifier.padding(
                     top = scaffoldPadding.calculateTopPadding(),
                     start = scaffoldPadding.calculateStartPadding(layoutDirection),
@@ -320,6 +354,16 @@ fun TeperaNavHost(
                     }
                 }
             ) {
+            composable(Routes.SPLASH) {
+                SplashScreen(
+                    onFinished = {
+                        splashScope.launch { settingsStore.setSplashScreenSeen() }
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.SPLASH) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(Routes.HOME) {
                 HomeScreen(
                     categoryRepository = categoryRepository,

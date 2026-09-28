@@ -79,6 +79,7 @@ ksp {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Compose
     implementation(platform("androidx.compose:compose-bom:2026.08.00"))

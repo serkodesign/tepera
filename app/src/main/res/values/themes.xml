@@ -3,4 +3,16 @@
     <!-- ЗАГЛУШКА: лише для системного launch-екрана до setContent { } — весь UI на Compose,
          тому платформовий Theme.Material без окремої бібліотеки достатньо (SRS 4.1). -->
     <style name="Theme.Tepera" parent="@android:style/Theme.Material.Light.NoActionBar" />
+
+    <!-- Системний Android-спалах (androidx.core:core-splashscreen, MainActivity.installSplashScreen())
+         — за прямим запитом користувача узгоджений з Compose-заставкою (SplashScreen.kt): той
+         самий базовий зелений фон і та сама марка логотипу (ic_launcher_foreground, вже з
+         правильним safe-zone scale 0.72 для адаптивної іконки), щоб системний спалах і Compose-
+         заставка (лише при першому запуску, TeperaNavHost) читались як один безшовний перехід,
+         а не два різні екрани. postSplashScreenTheme повертає на звичайну тему одразу по виході. -->
+    <style name="Theme.Tepera.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Tepera</item>
+    </style>
 </resources>

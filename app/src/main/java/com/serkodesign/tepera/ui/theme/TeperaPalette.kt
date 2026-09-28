@@ -148,6 +148,54 @@ fun Modifier.teperaGradientBackground(): Modifier = this
     }
 
 /**
+ * Заставка при запуску — Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 294:1901: та сама
+ * техніка розмитих плям, що [teperaGradientBackground], база темніша (`#8AC396`) і плям п'ять
+ * замість двох (координати/радіуси/сигма — 1:1 з SVG-експортів кожного Ellipse-вузла, кут
+ * округлено від найближчого краю, як і два вже наявні). Ellipse 6/7 тут — ТІ САМІ плями, що на
+ * звичайному фоні застосунку (той самий колір і позиція відносно країв) — лише решта три (3/4/5)
+ * унікальні для заставки. Хвилясті лінії (node 294:1904, "Group 3") домальовує окремий `Image` у
+ * `SplashScreen.kt` (той самий SVG-актив, що вже лежить у проєкті як `perm_bg_waves.xml` —
+ * підтверджено побайтовим порівнянням pathData/viewBox, це один і той самий Figma-вузол,
+ * повторно використаний тут і в колишньому темному екрані дозволів).
+ */
+fun Modifier.splashGradientBackground(): Modifier = this
+    .fillMaxSize()
+    .background(Color(0xFF8AC396))
+    .drawBehind {
+        val d = density
+        // Ellipse 5 — найбільша й найрозмитіша (сигма 282.7), вгорі, за правим краєм.
+        drawBlurredBlob(
+            center = Offset(size.width + 64f * d, -39f * d),
+            radius = 302f * d, sigma = 282.7f * d,
+            color = Color(0xFF65FF93).copy(alpha = 0.3f)
+        )
+        // Ellipse 3 — вгорі ліворуч.
+        drawBlurredBlob(
+            center = Offset(78f * d, 84f * d),
+            radius = 277f * d, sigma = 97.55f * d,
+            color = Color(0xFFFDFFD2).copy(alpha = 0.1f)
+        )
+        // Ellipse 6 — та сама кремова пляма, що на звичайному фоні застосунку.
+        drawBlurredBlob(
+            center = Offset(size.width - 6f * d, 20f * d),
+            radius = 302f * d, sigma = 97.55f * d,
+            color = TeperaPalette.backgroundCreamBlob.copy(alpha = 0.5f)
+        )
+        // Ellipse 4 — внизу ліворуч, за нижнім краєм.
+        drawBlurredBlob(
+            center = Offset(-58f * d, size.height + 18f * d),
+            radius = 302f * d, sigma = 97.55f * d,
+            color = Color(0xFFBFC1EB).copy(alpha = 0.2f)
+        )
+        // Ellipse 7 — та сама темно-зелена пляма, що на звичайному фоні застосунку.
+        drawBlurredBlob(
+            center = Offset(9f * d, size.height - 31f * d),
+            radius = 302f * d, sigma = 97.55f * d,
+            color = TeperaPalette.backgroundGreenBlob.copy(alpha = 0.2f)
+        )
+    }
+
+/**
  * Наближення гауссово розмитого диска: повна непрозорість до `radius - σ`, половина на самому
  * краї диска, нуль на `radius + 2σ` (за цією межею гаусс уже майже нульовий).
  */
