@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 21.09.2026*
+*Останнє оновлення / Last updated: 28.09.2026*
 
 ---
 
@@ -28,7 +28,11 @@ title: Privacy Policy — Tepera
 - Ми **не** створюємо облікових записів і не вимагаємо реєстрації.
 
 **Аналітика й мережа:** застосунок сам не робить мережевих запитів, окрім анонімних crash-звітів (через Firebase Crashlytics, для чого в застосунку є дозвіл на доступ до мережі) у разі
-збою — без ідентифікації користувача та без трекінгу поведінки в застосунку.
+збою. Звіт містить лише модель телефону, версію Android і технічний опис самого збою — без
+записів активностей, категорій чи часу використання застосунків, без ідентифікації користувача
+та без трекінгу поведінки в застосунку. **Це можна вимкнути:** перемикач «Звіти про збої»
+показується на першому екрані онбордингу і завжди доступний у Налаштування → Загальні; на час
+закритого тестування він увімкнений за замовчуванням.
 
 **Ваш контроль:** ви можете в будь-який момент експортувати свої дані (Налаштування → Резервне
 копіювання) або видалити їх усі (Налаштування → Резервне копіювання → «Видалити всі дані»; потрібно
@@ -58,7 +62,11 @@ with third parties.
 - We do **not** create user accounts or require registration.
 
 **Analytics and network:** the app makes no network requests of its own except anonymous crash reports (via Firebase Crashlytics, which is why the app holds the network permission) when something
-goes wrong — no user identification, no in-app behavior tracking.
+goes wrong. A crash report contains only the phone model, Android version, and a technical
+description of the crash — never your activity entries, categories, or app-usage time, no user
+identification, and no in-app behavior tracking. **You can turn this off:** the "Crash reports"
+toggle is shown on the first onboarding screen and always available in Settings → General; it is
+on by default during the closed test.
 
 **Your control:** you can export your data at any time (Settings → Backup and restore) or delete all
 of it (Settings → Backup and restore → "Delete all data"; you have to confirm twice). Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be

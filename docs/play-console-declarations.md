@@ -55,6 +55,11 @@ locally on the device, and isn't transmitted off the device") — ці типи 
   info and performance → Diagnostics; можливо Device or other IDs — Firebase Installation ID,
   який Crashlytics використовує для групування звітів з одного пристрою).
 - **Чи передається за межі пристрою:** Так, у Firebase/Google.
+- **Чи збір необов'язковий:** Так. Перемикач «Звіти про збої» — на першому екрані онбордингу й
+  завжди в Налаштування → Загальні (`util/CrashReporting.kt`, D-20); людина може вимкнути будь-
+  коли, і збір справді зупиняється (`setCrashlyticsCollectionEnabled`). На час закритого тесту
+  вимкнений стан — НЕ дефолт: перемикач увімкнений за замовчуванням, вимкнення — свідома дія
+  користувача.
 - **Мета використання:** App functionality (виправлення збоїв). Не Analytics, не Advertising,
   не Personalization — застосунок свідомо БЕЗ `firebase-analytics` (build.gradle.kts,
   коментар "СВІДОМО без firebase-analytics").
