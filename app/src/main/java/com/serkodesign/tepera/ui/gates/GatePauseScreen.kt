@@ -35,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
@@ -146,9 +145,12 @@ fun GatePauseScreen(
 
         // CC-6: «Не зараз» — головна кнопка, доступна одразу; «Відкрити {app}» з'являється лише після
         // затримки (до того місця під неї не резервується, щоб не тиснути очікуванням).
-        // Поява за M3-рухом (emphasized, ~500 мс): «Відкрити» не з'являється миттєво — її частка ширини
-        // плавно росте від нуля до половини ряду (кнопка «Не зараз» так само плавно звужується), а сама
-        // кнопка проявляється з прозорості. Ширина рахується вагою, тож без стрибків розкладки.
+        // Поява за M3-рухом (emphasized, ~500 мс) — лише прозорість, ширина ОДРАЗУ фінальна (weight
+        // 1f): попередня версія плавно розтягувала вагу від 0 до 1, і текст кнопки встигав побувати
+        // в проміжній, замалій ширині — переносився в 2 рядки, тоді розгортався назад в 1 (реальний
+        // візуальний баг, знайдений користувачем). Фіксована фінальна ширина від першого кадру
+        // прибирає цей проміжний стан узагалі: текст завжди вміщується в 1 рядок, доки не стане
+        // видимим.
         val reveal by animateFloatAsState(
             targetValue = if (state.canContinue) 1f else 0f,
             animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized),
@@ -170,9 +172,8 @@ fun GatePauseScreen(
                     size = TeperaButtonSize.Big,
                     type = TeperaButtonType.Secondary,
                     modifier = Modifier
-                        .padding(start = 8.dp * reveal)
-                        .weight(reveal)
-                        .clipToBounds()
+                        .padding(start = 8.dp)
+                        .weight(1f)
                         .graphicsLayer { alpha = reveal }
                 )
             }
