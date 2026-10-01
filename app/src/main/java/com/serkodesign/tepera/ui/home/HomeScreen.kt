@@ -130,7 +130,11 @@ fun HomeScreen(
     onShowOnlineEstimateOnboarding: () -> Unit,
     onShowTargetOnboarding: () -> Unit,
     onShowWidgetSuggestion: () -> Unit,
-    onShowGatesOnboarding: () -> Unit
+    onShowGatesOnboarding: () -> Unit,
+    // Повторний тап по вкладці "Головна" в навбарі, коли вже на ній (TeperaNavHost) — той самий
+    // принцип, що й на Щоденнику/Статистиці: значення саме по собі не важливе, лише його ЗМІНА
+    // (кожен тап на вже вибраній вкладці інкрементує лічильник у NavHost) прокручує сюди наверх.
+    scrollToTopSignal: Int = 0
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
@@ -423,6 +427,11 @@ fun HomeScreen(
 
     val context = LocalContext.current
 
+    val scrollState = rememberScrollState()
+    LaunchedEffect(scrollToTopSignal) {
+        if (scrollToTopSignal != 0) scrollState.animateScrollTo(0)
+    }
+
     // Прозорий containerColor: градієнтний фон малює зовнішній Box у TeperaNavHost (а не тут) —
     // інакше він потрапляє під contentPadding зовнішнього Scaffold і не сягає країв екрана.
     Scaffold(containerColor = Color.Transparent) { padding ->
@@ -439,7 +448,7 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
         ) {
             HomeHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
 

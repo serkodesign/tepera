@@ -36,7 +36,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
@@ -289,6 +292,14 @@ fun TeperaNavHost(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
+    // Повторний тап по вже вибраній вкладці навбару (за прямим запитом користувача) прокручує
+    // той екран наверх замість нічого не робити — кожен лічильник передається у відповідний
+    // екран (HomeScreen/DiaryScreen/StatsScreen) як scrollToTopSignal, і зміна значення (не саме
+    // значення) запускає LaunchedEffect(scrollToTopSignal) там.
+    var homeScrollToTopSignal by remember { mutableStateOf(0) }
+    var diaryScrollToTopSignal by remember { mutableStateOf(0) }
+    var statsScrollToTopSignal by remember { mutableStateOf(0) }
+
     // Градієнт застосовується ТУТ, на самому зовнішньому Box (а не всередині HomeScreen/
     // StatsScreen) — інакше він потрапляє під contentPadding зовнішнього Scaffold і не сягає
     // країв екрана (status bar/навбар лишаються білою смугою поверх, підтверджено на
@@ -311,7 +322,17 @@ fun TeperaNavHost(
             containerColor = Color.Transparent,
             bottomBar = {
                 if (currentRoute in Routes.BOTTOM_NAV_ROUTES) {
-                    TeperaBottomNavBar(currentRoute = currentRoute, navController = navController)
+                    TeperaBottomNavBar(
+                        currentRoute = currentRoute,
+                        navController = navController,
+                        onReselected = { route ->
+                            when (route) {
+                                Routes.HOME -> homeScrollToTopSignal++
+                                Routes.DIARY -> diaryScrollToTopSignal++
+                                Routes.STATS -> statsScrollToTopSignal++
+                            }
+                        }
+                    )
                 }
             }
         ) { scaffoldPadding ->
@@ -400,7 +421,8 @@ fun TeperaNavHost(
                     onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
                     onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
                     onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) },
-                    onShowGatesOnboarding = { navController.navigate(Routes.GATES_ONBOARDING) }
+                    onShowGatesOnboarding = { navController.navigate(Routes.GATES_ONBOARDING) },
+                    scrollToTopSignal = homeScrollToTopSignal
                 )
             }
             composable(Routes.STATS) {
@@ -412,7 +434,8 @@ fun TeperaNavHost(
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
                     unlockRepository = unlockRepository,
-                    pauseRepository = pauseRepository
+                    pauseRepository = pauseRepository,
+                    scrollToTopSignal = statsScrollToTopSignal
                 )
             }
             composable(Routes.DIARY) {
@@ -424,7 +447,8 @@ fun TeperaNavHost(
                     unlockRepository = unlockRepository,
                     pauseRepository = pauseRepository,
                     onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
-                    onAddEntry = { navController.navigate(Routes.addEntry()) }
+                    onAddEntry = { navController.navigate(Routes.addEntry()) },
+                    scrollToTopSignal = diaryScrollToTopSignal
                 )
             }
             composable(Routes.ADD_ENTRY) {
@@ -640,7 +664,11 @@ private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRep
  * 274:484). Додавання часу лишається per-категорійним (HomeScreen.CategoryCard).
  */
 @Composable
-private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostController) {
+private fun TeperaBottomNavBar(
+    currentRoute: String?,
+    navController: NavHostController,
+    onReselected: (String) -> Unit
+) {
     // enableEdgeToEdge() (MainActivity) малює контент ПІД системними барами — без урахування
     // WindowInsets.navigationBars "таблетка" на фіксованому bottom-відступі ховалась під
     // системним навбаром на пристроях з високим 3-кнопковим навбаром (підтверджено на Huawei
@@ -670,6 +698,8 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
                         launchSingleTop = true
                         restoreState = true
                     }
+                } else {
+                    onReselected(Routes.HOME)
                 }
             }
         )
@@ -685,6 +715,8 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
                         launchSingleTop = true
                         restoreState = true
                     }
+                } else {
+                    onReselected(Routes.DIARY)
                 }
             }
         )
@@ -700,6 +732,8 @@ private fun TeperaBottomNavBar(currentRoute: String?, navController: NavHostCont
                         launchSingleTop = true
                         restoreState = true
                     }
+                } else {
+                    onReselected(Routes.STATS)
                 }
             }
         )

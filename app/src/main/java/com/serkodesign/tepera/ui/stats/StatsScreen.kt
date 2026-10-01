@@ -82,7 +82,10 @@ fun StatsScreen(
     settingsStore: SettingsStore,
     sleepWindowRepository: SleepWindowRepository,
     unlockRepository: UnlockRepository,
-    pauseRepository: PauseRepository
+    pauseRepository: PauseRepository,
+    // Повторний тап по вкладці "Статистика" у навбарі, коли вже на ній (TeperaNavHost) —
+    // прокручує вміст наверх; значення саме по собі не важливе, лише його зміна.
+    scrollToTopSignal: Int = 0
 ) {
     val viewModel: StatsViewModel = viewModel(
         factory = StatsViewModel.Factory(categoryRepository, activityRepository, balanceRepository, sleepWindowRepository, unlockRepository, pauseRepository, settingsStore,
@@ -140,6 +143,10 @@ fun StatsScreen(
         // "таблеткою" на екранах, де вміст не влазить.
         // Перемикач День/Тиждень — sticky (за запитом користувача): стоїть ПОЗА прокручуваним
         // Column, тож лишається на місці, коли решта екрана гортається.
+        val statsScrollState = rememberScrollState()
+        LaunchedEffect(scrollToTopSignal) {
+            if (scrollToTopSignal != 0) statsScrollState.animateScrollTo(0)
+        }
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
         PeriodSelector(
             selected = state.period,
@@ -150,7 +157,7 @@ fun StatsScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(statsScrollState)
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottomNavClearance()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

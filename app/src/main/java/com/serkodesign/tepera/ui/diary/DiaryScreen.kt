@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -104,7 +105,10 @@ fun DiaryScreen(
     unlockRepository: UnlockRepository,
     pauseRepository: PauseRepository,
     onEditEntry: (String) -> Unit,
-    onAddEntry: () -> Unit
+    onAddEntry: () -> Unit,
+    // Повторний тап по вкладці "Щоденник" у навбарі, коли вже на ній (TeperaNavHost) — прокручує
+    // список наверх; значення саме по собі не важливе, лише його зміна.
+    scrollToTopSignal: Int = 0
 ) {
     val viewModel: DiaryViewModel = viewModel(
         factory = DiaryViewModel.Factory(
@@ -119,13 +123,18 @@ fun DiaryScreen(
         onPauseOrDispose { }
     }
 
+    val scrollState = rememberScrollState()
+    LaunchedEffect(scrollToTopSignal) {
+        if (scrollToTopSignal != 0) scrollState.animateScrollTo(0)
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TeperaScreenTitle(stringResource(R.string.diary_screen_title))
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = bottomNavClearance()),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
@@ -144,7 +153,7 @@ fun DiaryScreen(
             onClick = onAddEntry,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 112.dp)
+                .padding(end = 20.dp, bottom = bottomNavClearance() + 16.dp)
                 .width(64.dp),
             shape = CircleShape,
             containerColor = TeperaPalette.buttonBrand,
