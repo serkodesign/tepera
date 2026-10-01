@@ -24,8 +24,8 @@ class CategoryViewModel(
 ) : ViewModel() {
 
     companion object {
-        // T-8 (tepera-dev-spec.md): "ліміт кастомних — дві" — буквальне число з документа.
-        const val MAX_CUSTOM_CATEGORIES = 2
+        // T-8 (tepera-dev-spec.md) задав 2; за прямим запитом користувача піднято до 5.
+        const val MAX_CUSTOM_CATEGORIES = 5
     }
 
     val allCategories: StateFlow<List<CategoryEntity>> = repository.observeAllCategories()
@@ -68,6 +68,15 @@ class CategoryViewModel(
 
     fun consumeCreateResult() {
         _createResult.value = null
+    }
+
+    /** За прямим запитом користувача: редагування назви/іконки/кольору — лише для кастомних категорій. */
+    fun updateCustomCategory(categoryId: String, name: String, iconName: String, colorHex: String) {
+        viewModelScope.launch {
+            val existing = repository.getById(categoryId) ?: return@launch
+            if (!existing.isCustom) return@launch
+            repository.update(existing.copy(name = name, iconName = iconName, colorHex = colorHex))
+        }
     }
 
     class Factory(private val repository: CategoryRepository) : ViewModelProvider.Factory {

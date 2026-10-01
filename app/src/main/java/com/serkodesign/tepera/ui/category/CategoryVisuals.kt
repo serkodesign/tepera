@@ -1,9 +1,20 @@
 package com.serkodesign.tepera.ui.category
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,32 +40,53 @@ private val iconCatalog: Map<String, ImageVector> = mapOf(
     "coffee" to TeperaSymbols.Coffee,
     "music" to TeperaSymbols.MusicNote,
     "brush" to TeperaSymbols.Brush,
-    "pets" to TeperaSymbols.Pets
+    "pets" to TeperaSymbols.Pets,
+    // За прямим запитом користувача: ширший вибір іконок для кастомної категорії. Ключі "restaurant"/
+    // "flight"/"fitness" лишені без змін (сумісність із уже збереженими категоріями), але вказують на
+    // НОВІ гліфи (Nutrition/Luggage/Spa) — перші варіанти (виделка-ніж/літак/гантелі) довелось замінити,
+    // бо саме в Material Symbols Rounded wght300 вони рендеряться майже суцільним силуетом без
+    // контуру/порожнини, на відміну від решти набору (перевірено close-up на пристрої).
+    "work" to TeperaSymbols.Work,
+    "restaurant" to TeperaSymbols.Nutrition,
+    "flight" to TeperaSymbols.Luggage,
+    "fitness" to TeperaSymbols.Spa,
+    "celebration" to TeperaSymbols.Celebration,
+    "home" to TeperaSymbols.HomeGlyph
 )
 
 /** Іконки, доступні користувачу при створенні кастомної категорії (FR-2.2, "іконка з набору"). */
-val customCategoryIconChoices: List<String> =
-    listOf("star", "favorite", "coffee", "music", "brush", "pets")
+val customCategoryIconChoices: List<String> = listOf(
+    "star", "favorite", "coffee", "music", "brush", "pets",
+    "work", "restaurant", "flight", "fitness", "celebration", "home"
+)
 
-/** ЗАГЛУШКА: приглушена палітра до Фази 6 (Figma) — без яскравих "гейміфікованих" кольорів. */
+/**
+ * За прямим запитом користувача: ширша приглушена палітра (без яскравих "гейміфікованих"
+ * кольорів) — свідомо НЕ повторює жоден з точних hex дефолтних категорій (TeperaPalette,
+ * розділ "Кольори" CLAUDE.md), щоб кастомна категорія не зливалась із дефолтною за кольором.
+ */
 val customCategoryColorChoices: List<String> = listOf(
-    "#4E7A51", "#4A6FA5", "#B08968", "#C9704F", "#5C6B73", "#7A5C7A", "#8A8F5C"
+    "#4E7A51", "#4A6FA5", "#B08968", "#C9704F", "#5C6B73", "#7A5C7A", "#8A8F5C",
+    "#7D9D8C", "#C17C74", "#8E7CC3", "#4D8FAC", "#D4A373", "#6B8E6B", "#A65D7C", "#5B7B9A"
 )
 
 fun categoryIcon(iconName: String): ImageVector = iconCatalog[iconName] ?: TeperaSymbols.Star
 
 /**
  * Контурні "widget"-іконки (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, той самий набір book_5/
- * directions_bike/content_cut/footprint/partly_cloudy_night/camping/groups/checklist, що вже
- * імпортований для домашнього віджета) — тепер повторно використаний для сітки "Категорія" на
- * новому екрані додавання активності (node 61:3516), щоб відповідати макету пікселя в піксель.
- * Кастомні категорії (star/favorite/coffee/music/brush/pets) не мають цього стилю — null,
+ * directions_bike/footprint/partly_cloudy_night/camping/groups/checklist, що вже імпортований
+ * для домашнього віджета) — тепер повторно використаний для сітки "Категорія" на новому екрані
+ * додавання активності (node 61:3516), щоб відповідати макету пікселя в піксель.
+ * Кастомні категорії (star/favorite/coffee/music/brush/pets/...) не мають цього стилю — null,
  * викликач падає назад на [categoryIcon] (Material-іконки, як і скрізь у застосунку).
+ * **Хобі/творчість свідомо прибрано звідси (за прямим запитом користувача)** — ножиці
+ * (content_cut) замінено на контурну іконку палітри фарб з [TeperaSymbols.Palette]
+ * ([categoryIcon] fallback), а не новим drawable: той самий Material Symbols Rounded стиль,
+ * що решта [TeperaSymbols], тож картка Home виглядає так само контурно.
  */
 fun categoryLineArtIconRes(iconName: String): Int? = when (iconName) {
     "nature" -> com.serkodesign.tepera.R.drawable.ic_widget_nature
     "reading" -> com.serkodesign.tepera.R.drawable.ic_widget_reading
-    "hobby" -> com.serkodesign.tepera.R.drawable.ic_widget_hobby
     "movement" -> com.serkodesign.tepera.R.drawable.ic_widget_movement
     "social" -> com.serkodesign.tepera.R.drawable.ic_widget_social
     "errands" -> com.serkodesign.tepera.R.drawable.ic_widget_errands
@@ -125,3 +157,46 @@ private inline fun categoryDisplayName(category: CategoryEntity, resolve: (Int) 
         "sleep" -> resolve(R.string.category_sleep) // legacy, вже заархівовані записи (v2.4)
         else -> category.name
     }
+
+/**
+ * Той самий вигляд бейджа іконки категорії, що на картці Home (`HomeScreen.CategoryCard`) —
+ * контурна Figma-іконка ([categoryLineArtIconRes]), якщо є для цього iconName, інакше Material
+ * Symbols-гліф ([categoryIcon]). За прямим запитом користувача винесено сюди, щоб Налаштування →
+ * Категорії показували ту саму іконку, що Home, а не окремий (раніше завжди Material) вигляд.
+ */
+@Composable
+fun CategoryIconBadge(
+    iconName: String,
+    colorHex: String,
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+    badgeAlpha: Float = 0.2f
+) {
+    val accent = categoryColor(colorHex)
+    val glyphColor = categoryGlyphColor(accent, badgeAlpha)
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(accent.copy(alpha = badgeAlpha)),
+        contentAlignment = Alignment.Center
+    ) {
+        val lineArt = categoryLineArtIconRes(iconName)
+        val iconSize = size * 0.4f
+        if (lineArt != null) {
+            Icon(
+                painter = painterResource(lineArt),
+                contentDescription = null,
+                tint = glyphColor,
+                modifier = Modifier.size(iconSize)
+            )
+        } else {
+            Icon(
+                imageVector = categoryIcon(iconName),
+                contentDescription = null,
+                tint = glyphColor,
+                modifier = Modifier.size(iconSize)
+            )
+        }
+    }
+}

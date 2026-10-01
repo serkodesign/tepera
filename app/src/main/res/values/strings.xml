@@ -346,11 +346,13 @@
     <string name="category_archive_action">Архівувати</string>
     <string name="category_unarchive_action">Повернути з архіву</string>
     <string name="category_add_custom">Додати свою категорію</string>
-    <string name="category_custom_limit_reached">Можна мати не більше двох власних категорій</string>
+    <string name="category_custom_limit_reached">Можна мати не більше п\'яти власних категорій</string>
     <string name="category_delete_action">Видалити</string>
     <string name="category_delete_confirm_title">Видалити категорію?</string>
     <string name="category_delete_confirm_body">"%1$s" і всі записи активностей у ній буде видалено назавжди. Цю дію не можна скасувати.</string>
     <string name="category_dialog_title">Нова категорія</string>
+    <string name="category_edit_title">Редагувати категорію</string>
+    <string name="category_edit_action">Редагувати категорію</string>
     <string name="category_name_label">Назва</string>
     <string name="category_name_required">Введіть назву</string>
     <string name="category_icon_label">Іконка</string>

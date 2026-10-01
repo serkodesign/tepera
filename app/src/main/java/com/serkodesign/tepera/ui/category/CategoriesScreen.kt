@@ -66,6 +66,7 @@ import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 
 /**
@@ -88,6 +89,7 @@ fun CategoriesScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var limitReachedNotice by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<CategoryEntity?>(null) }
+    var pendingEdit by remember { mutableStateOf<CategoryEntity?>(null) }
 
     LaunchedEffect(createResult) {
         when (createResult) {
@@ -105,8 +107,9 @@ fun CategoriesScreen(
 
     val active = categories.filter { !it.isHidden }.sortedBy { it.sortOrder }
     val archived = categories.filter { it.isHidden }.sortedBy { it.sortOrder }
-    // T-8 (tepera-dev-spec.md): ліміт кастомних категорій — 2, не 1 — рядок "Додати" лишається,
-    // доки не зайняті обидва слоти (архівовані кастомні категорії й далі займають слот, FR-2.3).
+    // Ліміт кастомних категорій (CategoryViewModel.MAX_CUSTOM_CATEGORIES, за прямим запитом
+    // користувача піднято до 5) — рядок "Додати" лишається, доки не зайняті всі слоти
+    // (архівовані кастомні категорії й далі займають слот, FR-2.3).
     val customCategorySlotAvailable = categories.count { it.isCustom } < CategoryViewModel.MAX_CUSTOM_CATEGORIES
 
     Scaffold(containerColor = Color.Transparent) { padding ->
@@ -124,7 +127,8 @@ fun CategoriesScreen(
                         category = category,
                         isArchived = false,
                         onToggleArchive = { viewModel.archive(category.id) },
-                        onDelete = { pendingDelete = category }
+                        onDelete = { pendingDelete = category },
+                        onEdit = { pendingEdit = category }
                     )
                 }
                 if (customCategorySlotAvailable) {
@@ -144,7 +148,8 @@ fun CategoriesScreen(
                             category = category,
                             isArchived = true,
                             onToggleArchive = { viewModel.unarchive(category.id) },
-                            onDelete = { pendingDelete = category }
+                            onDelete = { pendingDelete = category },
+                            onEdit = { pendingEdit = category }
                         )
                     }
                 }
@@ -156,6 +161,17 @@ fun CategoriesScreen(
         CreateCategoryDialog(
             onDismiss = { showCreateDialog = false },
             onSave = { name, icon, color -> viewModel.createCustomCategory(name, icon, color) }
+        )
+    }
+
+    pendingEdit?.let { category ->
+        EditCategoryDialog(
+            category = category,
+            onDismiss = { pendingEdit = null },
+            onSave = { name, icon, color ->
+                viewModel.updateCustomCategory(category.id, name, icon, color)
+                pendingEdit = null
+            }
         )
     }
 
@@ -188,23 +204,28 @@ private fun CategoryRow(
     category: CategoryEntity,
     isArchived: Boolean,
     onToggleArchive: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     GlassRow(
         label = categoryDisplayName(category),
         leading = {
-            TeperaIconCircle(
-                icon = categoryIcon(category.iconName),
-                background = categoryColor(category.colorHex).copy(alpha = 0.2f),
-                tint = categoryGlyphColor(category.colorHex)
-            )
+            // За прямим запитом користувача: та сама іконка, що на картці категорії на Home
+            // (контурний Figma-гліф, якщо є, інакше Material Symbols) — раніше тут завжди був
+            // Material-гліф, навіть коли Home показувала контурну Figma-іконку для тієї ж категорії.
+            CategoryIconBadge(iconName = category.iconName, colorHex = category.colorHex)
         },
         trailing = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // За прямим запитом користувача: справжнє видалення — лише для кастомних
-                // категорій (звільняє слот ліміту T-8), дефолтні лишаються архів/розархівувати-
-                // only (пересіваються щозапуску за фіксованим id, "видалення" воскресло б).
+                // Редагування (назва/іконка/колір) — лише для кастомних категорій: дефолтні
+                // резолвлять назву через nameKey (strings.xml), а colorHex щозапуску
+                // синхронізується назад на фіксований (CategoryRepository.ensureDefaultsSeeded()),
+                // тож будь-яке редагування дефолтної категорії мовчки зникло б на наступному запуску.
                 if (category.isCustom) {
+                    TeperaIconButton(icon = TeperaIcons.Edit, contentDescription = stringResource(R.string.category_edit_action), onClick = onEdit)
+                    // За прямим запитом користувача: справжнє видалення — лише для кастомних
+                    // категорій (звільняє слот ліміту T-8), дефолтні лишаються архів/розархівувати-
+                    // only (пересіваються щозапуску за фіксованим id, "видалення" воскресло б).
                     TeperaIconButton(icon = TeperaSymbols.Delete, contentDescription = stringResource(R.string.category_delete_action), onClick = onDelete)
                 }
                 Switch(
@@ -222,15 +243,54 @@ internal fun CreateCategoryDialog(
     onDismiss: () -> Unit,
     onSave: (name: String, iconName: String, colorHex: String) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedIcon by remember { mutableStateOf(customCategoryIconChoices.first()) }
-    var selectedColor by remember { mutableStateOf(customCategoryColorChoices.first()) }
+    CategoryEditorDialog(
+        title = stringResource(R.string.category_dialog_title),
+        onDismiss = onDismiss,
+        onSave = onSave
+    )
+}
+
+/**
+ * Редагування кастомної категорії (за прямим запитом користувача) — той самий діалог, що
+ * створення, попередньо заповнений наявними назвою/іконкою/кольором. Лише для `isCustom`
+ * категорій (виклик з [CategoriesScreen] уже це гарантує) — дефолтні не мають поля назви для
+ * редагування (nameKey -> strings.xml), а зміна кольору дефолтної категорії мовчки відкотилась
+ * би на наступному запуску (`CategoryRepository.ensureDefaultsSeeded()`).
+ */
+@Composable
+internal fun EditCategoryDialog(
+    category: CategoryEntity,
+    onDismiss: () -> Unit,
+    onSave: (name: String, iconName: String, colorHex: String) -> Unit
+) {
+    CategoryEditorDialog(
+        title = stringResource(R.string.category_edit_title),
+        initialName = category.name,
+        initialIcon = category.iconName,
+        initialColor = category.colorHex,
+        onDismiss = onDismiss,
+        onSave = onSave
+    )
+}
+
+@Composable
+private fun CategoryEditorDialog(
+    title: String,
+    initialName: String = "",
+    initialIcon: String = customCategoryIconChoices.first(),
+    initialColor: String = customCategoryColorChoices.first(),
+    onDismiss: () -> Unit,
+    onSave: (name: String, iconName: String, colorHex: String) -> Unit
+) {
+    var name by remember { mutableStateOf(initialName) }
+    var selectedIcon by remember { mutableStateOf(initialIcon) }
+    var selectedColor by remember { mutableStateOf(initialColor) }
     var showNameError by remember { mutableStateOf(false) }
     val nameRequiredMessage = stringResource(R.string.category_name_required)
 
     TeperaDialog(
         onDismissRequest = onDismiss,
-        title = stringResource(R.string.category_dialog_title),
+        title = title,
         confirmText = stringResource(R.string.dialog_save),
         onConfirm = {
             if (name.isBlank()) {

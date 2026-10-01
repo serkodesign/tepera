@@ -331,11 +331,13 @@
     <string name="category_archive_action">Archive</string>
     <string name="category_unarchive_action">Restore from archive</string>
     <string name="category_add_custom">Add your own category</string>
-    <string name="category_custom_limit_reached">You can have up to two custom categories</string>
+    <string name="category_custom_limit_reached">You can have up to five custom categories</string>
     <string name="category_delete_action">Delete</string>
     <string name="category_delete_confirm_title">Delete this category?</string>
     <string name="category_delete_confirm_body">"%1$s" and all activity entries in it will be deleted permanently. This can\'t be undone.</string>
     <string name="category_dialog_title">New category</string>
+    <string name="category_edit_title">Edit category</string>
+    <string name="category_edit_action">Edit category</string>
     <string name="category_name_label">Name</string>
     <string name="category_name_required">Enter a name</string>
     <string name="category_icon_label">Icon</string>
