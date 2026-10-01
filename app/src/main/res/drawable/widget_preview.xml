@@ -12,5 +12,5 @@
     <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="150.5dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFFFFFFF" /></shape></item>
     <item android:drawable="@drawable/ic_widget2_preview_movement" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="162.375dp" android:top="22.875dp" />
     <item android:width="38dp" android:height="38dp" android:gravity="top|start" android:start="196dp" android:top="11dp"><shape android:shape="oval"><solid android:color="#FFFFFFFF" /></shape></item>
-    <item android:drawable="@drawable/ic_widget2_preview_errands" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="207.875dp" android:top="22.875dp" />
+    <item android:drawable="@drawable/ic_widget2_preview_social" android:width="14.25dp" android:height="14.25dp" android:gravity="top|start" android:start="207.875dp" android:top="22.875dp" />
 </layer-list>

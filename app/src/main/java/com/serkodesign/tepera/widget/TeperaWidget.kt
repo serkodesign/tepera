@@ -410,6 +410,13 @@ private fun DailyGridCard(
         }
         if (legendItems.isNotEmpty()) {
             Spacer(modifier = GlanceModifier.height(LEGEND_ROW_GAP))
+            // Glance/RemoteViews обмежує Row РІВНО 10 прямими дітьми (перевищення мовчки
+            // "truncate"-иться — `IllegalArgumentException: Row container cannot have more
+            // than 10 elements`, підтверджено в logcat на Samsung S23: 3-4 елементи легенди,
+            // кожен колись давав [Spacer?, Box, Spacer, Text] прямими дітьми ЦЬОГО Row,
+            // вже при 3 елементах переповнювали ліміт (12 дітей), і легенду обрізало посеред
+            // елемента). Фікс: кожен елемент легенди — окремий вкладений Row (один прямий
+            // нащадок зовнішнього), тож зовнішній Row має щонайбільше 1 + MAX_LEGEND_ITEMS дітей.
             Row(
                 modifier = GlanceModifier.fillMaxWidth().height(LEGEND_ROW_HEIGHT),
                 verticalAlignment = Alignment.CenterVertically
@@ -418,25 +425,29 @@ private fun DailyGridCard(
                 // легенда починається РІВНО під першою клітинкою, а не під підписами "00/06/12/18".
                 Spacer(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH + HOUR_LABEL_GAP))
                 legendItems.forEachIndexed { index, (color, label) ->
-                    if (index > 0) Spacer(modifier = GlanceModifier.width(LEGEND_ITEM_GAP))
-                    Box(modifier = GlanceModifier.size(LEGEND_DOT_SIZE), contentAlignment = Alignment.Center) {
-                        Image(
-                            provider = ImageProvider(R.drawable.widget_circle_solid),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(ColorProvider(day = color, night = color)),
-                            modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
+                    Row(
+                        modifier = GlanceModifier.padding(start = if (index > 0) LEGEND_ITEM_GAP else 0.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(modifier = GlanceModifier.size(LEGEND_DOT_SIZE), contentAlignment = Alignment.Center) {
+                            Image(
+                                provider = ImageProvider(R.drawable.widget_circle_solid),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(ColorProvider(day = color, night = color)),
+                                modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
+                            )
+                        }
+                        Spacer(modifier = GlanceModifier.width(LEGEND_DOT_GAP))
+                        Text(
+                            text = label,
+                            maxLines = 1,
+                            style = TextStyle(
+                                fontSize = LEGEND_TEXT_SIZE,
+                                fontWeight = FontWeight.Medium,
+                                color = ColorProvider(day = Color.White, night = Color.White)
+                            )
                         )
                     }
-                    Spacer(modifier = GlanceModifier.width(LEGEND_DOT_GAP))
-                    Text(
-                        text = label,
-                        maxLines = 1,
-                        style = TextStyle(
-                            fontSize = LEGEND_TEXT_SIZE,
-                            fontWeight = FontWeight.Medium,
-                            color = ColorProvider(day = Color.White, night = Color.White)
-                        )
-                    )
                 }
             }
         }
