@@ -748,42 +748,108 @@ fun TeperaHint(text: String, modifier: Modifier = Modifier) {
  */
 @Composable
 fun TeperaStatsBar(stats: List<Pair<String, String>>, modifier: Modifier = Modifier) {
-    Row(
+    androidx.compose.ui.layout.Layout(
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
             // Без тла, текст #003926 (за запитом користувача) — факти лежать прямо на градієнті сторінки.
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        // Top: значення різних фактів стоять на одному рівні, навіть коли підпис одного займає два рядки.
-        verticalAlignment = Alignment.Top
-    ) {
-        stats.forEachIndexed { index, (label, value) ->
-            if (index > 0) {
-                Box(
-                    Modifier
-                        .padding(horizontal = 16.dp)
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.25f))
-                )
-            }
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = value,
-                    color = TeperaPalette.buttonBrandDark,
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 28.sp,
-                    lineHeight = 32.sp,
-                    maxLines = 1
-                )
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TeperaPalette.buttonBrandDark
-                )
+        content = {
+            stats.forEachIndexed { index, (label, value) ->
+                if (index > 0) {
+                    Box(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.25f))
+                    )
+                }
+                StatsBarColumn(label = label, value = value)
             }
         }
+    ) { measurables, constraints ->
+        // Діти чергуються: факт, розділювач, факт, ... Колонки ділять ширину порівну, але жодна не стає вужчою
+        // за своє найдовше слово (minIntrinsicWidth) — інакше на вузьких екранах (Sony XZ1 Compact, 360dp)
+        // підпис "Розблокувань учора" рвався посеред слова. Різницю віддають ширші за потребу колонки.
+        val columns = measurables.filterIndexed { i, _ -> i % 2 == 0 }
+        val dividers = measurables.filterIndexed { i, _ -> i % 2 == 1 }
+        val dividerWidths = dividers.map { it.maxIntrinsicWidth(0) }
+        val available = (constraints.maxWidth - dividerWidths.sum()).coerceAtLeast(0)
+        val widths = statsBarColumnWidths(columns.map { it.minIntrinsicWidth(Int.MAX_VALUE) }, available)
+        val placedColumns = columns.mapIndexed { i, m ->
+            m.measure(androidx.compose.ui.unit.Constraints.fixedWidth(widths[i]))
+        }
+        // Top: значення різних фактів стоять на одному рівні, навіть коли підпис одного займає кілька рядків.
+        val height = placedColumns.maxOfOrNull { it.height } ?: 0
+        val placedDividers = dividers.mapIndexed { i, m ->
+            m.measure(androidx.compose.ui.unit.Constraints.fixed(dividerWidths[i], height))
+        }
+        layout(constraints.maxWidth, height) {
+            var x = 0
+            placedColumns.forEachIndexed { i, column ->
+                column.placeRelative(x, 0)
+                x += column.width
+                placedDividers.getOrNull(i)?.let { divider ->
+                    divider.placeRelative(x, 0)
+                    x += divider.width
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Ширини колонок [TeperaStatsBar]: порівну, але не менше за [minWidths] (найдовше слово колонки). Якщо мінімуми
+ * разом не вміщаються в [available] — просто порівну (рвати слово тоді неминуче, хай хоч рівномірно).
+ */
+internal fun statsBarColumnWidths(minWidths: List<Int>, available: Int): List<Int> {
+    val n = minWidths.size
+    if (n == 0) return emptyList()
+    if (minWidths.sum() > available) return List(n) { available / n }
+    val widths = IntArray(n)
+    val fixed = BooleanArray(n)
+    var remaining = available
+    var flexible = n
+    // Колонки, яким рівної частки замало, отримують свій мінімум; решта ділить залишок — повторюємо, доки
+    // рівна частка залишку не стане достатньою для всіх, що лишились.
+    while (true) {
+        val share = remaining / flexible
+        var changed = false
+        for (i in 0 until n) {
+            if (!fixed[i] && minWidths[i] > share) {
+                widths[i] = minWidths[i]
+                fixed[i] = true
+                remaining -= minWidths[i]
+                flexible--
+                changed = true
+            }
+        }
+        if (!changed || flexible == 0) break
+    }
+    if (flexible > 0) {
+        val share = remaining / flexible
+        for (i in 0 until n) if (!fixed[i]) widths[i] = share
+    }
+    return widths.toList()
+}
+
+@Composable
+private fun StatsBarColumn(label: String, value: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = value,
+            color = TeperaPalette.buttonBrandDark,
+            fontFamily = TeperaPalette.headlineFont,
+            fontWeight = FontWeight.Medium,
+            fontSize = 28.sp,
+            lineHeight = 32.sp,
+            maxLines = 1
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = TeperaPalette.buttonBrandDark
+        )
     }
 }
 

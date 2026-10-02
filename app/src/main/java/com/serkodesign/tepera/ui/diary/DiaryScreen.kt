@@ -135,7 +135,9 @@ fun DiaryScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = bottomNavClearance()),
+                    // Запас під кнопку "+" (16 + 64 + 16dp над таблеткою): інакше на низьких екранах
+                    // (Sony XZ1 Compact) остання картка запису назавжди лишалась під кнопкою.
+                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = bottomNavClearance() + 96.dp),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 HistoryContent(
