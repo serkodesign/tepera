@@ -80,7 +80,7 @@ internal fun widgetIconRes(iconName: String, selected: Boolean): Int = when (ico
     "social" -> if (selected) R.drawable.ic_widget2_social_selected else R.drawable.ic_widget2_social
     "errands" -> if (selected) R.drawable.ic_widget2_errands_selected else R.drawable.ic_widget2_errands
     "sleep" -> if (selected) R.drawable.ic_widget2_sleep_selected else R.drawable.ic_widget2_sleep // legacy, архівна (v2.4)
-    else -> R.drawable.ic_widget_generic
+    else -> if (selected) R.drawable.ic_widget_generic else R.drawable.ic_widget2_generic
 }
 
 /** Розмір гліфа з макета: book/content_cut/directions_bike — 24, решта — 25.5. */
@@ -198,6 +198,10 @@ private val BUTTON_GAP = 8.dp
 private val MIN_SPREAD_GAP = 4.dp
 internal val WIDGET_GLYPH_UNSELECTED = Color(0xFF505050) // Text/text-secondary
 internal val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
+// ui-redesign: ті самі значення, що @color/widget_circle_unselected і @color/widget_glyph_unselected у values-night — сам
+// віджет бере їх із ресурсів; ці константи лише для Compose-прев'ю віджета в онбордингу.
+internal val WIDGET_GLYPH_UNSELECTED_NIGHT = Color(0xFFFEFFEF)
+internal val WIDGET_CIRCLE_UNSELECTED_NIGHT = Color(0xFF1A3D38)
 
 // Figma node 234:855 (картка сітки в 4x2): відступ 12, проміжок клітинок 3, радіус клітинки 4,
 // клітинка 23.83x23.5 при ширині 343; картка — Surface/surface-card-transparent.
@@ -298,10 +302,12 @@ private fun CategoryButton(
         ),
         contentAlignment = Alignment.Center
     ) {
+        // Невибрана кнопка — кольори з ресурсів (values-night), без ColorFilter: лаунчер сам перемикає їх разом із
+        // системною темою. Вибрана — тонування відтінком категорії, однаковим в обох темах.
         Image(
-            provider = ImageProvider(R.drawable.widget_circle_solid),
+            provider = ImageProvider(if (tint == null) R.drawable.widget_circle_unselected else R.drawable.widget_circle_solid),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(ColorProvider(day = circleColor, night = circleColor)),
+            colorFilter = tint?.let { ColorFilter.tint(ColorProvider(day = circleColor, night = circleColor)) },
             modifier = GlanceModifier.fillMaxSize()
         )
         Image(
@@ -310,7 +316,7 @@ private fun CategoryButton(
             contentDescription = categoryDisplayName(category, context).let {
                 if (isTracking) context.getString(R.string.widget_button_running_format, it) else it
             },
-            colorFilter = ColorFilter.tint(ColorProvider(day = glyphColor, night = glyphColor)),
+            colorFilter = tint?.let { ColorFilter.tint(ColorProvider(day = glyphColor, night = glyphColor)) },
             modifier = GlanceModifier.size(widgetIconGlyphSize(category.iconName))
         )
     }

@@ -91,7 +91,7 @@ fun LastPhoneUseEstimateCard(
                 Text(
                     timeFormat.format(Date(median)),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = TeperaPalette.textSecondary
                 )
             }
             TeperaButton(

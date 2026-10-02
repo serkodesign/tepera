@@ -44,7 +44,7 @@ class CategoryGlyphContrastTest {
         for (hex in defaults + custom) {
             val base = Color(hex)
             for (alpha in listOf(0.2f, 0.5f)) {
-                val glyph = categoryGlyphColor(base, alpha)
+                val glyph = glyphColorOn(base, alpha)
                 val ratio = wcagContrast(glyph, badgeOf(base, alpha))
                 assertTrue("#${hex.toString(16)} @$alpha: контраст $ratio < 3", ratio >= 3.0)
             }
@@ -54,13 +54,13 @@ class CategoryGlyphContrastTest {
     @Test
     fun alreadyContrastingColorIsLeftUntouched() {
         val dark = Color(0xFF4E7A51)
-        assertEquals(dark, categoryGlyphColor(dark, 0.2f))
+        assertEquals(dark, glyphColorOn(dark, 0.2f))
     }
 
     @Test
     fun brightColorIsDarkenedNotReplaced() {
         val bright = Color(0xFF00D8CD)
-        val glyph = categoryGlyphColor(bright, 0.2f)
+        val glyph = glyphColorOn(bright, 0.2f)
         assertTrue(relativeLuminance(glyph) < relativeLuminance(bright))
         // Тон лишається тим самим: співвідношення каналів зберігається (лише темнішає до чорного).
         assertTrue(glyph.green >= glyph.red && glyph.blue >= glyph.red)

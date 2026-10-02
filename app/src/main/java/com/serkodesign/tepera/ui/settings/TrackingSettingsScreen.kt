@@ -191,8 +191,8 @@ fun TrackingSettingsScreen(
                                 scope.launch { sleepWindowRepository.setWindow(1, minute, windowEndMinute, enabled = true) }
                             },
                             modifier = Modifier.weight(1f),
-                            containerColor = Color.White,
-                            borderColor = TimeFieldBorder
+                            containerColor = TeperaPalette.chipSurface,
+                            borderColor = TeperaPalette.fieldBorder
                         )
                         TimeChip(
                             label = stringResource(R.string.settings_sleep_window_end_label),
@@ -202,8 +202,8 @@ fun TrackingSettingsScreen(
                                 scope.launch { sleepWindowRepository.setWindow(1, windowStartMinute, minute, enabled = true) }
                             },
                             modifier = Modifier.weight(1f),
-                            containerColor = Color.White,
-                            borderColor = TimeFieldBorder
+                            containerColor = TeperaPalette.chipSurface,
+                            borderColor = TeperaPalette.fieldBorder
                         )
                     }
                 }
@@ -294,6 +294,5 @@ private fun SettingCard(
 }
 
 /** Легка сіра обводка полів часу (#DDE2E4) — за запитом користувача поля білі з тонкою рамкою. */
-private val TimeFieldBorder = Color(0xFFDDE2E4)
 
 private fun formatMinute(minuteOfDay: Int): String = "%02d:%02d".format(minuteOfDay / 60, minuteOfDay % 60)

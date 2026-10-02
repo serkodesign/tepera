@@ -45,19 +45,19 @@ fun TeperaTimePickerDialog(
     )
     var keyboardMode by remember { mutableStateOf(false) }
     val pickerColors = TimePickerDefaults.colors(
-        clockDialColor = Color.White,
-        clockDialSelectedContentColor = Color.White,
+        clockDialColor = TeperaPalette.colors.card, // відрізняється від тла діалогу (surfaceBrandLight) в обох темах
+        clockDialSelectedContentColor = TeperaPalette.onPrimary,
         clockDialUnselectedContentColor = TeperaPalette.buttonBrandDark,
         selectorColor = TeperaPalette.buttonBrand,
         containerColor = Color.Transparent,
         periodSelectorBorderColor = TeperaPalette.buttonBrandDark,
         periodSelectorSelectedContainerColor = TeperaPalette.buttonBrand,
         periodSelectorUnselectedContainerColor = Color.Transparent,
-        periodSelectorSelectedContentColor = Color.White,
+        periodSelectorSelectedContentColor = TeperaPalette.onPrimary,
         periodSelectorUnselectedContentColor = TeperaPalette.buttonBrandDark,
         timeSelectorSelectedContainerColor = TeperaPalette.buttonBrand,
-        timeSelectorUnselectedContainerColor = Color.White,
-        timeSelectorSelectedContentColor = Color.White,
+        timeSelectorUnselectedContainerColor = TeperaPalette.colors.card,
+        timeSelectorSelectedContentColor = TeperaPalette.onPrimary,
         timeSelectorUnselectedContentColor = TeperaPalette.buttonBrandDark
     )
     TeperaDialog(
@@ -119,10 +119,10 @@ fun TeperaDatePickerDialog(
         navigationContentColor = TeperaPalette.buttonBrandDark,
         yearContentColor = TeperaPalette.buttonBrandDark,
         currentYearContentColor = TeperaPalette.buttonBrand,
-        selectedYearContentColor = Color.White,
+        selectedYearContentColor = TeperaPalette.onPrimary,
         selectedYearContainerColor = TeperaPalette.buttonBrand,
         dayContentColor = TeperaPalette.buttonBrandDark,
-        selectedDayContentColor = Color.White,
+        selectedDayContentColor = TeperaPalette.onPrimary,
         selectedDayContainerColor = TeperaPalette.buttonBrand,
         disabledDayContentColor = TeperaPalette.buttonBrandDark.copy(alpha = 0.3f),
         todayContentColor = TeperaPalette.buttonBrand,

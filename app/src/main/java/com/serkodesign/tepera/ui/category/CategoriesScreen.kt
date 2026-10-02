@@ -310,9 +310,9 @@ private fun CategoryEditorDialog(
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    errorContainerColor = Color.White,
+                    focusedContainerColor = TeperaPalette.chipSurface,
+                    unfocusedContainerColor = TeperaPalette.chipSurface,
+                    errorContainerColor = TeperaPalette.chipSurface,
                     focusedBorderColor = TeperaPalette.buttonBrand,
                     unfocusedBorderColor = Color.Transparent,
                     focusedLabelColor = TeperaPalette.buttonBrand,
@@ -393,8 +393,8 @@ private fun SwatchPickable(selected: Boolean, onClick: () -> Unit, content: @Com
     Box(
         modifier = Modifier
             .size(40.dp)
-            .background(if (selected) TeperaPalette.buttonBrand else Color.White, CircleShape)
+            .background(if (selected) TeperaPalette.buttonBrand else TeperaPalette.chipSurface, CircleShape)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
         contentAlignment = Alignment.Center
-    ) { content(if (selected) Color.White else TeperaPalette.buttonBrandDark) }
+    ) { content(if (selected) TeperaPalette.onPrimary else TeperaPalette.buttonBrandDark) }
 }

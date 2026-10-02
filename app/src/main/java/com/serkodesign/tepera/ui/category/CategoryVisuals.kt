@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -117,17 +119,33 @@ fun contrastRatio(a: Color, b: Color): Float {
  * затемнюється до чорного кроками по 5%, доки не досягне порогу; тон лишається тим самим, тож
  * категорію все ще видно за кольором. Кольори, що вже проходять, лишаються без змін.
  */
-fun categoryGlyphColor(base: Color, badgeAlpha: Float = 0.2f): Color {
-    val badge = base.copy(alpha = badgeAlpha).compositeOver(GlyphSurface)
+@Composable
+@ReadOnlyComposable
+fun categoryGlyphColor(base: Color, badgeAlpha: Float = 0.2f): Color =
+    LocalTeperaColors.current.let { theme ->
+        // ui-redesign: у темній темі плашка лежить на темній картці — тоді гліф світлішає до білого, а не темнішає.
+        if (theme.isDark) glyphColorOn(base, badgeAlpha, theme.card, Color.White) else glyphColorOn(base, badgeAlpha)
+    }
+
+/** Чиста частина [categoryGlyphColor] (без Compose — тестується юніт-тестами): гліф проти плашки на [surface]. */
+internal fun glyphColorOn(
+    base: Color,
+    badgeAlpha: Float = 0.2f,
+    surface: Color = GlyphSurface,
+    toward: Color = Color.Black
+): Color {
+    val badge = base.copy(alpha = badgeAlpha).compositeOver(surface)
     var step = 0
     var color = base
     while (contrastRatio(color, badge) < MIN_GLYPH_CONTRAST && step < 20) {
         step++
-        color = lerp(base, Color.Black, step * 0.05f)
+        color = lerp(base, toward, step * 0.05f)
     }
     return color
 }
 
+@Composable
+@ReadOnlyComposable
 fun categoryGlyphColor(colorHex: String, badgeAlpha: Float = 0.2f): Color =
     categoryGlyphColor(categoryColor(colorHex), badgeAlpha)
 

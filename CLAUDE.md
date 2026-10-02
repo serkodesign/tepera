@@ -1412,3 +1412,20 @@ Samsung S23 (Android 16), Motorola G84 5G (Android 15), Huawei P9 (Android 8), S
   `dataReady` для `CardType.PAUSE` у `CardEngine` (T-13). Картка лишалась на екрані з самим лише "×" у заголовку, доки
   користувач не закривав її вручну. Фікс: спільний `removeGapFromState()` тепер виставляє
   `visible = remaining.isNotEmpty()` — `LaunchedEffect` на `pauseState` у `HomeScreen` одразу перераховує чергу карток.
+
+## Редизайн "ui-redesign" (02.10.2026, гілка `ui-redesign`) — СКАСОВУЄ "Дизайн ЗАВЖДИ light" вище
+
+Референси — растрові концепти в Figma "App concept" (`k6s4prQ9oK9x2uUvzHRghR`, секція 334:39): темна тема — image 1-3
+(334:31/34/37), світла — image 4 (334:41); image 5 — не використовується (рішення власника). Значення — піксельні заміри
+(шарів у картинках нема), шрифт лишився Golos Text. Тема йде за СИСТЕМНИМ режимом (`TeperaTheme` → `isSystemInDarkTheme()`).
+- `ui/theme/TeperaColors.kt` — набори `RedesignLightColors`/`RedesignDarkColors` (+ `LegacyTeperaColors` — старий світлий
+  вигляд, лишився лише як дефолт `LocalTeperaColors`), `RedesignScope` (набір + Material-схема), `SystemBarsAppearance`.
+  `TeperaPalette.*` для кольорів інтерфейсу — `@Composable` геттери з `LocalTeperaColors`, тож у `Canvas`/`drawBehind`
+  колір треба зчитати в змінну ДО лямбди. Кольори даних (категорії, Online, бурштин теплової карти) — константи, не змінювались.
+- Головна дія (play на картці, Primary-кнопка, вибраний сегмент, FAB): світла — #113A2C/білий, темна — кремова #FEFFEF/#062924.
+  Навбар: світла — темно-зелена пігулка, темна — кремова. Шапка Home — окремі кола.
+- Рішення власника: у темній темі кошик "0–1 хв" теплової карти — #1A3D38 (`heatmapEmptyBucket`).
+- Віджет: невибрані кола/гліфи — color-ресурси з `values-night` і `drawable-night` (без ColorFilter), бо Glance
+  `ColorProvider(day, night)` на API < 31 запікається в момент оновлення і не перемикався з темою (перевірено на XZ1, Android 9).
+- Перевірено на Sony XZ1 Compact в обох темах: усі основні екрани, діалоги, вибір часу/дати, віджет 4x1. Не перевірено:
+  онбординг, екран паузи воріт, віджети 4x2/2x1/1x1, інші пристрої. Заставка (`splashGradientBackground`) лишилась світло-зеленою.

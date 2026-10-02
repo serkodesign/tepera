@@ -111,6 +111,8 @@ import com.serkodesign.tepera.ui.stats.StatsScreen
 import com.serkodesign.tepera.ui.settings.WidgetSettingsScreen
 import com.serkodesign.tepera.ui.splash.SplashScreen
 import com.serkodesign.tepera.ui.theme.TeperaIcons
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
+import com.serkodesign.tepera.ui.theme.SystemBarsAppearance
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaGradientBackground
 
@@ -309,6 +311,10 @@ fun TeperaNavHost(
     // PermissionsBackground()); за наданим Figma-редизайном (node 292:1587) перестилізований на той
     // самий світлий градієнт, що решта GRADIENT_ROUTES — окремого прапорця більше не потрібно.
     val useGradientBackground = currentRoute in Routes.GRADIENT_ROUTES
+
+    // ui-redesign (TeperaColors.kt): набір кольорів задає TeperaTheme за системним світлим/темним режимом; тут лише
+    // іконки системних барів під нього.
+    SystemBarsAppearance(lightBars = LocalTeperaColors.current.lightSystemBars)
     Box(
         modifier = when {
             // Заставка малює власний повний фон (SplashScreen.kt) — тут лишень fillMaxSize,
@@ -678,7 +684,8 @@ private fun TeperaBottomNavBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp + navigationBarInset)
+            // За прямим запитом користувача опущено на 8dp нижче (було 16.dp, тепер 8.dp над системним інсетом).
+            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(TeperaPalette.navPillCard)

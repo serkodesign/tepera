@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ui-redesign, темна системна тема (TeperaColors.RedesignDarkColors): невибраний чип #1A3D38, кремовий текст #FEFFEF. -->
+    <color name="widget_circle_unselected">#FF1A3D38</color>
+    <color name="widget_glyph_unselected">#FFFEFFEF</color>
+</resources>

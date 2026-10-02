@@ -188,7 +188,7 @@ fun NavChevron(modifier: Modifier = Modifier) {
 @Composable
 fun teperaSwitchColors() = SwitchDefaults.colors(
     checkedTrackColor = TeperaPalette.brandAccent,
-    checkedThumbColor = Color.White,
+    checkedThumbColor = TeperaPalette.onPrimary,
     checkedBorderColor = Color.Transparent,
     uncheckedTrackColor = TeperaPalette.switchTrackOff,
     uncheckedThumbColor = TeperaPalette.switchOutlineOff,
@@ -231,7 +231,7 @@ fun <T> PillSegmentedControl(
                 .width(itemWidth)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(100.dp))
-                .background(TeperaPalette.cardActive)
+                .background(TeperaPalette.colors.primaryFill)
         )
         Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
             options.forEach { (value, label) ->
@@ -243,7 +243,12 @@ fun <T> PillSegmentedControl(
                         .selectable(selected = value == selected, role = Role.RadioButton, onClick = { onSelect(value) }),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(label, style = MaterialTheme.typography.bodyMedium)
+                    // ui-redesign: вибраний сегмент — головна дія (референси: вибраний чип), текст контрастний до неї.
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (value == selected) TeperaPalette.onPrimary else TeperaPalette.buttonBrandDark
+                    )
                 }
             }
         }
@@ -390,17 +395,12 @@ fun TeperaButton(
     val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else if (type == TeperaButtonType.Filled) 100.dp else 24.dp)
 
     val background: Color = when (type) {
-        TeperaButtonType.Primary -> when {
-            big && enabled -> TeperaPalette.buttonBrand
-            big -> TeperaPalette.buttonBrandDark
-            else -> Color.White
-        }
+        TeperaButtonType.Primary -> TeperaPalette.primaryButtonFill
         TeperaButtonType.Filled -> TeperaPalette.surfaceBrandLight.copy(alpha = 0.5f)
         else -> Color.Transparent
     }
     val contentColor: Color = when {
-        type == TeperaButtonType.Primary && big -> Color.White
-        type == TeperaButtonType.Primary -> TeperaPalette.buttonBrand
+        type == TeperaButtonType.Primary -> TeperaPalette.primaryButtonContent
         type == TeperaButtonType.Filled -> TeperaPalette.buttonBrand
         else -> TeperaPalette.buttonBrandDark
     }
@@ -457,8 +457,8 @@ fun TeperaIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier.width(44.dp),
     shape: Shape = RoundedCornerShape(22.dp),
-    containerColor: Color = Color.White,
-    contentColor: Color = Color.Black,
+    containerColor: Color = TeperaPalette.chipSurface,
+    contentColor: Color = TeperaPalette.colors.chipContent,
     enabled: Boolean = true,
     height: Dp = 44.dp,
     iconSize: Dp = 24.dp
@@ -533,7 +533,7 @@ fun TeperaSearchField(
             .fillMaxWidth()
             .heightIn(min = 56.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(Color.White.copy(alpha = 0.8f))
+            .background(TeperaPalette.chipSurface)
             .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -644,7 +644,7 @@ fun TeperaCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.8f))
+            .background(TeperaPalette.cardSurface)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -700,7 +700,7 @@ fun TeperaChip(
         modifier = modifier
             .heightIn(min = if (compact) 24.dp else 32.dp)
             .clip(RoundedCornerShape(100.dp))
-            .background(Color.White)
+            .background(TeperaPalette.chipSurface)
             .padding(horizontal = if (compact) 10.dp else 12.dp, vertical = if (compact) 4.dp else 6.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically

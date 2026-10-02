@@ -5,21 +5,20 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -38,10 +37,10 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 import kotlin.math.roundToInt
@@ -70,7 +69,16 @@ fun MyDayCard(
     onLearnMore: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    HomeCardSurface(modifier = modifier, containerColor = TeperaPalette.homeCardFillMyDay) {
+    // Figma node 347:3166 ("My day"): радіус 24 (не загальні 28dp решти карток пейджера) + біла
+    // рамка 1dp — лише в редизайні світлої теми (за запитом користувача темну тему не чіпаємо,
+    // борт там лишається вимкненим).
+    val isDark = LocalTeperaColors.current.isDark
+    HomeCardSurface(
+        modifier = modifier,
+        containerColor = TeperaPalette.homeCardFillMyDay,
+        cornerRadius = 24.dp,
+        borderColor = if (isDark) null else Color.White
+    ) {
         when (state.hasUsageAccess) {
             null -> Unit // перевірка ще триває, картка мовчить, щоб не блимати fallback-текстом
             false -> {
@@ -295,82 +303,73 @@ private fun Modifier.atFraction(fraction: Float, centered: Boolean): Modifier = 
 }
 
 /**
- * Легенда — список "колір · назва · час": кружок, назва, час чіпом праворуч. Завжди ОДНА колонка на всю
- * ширину (за рішенням користувача): у двох колонках довгі назви ("Кулінарія") ламались посеред слова, а чіпси
- * різної ширини розсинхронізовували ряди. Тривалість словами ("3 год 45 хв"), а не "3:45", яке читається як
- * годинник (FR-P.6: час завжди поруч із назвою, ніколи голий відсоток). Картка росте разом зі списком, а
- * пейджер вирівнює за нею сусідні картки.
+ * Легенда — чіпси "колір · назва · час" (Figma "App concept" node 347:3037, "My day": замінює
+ * попередній вертикальний список рядків за прямим запитом користувача — "статистика по
+ * активностям на картці подається у вигляді чіпсів"). `FlowRow` переносить чіпси на новий рядок,
+ * коли вони не влазять в ширину картки; порядок — той самий, що й раніше (Online → категорії →
+ * "Решта дня"). Тривалість словами ("3 год 45 хв"), не "3:45" (FR-P.6: час завжди поруч із
+ * назвою, ніколи голий відсоток).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DayStructureLegend(segments: List<DaySegment>, targetMinutes: Int?) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        // Орієнтир (▼ — той самий значок, що на шкалі) дописано в рядок Online, з яким він порівнюється; підпису на самій
-        // шкалі нема (FR-3.10). Без Online-сегмента (0 хв) орієнтир лишається окремим рядком.
-        val onlineLabel = stringResource(R.string.balance_online_label)
-        val onlineIndex = segments.indexOfFirst { it.label == onlineLabel }
+    // Орієнтир (▼ — той самий значок, що на шкалі) дописано в чіп Online, з яким він порівнюється; підпису на самій
+    // шкалі нема (FR-3.10). Без Online-сегмента (0 хв) орієнтир лишається окремим чіпом.
+    val onlineLabel = stringResource(R.string.balance_online_label)
+    val onlineIndex = segments.indexOfFirst { it.label == onlineLabel }
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
         segments.forEachIndexed { index, segment ->
-            LegendRow(
-                segment,
-                compact = false,
-                modifier = Modifier.fillMaxWidth(),
-                targetMinutes = targetMinutes.takeIf { index == onlineIndex }
-            )
+            LegendChip(segment, targetMinutes = targetMinutes.takeIf { index == onlineIndex })
         }
-        if (targetMinutes != null && onlineIndex < 0) TargetLegendRow(targetMinutes, compact = false)
+        if (targetMinutes != null && onlineIndex < 0) TargetLegendChip(targetMinutes)
     }
 }
 
 @Composable
-private fun TargetLegendRow(targetMinutes: Int, compact: Boolean) {
-    val style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
+private fun LegendChipSurface(content: @Composable RowScope.() -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = if (compact) 18.dp else 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(TeperaPalette.chipSurface)
+            .border(1.dp, TeperaPalette.navTabIdleFill, RoundedCornerShape(16.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        content = content
+    )
+}
+
+@Composable
+private fun TargetLegendChip(targetMinutes: Int) {
+    LegendChipSurface {
         Box(Modifier.size(LegendDotSize), contentAlignment = Alignment.Center) {
             Text("▼", color = TeperaPalette.buttonBrandDark, fontSize = 10.sp, lineHeight = 10.sp)
         }
-        Text(
-            text = stringResource(R.string.balance_target_label),
-            modifier = Modifier.weight(1f),
-            style = style,
-            color = HomeCardTextPrimary,
-            maxLines = 1
-        )
-        TeperaChip(label = formatBalanceDuration(targetMinutes), compact = true)
+        Text(stringResource(R.string.balance_target_label), fontSize = 12.sp, color = HomeCardTextPrimary, maxLines = 1)
+        Text(formatBalanceDuration(targetMinutes), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = HomeCardTextPrimary, maxLines = 1)
     }
 }
 
 @Composable
-private fun LegendRow(segment: DaySegment, compact: Boolean, modifier: Modifier = Modifier, targetMinutes: Int? = null) {
-    val style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
-    Row(
-        modifier = modifier.heightIn(min = if (compact) 18.dp else 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(Modifier.size(LegendDotSize).clip(CircleShape).background(segment.color))
-        Text(
-            text = segment.label,
-            modifier = Modifier.weight(1f),
-            style = style,
-            color = HomeCardTextPrimary,
-            maxLines = if (compact) 2 else 1,
-            overflow = TextOverflow.Ellipsis
-        )
+private fun LegendChip(segment: DaySegment, targetMinutes: Int? = null) {
+    LegendChipSurface {
+        Box(Modifier.size(LegendDotSize).clip(RoundedCornerShape(2.dp)).background(segment.color))
+        Text(segment.label, fontSize = 12.sp, color = HomeCardTextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (targetMinutes != null) {
             val targetText = formatBalanceDuration(targetMinutes)
             val targetDescription = stringResource(R.string.balance_target_label) + " " + targetText
             Text(
                 text = "▼ $targetText",
                 modifier = Modifier.clearAndSetSemantics { contentDescription = targetDescription },
-                style = MaterialTheme.typography.bodySmall,
+                fontSize = 12.sp,
                 color = HomeCardTextSecondary,
                 maxLines = 1
             )
         }
-        TeperaChip(label = formatBalanceDuration(segment.minutes), compact = true)
+        Text(formatBalanceDuration(segment.minutes), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = HomeCardTextPrimary, maxLines = 1)
     }
 }
 

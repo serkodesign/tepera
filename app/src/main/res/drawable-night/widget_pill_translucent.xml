@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ui-redesign, темна системна тема: капсула ряду кнопок — колір карток темної теми #062924 (референс image 1-3)
+     з тією самою прозорістю 30%, що й світла версія (drawable/widget_pill_translucent.xml). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#4D062924" />
+    <corners android:radius="100dp" />
+</shape>

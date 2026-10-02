@@ -93,6 +93,8 @@ import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaMotion
+import com.serkodesign.tepera.ui.theme.LegacyTeperaColors
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
@@ -561,9 +563,10 @@ fun HomeScreen(
             } else {
                 // 2 колонки, побудовані вручну по рядках (замість LazyVerticalGrid) — категорій
                 // завжди небагато (до 6 дефолтних + 2 кастомні, FR-2.1/2.2, ліміт піднято в T-8),
-                // а весь екран тепер
-                // скролиться одним Modifier.verticalScroll вище, всередині якого lazy-контейнер
-                // з Modifier.weight() непридатний (батько вимірює дітей з необмеженою висотою).
+                // а весь екран скролиться одним Modifier.verticalScroll вище, всередині якого
+                // lazy-контейнер з Modifier.weight() непридатний (батько вимірює дітей з
+                // необмеженою висотою). За прямим запитом користувача повернуто з горизонтального
+                // скролу 2 рядки (Figma node 347:3037) назад до цього варіанту.
                 Column(
                     modifier = Modifier
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp)
@@ -579,6 +582,7 @@ fun HomeScreen(
                                 Box(modifier = Modifier.weight(1f)) {
                                     CategoryCard(
                                         item = item,
+                                        modifier = Modifier.fillMaxWidth(),
                                         onToggleTimer = { viewModel.toggleTimer(item.category.id) },
                                         onAddTime = { onAddEntryForCategory(item.category.id) },
                                         onOpenHistory = { onOpenCategoryHistory(item.category.id) }
@@ -612,28 +616,51 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        // Figma node 347:3116: асиметричний паддінг (pl-24/pr-16/py-16, не симетричний 16/8, що
+        // був тут раніше) і gap-13 між текстовим блоком і колом кнопок.
+        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = stringResource(greetingRes),
-            color = TeperaPalette.buttonBrandDark,
-            modifier = Modifier.weight(1f).semantics { heading() },
-            style = MaterialTheme.typography.headlineSmall.copy(
-                fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Medium,
-                fontSize = 27.sp
+        // Два рівні (Figma "App concept" node 347:3037): малий підпис — те саме привітання за
+        // часом доби, що й раніше; великий рядок — НЕ переклад мотиваційного гасла мокапу
+        // ("Make your day productive", суперечить FR-P.1–P.6), а нейтральна назва розділу.
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = stringResource(greetingRes),
+                color = TeperaPalette.buttonBrandDark,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp
+                )
             )
-        )
+            Text(
+                text = stringResource(R.string.home_header_headline),
+                color = TeperaPalette.buttonBrandDark,
+                modifier = Modifier.semantics { heading() },
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 27.sp,
+                    lineHeight = 30.sp
+                )
+            )
+        }
         // Figma "App concept" node 192:726: дві кнопки 44dp з асиметричними радіусами (ліва —
         // закруглена зліва 22/справа 8, права навпаки), біла заливка 80%, проміжок 4dp. Книга
         // відкриває "Базу знань" (перенесено з Налаштувань за запитом користувача).
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        // Редизайн (ui-redesign, референс image 1): окремі кола замість асиметричної пари; legacy — як було.
+        val circleButtons = LocalTeperaColors.current !== LegacyTeperaColors
+        Row(horizontalArrangement = Arrangement.spacedBy(if (circleButtons) 8.dp else 4.dp)) {
             TeperaIconButton(
                 icon = TeperaIcons.Book,
                 contentDescription = stringResource(R.string.settings_knowledge_base_action),
                 onClick = onOpenKnowledgeBase,
-                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                shape = if (circleButtons) CircleShape else RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
                 containerColor = TeperaPalette.headerButtonFill,
                 contentColor = TeperaPalette.buttonBrandDark
             )
@@ -641,7 +668,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
                 icon = TeperaIcons.Settings,
                 contentDescription = stringResource(R.string.settings_nav_action),
                 onClick = onOpenSettings,
-                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
+                shape = if (circleButtons) CircleShape else RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
                 containerColor = TeperaPalette.headerButtonFill,
                 contentColor = TeperaPalette.buttonBrandDark
             )
@@ -663,13 +690,16 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
  * Тап по тілу картки (іконка/назва) відкриває повну історію категорії. Кастомна категорія в
  * неактивному стані — прозора з білою рамкою 50% (як "Custom" у макеті). Іконки — ті самі
  * Figma-гліфи, що на віджеті й екрані додавання (`categoryLineArtIconRes`), кастомні — Material.
+ * Картка на всю ширину колонки (2 колонки, вертикальний список — за прямим запитом користувача
+ * повернуто з горизонтально скрольованої сітки 2 рядки).
  */
 @Composable
 private fun CategoryCard(
     item: CategoryTodaySummary,
     onToggleTimer: () -> Unit,
     onAddTime: () -> Unit,
-    onOpenHistory: () -> Unit
+    onOpenHistory: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val isTracking = item.trackingStartTime != null
     val accentColor = categoryColor(item.category.colorHex)
@@ -684,24 +714,32 @@ private fun CategoryCard(
         },
         animationSpec = colorSpec, label = "cardContainer"
     )
-    val nameColor by animateColorAsState(if (isTracking) Color.White else Color.Black, colorSpec, label = "cardName")
+    val nameColor by animateColorAsState(if (isTracking) TeperaPalette.onPrimary else TeperaPalette.categoryName, colorSpec, label = "cardName")
+    // Бейдж-кружок: 30% непрозорості (node 347:3042/3052: rgba(255,255,255,0.3) активна,
+    // rgba(accent,0.3) ідлу — було 0.2, не збігалось з мокапом).
     val badgeColor by animateColorAsState(
-        if (isTracking) Color.White.copy(alpha = 0.2f) else accentColor.copy(alpha = 0.2f), colorSpec, label = "cardBadge"
+        if (isTracking) TeperaPalette.onPrimary.copy(alpha = 0.3f) else accentColor.copy(alpha = 0.3f), colorSpec, label = "cardBadge"
     )
-    val glyphColor by animateColorAsState(if (isTracking) Color.White else categoryGlyphColor(accentColor), colorSpec, label = "cardGlyph")
+    val glyphColor by animateColorAsState(if (isTracking) TeperaPalette.onPrimary else categoryGlyphColor(accentColor), colorSpec, label = "cardGlyph")
     val nameSize by animateFloatAsState(
         targetValue = if (isTracking) 18f else 16f,
         animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), label = "cardNameSize"
     )
+    // node 347:3042 (active, p-8) vs 347:3052 (idle, p-9) — ідлу-картка на 1dp товщий внутрішній
+    // відступ, компенсує білу рамку (нижче), якої в активної нема.
+    val cardPadding = if (isTracking) 8.dp else 9.dp
+    val idleBorder = TeperaPalette.activityCardIdleBorder
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .heightIn(min = 132.dp) // зростає разом зі шрифтом (WCAG 1.4.4), а не обрізає назву
             // Без тіні (за прямим запитом користувача — тіней у застосунку немає ніде).
             .clip(shape)
             .background(containerColor)
-            .padding(8.dp),
+            .then(
+                if (!isTracking && idleBorder != null) Modifier.border(1.dp, idleBorder, shape) else Modifier
+            )
+            .padding(cardPadding),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
@@ -739,7 +777,9 @@ private fun CategoryCard(
                 ) + ": " + displayName,
                 onClick = onToggleTimer,
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(32.dp)
+                shape = RoundedCornerShape(32.dp),
+                containerColor = if (isTracking) TeperaPalette.playActiveFill else TeperaPalette.playFill,
+                contentColor = if (isTracking) TeperaPalette.playActiveContent else TeperaPalette.playContent
             )
             AnimatedVisibility(
                 visible = !isTracking,

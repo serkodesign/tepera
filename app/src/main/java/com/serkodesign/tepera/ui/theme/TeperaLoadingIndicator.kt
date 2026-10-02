@@ -45,6 +45,8 @@ private const val LOADING_OUTER_SIZE_RATIO = 1.25f // напівпрозора �
 fun TeperaLoadingIndicator(modifier: Modifier = Modifier, size: Dp = 60.dp) {
     val diameterPx = with(LocalDensity.current) { size.toPx() }
     val path = remember(diameterPx) { scallopedBlobPath(diameter = diameterPx, lobes = 12, wobbleFraction = 0.07f) }
+    // ui-redesign: білий не видно на кремовому фоні світлої теми — брендовий колір теми.
+    val shapeColor = TeperaPalette.buttonBrand
     val transition = rememberInfiniteTransition(label = "loadingFlower")
     val main = transition.animateFloat(
         initialValue = LOADING_SCALE_SMALL,
@@ -79,13 +81,13 @@ fun TeperaLoadingIndicator(modifier: Modifier = Modifier, size: Dp = 60.dp) {
                 rotationZ = LOADING_OUTER_ROTATION_DEGREES
                 alpha = 0.5f
             }
-        ) { drawPath(path, Color.White) }
+        ) { drawPath(path, shapeColor) }
         Canvas(
             modifier = Modifier.fillMaxSize().graphicsLayer {
                 scaleX = main.value
                 scaleY = main.value
             }
-        ) { drawPath(path, Color.White) }
+        ) { drawPath(path, shapeColor) }
     }
 }
 

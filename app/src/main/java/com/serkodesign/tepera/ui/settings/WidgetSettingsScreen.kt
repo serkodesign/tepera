@@ -33,17 +33,14 @@ import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
-import com.serkodesign.tepera.ui.category.categoryColor
+import com.serkodesign.tepera.ui.category.CategoryIconBadge
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.category.categoryGlyphColor
-import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
-import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaHint
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -198,14 +195,14 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
     }
 }
 
+/**
+ * За прямим запитом користувача: той самий контурний Figma-гліф, що на картці активності Home
+ * (напр. велосипед для "Рух/спорт"), а не загальний Material-символ — цей список мав інший гліф
+ * для тих самих категорій. [CategoryIconBadge] — спільний компонент з Home/Категорій.
+ */
 @Composable
 private fun CategoryCircle(category: CategoryEntity) {
-    val color = categoryColor(category.colorHex)
-    TeperaIconCircle(
-        icon = categoryIcon(category.iconName),
-        background = color.copy(alpha = 0.2f),
-        tint = categoryGlyphColor(color)
-    )
+    CategoryIconBadge(iconName = category.iconName, colorHex = category.colorHex)
 }
 
 private fun List<String>.moved(from: Int, to: Int): List<String> =

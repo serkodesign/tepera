@@ -47,6 +47,8 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.widget.FIGMA_TINTS
 import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import com.serkodesign.tepera.widget.WIDGET_CIRCLE_UNSELECTED
+import com.serkodesign.tepera.widget.WIDGET_CIRCLE_UNSELECTED_NIGHT
+import com.serkodesign.tepera.widget.WIDGET_GLYPH_UNSELECTED_NIGHT
 import com.serkodesign.tepera.widget.WIDGET_GLYPH_UNSELECTED
 import com.serkodesign.tepera.widget.widgetIconRes
 
@@ -162,6 +164,9 @@ private const val PREVIEW_GRID_ROWS = 4
 @Composable
 private fun WidgetMiniPreview() {
     val previewCategories = DefaultCategories.all.take(5)
+    // ui-redesign: прев'ю повторює реальний віджет — у темній системній темі темні кола й капсула (drawable-night).
+    val dark = TeperaPalette.colors.isDark
+    val surface = if (dark) Color(0x4D062924) else Color.White.copy(alpha = 0.3f)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,7 +179,7 @@ private fun WidgetMiniPreview() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(100.dp))
-                    .background(Color.White.copy(alpha = 0.3f))
+                    .background(surface)
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -186,13 +191,13 @@ private fun WidgetMiniPreview() {
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(tint?.circle ?: WIDGET_CIRCLE_UNSELECTED),
+                            .background(tint?.circle ?: if (dark) WIDGET_CIRCLE_UNSELECTED_NIGHT else WIDGET_CIRCLE_UNSELECTED),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             painter = painterResource(widgetIconRes(category.iconName, selected = selected)),
                             contentDescription = null,
-                            tint = tint?.glyph ?: WIDGET_GLYPH_UNSELECTED,
+                            tint = tint?.glyph ?: if (dark) WIDGET_GLYPH_UNSELECTED_NIGHT else WIDGET_GLYPH_UNSELECTED,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -202,7 +207,7 @@ private fun WidgetMiniPreview() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White.copy(alpha = 0.3f))
+                    .background(surface)
                     .padding(8.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {

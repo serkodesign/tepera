@@ -465,7 +465,7 @@ private fun GlassTextField(
                     Text(
                         placeholder,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFF888888)
+                        color = TeperaPalette.textSecondary
                     )
                 }
                 innerTextField()

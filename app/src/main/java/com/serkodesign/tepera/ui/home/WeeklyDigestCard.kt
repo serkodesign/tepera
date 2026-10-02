@@ -3,6 +3,7 @@ package com.serkodesign.tepera.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,6 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.LegacyTeperaColors
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 
@@ -57,14 +60,20 @@ private class DigestItem(val label: String, val main: String, val mainColor: Col
 fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) {
     var showInfo by remember { mutableStateOf(false) }
 
+    // Редизайн: кольорові числа (фіолетові/зелені з макета 192:726) не читаються на темних плитках, а в референсах
+    // таких кольорів нема — там числа основним кольором тексту. Legacy-вигляд не змінюється.
+    val legacyColors = LocalTeperaColors.current === LegacyTeperaColors
+    val ink = TeperaPalette.buttonBrandDark
+    fun numberColor(legacy: Color) = if (legacyColors) legacy else ink
+
     val items = buildList {
         if (state.movementCount > 0) {
-            add(DigestItem(stringResource(R.string.category_movement), state.movementCount.toString(), MovementText))
+            add(DigestItem(stringResource(R.string.category_movement), state.movementCount.toString(), numberColor(MovementText)))
         }
         if (state.readingCount > 0) {
             add(
                 DigestItem(
-                    stringResource(R.string.category_reading), state.readingCount.toString(), ReadingText,
+                    stringResource(R.string.category_reading), state.readingCount.toString(), numberColor(ReadingText),
                     note = "· " + formatDuration(state.readingMinutes)
                 )
             )
@@ -74,17 +83,24 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
             val suffix = stringResource(R.string.weekly_digest_hobby_suffix)
             add(
                 DigestItem(
-                    stringResource(R.string.category_hobby), state.hobbyDays.toString(), HobbyText,
+                    stringResource(R.string.category_hobby), state.hobbyDays.toString(), numberColor(HobbyText),
                     note = listOf(between, HOBBY_WINDOW_DAYS.toString(), suffix).filter { it.isNotEmpty() }.joinToString(" ")
                 )
             )
         }
         state.dayUsuallyStartsMinuteOfDay?.let { minuteOfDay ->
-            add(DigestItem(stringResource(R.string.weekly_digest_day_start_label), formatTimeOfDay(minuteOfDay), DayStartText))
+            add(DigestItem(stringResource(R.string.weekly_digest_day_start_label), formatTimeOfDay(minuteOfDay), numberColor(DayStartText)))
         }
     }
 
-    HomeCardSurface(modifier = modifier, containerColor = TeperaPalette.homeCardFill) {
+    // Figma node 347:3267 ("This week"): радіус 24 (не загальні 28dp), rgba(255,255,255,0.65) без
+    // рамки, асиметричний відступ top-16/sides-12/bottom-12 (не рівний 16 звідусіль).
+    HomeCardSurface(
+        modifier = modifier,
+        containerColor = TeperaPalette.homeCardFillWeeklyDigest,
+        cornerRadius = 24.dp,
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 12.dp)
+    ) {
         HomeCardTitleRow(
             title = stringResource(R.string.weekly_digest_card_title),
             onInfo = { showInfo = true }

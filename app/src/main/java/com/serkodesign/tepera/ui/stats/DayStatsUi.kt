@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,6 +42,7 @@ import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.pattern.PatternUiState
 import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.ui.theme.TeperaCard
@@ -54,8 +57,9 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 // Хронологія: порожні клітинки — ледь помітний темний відтінок, "до початку дня" — ще тихіший.
-private val SlotBlank = Color(0x14003926)
-private val SlotBeforeStart = Color(0x08003926)
+// ui-redesign: ті самі 8% / 3% основного тексту, що в legacy (#003926), але від кольору тексту теми.
+private val SlotBlank: Color @Composable @ReadOnlyComposable get() = TeperaPalette.buttonBrandDark.copy(alpha = 0x14 / 255f)
+private val SlotBeforeStart: Color @Composable @ReadOnlyComposable get() = TeperaPalette.buttonBrandDark.copy(alpha = 0x08 / 255f)
 // Пауза без телефону — глибший відтінок зеленого за "Офлайн-життя" (#C5E2CB), бо пауза — його підвид.
 private val SlotPause = Color(0xFF6DBF94)
 
@@ -250,6 +254,8 @@ private fun ComparisonRow(label: String, value: String, emphasized: Boolean) {
     }
 }
 
+@Composable
+@ReadOnlyComposable
 private fun slotColor(slot: TimelineSlot, details: DayDetailsUiState): Color = when (slot) {
     is TimelineSlot.Category ->
         details.categoriesById[slot.categoryId]?.let { categoryColor(it.colorHex) } ?: SlotBlank
@@ -318,12 +324,25 @@ private fun PausesCard(summary: PauseSummary, timeFormat: SimpleDateFormat) {
                 modifier = Modifier.size(28.dp).clip(CircleShape).background(badgeColor.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = category?.let { categoryIcon(it.iconName) } ?: TeperaSymbols.PhonelinkOff,
-                    contentDescription = null,
-                    tint = categoryGlyphColor(badgeColor),
-                    modifier = Modifier.size(16.dp)
-                )
+                // За прямим запитом користувача: та сама іконка, що на картці категорії Home
+                // (контурний Figma-гліф, якщо є для категорії, інакше Material Symbols);
+                // непозначена пауза (category == null) лишається на PhonelinkOff.
+                val lineArt = category?.let { categoryLineArtIconRes(it.iconName) }
+                if (lineArt != null) {
+                    Icon(
+                        painter = painterResource(lineArt),
+                        contentDescription = null,
+                        tint = categoryGlyphColor(badgeColor),
+                        modifier = Modifier.size(16.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = category?.let { categoryIcon(it.iconName) } ?: TeperaSymbols.PhonelinkOff,
+                        contentDescription = null,
+                        tint = categoryGlyphColor(badgeColor),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
             Column {
                 Text(range, style = MaterialTheme.typography.bodyMedium, color = TeperaPalette.buttonBrandDark)

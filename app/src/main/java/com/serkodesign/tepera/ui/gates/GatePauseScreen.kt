@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -193,8 +194,9 @@ private const val BREATH_SCALE_LARGE = 1f
 
 private val BADGE_SIZE = 215.dp
 // Figma: заливка бейджа #DCF6ED (з SVG-ассета Star 1), цифра #005E3E 96sp — цифра НЕ масштабується.
-private val BADGE_FILL = Color(0xFFDCF6ED)
-private val BADGE_NUMBER = Color(0xFF005E3E)
+// ui-redesign: ролі тих самих токенів (#DCF6ED = surfaceBrandLight, #005E3E = brandAccent) — у темі.
+private val BADGE_FILL: Color @Composable @ReadOnlyComposable get() = TeperaPalette.surfaceBrandLight
+private val BADGE_NUMBER: Color @Composable @ReadOnlyComposable get() = TeperaPalette.brandAccent
 
 // Зовнішня напівпрозора «квітка» (Figma node 2:3526, Star 2): та сама форма, 50% прозорості, повернута на 15°; розмір як в основної
 // (263.32/215) за основну. Дихає в тому самому ритмі, але з відставанням — виглядає як хвиля, що розходиться від центру.
@@ -277,6 +279,7 @@ private fun BreathingBadge(
     val path = remember(diameterPx) {
         scallopedBlobPath(diameter = diameterPx, lobes = 12, wobbleFraction = 0.07f)
     }
+    val badgeFill = BADGE_FILL
     Box(modifier = modifier.size(BADGE_SIZE), contentAlignment = Alignment.Center) {
         // Зовнішня напівпрозора форма — під основною (малюється першою), повернута на 15°, дихає із відставанням.
         Canvas(
@@ -289,7 +292,7 @@ private fun BreathingBadge(
                     alpha = OUTER_ALPHA
                 }
         ) {
-            drawPath(path, color = BADGE_FILL)
+            drawPath(path, color = badgeFill)
         }
         // Масштабується лише сама форма; цифра нижче лишається фіксованого розміру (Figma: "5" —
         // 96px в обох станах).
@@ -301,7 +304,7 @@ private fun BreathingBadge(
                     scaleY = scale.value
                 }
         ) {
-            drawPath(path, color = BADGE_FILL)
+            drawPath(path, color = badgeFill)
         }
         if (number != null) {
             Text(

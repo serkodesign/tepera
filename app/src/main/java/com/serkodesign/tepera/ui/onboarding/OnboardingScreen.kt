@@ -211,7 +211,7 @@ private fun PermissionRow(label: String, granted: Boolean, onClick: () -> Unit) 
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(if (granted) TeperaPalette.surfaceBrandLight else Color.White.copy(alpha = 0.1f)),
+                .background(if (granted) TeperaPalette.surfaceBrandLight else TeperaPalette.buttonBrandDark.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(

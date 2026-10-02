@@ -158,8 +158,8 @@ fun DiaryScreen(
                 .padding(end = 20.dp, bottom = bottomNavClearance() + 16.dp)
                 .width(64.dp),
             shape = CircleShape,
-            containerColor = TeperaPalette.buttonBrand,
-            contentColor = Color.White,
+            containerColor = TeperaPalette.colors.primaryFill,
+            contentColor = TeperaPalette.onPrimary,
             height = 64.dp,
             iconSize = 32.dp
         )
@@ -274,7 +274,7 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.8f))
+            .background(TeperaPalette.colors.listItem)
             .clickable(role = Role.Button, onClick = onEdit)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -335,7 +335,7 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             modifier = Modifier.width(40.dp),
             shape = CircleShape,
             containerColor = Color.Transparent,
-            contentColor = Color(0xFF1C1B1F),
+            contentColor = TeperaPalette.buttonBrandDark,
             height = 40.dp
         )
     }
@@ -351,7 +351,7 @@ internal fun EntryChip(
     text: String,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = 12.sp,
-    background: Color = Color.White,
+    background: Color = TeperaPalette.entryChipSurface,
     horizontalPadding: Dp = 8.dp
 ) {
     Box(

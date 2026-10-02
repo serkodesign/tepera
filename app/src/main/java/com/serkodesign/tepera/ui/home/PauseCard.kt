@@ -10,13 +10,11 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Icon
@@ -38,10 +36,8 @@ import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
-import com.serkodesign.tepera.ui.category.categoryColor
+import com.serkodesign.tepera.ui.category.CategoryIconBadge
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.category.categoryGlyphColor
-import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.roundToQuarterHour
 import java.text.SimpleDateFormat
@@ -161,31 +157,19 @@ private fun CategoryPickerDialog(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             categories.forEach { category ->
-                val accentColor = categoryColor(category.colorHex)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.8f))
+                        .background(TeperaPalette.innerSurface)
                         .clickable { onPick(category.id) }
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(accentColor.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = categoryIcon(category.iconName),
-                            contentDescription = null,
-                            tint = categoryGlyphColor(accentColor),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    // За прямим запитом користувача: та сама іконка, що на картці категорії Home
+                    // (контурний Figma-гліф, якщо є, інакше Material Symbols), не завжди-Material, що було тут.
+                    CategoryIconBadge(iconName = category.iconName, colorHex = category.colorHex)
                     Text(
                         categoryDisplayName(category),
                         style = MaterialTheme.typography.bodyLarge,

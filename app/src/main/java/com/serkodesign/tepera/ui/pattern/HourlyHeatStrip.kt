@@ -91,8 +91,11 @@ private fun heatGridDescription(hourlyMinutes: List<Int>?): String {
  */
 @Composable
 fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
-    val colors = remember(hourlyMinutes) {
-        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it) } }
+    val empty = TeperaPalette.heatmapEmptyBucket
+    val noDataFill = TeperaPalette.heatmapNoDataFill
+    val noDataBorder = TeperaPalette.heatmapNoDataBorder
+    val colors = remember(hourlyMinutes, empty) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty) } }
     }
     val gap = 3.dp
     val description = heatGridDescription(hourlyMinutes)
@@ -118,10 +121,10 @@ fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier)
                     val topLeft = Offset((hour % 6) * (cellW + gapPx), (hour / 6) * (cellH + gapPx))
                     val color = colors[hour]
                     if (color == null) {
-                        drawRoundRect(TeperaPalette.heatmapNoDataFill, topLeft, cellSize, radius)
+                        drawRoundRect(noDataFill, topLeft, cellSize, radius)
                         val stroke = 1.dp.toPx()
                         drawRoundRect(
-                            TeperaPalette.heatmapNoDataBorder,
+                            noDataBorder,
                             Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
                             Size(cellW - stroke, cellH - stroke),
                             CornerRadius(radius.x - stroke / 2),
@@ -145,8 +148,11 @@ fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier)
  */
 @Composable
 private fun HeatGridRows(hourlyMinutes: List<Int>?) {
-    val colors = remember(hourlyMinutes) {
-        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it) } }
+    val empty = TeperaPalette.heatmapEmptyBucket
+    val noDataFill = TeperaPalette.heatmapNoDataFill
+    val noDataBorder = TeperaPalette.heatmapNoDataBorder
+    val colors = remember(hourlyMinutes, empty) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty) } }
     }
     val gap = 3.dp
     Canvas(
@@ -171,10 +177,10 @@ private fun HeatGridRows(hourlyMinutes: List<Int>?) {
             val color = colors[hour]
             if (color == null) {
                 // "Немає даних": світла заливка + рамка 1dp (внутрішня, як border у Compose).
-                drawRoundRect(TeperaPalette.heatmapNoDataFill, topLeft, cellSize, radius)
+                drawRoundRect(noDataFill, topLeft, cellSize, radius)
                 val stroke = 1.dp.toPx()
                 drawRoundRect(
-                    TeperaPalette.heatmapNoDataBorder,
+                    noDataBorder,
                     Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
                     Size(cell - stroke, cell - stroke),
                     CornerRadius(radius.x - stroke / 2),
@@ -191,8 +197,8 @@ private fun HeatGridRows(hourlyMinutes: List<Int>?) {
  * Абсолютні кошики хвилин/годину — 0-1/1-15/15-30/30-45/45-60. Колишній кошик "0-15" за
  * запитом користувача розділено: рівно 0 хв — нейтральний сірий, 1-14 хв — амбер 15%.
  */
-private fun heatBucketColor(minutes: Int): Color = when {
-    minutes < 1 -> TeperaPalette.heatmapLowBucket
+private fun heatBucketColor(minutes: Int, empty: Color): Color = when {
+    minutes < 1 -> empty
     minutes < 15 -> TeperaPalette.heatmapAmber.copy(alpha = 0.15f)
     minutes < 30 -> TeperaPalette.heatmapAmber.copy(alpha = 0.45f)
     minutes < 45 -> TeperaPalette.heatmapAmber.copy(alpha = 0.7f)
@@ -206,7 +212,7 @@ private fun HeatGridLegend() {
     // "15-30"/"30-45"/"45-60" ламались на два рядки; вільне місце розподіляє SpaceBetween.
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         listOf(
-            TeperaPalette.heatmapLowBucket to "0-1",
+            TeperaPalette.heatmapEmptyBucket to "0-1",
             TeperaPalette.heatmapAmber.copy(alpha = 0.15f) to "1-15",
             TeperaPalette.heatmapAmber.copy(alpha = 0.45f) to "15-30",
             TeperaPalette.heatmapAmber.copy(alpha = 0.7f) to "30-45",

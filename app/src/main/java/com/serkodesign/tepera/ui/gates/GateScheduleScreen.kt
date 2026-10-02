@@ -193,16 +193,16 @@ private fun IntervalRow(interval: TimeInterval, onChange: (TimeInterval) -> Unit
                 minute = interval.startMinute,
                 onSelected = { onChange(interval.copy(startMinute = it)) },
                 modifier = Modifier.weight(1f),
-                containerColor = Color.White,
-                borderColor = TimeFieldBorder
+                containerColor = TeperaPalette.chipSurface,
+                borderColor = TeperaPalette.fieldBorder
             )
             TimeChip(
                 label = stringResource(R.string.gate_schedule_to),
                 minute = interval.endMinute,
                 onSelected = { onChange(interval.copy(endMinute = it)) },
                 modifier = Modifier.weight(1f),
-                containerColor = Color.White,
-                borderColor = TimeFieldBorder
+                containerColor = TeperaPalette.chipSurface,
+                borderColor = TeperaPalette.fieldBorder
             )
             TeperaIconButton(
                 icon = TeperaSymbols.Close,
@@ -262,4 +262,3 @@ internal fun TimeChip(
     }
 }
 
-private val TimeFieldBorder = Color(0xFFDDE2E4)

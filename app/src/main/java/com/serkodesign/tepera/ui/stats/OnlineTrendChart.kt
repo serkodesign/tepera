@@ -92,8 +92,9 @@ fun OnlineTrendChart(
                 val plotWidth = maxWidth
                 val step = pointStep(plotWidth, minutesPerDay.size)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val lineColor = TeperaPalette.buttonBrand
                     Canvas(modifier = Modifier.fillMaxWidth().height(PLOT_HEIGHT)) {
-                        drawTrend(minutesPerDay, topHours, step.toPx(), density)
+                        drawTrend(minutesPerDay, topHours, step.toPx(), density, lineColor)
                     }
                     // Підписи днів — по центру під своїми вертикалями.
                     androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxWidth().height(16.dp)) {
@@ -135,7 +136,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTrend(
     minutes: List<Int>,
     topHours: Int,
     stepPx: Float,
-    d: Float
+    d: Float,
+    lineColor: Color
 ) {
     val axisColor = Color(0xFFADADAD)
     val dash = PathEffect.dashPathEffect(floatArrayOf(2f * d, 4f * d))
@@ -180,14 +182,14 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTrend(
     drawPath(
         area,
         brush = Brush.verticalGradient(
-            colors = listOf(Color(0xFF006944), Color(0x0000CF87)),
+            colors = listOf(lineColor, lineColor.copy(alpha = 0f)),
             startY = TOP_PAD * d,
             endY = h
         )
     )
     drawPath(
         line,
-        color = Color(0xFF006944),
+        color = lineColor,
         style = Stroke(width = 4f * d, cap = StrokeCap.Round, join = StrokeJoin.Round)
     )
     // Відрізок від осі до першого дня — пунктиром (крапки-штрихи з заокругленими кінцями).
@@ -197,7 +199,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTrend(
     }
     drawPath(
         extension,
-        color = Color(0xFF006944),
+        color = lineColor,
         style = Stroke(
             width = 4f * d,
             cap = StrokeCap.Round,

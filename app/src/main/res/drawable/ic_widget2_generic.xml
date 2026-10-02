@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Копія ic_widget_generic для НЕВИБРАНОЇ кнопки віджета — з android:tint із ресурсу (тема лаунчера), без ColorFilter. -->
+<!-- Запасна іконка (просте коло) для категорійних iconName, яких немає серед 5 дефолтних —
+     на віджеті показуються лише перші 5 категорій (CategoryButtonsRow бере take(5)), тож
+     кастомна категорія (6-та) сюди на практиці не потрапляє, це суто захист від NPE/помилки
+     мапінгу. Тонкий контурний стиль (стиль-референс користувача) — тонується білим/категорійним
+     кольором через Glance ColorFilter.tint(). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/widget_glyph_unselected">
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,4 A8,8 0 1,0 12,20 A8,8 0 1,0 12,4 Z" />
+</vector>

@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -130,7 +131,7 @@ fun HomeCardsPager(pages: List<@Composable () -> Unit>, modifier: Modifier = Mod
                 repeat(pages.size) { index ->
                     val active = currentPage == index
                     val dotColor by animateColorAsState(
-                        if (active) Color.White else Color.White.copy(alpha = 0.5f),
+                        if (active) TeperaPalette.pagerDotActive else TeperaPalette.pagerDotInactive,
                         TeperaSpecs.effects(), label = "pagerDot"
                     )
                     Row(

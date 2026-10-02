@@ -31,12 +31,11 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.ui.category.CategoryIconBadge
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
-import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
@@ -127,7 +126,8 @@ fun CategoryOnboardingScreen(
                     val enabled = selected[category.id] ?: true
                     GlassRow(
                         label = categoryDisplayName(category),
-                        leading = { TeperaIconCircle(icon = categoryIcon(category.iconName)) },
+                        // За прямим запитом користувача: та сама іконка, що на картці категорії Home.
+                        leading = { CategoryIconBadge(iconName = category.iconName, colorHex = category.colorHex) },
                         trailing = {
                             Switch(
                                 checked = enabled,

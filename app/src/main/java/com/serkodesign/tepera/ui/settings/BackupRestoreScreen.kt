@@ -154,9 +154,9 @@ fun BackupRestoreScreen(
                 label = { Text(stringResource(R.string.backup_delete_word_label)) },
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
+                    focusedContainerColor = TeperaPalette.chipSurface,
+                    unfocusedContainerColor = TeperaPalette.chipSurface,
+                    disabledContainerColor = TeperaPalette.chipSurface,
                     focusedBorderColor = TeperaPalette.buttonBrand,
                     unfocusedBorderColor = Color.Transparent,
                     focusedLabelColor = TeperaPalette.buttonBrand,

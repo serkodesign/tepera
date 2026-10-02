@@ -4,4 +4,9 @@
          зелений, щоб системний Android-спалах (Theme.Tepera.Splash) і Compose-заставка
          (SplashScreen.kt) виглядали одним безшовним переходом, не двома різними екранами. -->
     <color name="splash_background">#8AC396</color>
+    <!-- ui-redesign: невибрана кнопка віджета. Ресурсом, а не кольором у коді: лаунчер сам бере values-night під час
+         рендеру, тож віджет одразу перемикається разом із системною темою (Glance ColorProvider(day, night) на API < 31
+         запікається в момент оновлення віджета). -->
+    <color name="widget_circle_unselected">#FFFFFFFF</color>
+    <color name="widget_glyph_unselected">#FF505050</color>
 </resources>

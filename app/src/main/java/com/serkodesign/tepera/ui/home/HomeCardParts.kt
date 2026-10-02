@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,23 +50,34 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  * k6s4prQ9oK9x2uUvzHRghR, node 192:726: "My day" / "Day usage" / "This week") — контейнер картки,
  * рядок заголовка з ⓘ та "×", плашки й діалог пояснення.
  */
-internal val HomeCardTextPrimary = Color(0xFF0F0F10) // Text/text-primary
-internal val HomeCardTextSecondary = Color(0xFF505050) // Text/text-secondary
+internal val HomeCardTextPrimary: Color @Composable @ReadOnlyComposable get() = TeperaPalette.textPrimary // Text/text-primary
+internal val HomeCardTextSecondary: Color @Composable @ReadOnlyComposable get() = TeperaPalette.textSecondary // Text/text-secondary
 
-/** Картка пейджера (M3 filled card): заливка, радіус 28 (extra large — як картки активностей), відступ 16, проміжок 12, мінімальна висота 182dp. */
+/**
+ * Картка пейджера (M3 filled card): заливка, радіус 28 (extra large — як картки активностей), відступ 16,
+ * проміжок 12, мінімальна висота 182dp. [cornerRadius]/[borderColor]/[contentPadding] — необов'язкові
+ * перевизначення для карток з іншим оформленням у конкретному Figma-фреймі (node 347:3037: "My day" —
+ * радіус 24 + біла рамка 1dp + відступ 16 звідусіль; "Day usage"/"This week" — той самий радіус 24, але
+ * асиметричний відступ top-16/sides-12/bottom-12).
+ */
 @Composable
 internal fun HomeCardSurface(
     modifier: Modifier = Modifier,
     containerColor: Color = TeperaPalette.homeCardFill,
+    cornerRadius: androidx.compose.ui.unit.Dp = 28.dp,
+    borderColor: Color? = null,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val shape = RoundedCornerShape(cornerRadius)
     Column(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 182.dp)
-            .clip(RoundedCornerShape(28.dp))
+            .clip(shape)
             .background(containerColor)
-            .padding(16.dp),
+            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
+            .padding(contentPadding),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         content = content
     )
@@ -155,7 +168,7 @@ internal fun GuessRevealRow(guessValue: String, actualValue: String, modifier: M
             label = stringResource(R.string.weekly_reflection_your_guess_label),
             value = guessValue,
             textColor = HomeCardTextSecondary,
-            fill = Color(0x14003926),
+            fill = TeperaPalette.guessFill,
             modifier = Modifier.weight(1f).fillMaxHeight()
         )
         GuessRevealTile(
