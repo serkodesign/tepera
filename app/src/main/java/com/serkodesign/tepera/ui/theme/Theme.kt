@@ -5,7 +5,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.serkodesign.tepera.util.ThemeStore
 
 // За прямим запитом користувача: стандартний радіус скруглення M3 Card() (shapes.medium,
 // дефолт 12dp) піднято до 16dp — єдине місце, звідки це поширюється на всі `Card(...)` без
@@ -23,7 +25,16 @@ private val TeperaShapes = Shapes(medium = RoundedCornerShape(16.dp))
 fun TeperaTheme(
     content: @Composable () -> Unit
 ) {
-    val colors = if (isSystemInDarkTheme()) RedesignDarkColors else RedesignLightColors
+    // Налаштування → Загальні → Тема: "Системна" слідує за пристроєм, "Світла"/"Темна" — примусово.
+    val context = LocalContext.current
+    ThemeStore.load(context)
+    // ThemeStore.THEME_CHOICE_ENABLED = false вимикає вибір і завжди робить тему світлою.
+    val dark = if (!ThemeStore.THEME_CHOICE_ENABLED) false else when (ThemeStore.current()) {
+        ThemeStore.Mode.SYSTEM -> isSystemInDarkTheme()
+        ThemeStore.Mode.LIGHT -> false
+        ThemeStore.Mode.DARK -> true
+    }
+    val colors = if (dark) RedesignDarkColors else RedesignLightColors
     MaterialTheme(shapes = TeperaShapes) {
         RedesignScope(colors, content)
     }

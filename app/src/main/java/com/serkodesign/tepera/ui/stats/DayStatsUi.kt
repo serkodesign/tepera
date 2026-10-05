@@ -61,7 +61,7 @@ import kotlin.math.roundToInt
 private val SlotBlank: Color @Composable @ReadOnlyComposable get() = TeperaPalette.buttonBrandDark.copy(alpha = 0x14 / 255f)
 private val SlotBeforeStart: Color @Composable @ReadOnlyComposable get() = TeperaPalette.buttonBrandDark.copy(alpha = 0x08 / 255f)
 // Пауза без телефону — глибший відтінок зеленого за "Офлайн-життя" (#C5E2CB), бо пауза — його підвид.
-private val SlotPause = Color(0xFF6DBF94)
+private val SlotPause = Color(0xFF8AC396)
 
 /**
  * Статистика → День (вчора): картки меж дня, тепловий патерн, хронологія доби, паузи, тихий
@@ -163,13 +163,17 @@ private fun DayTimelineCard(details: DayDetailsUiState) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp)
-                    .clip(RoundedCornerShape(100.dp))
                     .clearAndSetSemantics { contentDescription = timelineDescription },
                 horizontalArrangement = Arrangement.spacedBy(1.dp)
             ) {
+                // Кожен прямокутник (півгодинний слот) заокруглений окремо — радіус 8dp.
                 timeline.forEach { slot ->
                     Box(
-                        modifier = Modifier.weight(1f).fillMaxHeight().background(slotColor(slot, details))
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(slotColor(slot, details))
                     )
                 }
             }

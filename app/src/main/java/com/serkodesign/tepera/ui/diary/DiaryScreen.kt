@@ -155,10 +155,10 @@ fun DiaryScreen(
             onClick = onAddEntry,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = bottomNavClearance() + 16.dp)
+                .padding(end = 20.dp, bottom = bottomNavClearance())
                 .width(64.dp),
             shape = CircleShape,
-            containerColor = TeperaPalette.colors.primaryFill,
+            containerColor = Color(0xFF006944),
             contentColor = TeperaPalette.onPrimary,
             height = 64.dp,
             iconSize = 32.dp
@@ -204,7 +204,7 @@ private fun HistoryContent(
         val unlockCount = unlockCountsByDay[dayStart]
         val lastPhoneUseMillis = if (isYesterday) lastPhoneUseYesterdayMillis else null
 
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             // Figma 208:1549: Subheader 1 — Golos Text Medium 18sp, line-height 1.1, letter-spacing 0.018,
             // #003926, горизонтальний відступ 8.
             Text(
@@ -261,7 +261,10 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
     val accentColor = categoryColor(item.category.colorHex)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val endMillis = item.entry.startTime + item.entry.durationMinutes * 60_000L
-    val (hours, remainderMinutes) = roundToQuarterHour(item.entry.durationMinutes)
+    // Точна тривалість запису, без округлення до чвертей години: 3 хв мають показуватись як 3 хв,
+    // а не як "0 хв" (раніше округлення давало 0 для всіх записів коротших за ~7 хв).
+    val hours = item.entry.durationMinutes / 60
+    val remainderMinutes = item.entry.durationMinutes % 60
     val durationText = when {
         hours <= 0 -> stringResource(R.string.minutes_short_format, remainderMinutes)
         remainderMinutes == 0 -> stringResource(R.string.hours_short_format, hours)
@@ -302,6 +305,16 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
                 lineHeight = 20.8.sp,
                 letterSpacing = 0.016.sp
             )
+            // Нотатка — над чіпсами часу (за запитом): спершу текст, потім тривалість і інтервал.
+            if (!item.entry.note.isNullOrBlank()) {
+                Text(
+                    text = item.entry.note,
+                    fontSize = 12.sp,
+                    lineHeight = 15.6.sp,
+                    color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
+                    maxLines = 2
+                )
+            }
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -315,15 +328,6 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
                     fontSize = 12.sp,
                     lineHeight = 15.6.sp,
                     color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
-                )
-            }
-            if (!item.entry.note.isNullOrBlank()) {
-                Text(
-                    text = item.entry.note,
-                    fontSize = 12.sp,
-                    lineHeight = 15.6.sp,
-                    color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
-                    maxLines = 2
                 )
             }
         }

@@ -33,8 +33,8 @@ android {
         applicationId = "com.serkodesign.tepera"
         minSdk = 26        // Android 8.0 — нижня межа сумісності (SRS 5.6)
         targetSdk = 36      // Android 16 — обов'язково для Google Play з 31.08.2026 (SRS PUB-4)
-        versionCode = 7
-        versionName = "0.5.0-closed-test"
+        versionCode = 9
+        versionName = "0.6.0"
     }
 
     signingConfigs {
@@ -87,6 +87,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.activity:activity-compose:1.13.0")
+    // Матове скло навбару (Figma node 395:1011): розмиття фону за навбаром, API 26+ (RenderScript-fallback на старих версіях).
+    implementation("dev.chrisbanes.haze:haze:1.7.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation("androidx.navigation:navigation-compose:2.10.0")

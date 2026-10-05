@@ -68,7 +68,7 @@ fun ProInterestScreen(onBack: () -> Unit) {
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 TeperaCard(title = stringResource(R.string.pro_interest_title)) {
                     Text(

@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextFieldDefaults
 
 import com.serkodesign.tepera.ui.theme.TeperaDialog
+import com.serkodesign.tepera.ui.theme.TeperaTextField
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -119,7 +120,7 @@ fun CategoriesScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 item { GlassSectionHeader(stringResource(R.string.categories_section_active)) }
                 items(active, key = { it.id }) { category ->
@@ -216,7 +217,8 @@ private fun CategoryRow(
             CategoryIconBadge(iconName = category.iconName, colorHex = category.colorHex)
         },
         trailing = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // За запитом: проміжки між редагуванням, видаленням і тоглом — 4dp.
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 // Редагування (назва/іконка/колір) — лише для кастомних категорій: дефолтні
                 // резолвлять назву через nameKey (strings.xml), а colorHex щозапуску
                 // синхронізується назад на фіксований (CategoryRepository.ensureDefaultsSeeded()),
@@ -302,26 +304,12 @@ private fun CategoryEditorDialog(
         dismissText = stringResource(R.string.dialog_cancel)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            OutlinedTextField(
+            // Поле за Figma 372:493/372:497 (власний компонент, підпис усередині блоку).
+            TeperaTextField(
                 value = name,
                 onValueChange = { name = it; showNameError = false },
-                label = { Text(stringResource(R.string.category_name_label)) },
-                isError = showNameError,
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = TeperaPalette.chipSurface,
-                    unfocusedContainerColor = TeperaPalette.chipSurface,
-                    errorContainerColor = TeperaPalette.chipSurface,
-                    focusedBorderColor = TeperaPalette.buttonBrand,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedLabelColor = TeperaPalette.buttonBrand,
-                    unfocusedLabelColor = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
-                    focusedTextColor = TeperaPalette.buttonBrandDark,
-                    unfocusedTextColor = TeperaPalette.buttonBrandDark,
-                    cursorColor = TeperaPalette.buttonBrand
-                ),
-                modifier = Modifier.fillMaxWidth().semantics { if (showNameError) error(nameRequiredMessage) }
+                label = stringResource(R.string.category_name_label),
+                modifier = Modifier.semantics { if (showNameError) error(nameRequiredMessage) }
             )
             if (showNameError) {
                 Text(
@@ -344,11 +332,24 @@ private fun CategoryEditorDialog(
                 modifier = Modifier.horizontalScroll(rememberScrollState())
             ) {
                 customCategoryIconChoices.forEach { iconKey ->
-                    SwatchPickable(
-                        selected = selectedIcon == iconKey,
-                        onClick = { selectedIcon = iconKey }
-                    ) { tint ->
-                        Icon(categoryIcon(iconKey), contentDescription = null, tint = tint)
+                    if (selectedIcon == iconKey) {
+                        // Обрана іконка фарбується в обраний колір (фон і гліф — як у списку категорій),
+                        // тож зміна кольору одразу видна прямо в меню вибору.
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .selectable(selected = true, role = Role.RadioButton, onClick = {}),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CategoryIconBadge(iconName = iconKey, colorHex = selectedColor, size = 40.dp)
+                        }
+                    } else {
+                        SwatchPickable(
+                            selected = false,
+                            onClick = { selectedIcon = iconKey }
+                        ) { tint ->
+                            Icon(categoryIcon(iconKey), contentDescription = null, tint = tint)
+                        }
                     }
                 }
             }

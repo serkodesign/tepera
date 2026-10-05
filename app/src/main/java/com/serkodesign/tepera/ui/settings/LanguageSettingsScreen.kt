@@ -41,7 +41,7 @@ fun LanguageSettingsScreen(onBack: () -> Unit) {
 
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     stringResource(R.string.settings_language_label),

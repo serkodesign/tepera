@@ -95,6 +95,9 @@ import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.LegacyTeperaColors
 import com.serkodesign.tepera.ui.theme.LocalTeperaColors
+import androidx.compose.ui.platform.LocalConfiguration
+import java.text.SimpleDateFormat
+import java.util.Date
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
@@ -136,7 +139,9 @@ fun HomeScreen(
     // Повторний тап по вкладці "Головна" в навбарі, коли вже на ній (TeperaNavHost) — той самий
     // принцип, що й на Щоденнику/Статистиці: значення саме по собі не важливе, лише його ЗМІНА
     // (кожен тап на вже вибраній вкладці інкрементує лічильник у NavHost) прокручує сюди наверх.
-    scrollToTopSignal: Int = 0
+    scrollToTopSignal: Int = 0,
+    // Тап по сповіщенню "підсумок тижня": оновити картку «Цей тиждень» і прокрутити карусель до неї.
+    weeklySummaryNonce: Long? = null
 ) {
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
@@ -430,6 +435,10 @@ fun HomeScreen(
     val context = LocalContext.current
 
     val scrollState = rememberScrollState()
+    LaunchedEffect(weeklySummaryNonce) {
+        if (weeklySummaryNonce != null) weeklyDigestViewModel.refresh()
+    }
+
     LaunchedEffect(scrollToTopSignal) {
         if (scrollToTopSignal != 0) scrollState.animateScrollTo(0)
     }
@@ -474,6 +483,7 @@ fun HomeScreen(
             // Патерн — той майже завжди має реальну історію ОС навіть на щойно встановленому
             // застосунку, T-2). Виняток — стан "доступ не надано/ще перевіряється": там картка й
             // далі потрібна для самого запиту доступу, це не "нема даних".
+            var weeklyDigestPage: Int? = null
             HomeCardsPager(
                 pages = buildList<@Composable () -> Unit> {
                     if (balanceState.hasUsageAccess != true || balanceState.hasDayData()) {
@@ -491,12 +501,16 @@ fun HomeScreen(
                         add { PatternMiniCard(state = patternState) }
                     }
                     if (CardType.WEEKLY_DIGEST in visibleCards) {
+                        weeklyDigestPage = size
                         add { WeeklyDigestCard(state = weeklyDigestState) }
                     }
                     if (isEmpty()) {
                         add { EmptyPagerCard() }
                     }
-                }
+                },
+                // Аргументи обчислюються після pages — індекс картки "Цей тиждень" уже відомий.
+                jumpToPage = weeklyDigestPage,
+                jumpNonce = weeklySummaryNonce
             )
 
             // FR-D.10/D.10a/D.11: вертикальний стек контекстних карток під слайдером,
@@ -607,18 +621,10 @@ fun HomeScreen(
 
 @Composable
 private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Unit) {
-    val period = remember { currentDayPeriod() }
-    val greetingRes = when (period) {
-        DayPeriod.MORNING -> R.string.greeting_morning
-        DayPeriod.DAY -> R.string.greeting_day
-        DayPeriod.EVENING -> R.string.greeting_evening
-        DayPeriod.NIGHT -> R.string.greeting_night
-    }
-
     Row(
         // Figma node 347:3116: асиметричний паддінг (pl-24/pr-16/py-16, не симетричний 16/8, що
         // був тут раніше) і gap-13 між текстовим блоком і колом кнопок.
-        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -627,10 +633,11 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
         // ("Make your day productive", суперечить FR-P.1–P.6), а нейтральна назва розділу.
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            // Відступ між підзаголовком і датою прибрано (0dp).
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             Text(
-                text = stringResource(greetingRes),
+                text = stringResource(R.string.home_header_subtitle),
                 color = TeperaPalette.buttonBrandDark,
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontFamily = TeperaPalette.headlineFont,
@@ -638,8 +645,13 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
                     fontSize = 12.sp
                 )
             )
+            // Великий рядок — поточна дата ("3 жовтня") мовою застосунку.
+            val locale = LocalConfiguration.current.locales[0]
+            val todayText = remember(locale) {
+                SimpleDateFormat("d MMMM", locale).format(Date())
+            }
             Text(
-                text = stringResource(R.string.home_header_headline),
+                text = todayText,
                 color = TeperaPalette.buttonBrandDark,
                 modifier = Modifier.semantics { heading() },
                 style = MaterialTheme.typography.headlineSmall.copy(
@@ -653,14 +665,14 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
         // Figma "App concept" node 192:726: дві кнопки 44dp з асиметричними радіусами (ліва —
         // закруглена зліва 22/справа 8, права навпаки), біла заливка 80%, проміжок 4dp. Книга
         // відкриває "Базу знань" (перенесено з Налаштувань за запитом користувача).
-        // Редизайн (ui-redesign, референс image 1): окремі кола замість асиметричної пари; legacy — як було.
-        val circleButtons = LocalTeperaColors.current !== LegacyTeperaColors
-        Row(horizontalArrangement = Arrangement.spacedBy(if (circleButtons) 8.dp else 4.dp)) {
+        // Figma 347:3118: проміжок 4dp, асиметричні радіуси (книга — 22 зліва/8 справа, шестерня навпаки),
+        // без окремих кіл — за запитом користувача в редизайні теж.
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TeperaIconButton(
                 icon = TeperaIcons.Book,
                 contentDescription = stringResource(R.string.settings_knowledge_base_action),
                 onClick = onOpenKnowledgeBase,
-                shape = if (circleButtons) CircleShape else RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
                 containerColor = TeperaPalette.headerButtonFill,
                 contentColor = TeperaPalette.buttonBrandDark
             )
@@ -668,7 +680,7 @@ private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
                 icon = TeperaIcons.Settings,
                 contentDescription = stringResource(R.string.settings_nav_action),
                 onClick = onOpenSettings,
-                shape = if (circleButtons) CircleShape else RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
+                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
                 containerColor = TeperaPalette.headerButtonFill,
                 contentColor = TeperaPalette.buttonBrandDark
             )
@@ -795,7 +807,7 @@ private fun CategoryCard(
                         contentDescription = stringResource(R.string.add_time_action_format, displayName),
                         onClick = onAddTime,
                         containerColor = TeperaPalette.activityMoreTime,
-                        contentColor = TeperaPalette.buttonBrandDark
+                        contentColor = TeperaPalette.activityMoreTimeContent
                     )
                 }
             }

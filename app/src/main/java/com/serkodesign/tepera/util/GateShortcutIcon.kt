@@ -24,7 +24,7 @@ private const val BADGE_RADIUS_PX = 7f
 // скляні/сквіркл-маски), тож невеликий запас за строгу safe zone тут прийнятний; повний
 // консервативний радіус лишається для дуже маленьких/повністю округлих (коло) масок.
 private const val BADGE_CENTER_DISTANCE_PX = 34f
-private val BADGE_COLOR = Color.parseColor("#005E3E") // TeperaPalette.brandAccent
+private val BADGE_COLOR = Color.parseColor("#006944") // TeperaPalette.brandAccent
 
 /**
  * T-4 (tepera-dev-spec.md): іконка закріпленого ярлика воріт — НЕ точна копія оригінальної

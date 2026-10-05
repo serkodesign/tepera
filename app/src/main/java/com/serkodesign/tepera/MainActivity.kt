@@ -20,8 +20,10 @@ import com.serkodesign.tepera.data.repository.GateRepository
 import kotlinx.coroutines.launch
 import com.serkodesign.tepera.ui.navigation.TeperaNavHost
 import com.serkodesign.tepera.ui.theme.TeperaTheme
+import com.serkodesign.tepera.util.AppShortcuts
 import com.serkodesign.tepera.util.LocaleStore
 import com.serkodesign.tepera.util.ProvideAppLocale
+import com.serkodesign.tepera.util.ShortcutScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -48,6 +50,10 @@ class MainActivity : ComponentActivity() {
 
     // CC-8: nonce тапу по тижневому сповіщенню — TeperaNavHost повертає на Home.
     private var weeklySummaryNonce by mutableStateOf<Long?>(null)
+
+    // Ярлик "Щоденник"/"Статистика" (довгий тап по іконці): екран і nonce, як у воріт.
+    private data class ShortcutScreenRequest(val screen: ShortcutScreen, val nonce: Long)
+    private var pendingShortcutRequest by mutableStateOf<ShortcutScreenRequest?>(null)
 
     // CC-4: відкриття через ворота (це не "відкрив Tepera") і перестворення
     // активності (зміна мови) не рахуються.
@@ -81,6 +87,8 @@ class MainActivity : ComponentActivity() {
         pendingGateRequest = gateRequestFromIntent(intent)
         skipNextOpen = savedInstanceState != null || pendingGateRequest != null
         handleWeeklySummaryIntent(intent)
+        // Після перестворення (зміна мови, поворот) intent той самий — дію ярлика не повторюємо.
+        if (savedInstanceState == null) handleShortcutIntent(intent)
         setContent {
             ProvideAppLocale {
             TeperaTheme {
@@ -106,7 +114,9 @@ class MainActivity : ComponentActivity() {
                         pendingCategoryId = categoryId,
                         pendingGateTargetPackage = pendingGateRequest?.packageName,
                         pendingGateRequestNonce = pendingGateRequest?.nonce,
-                        pendingWeeklySummaryNonce = weeklySummaryNonce
+                        pendingWeeklySummaryNonce = weeklySummaryNonce,
+                        pendingShortcutScreen = pendingShortcutRequest?.screen,
+                        pendingShortcutNonce = pendingShortcutRequest?.nonce
                     )
                 }
             }
@@ -116,6 +126,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        // Назва ярлика паузи зі станом і мова — перебудовуємо при кожному відкритті (зміна мови дає recreate).
+        refreshShortcuts()
         if (skipNextOpen) {
             skipNextOpen = false
         } else {
@@ -132,14 +144,47 @@ class MainActivity : ComponentActivity() {
         pendingGateRequest = gateRequestFromIntent(intent)
         skipNextOpen = pendingGateRequest != null
         handleWeeklySummaryIntent(intent)
+        handleShortcutIntent(intent)
+    }
+
+    /**
+     * Дії ярликів (довгий тап по іконці). Пауза виконується тут, без окремого екрана; Tepera
+     * відкривається на Головній і показує результат через оновлену назву ярлика. Екрани — через nonce.
+     * `intent.action` обнуляємо, щоб та сама дія не спрацювала повторно при перестворенні.
+     */
+    private fun handleShortcutIntent(intent: Intent) {
+        val app = application as TeperaApp
+        when (intent.action) {
+            AppShortcuts.ACTION_PAUSE_TOGGLE -> lifecycleScope.launch {
+                app.gateRepository.toggleTodayPause()
+                refreshShortcuts()
+            }
+            AppShortcuts.ACTION_DIARY ->
+                pendingShortcutRequest = ShortcutScreenRequest(ShortcutScreen.DIARY, System.nanoTime())
+            AppShortcuts.ACTION_STATS ->
+                pendingShortcutRequest = ShortcutScreenRequest(ShortcutScreen.STATS, System.nanoTime())
+            else -> return
+        }
+        intent.action = null
+    }
+
+    private fun refreshShortcuts() {
+        val app = application as TeperaApp
+        lifecycleScope.launch {
+            AppShortcuts.refresh(this@MainActivity, app.gateRepository.isPauseActive())
+        }
     }
 
     /** CC-8: тап по тижневому сповіщенню — знімаємо приховування картки «Цей тиждень» і повертаємо на Home. */
     private fun handleWeeklySummaryIntent(intent: Intent) {
         if (!intent.getBooleanExtra(EXTRA_OPEN_WEEKLY_SUMMARY, false)) return
         intent.removeExtra(EXTRA_OPEN_WEEKLY_SUMMARY)
-        weeklySummaryNonce = System.nanoTime()
-        lifecycleScope.launch { (application as TeperaApp).settingsStore.setWeeklyDigestCardDismissedKey(-1L) }
+        // Спершу знімаємо приховування картки, і лише потім сигналимо Home оновитись — інакше оновлення
+        // могло прочитати ще старий ключ закриття (запис у DataStore асинхронний).
+        lifecycleScope.launch {
+            (application as TeperaApp).settingsStore.setWeeklyDigestCardDismissedKey(-1L)
+            weeklySummaryNonce = System.nanoTime()
+        }
     }
 
     private fun gateRequestFromIntent(intent: Intent): GateRequest? =

@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +58,13 @@ import kotlin.math.roundToInt
  * скрінрідерів — сторінки доступні лише жестом.
  */
 @Composable
-fun HomeCardsPager(pages: List<@Composable () -> Unit>, modifier: Modifier = Modifier) {
+fun HomeCardsPager(
+    pages: List<@Composable () -> Unit>,
+    modifier: Modifier = Modifier,
+    // Перехід до сторінки [jumpToPage] — один раз на кожне нове [jumpNonce] (тап по сповіщенню).
+    jumpToPage: Int? = null,
+    jumpNonce: Long? = null
+) {
     if (pages.isEmpty()) return
     val density = LocalDensity.current
     val paddingPx = with(density) { 16.dp.toPx() }
@@ -78,6 +87,17 @@ fun HomeCardsPager(pages: List<@Composable () -> Unit>, modifier: Modifier = Mod
         settleJob?.cancel()
         settleJob = scope.launch {
             animate(offsetPx, -page * stridePx, animationSpec = TeperaSpecs.spatial()) { value, _ -> offsetPx = value }
+        }
+    }
+
+    // Ширина кроку ще не відома до першого layout — чекаємо її, інакше перехід стане на першу сторінку.
+    var handledJumpNonce by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(jumpNonce, jumpToPage) {
+        val page = jumpToPage
+        if (jumpNonce != null && jumpNonce != handledJumpNonce && page != null && page in pages.indices) {
+            snapshotFlow { stridePx }.first { it > 0f }
+            handledJumpNonce = jumpNonce
+            settleTo(page)
         }
     }
 

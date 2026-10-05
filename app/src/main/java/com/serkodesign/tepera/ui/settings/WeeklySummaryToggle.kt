@@ -61,7 +61,8 @@ fun WeeklySummaryToggle(settingsStore: SettingsStore, modifier: Modifier = Modif
         if (enabled && !WeeklySummaryWorker.canNotify(context)) permissionDenied = true
     }
 
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    // Пояснення → наступний блок: 16dp видимо (10dp тут + 6dp проміжок списку).
+    Column(modifier = modifier.padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         GlassRow(
             label = stringResource(R.string.weekly_summary_label),
             leading = { TeperaIconCircle(TeperaSymbols.Notifications) },

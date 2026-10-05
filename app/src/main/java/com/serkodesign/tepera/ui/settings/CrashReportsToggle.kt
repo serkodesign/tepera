@@ -32,7 +32,8 @@ import com.serkodesign.tepera.util.CrashReporting
 fun CrashReportsToggle(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var enabled by remember { mutableStateOf(CrashReporting.isEnabled(context)) }
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    // Пояснення → наступний блок: 16dp видимо (10dp тут + 6dp проміжок списку).
+    Column(modifier = modifier.padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         GlassRow(
             label = stringResource(R.string.crash_reports_label),
             leading = { TeperaIconCircle(TeperaSymbols.BugReport) },

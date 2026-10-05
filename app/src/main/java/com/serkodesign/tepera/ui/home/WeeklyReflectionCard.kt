@@ -35,8 +35,7 @@ fun WeeklyReflectionCard(state: WeeklyReflectionUiState, onSelectGuess: (WeeklyO
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardTranslucentLight)
+            .contextInfoSurface()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

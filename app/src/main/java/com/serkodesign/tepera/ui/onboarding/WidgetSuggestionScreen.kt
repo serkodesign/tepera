@@ -171,7 +171,7 @@ private fun WidgetMiniPreview() {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(Brush.linearGradient(listOf(Color(0xFF7FBF9C), Color(0xFF1F5A44))))
+            .background(Brush.linearGradient(listOf(Color(0xFF8AC396), Color(0xFF1F5A44))))
             .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

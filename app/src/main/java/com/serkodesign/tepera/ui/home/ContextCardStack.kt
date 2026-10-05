@@ -17,14 +17,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.cards.CardType
+import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 
 /**
@@ -141,7 +148,7 @@ private fun ContextCardSlot(visible: Boolean, content: @Composable () -> Unit) {
 internal fun ContextCardHeader(
     title: String,
     onDismiss: () -> Unit,
-    titleStyle: TextStyle = MaterialTheme.typography.bodyMedium
+    titleStyle: TextStyle = ContextCardLabelStyle
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -158,3 +165,25 @@ internal fun ContextCardHeader(
         }
     }
 }
+
+/**
+ * Поверхня інформаційної картки за Figma 367:1532 ("Цей місяць"): білий 70% (темна — `card`), радіус 24,
+ * біла рамка 1dp у світлій темі. Спільна для всіх карток із заголовком-закриттям, щоб вони виглядали однаково.
+ */
+@Composable
+internal fun Modifier.contextInfoSurface(): Modifier {
+    val shape = RoundedCornerShape(24.dp)
+    val border = TeperaPalette.activityCardIdleBorder
+    return this
+        .clip(shape)
+        .background(TeperaPalette.cardTranslucentLight)
+        .then(if (border != null) Modifier.border(1.dp, border, shape) else Modifier)
+}
+
+/** Мітка-заголовок інформаційної картки за Figma 367:1534: 11sp, колір бренду. */
+internal val ContextCardLabelStyle: TextStyle
+    @Composable get() = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, lineHeight = 12.sp)
+
+/** Основний текст інформаційної картки за Figma 367:1535: 18sp Medium, темно-зелений. */
+internal val ContextCardBodyStyle: TextStyle
+    @Composable get() = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium)

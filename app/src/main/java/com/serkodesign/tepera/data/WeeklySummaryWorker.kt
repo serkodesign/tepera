@@ -27,6 +27,11 @@ private const val CHANNEL_ID = "weekly_summary"
 private const val UNIQUE_WORK_NAME = "weekly_summary"
 private const val NOTIFICATION_ID = 4801
 
+// Ті самі пороги, що в WeeklyDigestViewModel (картка «Цей тиждень»): 7 днів від першого запуску й тиждень даних.
+private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
+private const val WEEK_MILLIS = 7 * DAY_MILLIS
+private const val DIGEST_WINDOW_DAYS = 7
+
 /**
  * CC-8: єдине сповіщення застосунку — раз на тиждень (неділя, 19:00), лише якщо людина сама ввімкнула
  * тижневий підсумок у Налаштуваннях. Текст статичний: у фоні нічого не рахується й не зчитується, лише
@@ -38,9 +43,23 @@ class WeeklySummaryWorker(context: Context, params: WorkerParameters) : Coroutin
     override suspend fun doWork(): Result {
         val app = applicationContext as TeperaApp
         if (!app.settingsStore.weeklySummaryEnabled.first()) return Result.success() // вимкнено — не планує далі
-        if (canNotify(applicationContext)) notifyNow(applicationContext)
+        // Сповіщення обіцяє підсумок — надсилаємо лише тоді, коли картка «Цей тиждень» його справді покаже
+        // (ті самі умови, що WeeklyDigestViewModel: 7 днів від першого запуску і дані за тиждень).
+        if (canNotify(applicationContext) && hasWeeklyDigestData(app)) notifyNow(applicationContext)
         schedule(applicationContext)
         return Result.success()
+    }
+
+    private suspend fun hasWeeklyDigestData(app: TeperaApp): Boolean {
+        val now = System.currentTimeMillis()
+        val firstLaunch = app.settingsStore.firstLaunchMillis.first()
+        if ((now - firstLaunch) / DAY_MILLIS < DIGEST_WINDOW_DAYS) return false
+        val entries = app.activityRepository.observeEntriesInRange(now - WEEK_MILLIS, now).first()
+        return entries.any {
+            it.categoryId == DefaultCategories.READING_ID ||
+                it.categoryId == DefaultCategories.MOVEMENT_ID ||
+                it.categoryId == DefaultCategories.HOBBY_ID
+        }
     }
 
     companion object {

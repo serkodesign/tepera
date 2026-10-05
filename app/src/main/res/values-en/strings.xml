@@ -48,6 +48,7 @@
          a translation of the mockup's motivational tagline ("Make your day productive", conflicts
          with FR-P.1–P.6, "no motivational quotes"), just a neutral section name. -->
     <string name="home_header_headline">Your day</string>
+    <string name="home_header_subtitle">Today</string>
 
     <!-- Day structure (FR-3.1–3.12) — formerly "Online/Offline balance"; renamed because
          directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
@@ -55,7 +56,7 @@
     <string name="balance_online_label">Online</string>
     <string name="stats_offline_label">Away from the phone</string>
     <string name="stats_below_five_min">&lt;5 min</string>
-    <string name="balance_rest_of_day_label">Away from the phone</string>
+    <string name="balance_rest_of_day_label">Offline</string>
     <string name="activities_title">Activities</string>
     <string name="home_add_category">Add</string>
 
@@ -196,9 +197,15 @@
     <string name="settings_tracking_action">Tracking</string>
     <string name="settings_tracking_screen_title">Tracking</string>
     <string name="settings_language_action">Language</string>
+    <string name="settings_theme_action">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="settings_language_screen_title">Language</string>
     <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
+    <string name="settings_target_decrease">Decrease target</string>
+    <string name="settings_target_increase">Increase target</string>
     <string name="settings_sleep_window_label">Sleep window</string>
     <string name="settings_sleep_window_info">Not sleep tracking — just a calculation setting. It affects: day start (unlocks inside the window don\'t start it), day length, pause detection, the \"Away from the phone\" row in Stats, and the unlock counter. Never shown on the scale. Work nights? Adjust it.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
@@ -249,7 +256,7 @@
     <string name="widget_settings_limit">The widget holds up to %1$d buttons. Remove one to add another.</string>
     <string name="widget_settings_remove">Remove from widget</string>
     <string name="widget_settings_drag_handle">Reorder</string>
-    <string name="widget_settings_reset">Restore automatic order</string>
+    <string name="widget_settings_reset">Automatic order</string>
     <string name="gates_screen_title">Apps with a delay</string>
     <string name="gates_pause_label">Pause</string>
     <string name="gates_pause_none">Not paused</string>
@@ -260,7 +267,7 @@
     <string name="gates_pause_choice_today">Today</string>
     <string name="gates_pause_choice_weekend">For the weekend</string>
     <string name="gates_pause_choice_date">Until a date…</string>
-    <string name="gates_pause_end_now">Turn the gates on now</string>
+    <string name="gates_pause_end_now">Turn on now</string>
     <string name="gates_schedule_label">Schedule</string>
     <string name="gates_schedule_always">Always</string>
     <string name="gates_schedule_custom">On a schedule</string>
@@ -285,7 +292,7 @@
     <string name="gates_icon_not_handled">The original icon is still on your screen — tap once you\'ve hidden it</string>
     <string name="gates_remove_action">Remove gate</string>
     <string name="gates_delay_picker_title">Pause length</string>
-    <string name="gates_delay_picker_confirm">Create gate</string>
+    <string name="gates_delay_picker_confirm">Create</string>
     <string name="gates_delay_picker_cancel">Cancel</string>
     <string name="gates_pin_failed">Couldn\'t create the shortcut — please retry</string>
     <string name="gates_instruction_title">Shortcut created</string>
@@ -371,7 +378,7 @@
     <string name="add_entry_select_category_first">Choose a category first</string>
     <string name="add_entry_interval_invalid">End time must be after start time</string>
     <string name="add_entry_interval_too_long">One entry can be at most %1$d days long</string>
-    <string name="add_entry_end_next_day_action">Ended the next day</string>
+    <string name="add_entry_end_next_day_action">Next day</string>
     <string name="entry_series_caption">One activity: %1$s — %2$s</string>
     <string name="add_entry_overlap_title">Overlapping time</string>
     <string name="add_entry_overlap_body">There is already an overlapping entry in this category. Save anyway?</string>
@@ -498,4 +505,8 @@
     <string name="balance_target_label">Reference</string>
     <string name="loading_description">Loading</string>
     <string name="widget_grid_legend_before_start">Before day start</string>
+    <string name="widget_grid_legend_rest">Rest of day</string>
+    <!-- App shortcuts (long-press the app icon): dynamic, the pause label changes with state -->
+    <string name="shortcut_pause_gates">Pause gates</string>
+    <string name="shortcut_resume_gates">Resume gates</string>
 </resources>

@@ -90,7 +90,7 @@ fun GateScheduleScreen(gateRepository: GateRepository, onBack: () -> Unit) {
                     .weight(1f)
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 GlassRow(
                     label = stringResource(R.string.gate_schedule_always),

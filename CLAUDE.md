@@ -1422,7 +1422,7 @@ Samsung S23 (Android 16), Motorola G84 5G (Android 15), Huawei P9 (Android 8), S
   вигляд, лишився лише як дефолт `LocalTeperaColors`), `RedesignScope` (набір + Material-схема), `SystemBarsAppearance`.
   `TeperaPalette.*` для кольорів інтерфейсу — `@Composable` геттери з `LocalTeperaColors`, тож у `Canvas`/`drawBehind`
   колір треба зчитати в змінну ДО лямбди. Кольори даних (категорії, Online, бурштин теплової карти) — константи, не змінювались.
-- Головна дія (play на картці, Primary-кнопка, вибраний сегмент, FAB): світла — #113A2C/білий, темна — кремова #FEFFEF/#062924.
+- Головна дія (play на картці, Primary-кнопка, вибраний сегмент, FAB): світла — #003926/білий, темна — кремова #FEFFEF/#062924.
   Навбар: світла — темно-зелена пігулка, темна — кремова. Шапка Home — окремі кола.
 - Рішення власника: у темній темі кошик "0–1 хв" теплової карти — #1A3D38 (`heatmapEmptyBucket`).
 - Віджет: невибрані кола/гліфи — color-ресурси з `values-night` і `drawable-night` (без ColorFilter), бо Glance

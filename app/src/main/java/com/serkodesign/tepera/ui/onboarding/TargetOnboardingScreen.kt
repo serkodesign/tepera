@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
-import com.serkodesign.tepera.ui.theme.HourRangeSlider
+import com.serkodesign.tepera.ui.theme.HourStepper
 import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
@@ -105,13 +105,14 @@ fun TargetOnboardingScreen(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    HourRangeSlider(
+                    HourStepper(
                         hours = hours,
                         onHoursChange = { hours = it },
                         valueLabel = { value -> stringResource(R.string.settings_target_hours_format, value) },
+                        decreaseDescription = stringResource(R.string.settings_target_decrease),
+                        increaseDescription = stringResource(R.string.settings_target_increase),
                         minHours = TargetSuggestion.MIN_HOURS,
-                        maxHours = TargetSuggestion.MAX_HOURS,
-                        accessibilityLabel = stringResource(R.string.target_onboarding_title)
+                        maxHours = TargetSuggestion.MAX_HOURS
                     )
                 }
             }

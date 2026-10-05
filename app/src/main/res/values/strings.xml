@@ -53,6 +53,7 @@
          користувача НЕ переклад мотиваційного гасла мокапу ("Make your day productive", суперечить
          FR-P.1–P.6, "без мотиваційних цитат"), а нейтральна назва розділу. -->
     <string name="home_header_headline">Твій день</string>
+    <string name="home_header_subtitle">Сьогодні</string>
 
     <!-- Структура доби (FR-3.1–3.12, SRS v2.5, розділ 3.3) — раніше "Online/Offline баланс" (v2.1);
          перейменовано у v2.2, бо пряме протиставлення Online/Offline структурно гарантувало
@@ -62,7 +63,7 @@
     <string name="balance_online_label">Online</string>
     <string name="stats_offline_label">Без телефону</string>
     <string name="stats_below_five_min">&lt;5 хв</string>
-    <string name="balance_rest_of_day_label">Без телефону</string>
+    <string name="balance_rest_of_day_label">Офлайн</string>
     <string name="activities_title">Активності</string>
     <string name="home_add_category">Додати</string>
 
@@ -211,9 +212,15 @@
     <string name="settings_tracking_action">Відстеження</string>
     <string name="settings_tracking_screen_title">Відстеження</string>
     <string name="settings_language_action">Мова</string>
+    <string name="settings_theme_action">Тема</string>
+    <string name="settings_theme_system">Системна</string>
+    <string name="settings_theme_light">Світла</string>
+    <string name="settings_theme_dark">Темна</string>
     <string name="settings_language_screen_title">Мова</string>
     <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день — позначається тихою рискою на шкалі, нічого не оцінює.</string>
     <string name="settings_target_hours_format">%d год</string>
+    <string name="settings_target_decrease">Зменшити орієнтир</string>
+    <string name="settings_target_increase">Збільшити орієнтир</string>
     <string name="settings_sleep_window_label">Вікно сну</string>
     <string name="settings_sleep_window_info">Не облік сну — лише технічний параметр. Впливає на: початок дня (нічні розблокування у вікні його не починають), довжину дня, пошук пауз, рядок «Без телефону» в Статистиці й лічильник розблокувань. На шкалі не показується. Працюєш ночами — онови межі.</string>
     <string name="settings_sleep_window_hour_format">%d:00</string>
@@ -264,7 +271,7 @@
     <string name="widget_settings_limit">На віджеті може бути до %1$d кнопок. Прибери одну, щоб додати іншу.</string>
     <string name="widget_settings_remove">Прибрати з віджета</string>
     <string name="widget_settings_drag_handle">Змінити порядок</string>
-    <string name="widget_settings_reset">Повернути автоматичний порядок</string>
+    <string name="widget_settings_reset">Автоматичний порядок</string>
     <string name="gates_screen_title">Застосунки з затримкою</string>
     <string name="gates_pause_label">Пауза</string>
     <string name="gates_pause_none">Не на паузі</string>
@@ -275,7 +282,7 @@
     <string name="gates_pause_choice_today">Сьогодні</string>
     <string name="gates_pause_choice_weekend">На вихідні</string>
     <string name="gates_pause_choice_date">До дати…</string>
-    <string name="gates_pause_end_now">Увімкнути ворота зараз</string>
+    <string name="gates_pause_end_now">Увімкнути зараз</string>
     <string name="gates_schedule_label">Розклад</string>
     <string name="gates_schedule_always">Завжди</string>
     <string name="gates_schedule_custom">За розкладом</string>
@@ -300,7 +307,7 @@
     <string name="gates_icon_not_handled">Оригінальна іконка ще на екрані — тапни, коли приховаєш</string>
     <string name="gates_remove_action">Прибрати ворота</string>
     <string name="gates_delay_picker_title">Тривалість паузи</string>
-    <string name="gates_delay_picker_confirm">Створити ворота</string>
+    <string name="gates_delay_picker_confirm">Створити</string>
     <string name="gates_delay_picker_cancel">Скасувати</string>
     <string name="gates_pin_failed">Не вдалося створити ярлик — повтори дію</string>
     <string name="gates_instruction_title">Ярлик створено</string>
@@ -386,7 +393,7 @@
     <string name="add_entry_select_category_first">Спершу оберіть категорію</string>
     <string name="add_entry_interval_invalid">Час завершення має бути пізніше початку</string>
     <string name="add_entry_interval_too_long">Один запис — не довше %1$d діб</string>
-    <string name="add_entry_end_next_day_action">Закінчилась наступного дня</string>
+    <string name="add_entry_end_next_day_action">Наступного дня</string>
     <string name="entry_series_caption">Одна активність: %1$s — %2$s</string>
     <string name="add_entry_overlap_title">Перекриття часу</string>
     <string name="add_entry_overlap_body">У цій категорії вже є запис, що перекривається за часом. Зберегти все одно?</string>
@@ -515,4 +522,8 @@
     <string name="balance_target_label">Орієнтир</string>
     <string name="loading_description">Завантаження</string>
     <string name="widget_grid_legend_before_start">До початку дня</string>
+    <string name="widget_grid_legend_rest">Решта доби</string>
+    <!-- Ярлики застосунку (довгий тап по іконці): динамічні, бо назва паузи змінюється зі станом -->
+    <string name="shortcut_pause_gates">Пауза затримки</string>
+    <string name="shortcut_resume_gates">Відновити затримку</string>
 </resources>

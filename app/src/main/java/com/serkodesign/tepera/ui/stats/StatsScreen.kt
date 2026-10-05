@@ -159,7 +159,7 @@ fun StatsScreen(
                 .fillMaxWidth()
                 .verticalScroll(statsScrollState)
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottomNavClearance()),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
 
             // T-14 (tepera-dev-spec.md): "доступне... в тижневому огляді — звичайним рядком,

@@ -63,7 +63,7 @@ fun AboutScreen(
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 TeperaCard(
                     title = stringResource(R.string.app_name),

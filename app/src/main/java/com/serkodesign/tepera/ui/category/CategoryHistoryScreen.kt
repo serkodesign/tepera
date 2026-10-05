@@ -22,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,7 +44,11 @@ import com.serkodesign.tepera.ui.diary.HistoryEntryRow
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
+import com.serkodesign.tepera.ui.theme.TeperaDialog
+import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.util.roundToQuarterHour
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -67,12 +73,42 @@ fun CategoryHistoryScreen(
     val state by viewModel.uiState.collectAsState()
     val category = state.category
 
+    // За прямим запитом користувача: редагування/видалення категорії доступне й звідси (не лише
+    // з Налаштування → Категорії) — та сама логіка (CategoryViewModel), лише для кастомних
+    // категорій (дефолтні архів-only, без полів для редагування — та сама причина, що в
+    // CategoriesScreen.kt: colorHex щозапуску синхронізується назад до фіксованого).
+    val categoryViewModel: CategoryViewModel = viewModel(factory = CategoryViewModel.Factory(categoryRepository))
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             GlassScreenHeader(
                 title = category?.let { categoryDisplayName(it) }
                     ?: stringResource(R.string.category_history_screen_title_fallback),
-                onBack = onBack
+                onBack = onBack,
+                trailing = {
+                    if (category?.isCustom == true) {
+                        // Figma 336:594: дві кнопки 44dp, біла заливка 80%, проміжок 4dp, асиметричні радіуси
+                        // (ліва — 22 зліва/8 справа, права — навпаки).
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            TeperaIconButton(
+                                icon = TeperaIcons.Edit,
+                                contentDescription = stringResource(R.string.category_edit_action),
+                                onClick = { showEditDialog = true },
+                                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                                containerColor = Color.White.copy(alpha = 0.8f)
+                            )
+                            TeperaIconButton(
+                                icon = TeperaSymbols.Delete,
+                                contentDescription = stringResource(R.string.category_delete_action),
+                                onClick = { showDeleteConfirm = true },
+                                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
+                                containerColor = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
             )
             if (category == null || state.groups.isEmpty()) {
                 Box(
@@ -92,7 +128,7 @@ fun CategoryHistoryScreen(
                     // Той самий вигляд, що у Щоденнику: заголовок доби (18sp Medium #003926), під ним картки записів
                     // ([HistoryEntryRow]) з проміжком 4dp; між добами 32dp.
                     state.groups.forEach { group ->
-                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
                                 text = formatDayLabel(group.dayStartMillis),
                                 modifier = Modifier.padding(horizontal = 8.dp).semantics { heading() },
@@ -120,6 +156,32 @@ fun CategoryHistoryScreen(
                 }
             }
         }
+    }
+
+    if (showEditDialog && category != null) {
+        EditCategoryDialog(
+            category = category,
+            onDismiss = { showEditDialog = false },
+            onSave = { name, icon, color ->
+                categoryViewModel.updateCustomCategory(category.id, name, icon, color)
+                showEditDialog = false
+            }
+        )
+    }
+
+    if (showDeleteConfirm && category != null) {
+        TeperaDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = stringResource(R.string.category_delete_confirm_title),
+            text = stringResource(R.string.category_delete_confirm_body, categoryDisplayName(category)),
+            confirmText = stringResource(R.string.category_delete_action),
+            onConfirm = {
+                categoryViewModel.deleteCustomCategory(category.id)
+                showDeleteConfirm = false
+                onBack()
+            },
+            dismissText = stringResource(R.string.dialog_cancel)
+        )
     }
 }
 

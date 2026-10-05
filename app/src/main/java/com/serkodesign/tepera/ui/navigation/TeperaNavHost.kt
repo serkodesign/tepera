@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -83,6 +84,7 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
+import com.serkodesign.tepera.util.ShortcutScreen
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
 import com.serkodesign.tepera.ui.category.CategoryHistoryScreen
@@ -115,6 +117,10 @@ import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.SystemBarsAppearance
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaGradientBackground
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 
 private object Routes {
     const val SPLASH = "splash"
@@ -209,7 +215,11 @@ fun TeperaNavHost(
     // б, якщо застосунок збігається з попереднім.
     pendingGateTargetPackage: String? = null,
     pendingGateRequestNonce: Long? = null,
-    pendingWeeklySummaryNonce: Long? = null
+    pendingWeeklySummaryNonce: Long? = null,
+    // Ярлик "Щоденник"/"Статистика" (довгий тап по іконці). Nonce — як у воріт: повторний тап по
+    // тому самому ярлику має знову перейти на екран.
+    pendingShortcutScreen: ShortcutScreen? = null,
+    pendingShortcutNonce: Long? = null
 ) {
     // Заставка — лише при першому запуску (за прямим запитом користувача): системний
     // Android-спалах (MainActivity, windowSplashScreenBackground/AnimatedIcon) уже показується
@@ -265,6 +275,22 @@ fun TeperaNavHost(
         }
     }
 
+    // Ярлик "Щоденник"/"Статистика": перехід як тап по вкладці навбару (та сама схема popUpTo/restoreState).
+    LaunchedEffect(pendingShortcutNonce) {
+        val screen = pendingShortcutScreen ?: return@LaunchedEffect
+        skipSplash()
+        navController.navigate(
+            when (screen) {
+                ShortcutScreen.DIARY -> Routes.DIARY
+                ShortcutScreen.STATS -> Routes.STATS
+            }
+        ) {
+            popUpTo(Routes.HOME) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     // Онбординг — єдиний ланцюжок: кожен крок веде просто до наступного (з заміною себе в стеку),
     // Home між кроками не показується. Порядок і умови (доступ до статистики визначає, чи буде
     // крок дозволу або орієнтиру) — у [nextOnboardingRoute]; коли кроків не лишилось — назад на Home.
@@ -315,32 +341,23 @@ fun TeperaNavHost(
     // ui-redesign (TeperaColors.kt): набір кольорів задає TeperaTheme за системним світлим/темним режимом; тут лише
     // іконки системних барів під нього.
     SystemBarsAppearance(lightBars = LocalTeperaColors.current.lightSystemBars)
+    // Матове скло навбару (Haze): джерело розмиття — фон і контент екрана (окремий Box нижче), навбар
+    // малюється ПОВЕРХ нього, а не всередині Scaffold, інакше він потрапив би у власне джерело.
+    val hazeState = remember { HazeState() }
+    Box(modifier = Modifier.fillMaxSize()) {
     Box(
-        modifier = when {
-            // Заставка малює власний повний фон (SplashScreen.kt) — тут лишень fillMaxSize,
-            // без подвійного малювання позаду неї.
-            currentRoute == Routes.SPLASH -> Modifier.fillMaxSize()
-            useGradientBackground -> Modifier.teperaGradientBackground()
-            else -> Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-        }
+        modifier = Modifier.hazeSource(hazeState).then(
+            when {
+                // Заставка малює власний повний фон (SplashScreen.kt) — тут лишень fillMaxSize,
+                // без подвійного малювання позаду неї.
+                currentRoute == Routes.SPLASH -> Modifier.fillMaxSize()
+                useGradientBackground -> Modifier.teperaGradientBackground()
+                else -> Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+            }
+        )
     ) {
         Scaffold(
-            containerColor = Color.Transparent,
-            bottomBar = {
-                if (currentRoute in Routes.BOTTOM_NAV_ROUTES) {
-                    TeperaBottomNavBar(
-                        currentRoute = currentRoute,
-                        navController = navController,
-                        onReselected = { route ->
-                            when (route) {
-                                Routes.HOME -> homeScrollToTopSignal++
-                                Routes.DIARY -> diaryScrollToTopSignal++
-                                Routes.STATS -> statsScrollToTopSignal++
-                            }
-                        }
-                    )
-                }
-            }
+            containerColor = Color.Transparent
         ) { scaffoldPadding ->
             // Навмисно БЕЗ нижнього відступу scaffoldPadding: інакше екрани з навбаром-"таблеткою"
             // (Home, Статистика) отримують подвійний нижній inset (тут + власний Scaffold
@@ -428,7 +445,8 @@ fun TeperaNavHost(
                     onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
                     onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) },
                     onShowGatesOnboarding = { navController.navigate(Routes.GATES_ONBOARDING) },
-                    scrollToTopSignal = homeScrollToTopSignal
+                    scrollToTopSignal = homeScrollToTopSignal,
+                    weeklySummaryNonce = pendingWeeklySummaryNonce
                 )
             }
             composable(Routes.STATS) {
@@ -645,6 +663,22 @@ fun TeperaNavHost(
         }
     }
     }
+    if (currentRoute in Routes.BOTTOM_NAV_ROUTES) {
+        TeperaBottomNavBar(
+            currentRoute = currentRoute,
+            navController = navController,
+            hazeState = hazeState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            onReselected = { route ->
+                when (route) {
+                    Routes.HOME -> homeScrollToTopSignal++
+                    Routes.DIARY -> diaryScrollToTopSignal++
+                    Routes.STATS -> statsScrollToTopSignal++
+                }
+            }
+        )
+    }
+    }
 }
 
 /**
@@ -663,16 +697,18 @@ private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRep
 }
 
 /**
- * "Таблетка" нижнього навбару — Figma "App concept", node 274:530 (Navbar / Today, Diary, Stats):
- * біла картка (Surface/surface-card) заввишки 62 з радіусом 32 і відступом 6, три рівні вкладки
- * Home/Diary/Stats. Вибрана — заливка Brand/200 з іконкою (Filled) і підписом Brand/800, невибрані —
- * лише сіра (Outlined) іконка. Іконки — `TeperaIcons` (SVG 1:1 з компонента "Navbar icons", node
+ * "Таблетка" нижнього навбару — Figma "App concept", node 395:1011: скляний контейнер
+ * (Surface/surface-card-transparent, білий 30%) заввишки 62 з радіусом 32 і відступом 6, три рівні вкладки
+ * Home/Diary/Stats. Вибрана — заливка Surface/surface-brand (#006944) з іконкою й підписом
+ * Surface/surface-brand-light, невибрані — суцільні білі (Surface/surface-card) з сірою іконкою. Іконки — `TeperaIcons` (SVG 1:1 з компонента "Navbar icons", node
  * 274:484). Додавання часу лишається per-категорійним (HomeScreen.CategoryCard).
  */
 @Composable
 private fun TeperaBottomNavBar(
     currentRoute: String?,
     navController: NavHostController,
+    hazeState: HazeState,
+    modifier: Modifier = Modifier,
     onReselected: (String) -> Unit
 ) {
     // enableEdgeToEdge() (MainActivity) малює контент ПІД системними барами — без урахування
@@ -682,14 +718,18 @@ private fun TeperaBottomNavBar(
     // 8.dp зверху системного інсету — той самий подих, що раніше давав фіксований 24.dp.
     val navigationBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            // За прямим запитом користувача опущено на 8dp нижче (було 16.dp, тепер 8.dp над системним інсетом).
-            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp + navigationBarInset)
+            // За прямим запитом користувача піднято на 8dp (було 8.dp над системним інсетом, тепер 16.dp).
+            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
+            // Розмиття фону за навбаром (матове скло), поверх нього — напівпрозорий navPillCard (білий 30%).
+            .hazeEffect(state = hazeState, style = HazeStyle(tint = null, blurRadius = 24.dp))
             .background(TeperaPalette.navPillCard)
             .padding(6.dp),
+        // Відступ між таблетками = внутрішній відступ контуру (6dp), як у макеті (gap-[6px]).
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         // Figma "App concept" node 274:369: три рівні частки без проміжків (justify-between).
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -698,6 +738,8 @@ private fun TeperaBottomNavBar(
             label = stringResource(R.string.home_screen_title),
             selected = currentRoute == Routes.HOME,
             modifier = Modifier.weight(1f).fillMaxHeight(),
+            // Дзеркально до останньої вкладки: зовнішній (лівий) бік 40, внутрішній 16.
+            unselectedShape = RoundedCornerShape(topStart = 40.dp, bottomStart = 40.dp, topEnd = 16.dp, bottomEnd = 16.dp),
             onClick = {
                 if (currentRoute != Routes.HOME) {
                     navController.navigate(Routes.HOME) {
@@ -732,6 +774,7 @@ private fun TeperaBottomNavBar(
             label = stringResource(R.string.stats_nav_action),
             selected = currentRoute == Routes.STATS,
             modifier = Modifier.weight(1f).fillMaxHeight(),
+            unselectedShape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp, topEnd = 40.dp, bottomEnd = 40.dp),
             onClick = {
                 if (currentRoute != Routes.STATS) {
                     navController.navigate(Routes.STATS) {
@@ -753,21 +796,25 @@ private fun NavPillTab(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    unselectedShape: Shape = RoundedCornerShape(16.dp)
 ) {
-    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 274:530 (Navbar / Today, Diary,
-    // Stats): вибрана — заливка Brand/200 (#B2E5D3), радіус 40, іконка й підпис Brand/800 (#003926);
-    // невибрана — без заливки, лише сіра (#505050) іконка. Анімація M3 (emphasized): колір заливки й
+    // Оформлення за Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 395:1011: вибрана — заливка
+    // Surface/surface-brand (#006944), радіус 40, іконка й підпис Surface/surface-brand-light (#DCF6ED);
+    // невибрана — суцільна біла заливка (Surface/surface-card), радіус 16, сіра (#505050) іконка. Анімація M3 (emphasized): колір заливки й
     // вмісту та поява/зникнення підпису — розтягування по ширині + fade.
     val contentColor by animateColorAsState(
         if (selected) TeperaPalette.navPillSelectedContent else TeperaPalette.navPillUnselectedIcon,
         TeperaSpecs.effects(), label = "navTabContent"
     )
+    // Невибрана таблетка за макетом (347:3151): F0F3F4 з прозорістю 10%, радіус 16 (вибрана — 40).
     val fill by animateColorAsState(
-        if (selected) TeperaPalette.navPillSelected else Color.Transparent,
+        if (selected) TeperaPalette.navPillSelected else TeperaPalette.navTabUnselectedFill,
         TeperaSpecs.effects(), label = "navTabFill"
     )
-    val shape = RoundedCornerShape(40.dp)
+    // Макет 347:3146/3155: вибрана — 40 з усіх боків; крайні невибрані мають 40 з ЗОВНІШНЬОГО боку
+    // контейнера (Home — ліворуч, Stats — праворуч), внутрішній бік 16; середня — 16 з усіх боків.
+    val shape = if (selected) RoundedCornerShape(40.dp) else unselectedShape
     Box(
         modifier = modifier
             .fillMaxHeight()

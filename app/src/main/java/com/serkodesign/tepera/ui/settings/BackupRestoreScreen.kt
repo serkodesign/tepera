@@ -2,6 +2,7 @@ package com.serkodesign.tepera.ui.settings
 
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
+import com.serkodesign.tepera.ui.theme.TeperaTextField
 
 import android.net.Uri
 import android.widget.Toast
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -146,26 +149,12 @@ fun BackupRestoreScreen(
             dismissText = stringResource(R.string.dialog_cancel),
             onDismiss = { if (!deleting) deleteStep = 0 }
         ) {
-            OutlinedTextField(
+            // Поле за Figma 372:493/372:497 (власний компонент, підпис усередині блоку).
+            TeperaTextField(
                 value = deleteWordInput,
                 onValueChange = { deleteWordInput = it },
-                enabled = !deleting,
-                singleLine = true,
-                label = { Text(stringResource(R.string.backup_delete_word_label)) },
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = TeperaPalette.chipSurface,
-                    unfocusedContainerColor = TeperaPalette.chipSurface,
-                    disabledContainerColor = TeperaPalette.chipSurface,
-                    focusedBorderColor = TeperaPalette.buttonBrand,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedLabelColor = TeperaPalette.buttonBrand,
-                    unfocusedLabelColor = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
-                    focusedTextColor = TeperaPalette.buttonBrandDark,
-                    unfocusedTextColor = TeperaPalette.buttonBrandDark,
-                    cursorColor = TeperaPalette.buttonBrand
-                ),
-                modifier = Modifier.fillMaxWidth()
+                label = stringResource(R.string.backup_delete_word_label),
+                enabled = !deleting
             )
         }
     }
@@ -176,7 +165,7 @@ fun BackupRestoreScreen(
 
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 GlassSectionHeader(stringResource(R.string.categories_section_active))
                 GlassRow(

@@ -16,8 +16,10 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
@@ -40,11 +42,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.setValue
@@ -117,11 +123,16 @@ fun GlassScreenHeader(
 
 /** Заголовок секції списку ("Активні", "Архівовано", "Excluded", "All" тощо). */
 @Composable
-fun GlassSectionHeader(title: String, modifier: Modifier = Modifier) {
+fun GlassSectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    topPadding: Dp = 8.dp,
+    bottomPadding: Dp = 8.dp
+) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium, fontSize = 18.sp),
-        modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp).semantics { heading() }
+        modifier = modifier.padding(start = 8.dp, end = 8.dp, top = topPadding, bottom = bottomPadding).semantics { heading() }
     )
 }
 
@@ -141,7 +152,9 @@ fun GlassRow(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardTranslucent)
+            .background(TeperaPalette.settingsCardFill)
+            // Обводка 1dp білим 100% (за запитом) — лише світла тема, як у картках активностей.
+            .then(TeperaPalette.activityCardIdleBorder?.let { Modifier.border(1.dp, it, RoundedCornerShape(16.dp)) } ?: Modifier)
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -217,6 +230,7 @@ fun <T> PillSegmentedControl(
             .height(44.dp)
             .clip(RoundedCornerShape(100.dp))
             .background(TeperaPalette.cardTranslucent)
+            .border(1.dp, TeperaPalette.borderLight, RoundedCornerShape(100.dp))
             .padding(4.dp)
     ) {
         val itemWidth = (maxWidth - gap * (options.size - 1)) / options.size
@@ -353,6 +367,31 @@ fun HourRangeSlider(
         ) {
             Text(valueText, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
         }
+        // За прямим запитом користувача: тихі стрілки по краях, щоб було видніше, що капсулу
+        // можна тягнути вліво/вправо (самого "повзунка" тут нема — лише заповнення, тож
+        // перетягуваність інакше не читається візуально). Суто декоративні (clearAndSetSemantics) —
+        // сам Box вище вже має повну семантику повзунка.
+        Icon(
+            TeperaSymbols.ChevronRight,
+            contentDescription = null,
+            tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.35f),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 6.dp)
+                .size(18.dp)
+                .graphicsLayer(scaleX = -1f)
+                .clearAndSetSemantics {}
+        )
+        Icon(
+            TeperaSymbols.ChevronRight,
+            contentDescription = null,
+            tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.35f),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 6.dp)
+                .size(18.dp)
+                .clearAndSetSemantics {}
+        )
     }
 }
 
@@ -437,10 +476,146 @@ fun TeperaButton(
                 lineHeight = lineHeightOverride ?: TextUnit.Unspecified,
                 letterSpacing = if (textSizeOverride != null) 0.sp else TextUnit.Unspecified,
                 fontWeight = size.fontWeight,
-                maxLines = 2,
+                // Одна строка: текст у кнопці не переноситься (за запитом); задовгий обрізається "…", тож тексти
+                // коротші (strings.xml). Раніше було 2 рядки — звідси перенос "Створити ворота".
+                maxLines = 1,
+                softWrap = false,
                 overflow = TextOverflow.Ellipsis
             )
         }
+    }
+}
+
+/**
+ * Степпер «− N год +» для орієнтиру Online-часу (меню "Відстеження") — замість [HourRangeSlider]
+ * за вибором користувача: крок 1 година, кнопки — ті самі [TeperaIconButton] 44dp, значення
+ * посередині. На межі відповідна кнопка стає неактивною (видима, але напівпрозора), щоб було
+ * зрозуміло, що далі нема куди.
+ */
+@Composable
+fun HourStepper(
+    hours: Int,
+    onHoursChange: (Int) -> Unit,
+    valueLabel: @Composable (Int) -> String,
+    decreaseDescription: String,
+    increaseDescription: String,
+    modifier: Modifier = Modifier,
+    minHours: Int = 1,
+    maxHours: Int = 8
+) {
+    val valueText = valueLabel(hours)
+    val brand = TeperaPalette.buttonBrandDark
+    // Figma node 405:1703 "Орієнтир часу" (оновлено): без зовнішньої капсули — темні круглі кнопки 44dp з боків,
+    // посередині світлий чіп (surface-brand-light #DCF6ED) зі значенням 18sp Medium, проміжки 4dp.
+    // На межі неактивна кнопка лишається напівпрозорою.
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { stateDescription = valueText },
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TeperaIconButton(
+            icon = TeperaSymbols.Remove,
+            contentDescription = decreaseDescription,
+            onClick = { onHoursChange((hours - 1).coerceAtLeast(minHours)) },
+            modifier = Modifier.width(44.dp),
+            shape = CircleShape,
+            containerColor = brand,
+            contentColor = Color.White,
+            enabled = hours > minHours,
+            height = 44.dp,
+            iconSize = 24.dp
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(44.dp)
+                .clip(RoundedCornerShape(28.dp))
+                // Світла тема — Surface/surface-brand-light з макета (#DCF6ED); surfaceBrandLight тут білий (#FEFEFE).
+                .background(if (LocalTeperaColors.current.isDark) TeperaPalette.surfaceBrandLight else Color(0xFFDCF6ED)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = valueText,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = TeperaPalette.headlineFont,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp,
+                    lineHeight = 20.sp
+                ),
+                color = brand
+            )
+        }
+        TeperaIconButton(
+            icon = TeperaSymbols.Add,
+            contentDescription = increaseDescription,
+            onClick = { onHoursChange((hours + 1).coerceAtMost(maxHours)) },
+            modifier = Modifier.width(44.dp),
+            shape = CircleShape,
+            containerColor = brand,
+            contentColor = Color.White,
+            enabled = hours < maxHours,
+            height = 44.dp,
+            iconSize = 24.dp
+        )
+    }
+}
+
+/**
+ * Поле часу в стилі Material 3 (OutlinedTextField із лейблом і іконкою годинника) для екранів
+ * налаштувань. Поле тільки для читання: тап відкриває [TeperaTimePickerDialog], а не клавіатуру.
+ * Рамка темна (#003926, 1dp) і текст 22sp — щоб поле читалось як кнопка-вибір, а не як фон картки.
+ */
+@Composable
+fun TeperaTimeField(
+    label: String,
+    minute: Int,
+    onSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showPicker by remember { mutableStateOf(false) }
+    val text = "%02d:%02d".format(minute / 60, minute % 60)
+    // Стиль поля "Назва" (TeperaTextField): блок 56dp, радіус 8, заливка inputSurface, підпис 11sp і значення 16sp.
+    val fieldShape = RoundedCornerShape(8.dp)
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .clip(fieldShape)
+            .background(TeperaPalette.inputSurface, fieldShape)
+            .border(1.dp, TeperaPalette.inputSurface, fieldShape)
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                lineHeight = 12.sp,
+                color = TeperaPalette.textSecondary
+            )
+            Text(
+                text = text,
+                fontSize = 16.sp,
+                lineHeight = 21.sp,
+                color = TeperaPalette.textPrimary
+            )
+        }
+        // Прозорий шар поверх поля перехоплює тап — поле тільки для читання, вибір іде через діалог часу.
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable(role = Role.Button) { showPicker = true }
+                .semantics { contentDescription = "$label $text" }
+        )
+    }
+    if (showPicker) {
+        TeperaTimePickerDialog(
+            title = label,
+            minuteOfDay = minute,
+            onSelected = { onSelected(it); showPicker = false },
+            onDismiss = { showPicker = false }
+        )
     }
 }
 
@@ -533,7 +708,8 @@ fun TeperaSearchField(
             .fillMaxWidth()
             .heightIn(min = 56.dp)
             .clip(RoundedCornerShape(28.dp))
-            .background(TeperaPalette.chipSurface)
+            // Білий, як картки (cardActive): у світлій темі — білий, у темній — колір карток, а не сірий inputSurface.
+            .background(TeperaPalette.cardActive)
             .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)

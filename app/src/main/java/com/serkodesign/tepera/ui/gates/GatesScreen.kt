@@ -153,7 +153,7 @@ fun GatesScreen(
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     if (!searchActive) item {
                         TeperaHint(
@@ -163,7 +163,7 @@ fun GatesScreen(
                     }
                     if (!searchActive) item {
                         // CC-5: ворота активні = зараз вікно розкладу І немає паузи.
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             GlassRow(
                                 label = stringResource(R.string.gates_pause_label),
                                 onClick = { showPauseDialog = true },

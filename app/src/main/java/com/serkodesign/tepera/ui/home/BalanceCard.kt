@@ -11,10 +11,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -127,7 +132,7 @@ fun MyDayCard(
                         dayLengthMinutes = state.dayLengthMinutes,
                         dayStartMillis = state.dayStartMillis
                     )
-                    DayStructureLegend(segments = segments, targetMinutes = state.targetMinutes)
+                    DayStructureLegend(segments = segments)
                 }
             }
         }
@@ -170,19 +175,23 @@ private fun daySegments(state: BalanceUiState): List<DaySegment> {
  */
 @Composable
 private fun DayHeader(dayStartMillis: Long, dayLengthMinutes: Int) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    // Figma node 395:1033: підпис Tag (11sp Regular, text-brand-dark), число — 22sp Medium text-brand (#006944).
+    // У темній темі число лишається кремовим (як решта заголовків).
+    val valueColor = if (LocalTeperaColors.current.isDark) TeperaPalette.buttonBrandDark else Color(0xFF006944)
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
             text = if (dayStartMillis > 0L) {
                 stringResource(R.string.home_card_day_since_format, formatClock(dayStartMillis))
             } else {
                 stringResource(R.string.home_card_day_last_label)
             },
-            style = MaterialTheme.typography.labelLarge,
-            color = HomeCardTextSecondary
+            fontSize = 11.sp,
+            lineHeight = 12.sp,
+            color = TeperaPalette.buttonBrandDark
         )
         Text(
             text = formatBalanceDuration(dayLengthMinutes),
-            color = TeperaPalette.buttonBrandDark,
+            color = valueColor,
             fontFamily = TeperaPalette.headlineFont,
             fontWeight = FontWeight.Medium,
             fontSize = 22.sp,
@@ -192,19 +201,25 @@ private fun DayHeader(dayStartMillis: Long, dayLengthMinutes: Int) {
 }
 
 private val LegendDotSize = 8.dp // кружок-маркер у легенді (за запитом користувача)
-private val BarTrackHeight = 20.dp
-private val BarTotalHeight = 44.dp // висота з виступами маркерів над/під смугою
-private val SegmentGap = 2.dp
+// Figma node 395:1037 (шкала структури дня): білий контейнер, рамка 1dp #DDE2E4, радіус 14, відступ 3dp.
+// Висота 40dp → сегменти 32dp (40 − 2 рамки − 6 відступу), орієнтир 37dp (по 2.5dp над і під сегментами).
+private val BarFrameHeight = 40.dp
+private val BarFrameBorderColor = Color(0xFFDDE2E4)
+private val SegmentGap = 1.dp // gap-px у макеті
+private val SegmentRadius = 12.dp
 
-// Кольори за запитом користувача: сегмент "решта дня" (те, що ще попереду) — світло-зелений
-// "Офлайн-життя" (#C5E2CB), а пройдений сегмент "Без телефону" — глибокий зелений. Так пройдена
-// частина читається темнішою й чітко відділена від решти, а в легенді кружок "Без телефону" теж темний.
-private val BarTrackColor = TeperaPalette.restOfDayCard
-private val RestSegmentColor = Color(0xFF2B5747)
+// Незайнята частина дня — суцільний бежевий #E2DED1; сегмент "Офлайн" — суцільний зелений #006944, як у чіпі легенди.
+private val BarTrackColor = Color(0xFFE2DED1)
+// Штрихи на "Решта дня" — світлі діагональні смуги поверх бежевого (як у макеті 395:1033).
+private val HatchStripeColor = Color(0x80FFFFFF)
+private val RestSegmentColor = Color(0xFF006944)
+// Орієнтир (Figma 395:1037): жовтий #F5C401 — заливка 20%, права рамка 1dp без прозорості.
+private val TargetFillColor = Color(0x33F5C401)
+private val TargetBorderColor = Color(0xFFF5C401)
 
 /**
  * Шкала структури доби: пігулка з сегментів (Online, категорії, "Без телефону" і світла "решта дня" = ще не
- * прожитий час), розділених проміжками 2dp (сусідні відтінки не зливаються — читається й без розрізнення кольорів, WCAG 1.4.1).
+ * прожитий час), розділених проміжками 1dp за макетом (сусідні відтінки не зливаються — читається й без розрізнення кольорів, WCAG 1.4.1).
  * Окремої позначки "зараз" нема: межею є край останнього кольорового сегмента (раніше була чорна
  * ручка, за запитом користувача прибрана). Під шкалою — підписи країв (початок дня → 00:00), щоб
  * було ясно, що саме вона показує.
@@ -228,15 +243,40 @@ private fun DayStructureBar(
 
     // Без BoxWithConstraints: він робить субкомпозицію на кожному перевимірі, а слайдер Home
     // перевимірює сторінки на кожному кадрі свайпу — на Huawei P9 це давало 63% рваних кадрів.
-    // Позиції маркерів рахує легкий layout-модифікатор [atFraction] (без субкомпозиції).
+    // Ширина орієнтиру — частка від ширини смуги (fillMaxWidth(fraction)), без субкомпозиції.
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Box(Modifier.fillMaxWidth().height(BarTotalHeight)) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(BarFrameHeight)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color.White)
+                .border(1.dp, BarFrameBorderColor, RoundedCornerShape(14.dp))
+        ) {
+            // Внутрішня зона всередині рамки (1dp): орієнтир від її початку до позначки, за сегментами.
+            Box(Modifier.fillMaxSize().padding(1.dp)) {
+                if (markerFraction != null) {
+                    Box(
+                        Modifier
+                            .align(Alignment.CenterStart)
+                            .fillMaxWidth(markerFraction)
+                            .height(37.dp)
+                            .background(TargetFillColor)
+                            .drawBehind {
+                                val border = 2.dp.toPx()
+                                drawLine(
+                                    TargetBorderColor,
+                                    Offset(size.width - border / 2, 0f),
+                                    Offset(size.width - border / 2, size.height),
+                                    strokeWidth = border
+                                )
+                            }
+                    )
+                }
             Row(
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .height(BarTrackHeight)
-                    .clip(RoundedCornerShape(100.dp)),
+                    .fillMaxSize()
+                    .padding(3.dp),
                 horizontalArrangement = Arrangement.spacedBy(SegmentGap)
             ) {
                 // Сегменти можуть перекриватись (Online + запис + офлайн за об'єднанням у сумі більші за довжину
@@ -252,7 +292,7 @@ private fun DayStructureBar(
                         modifier = Modifier
                             .weight((segment.minutes * scale).coerceAtLeast(1f))
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(SegmentRadius))
                             .background(segment.color)
                     )
                 }
@@ -264,22 +304,11 @@ private fun DayStructureBar(
                         modifier = Modifier
                             .weight(futureMinutes.toFloat())
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(BarTrackColor)
+                            .clip(RoundedCornerShape(SegmentRadius))
+                            .hatched(BarTrackColor)
                     )
                 }
             }
-            // CC-1: орієнтир — два тихі трикутники над і під шкалою, без підпису і без зміни кольору.
-            if (markerFraction != null) {
-                listOf("▼" to Alignment.TopStart, "▲" to Alignment.BottomStart).forEach { (glyph, align) ->
-                    Text(
-                        text = glyph,
-                        color = TeperaPalette.buttonBrandDark,
-                        fontSize = 10.sp,
-                        lineHeight = 12.sp,
-                        modifier = Modifier.align(align).atFraction(markerFraction, centered = true).clearAndSetSemantics { }
-                    )
-                }
             }
         }
         if (dayStartMillis > 0L) {
@@ -291,16 +320,7 @@ private fun DayStructureBar(
     }
 }
 
-/** Ставить елемент на [fraction] ширини батька (без субкомпозиції, на відміну від BoxWithConstraints). */
-private fun Modifier.atFraction(fraction: Float, centered: Boolean): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
-    val width = constraints.maxWidth
-    layout(width, placeable.height) {
-        val x = (width * fraction).roundToInt() - if (centered) placeable.width / 2 else 0
-        // Не виходимо за краї смуги: ручка "зараз" у самому кінці дня лишається повністю видимою.
-        placeable.placeRelative(x.coerceIn(0, (width - placeable.width).coerceAtLeast(0)), 0)
-    }
-}
+
 
 /**
  * Легенда — чіпси "колір · назва · час" (Figma "App concept" node 347:3037, "My day": замінює
@@ -312,19 +332,12 @@ private fun Modifier.atFraction(fraction: Float, centered: Boolean): Modifier = 
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DayStructureLegend(segments: List<DaySegment>, targetMinutes: Int?) {
-    // Орієнтир (▼ — той самий значок, що на шкалі) дописано в чіп Online, з яким він порівнюється; підпису на самій
-    // шкалі нема (FR-3.10). Без Online-сегмента (0 хв) орієнтир лишається окремим чіпом.
-    val onlineLabel = stringResource(R.string.balance_online_label)
-    val onlineIndex = segments.indexOfFirst { it.label == onlineLabel }
+private fun DayStructureLegend(segments: List<DaySegment>) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        segments.forEachIndexed { index, segment ->
-            LegendChip(segment, targetMinutes = targetMinutes.takeIf { index == onlineIndex })
-        }
-        if (targetMinutes != null && onlineIndex < 0) TargetLegendChip(targetMinutes)
+        segments.forEach { segment -> LegendChip(segment) }
     }
 }
 
@@ -334,7 +347,7 @@ private fun LegendChipSurface(content: @Composable RowScope.() -> Unit) {
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.chipSurface)
-            .border(1.dp, TeperaPalette.navTabIdleFill, RoundedCornerShape(16.dp))
+            .border(1.dp, TeperaPalette.inputSurface, RoundedCornerShape(16.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -343,33 +356,26 @@ private fun LegendChipSurface(content: @Composable RowScope.() -> Unit) {
 }
 
 @Composable
-private fun TargetLegendChip(targetMinutes: Int) {
-    LegendChipSurface {
-        Box(Modifier.size(LegendDotSize), contentAlignment = Alignment.Center) {
-            Text("▼", color = TeperaPalette.buttonBrandDark, fontSize = 10.sp, lineHeight = 10.sp)
-        }
-        Text(stringResource(R.string.balance_target_label), fontSize = 12.sp, color = HomeCardTextPrimary, maxLines = 1)
-        Text(formatBalanceDuration(targetMinutes), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = HomeCardTextPrimary, maxLines = 1)
-    }
-}
-
-@Composable
-private fun LegendChip(segment: DaySegment, targetMinutes: Int? = null) {
+private fun LegendChip(segment: DaySegment) {
     LegendChipSurface {
         Box(Modifier.size(LegendDotSize).clip(RoundedCornerShape(2.dp)).background(segment.color))
         Text(segment.label, fontSize = 12.sp, color = HomeCardTextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        if (targetMinutes != null) {
-            val targetText = formatBalanceDuration(targetMinutes)
-            val targetDescription = stringResource(R.string.balance_target_label) + " " + targetText
-            Text(
-                text = "▼ $targetText",
-                modifier = Modifier.clearAndSetSemantics { contentDescription = targetDescription },
-                fontSize = 12.sp,
-                color = HomeCardTextSecondary,
-                maxLines = 1
-            )
-        }
         Text(formatBalanceDuration(segment.minutes), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = HomeCardTextPrimary, maxLines = 1)
+    }
+}
+
+/** Діагональне штрихування поверх [base] (Figma: "Решта дня" — незайнята частина дня), без субкомпозиції. */
+private fun Modifier.hatched(base: Color): Modifier = drawBehind {
+    drawRect(base)
+    val step = 6.dp.toPx()
+    val stroke = 2.dp.toPx()
+    // Штрихи починаються ЗА межами області (від -висоти), тож обрізаємо по прямокутнику сегмента.
+    clipRect(0f, 0f, size.width, size.height) {
+        var x = -size.height
+        while (x < size.width) {
+            drawLine(HatchStripeColor, Offset(x, size.height), Offset(x + size.height, 0f), strokeWidth = stroke)
+            x += step
+        }
     }
 }
 

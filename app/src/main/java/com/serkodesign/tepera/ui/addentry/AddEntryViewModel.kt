@@ -14,11 +14,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
 private const val MAX_NOTE_LENGTH = 250
+private const val MAX_SUGGESTIONS = 5
+private const val SUGGESTION_WINDOW_MILLIS = 90L * 24 * 60 * 60 * 1000
+private const val SUGGESTION_FUTURE_MILLIS = 24L * 60 * 60 * 1000
 private const val DEFAULT_INTERVAL_MINUTES = 30
 private const val MINUTE_MILLIS = 60_000L
 
@@ -90,6 +97,35 @@ class AddEntryViewModel(
 
     private val _uiState = MutableStateFlow(AddEntryUiState(selectedCategoryId = initialCategoryId))
     val uiState: StateFlow<AddEntryUiState> = _uiState.asStateFlow()
+
+    /**
+     * Швидкі відповіді для нотатки: до 5 найчастіших нотаток цієї категорії за останні 90 днів
+     * (з уже збережених записів, без нової таблиці). Порожньо, якщо категорію не вибрано або нотаток немає.
+     */
+    val noteSuggestions: StateFlow<List<String>> = _uiState
+        .map { it.selectedCategoryId }
+        .distinctUntilChanged()
+        .flatMapLatest { categoryId ->
+            if (categoryId == null) {
+                flowOf(emptyList())
+            } else {
+                val now = System.currentTimeMillis()
+                // Верхня межа — з запасом уперед: записи з майбутнім часом (наприклад, пізніше сьогодні) теж мають давати підказки.
+                activityRepository.observeEntriesInRange(now - SUGGESTION_WINDOW_MILLIS, now + SUGGESTION_FUTURE_MILLIS).map { entries ->
+                    entries
+                        .asSequence()
+                        .filter { it.categoryId == categoryId }
+                        .mapNotNull { it.note?.trim()?.takeIf { text -> text.isNotEmpty() } }
+                        .groupingBy { it }
+                        .eachCount()
+                        .entries
+                        .sortedByDescending { it.value }
+                        .take(MAX_SUGGESTIONS)
+                        .map { it.key }
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Історія на Stats (редагування наявного запису) — визначає заголовок екрана й кнопку "Видалити". */
     val isEditing: Boolean = editingEntryId != null

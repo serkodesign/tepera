@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- ui-redesign, темна системна тема: картка сітки доби — #062924 з прозорістю 30%, як світла версія. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#4D062924" />
-    <corners android:radius="16dp" />
-</shape>

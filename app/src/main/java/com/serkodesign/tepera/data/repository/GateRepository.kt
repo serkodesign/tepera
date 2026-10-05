@@ -199,6 +199,25 @@ class GateRepository(
         settingsStore.setGatePause(null)
     }
 
+    /** Пауза чинна саме зараз (не запланована на майбутнє) — від неї залежить підпис ярлика "Пауза/Відновити". */
+    suspend fun isPauseActive(nowMillis: Long = System.currentTimeMillis()): Boolean {
+        val current = settingsStore.gatePause.first() ?: return false
+        return nowMillis >= current.fromMillis && nowMillis < current.untilMillis
+    }
+
+    /**
+     * Ярлик застосунку "Пауза затримки" / "Відновити затримку": чинна пауза → скасувати, інакше →
+     * пауза "сьогодні" (та сама, що кнопка на екрані воріт). Вирішує стан у момент тапу, а не
+     * підпис ярлика, — підпис може відставати, поки застосунок не відкривали.
+     */
+    suspend fun toggleTodayPause(nowMillis: Long = System.currentTimeMillis()) {
+        if (isPauseActive(nowMillis)) {
+            endPause(nowMillis)
+        } else {
+            startPause(GatePausePresets.today(nowMillis), nowMillis)
+        }
+    }
+
     /** `null` = "завжди". Кожне збереження розкладу пишеться як `schedule_changed`. */
     suspend fun setSchedule(schedule: GateSchedule?) {
         settingsStore.setGateSchedule(schedule)

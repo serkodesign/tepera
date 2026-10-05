@@ -54,7 +54,7 @@ fun KnowledgeBaseScreen(onOpenScrollingNotes: () -> Unit, onBack: () -> Unit) {
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = stringResource(R.string.knowledge_base_intro),
@@ -110,7 +110,7 @@ fun ScrollingNotesScreen(onBack: () -> Unit) {
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = stringResource(R.string.scrolling_notes_intro),

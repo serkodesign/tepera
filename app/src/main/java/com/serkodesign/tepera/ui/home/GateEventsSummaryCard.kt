@@ -29,15 +29,15 @@ fun GateEventsSummaryCard(state: GateEventsSummaryUiState, onDismiss: () -> Unit
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardTranslucentLight)
+            .contextInfoSurface()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ContextCardHeader(title = stringResource(R.string.gate_events_summary_card_title), onDismiss = onDismiss)
         Text(
             pluralStringResource(R.plurals.gate_events_summary_text, state.cancelledCount, state.cancelledCount),
-            style = MaterialTheme.typography.bodyMedium
+            style = ContextCardBodyStyle,
+            color = TeperaPalette.buttonBrandDark
         )
     }
 }

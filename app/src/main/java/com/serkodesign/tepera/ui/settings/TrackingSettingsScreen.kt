@@ -42,9 +42,9 @@ import com.serkodesign.tepera.data.GapSensitivity
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
-import com.serkodesign.tepera.ui.gates.TimeChip
+import com.serkodesign.tepera.ui.theme.TeperaTimeField
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
-import com.serkodesign.tepera.ui.theme.HourRangeSlider
+import com.serkodesign.tepera.ui.theme.HourStepper
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
@@ -118,7 +118,7 @@ fun TrackingSettingsScreen(
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(top = 8.dp, bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // --- Орієнтир Online-часу
                 SettingCard(
@@ -151,16 +151,17 @@ fun TrackingSettingsScreen(
                     }
                 ) {
                     targetHours?.let { hours ->
-                        HourRangeSlider(
+                        HourStepper(
                             hours = hours,
                             onHoursChange = { newHours ->
                                 targetHours = newHours
                                 scope.launch { settingsStore.setTargetMinutes(newHours * 60) }
                             },
                             valueLabel = { value -> stringResource(R.string.settings_target_hours_format, value) },
+                            decreaseDescription = stringResource(R.string.settings_target_decrease),
+                            increaseDescription = stringResource(R.string.settings_target_increase),
                             minHours = TargetSuggestion.MIN_HOURS,
-                            maxHours = TargetSuggestion.MAX_HOURS,
-                            accessibilityLabel = stringResource(R.string.settings_target_label)
+                            maxHours = TargetSuggestion.MAX_HOURS
                         )
                     }
                 }
@@ -183,27 +184,23 @@ fun TrackingSettingsScreen(
                         lineHeight = 26.sp
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        TimeChip(
+                        TeperaTimeField(
                             label = stringResource(R.string.settings_sleep_window_start_label),
                             minute = windowStartMinute,
                             onSelected = { minute ->
                                 windowStartMinute = minute
                                 scope.launch { sleepWindowRepository.setWindow(1, minute, windowEndMinute, enabled = true) }
                             },
-                            modifier = Modifier.weight(1f),
-                            containerColor = TeperaPalette.chipSurface,
-                            borderColor = TeperaPalette.fieldBorder
+                            modifier = Modifier.weight(1f)
                         )
-                        TimeChip(
+                        TeperaTimeField(
                             label = stringResource(R.string.settings_sleep_window_end_label),
                             minute = windowEndMinute,
                             onSelected = { minute ->
                                 windowEndMinute = minute
                                 scope.launch { sleepWindowRepository.setWindow(1, windowStartMinute, minute, enabled = true) }
                             },
-                            modifier = Modifier.weight(1f),
-                            containerColor = TeperaPalette.chipSurface,
-                            borderColor = TeperaPalette.fieldBorder
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }

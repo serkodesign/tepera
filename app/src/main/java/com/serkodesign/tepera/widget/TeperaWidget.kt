@@ -1,8 +1,10 @@
 package com.serkodesign.tepera.widget
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.RectF
 import androidx.compose.runtime.Composable
@@ -19,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.core.graphics.ColorUtils
+import androidx.compose.ui.graphics.toArgb
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
@@ -31,6 +35,7 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
@@ -42,6 +47,7 @@ import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -55,6 +61,7 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.DefaultCategories
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
+import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
@@ -80,6 +87,19 @@ internal fun widgetIconRes(iconName: String, selected: Boolean): Int = when (ico
     "social" -> if (selected) R.drawable.ic_widget2_social_selected else R.drawable.ic_widget2_social
     "errands" -> if (selected) R.drawable.ic_widget2_errands_selected else R.drawable.ic_widget2_errands
     "sleep" -> if (selected) R.drawable.ic_widget2_sleep_selected else R.drawable.ic_widget2_sleep // legacy, архівна (v2.4)
+    // Кастомні категорії (Material Symbols, ic_widget2_<key>.xml): ті самі ключі, що в CategoryVisuals.customCategoryIconChoices.
+    "star" -> if (selected) R.drawable.ic_widget2_star_selected else R.drawable.ic_widget2_star
+    "favorite" -> if (selected) R.drawable.ic_widget2_favorite_selected else R.drawable.ic_widget2_favorite
+    "coffee" -> if (selected) R.drawable.ic_widget2_coffee_selected else R.drawable.ic_widget2_coffee
+    "music" -> if (selected) R.drawable.ic_widget2_music_selected else R.drawable.ic_widget2_music
+    "brush" -> if (selected) R.drawable.ic_widget2_brush_selected else R.drawable.ic_widget2_brush
+    "pets" -> if (selected) R.drawable.ic_widget2_pets_selected else R.drawable.ic_widget2_pets
+    "work" -> if (selected) R.drawable.ic_widget2_work_selected else R.drawable.ic_widget2_work
+    "restaurant" -> if (selected) R.drawable.ic_widget2_restaurant_selected else R.drawable.ic_widget2_restaurant
+    "flight" -> if (selected) R.drawable.ic_widget2_flight_selected else R.drawable.ic_widget2_flight
+    "fitness" -> if (selected) R.drawable.ic_widget2_fitness_selected else R.drawable.ic_widget2_fitness
+    "celebration" -> if (selected) R.drawable.ic_widget2_celebration_selected else R.drawable.ic_widget2_celebration
+    "home" -> if (selected) R.drawable.ic_widget2_home_selected else R.drawable.ic_widget2_home
     else -> if (selected) R.drawable.ic_widget_generic else R.drawable.ic_widget2_generic
 }
 
@@ -98,7 +118,7 @@ internal val FIGMA_TINTS = mapOf(
     "movement" to ButtonTint(Color(0xFFFAECCC), Color(0xFF7C5B14)), // "Sport"
     "hobby" to ButtonTint(Color(0xFFFADEEE), Color(0xFF790645)),
     "social" to ButtonTint(Color(0xFFC6F1EF), Color(0xFF004340)), // "Time with people"
-    "nature" to ButtonTint(Color(0xFFD4EFE5), Color(0xFF00744C)),
+    "nature" to ButtonTint(Color(0xFFC5E2CB), Color(0xFF00744C)),
     "errands" to ButtonTint(Color(0xFFE3EFC4), Color(0xFF42550F)),
     "sleep" to ButtonTint(Color(0xFFBCC9FA), Color(0xFF213260))
 )
@@ -109,10 +129,34 @@ internal val FIGMA_TINTS = mapOf(
  */
 private fun selectedTint(category: CategoryEntity): ButtonTint {
     category.nameKey?.let { key -> FIGMA_TINTS[key]?.let { return it } }
-    val base = categoryColor(category.colorHex)
+    return customActiveTint(categoryColor(category.colorHex))
+}
+
+/** Мінімальний контраст гліфа до кола активної кнопки — мінімум WCAG для графічних елементів (3:1). */
+private const val ACTIVE_MIN_CONTRAST = 3.0
+
+/** Найбільше світлішання кола (частка білого): фон завжди лишається помітно кольоровим. */
+private const val ACTIVE_MAX_MIX = 0.7f
+
+/**
+ * Активна кастомна кнопка: гліф — точний колір категорії (обраний при створенні), коло — той самий колір,
+ * світлішає (змішування з білим), доки контраст гліфа до кола не досягне [ACTIVE_MIN_CONTRAST].
+ * Якщо навіть білий фон не дає потрібного контрасту (деякі теплі кольори), лишається білий.
+ */
+private fun customActiveTint(base: Color): ButtonTint {
+    // blendARGB на малих значеннях може дати альфу < 255 (напр. #FE…), а ColorUtils.calculateContrast
+    // такого фону не приймає ("background can not be translucent") — тому кожне значення робимо непрозорим.
+    val baseArgb = ColorUtils.setAlphaComponent(base.toArgb(), 0xFF)
+    fun lighten(mix: Float): Int = ColorUtils.setAlphaComponent(
+        ColorUtils.blendARGB(baseArgb, android.graphics.Color.WHITE, mix), 0xFF
+    )
+    var mix = 0f
+    while (mix < ACTIVE_MAX_MIX && ColorUtils.calculateContrast(baseArgb, lighten(mix)) < ACTIVE_MIN_CONTRAST) {
+        mix += 0.02f
+    }
     return ButtonTint(
-        circle = base.copy(alpha = 0.25f),
-        glyph = Color(base.red * 0.45f, base.green * 0.45f, base.blue * 0.45f)
+        circle = Color(lighten(mix.coerceAtMost(1f))),
+        glyph = base
     )
 }
 
@@ -157,7 +201,6 @@ open class TeperaWidget : GlanceAppWidget() {
         val midnight = startOfLogicalDayMillis()
         val initial = LiveWidgetInitial(
             activeCategories = app.categoryRepository.observeActiveCategories().first(),
-            allCategories = app.categoryRepository.observeAllCategories().first(),
             selectedIds = app.settingsStore.widgetCategoryIds.first(),
             activeTimers = app.activeTimerStore.activeTimers.first(),
             entries = app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE).first(),
@@ -182,7 +225,6 @@ open class TeperaWidget : GlanceAppWidget() {
                 activeTimers = sortCategoriesForWidget(DefaultCategories.all).firstOrNull()?.let { mapOf(it.id to 0L) } ?: emptyMap(),
                 hasUsageAccess = true,
                 gridSlots = previewGridSlots(),
-                categoriesById = DefaultCategories.all.associateBy { it.id },
                 maxButtons = maxButtons
             )
         }
@@ -193,7 +235,6 @@ open class TeperaWidget : GlanceAppWidget() {
 // радіус 100, відступ 8) з колами 56dp; проміжок — justify-between на всю ширину; у 2x1 — 8dp.
 private val CATEGORY_BUTTON_SIZE = 60.dp // макет 236:956 — 56; збільшено до 60 за запитом користувача
 private val PILL_PADDING = 12.dp // макет 236:956 — 8; збільшено до 12 за запитом користувача
-private val PILL_HEIGHT = CATEGORY_BUTTON_SIZE + PILL_PADDING * 2
 private val BUTTON_GAP = 8.dp
 private val MIN_SPREAD_GAP = 4.dp
 internal val WIDGET_GLYPH_UNSELECTED = Color(0xFF505050) // Text/text-secondary
@@ -203,22 +244,21 @@ internal val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
 internal val WIDGET_GLYPH_UNSELECTED_NIGHT = Color(0xFFFEFFEF)
 internal val WIDGET_CIRCLE_UNSELECTED_NIGHT = Color(0xFF1A3D38)
 
-// Figma node 234:855 (картка сітки в 4x2): відступ 12, проміжок клітинок 3, радіус клітинки 4,
-// клітинка 23.83x23.5 при ширині 343; картка — Surface/surface-card-transparent.
+// Figma node 234:678 (4x2): віджет з відступом 12, без окремої картки; сітка 12x4 — горизонтальні
+// пігулки висотою 16 з проміжком 3; між блоками — 8.
 private const val DAILY_GRID_COLUMNS = 12
 private const val DAILY_GRID_ROWS = 4
 private val CARD_PADDING = 12.dp
 private val DAILY_GRID_GAP = 3.dp
-private val DAILY_GRID_CELL_RADIUS = 4.dp
-private val DAILY_GRID_MAX_CELL = 23.5.dp
+private val DAILY_GRID_MAX_CELL = 16.dp // макет: висота пігулки 16
 private val DAILY_GRID_MIN_CELL = 8.dp // нижче — на тісних лаунчерах (висота 140dp) клітинки ще читаються
-private val ROW_TO_CARD_GAP = 12.dp
+private val ROW_TO_CARD_GAP = 8.dp
 
-// Figma node 234:848: кольори клітинок. Категорії й Online — реальні кольори (макет має лише демо).
-private val WIDGET_GRID_PRE_UNLOCK_COLOR = Color(0xFFA172FF) // до точки старту дня
+// Figma node 234:678: кольори клітинок — лише 4 стани, без кольорів категорій (макет їх не показує).
+private val WIDGET_GRID_PRE_UNLOCK_COLOR = Color(0xFFA87DFF) // до точки старту дня (#a87dff)
 private val WIDGET_GRID_ONLINE_COLOR = Color(0xFFF5C401) // той самий #F5C401, що TeperaPalette.onlineCard
-private val WIDGET_GRID_BLANK_PAST = Color.White // Grey/0 — минуло, нічого не залоговано
-private val WIDGET_GRID_BLANK_FUTURE = Color(0x80A7A7A7) // rgba(167,167,167,0.5) — ще не настало
+private val WIDGET_GRID_BLANK_PAST = Color.White // Grey/0 — минуло, без Online (і без записів категорій)
+private val WIDGET_GRID_BLANK_FUTURE = Color(0x80A7A7A7) // rgba(167,167,167,0.5) — ще не настало, пунктирна обвідка
 
 // Годинні підмітки й легенда під сіткою (за запитом користувача — не в Figma).
 // Картка напівпрозора (30% білого, widget_card_translucent) — на темних шпалерах ефективний
@@ -229,10 +269,9 @@ private val HOUR_LABEL_WIDTH = 18.dp
 private val HOUR_LABEL_GAP = 6.dp
 private val HOUR_LABEL_TEXT_SIZE = 11.sp
 private val HOUR_LABEL_COLOR = Color.White
-private const val MAX_LEGEND_ITEMS = 4
-private val LEGEND_ROW_GAP = 6.dp
+private val LEGEND_ROW_GAP = 8.dp
 private val LEGEND_ROW_HEIGHT = 16.dp
-private val LEGEND_DOT_SIZE = 8.dp
+private val LEGEND_DOT_SIZE = 12.dp // +50% до 8dp за запитом користувача
 private val LEGEND_DOT_GAP = 4.dp
 private val LEGEND_ITEM_GAP = 10.dp
 private val LEGEND_TEXT_SIZE = 11.sp
@@ -252,21 +291,24 @@ private fun CategoryButtonsRow(
     context: Context,
     fillWidth: Boolean = true,
     buttonSize: Dp = CATEGORY_BUTTON_SIZE,
-    padding: Dp = PILL_PADDING
+    padding: Dp = PILL_PADDING,
+    // 4x2 (макет 234:678) — без капсули: кнопки лежать прямо на фоні віджета.
+    capsule: Boolean = true
 ) {
     val spread = fillWidth && categories.size >= MAX_WIDGET_BUTTONS
+    val inset = if (capsule) padding else 0.dp
     // Повний ряд: кнопка зменшується пропорційно, щоб 5 кіл + відступи + мінімальні проміжки вміщались у
     // ширину віджета. Інакше RemoteViews стискає кола по ширині в овали (P9, вужчий лаунчер-грід).
     val size = if (spread) {
-        minOf(buttonSize, (LocalSize.current.width - padding * 2 - MIN_SPREAD_GAP * (categories.size - 1)) / categories.size)
+        minOf(buttonSize, (LocalSize.current.width - inset * 2 - MIN_SPREAD_GAP * (categories.size - 1)) / categories.size)
             .coerceAtLeast(32.dp)
     } else {
         buttonSize
     }
     Row(
         modifier = (if (spread) GlanceModifier.fillMaxWidth() else GlanceModifier)
-            .background(ImageProvider(R.drawable.widget_pill_translucent))
-            .padding(padding),
+            .then(if (capsule) GlanceModifier.background(ImageProvider(R.drawable.widget_pill_translucent)) else GlanceModifier)
+            .padding(inset),
         verticalAlignment = Alignment.CenterVertically
     ) {
         categories.forEachIndexed { index, category ->
@@ -349,15 +391,10 @@ class ToggleCategoryTimerAction : ActionCallback {
 private fun DailyGridCard(
     hasUsageAccess: Boolean,
     slots: List<DailyGridSlot>,
-    categoriesById: Map<String, CategoryEntity>,
-    context: Context
+    context: Context,
+    modifier: GlanceModifier = GlanceModifier
 ) {
-    Column(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .background(ImageProvider(R.drawable.widget_card_translucent))
-            .padding(CARD_PADDING)
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         if (!hasUsageAccess) {
             Text(
                 text = context.getString(R.string.usage_access_prompt_title),
@@ -366,33 +403,33 @@ private fun DailyGridCard(
             return@Column
         }
 
-        val legendItems = remember(slots, categoriesById) { dailyGridLegendItems(slots, categoriesById, context) }
+        val legendItems = remember(context) { dailyGridLegendItems(context) }
 
         // Сітка малюється ОДНИМ растровим зображенням (Canvas), а не 12x4 вузлами Box — RemoteViews-хост
         // відкидає зайві діти контейнера (на S23 замість 12 клітинок у ряду було видно 10, а з Spacer-ами
         // між ними ~5). Ширина картинки розтягується на всю ширину картки (FillBounds).
         // Висота клітинки: LocalSize.height у Responsive — найближчий МЕНШИЙ розмір зі списку, а не
-        // реальна висота, тож вона наближена; від макетних 23.5dp стеля, знизу — запобіжник.
-        // Резервуємо висоту й під новий рядок легенди (LEGEND_ROW_GAP + LEGEND_ROW_HEIGHT), інакше
-        // він або обрізався б, або стискав картку понад доступний розмір лаунчер-гріда.
-        val available = LocalSize.current.height - PILL_HEIGHT - ROW_TO_CARD_GAP - CARD_PADDING * 2 -
+        // реальна висота, тож вона наближена; макетні 16dp — стеля, знизу — запобіжник.
+        // Резервуємо висоту під кнопки, відступи, рядок легенди (LEGEND_ROW_GAP + LEGEND_ROW_HEIGHT),
+        // інакше він або обрізався б, або стискав картку понад доступний розмір лаунчер-гріда.
+        val available = LocalSize.current.height - CATEGORY_BUTTON_SIZE - ROW_TO_CARD_GAP - CARD_PADDING * 2 -
             LEGEND_ROW_GAP - LEGEND_ROW_HEIGHT
         val cellHeight = ((available - DAILY_GRID_GAP * (DAILY_GRID_ROWS - 1)) / DAILY_GRID_ROWS)
             .coerceIn(DAILY_GRID_MIN_CELL, DAILY_GRID_MAX_CELL)
         val density = context.resources.displayMetrics.density
-        val gridHeight = cellHeight * DAILY_GRID_ROWS + DAILY_GRID_GAP * (DAILY_GRID_ROWS - 1)
         val bitmap = renderDailyGridBitmap(
             slots = slots,
-            categoriesById = categoriesById,
             // Номінальна ширина ~343dp (макет) мінус відступи й колонку годинних підписів;
             // реальна відрізнятиметься — FillBounds підганяє.
             widthPx = ((343.dp - CARD_PADDING * 2 - HOUR_LABEL_WIDTH - HOUR_LABEL_GAP).value * density).toInt(),
             cellHeightPx = cellHeight.value * density,
             gapPx = DAILY_GRID_GAP.value * density,
-            cornerRadiusPx = DAILY_GRID_CELL_RADIUS.value * density
+            density = density
         )
-        Row(modifier = GlanceModifier.fillMaxWidth()) {
-            Column(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH).height(gridHeight)) {
+        // Сітка займає весь залишок висоти картки (defaultWeight): відступи між блоками лишаються
+        // фіксованими (8dp), а різниця з реальною висотою віджета йде в розтягнення клітинок.
+        Row(modifier = GlanceModifier.fillMaxWidth().defaultWeight()) {
+            Column(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH).fillMaxHeight()) {
                 HOUR_ROW_LABELS.forEach { hour ->
                     Box(modifier = GlanceModifier.defaultWeight(), contentAlignment = Alignment.TopStart) {
                         Text(
@@ -407,11 +444,13 @@ private fun DailyGridCard(
                 }
             }
             Spacer(modifier = GlanceModifier.width(HOUR_LABEL_GAP))
+            // Тап по всій сітці відкриває Головну. Одна ціль на весь растр — окремі клітинки не
+            // можна: сітка малюється одним Bitmap, а не вузлами (див. коментар вище).
             Image(
                 provider = ImageProvider(bitmap),
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds,
-                modifier = GlanceModifier.defaultWeight().height(gridHeight)
+                modifier = GlanceModifier.defaultWeight().fillMaxHeight().clickable(actionStartActivity(Intent(context, MainActivity::class.java)))
             )
         }
         if (legendItems.isNotEmpty()) {
@@ -422,7 +461,7 @@ private fun DailyGridCard(
             // кожен колись давав [Spacer?, Box, Spacer, Text] прямими дітьми ЦЬОГО Row,
             // вже при 3 елементах переповнювали ліміт (12 дітей), і легенду обрізало посеред
             // елемента). Фікс: кожен елемент легенди — окремий вкладений Row (один прямий
-            // нащадок зовнішнього), тож зовнішній Row має щонайбільше 1 + MAX_LEGEND_ITEMS дітей.
+            // нащадок зовнішнього), тож зовнішній Row має щонайбільше 1 + кількість пунктів легенди (3).
             Row(
                 modifier = GlanceModifier.fillMaxWidth().height(LEGEND_ROW_HEIGHT),
                 verticalAlignment = Alignment.CenterVertically
@@ -430,22 +469,31 @@ private fun DailyGridCard(
                 // Той самий відступ, що колонка годинних підписів + проміжок до сітки вище —
                 // легенда починається РІВНО під першою клітинкою, а не під підписами "00/06/12/18".
                 Spacer(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH + HOUR_LABEL_GAP))
-                legendItems.forEachIndexed { index, (color, label) ->
+                legendItems.forEachIndexed { index, item ->
                     Row(
                         modifier = GlanceModifier.padding(start = if (index > 0) LEGEND_ITEM_GAP else 0.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(modifier = GlanceModifier.size(LEGEND_DOT_SIZE), contentAlignment = Alignment.Center) {
-                            Image(
-                                provider = ImageProvider(R.drawable.widget_circle_solid),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(ColorProvider(day = color, night = color)),
-                                modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
-                            )
+                            if (item.dashed) {
+                                // Пунктирна точка — готовий drawable (колір і обвідка всередині), без тонування.
+                                Image(
+                                    provider = ImageProvider(R.drawable.widget_legend_rest_dot),
+                                    contentDescription = null,
+                                    modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
+                                )
+                            } else {
+                                Image(
+                                    provider = ImageProvider(R.drawable.widget_circle_solid),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(ColorProvider(day = item.color, night = item.color)),
+                                    modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
+                                )
+                            }
                         }
                         Spacer(modifier = GlanceModifier.width(LEGEND_DOT_GAP))
                         Text(
-                            text = label,
+                            text = item.label,
                             maxLines = 1,
                             style = TextStyle(
                                 fontSize = LEGEND_TEXT_SIZE,
@@ -460,69 +508,65 @@ private fun DailyGridCard(
     }
 }
 
-/**
- * Кольори, що реально зустрілись сьогодні в сітці (у хронологічному порядку першої появи),
- * з людською назвою — легенда лише того, що є, без фіксованого списку "на всяк випадок"
- * (FR-P.5: не показувати категорії, яких сьогодні не було). Обмежено [MAX_LEGEND_ITEMS], щоб
- * не переповнити вузьку картку віджета довгими назвами кастомних категорій.
- */
-private fun dailyGridLegendItems(
-    slots: List<DailyGridSlot>,
-    categoriesById: Map<String, CategoryEntity>,
-    context: Context
-): List<Pair<Color, String>> {
-    val items = LinkedHashMap<String, Pair<Color, String>>()
-    for (slot in slots) {
-        when (slot) {
-            is DailyGridSlot.PreUnlock ->
-                items.getOrPut("pre_unlock") {
-                    WIDGET_GRID_PRE_UNLOCK_COLOR to context.getString(R.string.widget_grid_legend_before_start)
-                }
-            is DailyGridSlot.Online ->
-                items.getOrPut("online") { WIDGET_GRID_ONLINE_COLOR to context.getString(R.string.balance_online_label) }
-            is DailyGridSlot.Category -> {
-                val category = categoriesById[slot.categoryId] ?: continue
-                items.getOrPut(category.id) { categoryColor(category.colorHex) to categoryDisplayName(category, context) }
-            }
-            is DailyGridSlot.Blank -> Unit
-        }
-    }
-    return items.values.take(MAX_LEGEND_ITEMS)
-}
+/** Пункт легенди: [dashed] — точка з пунктирною обвідкою, як майбутні клітинки сітки ("Решта доби"). */
+private data class DailyGridLegendItem(val color: Color, val label: String, val dashed: Boolean = false)
 
-/** Малює сітку доби 12x4 (по рядках зліва направо) у Bitmap — див. коментар у [DailyGridSection]. */
+/** Легенда з макета 234:678: три фіксовані стани сітки (категорій на сітці немає). */
+private fun dailyGridLegendItems(context: Context): List<DailyGridLegendItem> = listOf(
+    DailyGridLegendItem(WIDGET_GRID_PRE_UNLOCK_COLOR, context.getString(R.string.widget_grid_legend_before_start)),
+    DailyGridLegendItem(WIDGET_GRID_ONLINE_COLOR, context.getString(R.string.balance_online_label)),
+    DailyGridLegendItem(WIDGET_GRID_BLANK_FUTURE, context.getString(R.string.widget_grid_legend_rest), dashed = true)
+)
+
+/**
+ * Малює сітку доби 12x4 (по рядках зліва направо) у Bitmap. Клітинки — пігулки (радіус = піввисоти);
+ * майбутні — напівпрозорі з пунктирною білою обвідкою (макет).
+ */
 private fun renderDailyGridBitmap(
     slots: List<DailyGridSlot>,
-    categoriesById: Map<String, CategoryEntity>,
     widthPx: Int,
     cellHeightPx: Float,
     gapPx: Float,
-    cornerRadiusPx: Float
+    density: Float
 ): Bitmap {
     val heightPx = (cellHeightPx * DAILY_GRID_ROWS + gapPx * (DAILY_GRID_ROWS - 1)).toInt().coerceAtLeast(1)
     val bitmap = Bitmap.createBitmap(widthPx.coerceAtLeast(1), heightPx, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val dashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        color = android.graphics.Color.WHITE
+        strokeWidth = density
+        pathEffect = DashPathEffect(floatArrayOf(3 * density, 2 * density), 0f)
+    }
     val cellWidthPx = (widthPx - gapPx * (DAILY_GRID_COLUMNS - 1)) / DAILY_GRID_COLUMNS
+    val radiusPx = cellHeightPx / 2
+    val inset = dashPaint.strokeWidth / 2
     for (row in 0 until DAILY_GRID_ROWS) {
         for (col in 0 until DAILY_GRID_COLUMNS) {
-            paint.color = colorForGridSlot(slots[row * DAILY_GRID_COLUMNS + col], categoriesById).toArgb()
+            val slot = slots[row * DAILY_GRID_COLUMNS + col]
+            fillPaint.color = colorForGridSlot(slot).toArgb()
             val left = col * (cellWidthPx + gapPx)
             val top = row * (cellHeightPx + gapPx)
-            canvas.drawRoundRect(RectF(left, top, left + cellWidthPx, top + cellHeightPx), cornerRadiusPx, cornerRadiusPx, paint)
+            canvas.drawRoundRect(RectF(left, top, left + cellWidthPx, top + cellHeightPx), radiusPx, radiusPx, fillPaint)
+            if (slot is DailyGridSlot.Blank && slot.isFuture) {
+                canvas.drawRoundRect(
+                    RectF(left + inset, top + inset, left + cellWidthPx - inset, top + cellHeightPx - inset),
+                    radiusPx, radiusPx, dashPaint
+                )
+            }
         }
     }
     return bitmap
 }
 
-private fun colorForGridSlot(slot: DailyGridSlot, categoriesById: Map<String, CategoryEntity>): Color =
-    when (slot) {
-        is DailyGridSlot.PreUnlock -> WIDGET_GRID_PRE_UNLOCK_COLOR
-        is DailyGridSlot.Category ->
-            categoriesById[slot.categoryId]?.let { categoryColor(it.colorHex) } ?: WIDGET_GRID_BLANK_PAST
-        is DailyGridSlot.Online -> WIDGET_GRID_ONLINE_COLOR
-        is DailyGridSlot.Blank -> if (slot.isFuture) WIDGET_GRID_BLANK_FUTURE else WIDGET_GRID_BLANK_PAST
-    }
+/** Категорія на сітці не фарбується (макет показує лише стани доби) — такий слот виглядає як минулий порожній. */
+private fun colorForGridSlot(slot: DailyGridSlot): Color = when (slot) {
+    is DailyGridSlot.PreUnlock -> WIDGET_GRID_PRE_UNLOCK_COLOR
+    is DailyGridSlot.Category -> WIDGET_GRID_BLANK_PAST
+    is DailyGridSlot.Online -> WIDGET_GRID_ONLINE_COLOR
+    is DailyGridSlot.Blank -> if (slot.isFuture) WIDGET_GRID_BLANK_FUTURE else WIDGET_GRID_BLANK_PAST
+}
 
 
 /**
@@ -561,7 +605,7 @@ class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 
-/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */private class LiveWidgetInitial(    val activeCategories: List<CategoryEntity>,    val allCategories: List<CategoryEntity>,    val selectedIds: List<String>,    val activeTimers: Map<String, Long>,    val entries: List<ActivityEntryEntity>,    val grid: GridInputs)
+/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */private class LiveWidgetInitial(    val activeCategories: List<CategoryEntity>,    val selectedIds: List<String>,    val activeTimers: Map<String, Long>,    val entries: List<ActivityEntryEntity>,    val grid: GridInputs)
 /**
  * Вміст віджета на ЖИВИХ даних: таймери/категорії/записи — потоки всередині композиції (див. коментар
  * у [WidgetLiveData] — раніше все читалось один раз на сесію й показувало застарілий стан).
@@ -570,7 +614,6 @@ class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
 private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWidgetInitial, maxButtons: Int) {
     val selectedIds by app.settingsStore.widgetCategoryIds.collectAsState(initial = initial.selectedIds)
     val activeCategories by app.categoryRepository.observeActiveCategories().collectAsState(initial = initial.activeCategories)
-    val allCategories by app.categoryRepository.observeAllCategories().collectAsState(initial = initial.allCategories)
     val activeTimers by app.activeTimerStore.activeTimers.collectAsState(initial = initial.activeTimers)
     val tick by WidgetLiveData.refreshTick.collectAsState()
 
@@ -584,7 +627,6 @@ private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWid
     }
 
     val sorted = remember(activeCategories, selectedIds) { categoriesForWidget(activeCategories, selectedIds) }
-    val categoriesById = remember(allCategories) { allCategories.associateBy { it.id } }
     val slots = gridInputs?.let {
         calculateDailyGridSlots(
             calendarMidnightMillis = midnight,
@@ -601,7 +643,6 @@ private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWid
         activeTimers = activeTimers,
         hasUsageAccess = gridInputs?.hasUsageAccess ?: true,
         gridSlots = slots,
-        categoriesById = categoriesById,
         maxButtons = maxButtons
     )
 }
@@ -661,7 +702,6 @@ private fun WidgetContent(
     activeTimers: Map<String, Long>,
     hasUsageAccess: Boolean,
     gridSlots: List<DailyGridSlot>,
-    categoriesById: Map<String, CategoryEntity>,
     maxButtons: Int = MAX_WIDGET_BUTTONS
 ) {
     GlanceTheme {
@@ -669,16 +709,24 @@ private fun WidgetContent(
             SmallWidgetContent(context, categories.take(maxButtons), activeTimers)
             return@GlanceTheme
         }
-        // 4x1 — лише ряд кнопок (Figma 234:788); від 100dp — розширений 4x2 із карткою сітки (234:848).
+        // 4x1 — лише ряд кнопок у капсулі (Figma 234:788); від 100dp — розширений 4x2 без капсули,
+        // відступ 12 по периметру, блоки розділені 8 (Figma 234:678).
         val isExtended = LocalSize.current.height >= 100.dp
+        // Фон завжди задається (лише drawable змінюється залежно від розміру) — умовний background() на
+        // RemoteViews іноді не знімає раніше встановлений фон.
+        // Вміст прив'язаний до верху: відступ зверху = 12, а зайве місце по висоті віддає картка сітки
+        // (defaultWeight у DailyGridCard), тож відступ знизу теж 12 — як зліва й справа.
         Column(
-            modifier = GlanceModifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .background(ImageProvider(if (isExtended) R.drawable.widget_root_translucent else R.drawable.widget_root_none))
+                .padding(if (isExtended) CARD_PADDING else 0.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            CategoryButtonsRow(categories.take(maxButtons), activeTimers, context)
+            CategoryButtonsRow(categories.take(maxButtons), activeTimers, context, capsule = !isExtended)
             if (isExtended) {
                 Spacer(modifier = GlanceModifier.height(ROW_TO_CARD_GAP))
-                DailyGridCard(hasUsageAccess, gridSlots, categoriesById, context)
+                DailyGridCard(hasUsageAccess, gridSlots, context, modifier = GlanceModifier.defaultWeight())
             }
         }
     }

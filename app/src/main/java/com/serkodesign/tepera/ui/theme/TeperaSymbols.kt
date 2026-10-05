@@ -32,6 +32,14 @@ private fun symbol(name: String, path: String, autoMirror: Boolean = false): Ima
     ).clearGroup().build()
 
 object TeperaSymbols {
+    // Степпер «− / +» (орієнтир Online-часу): та сама геометрія, що Add, лише горизонтальна смужка.
+    val Remove: ImageVector by lazy {
+        symbol(
+            "Remove",
+            "M250-450v-60h460v60H250Z"
+        )
+    }
+
     val Add: ImageVector by lazy {
         symbol(
             "Add",

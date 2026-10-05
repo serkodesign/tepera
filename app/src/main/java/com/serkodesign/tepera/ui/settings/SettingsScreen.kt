@@ -35,7 +35,10 @@ import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
 import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.PillSegmentedControl
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.util.FeedbackForm
+import com.serkodesign.tepera.util.ThemeStore
 
 /**
  * Стиль перенесений з Figma-фрейму Everyday_Designs (сторінка "Tepera", node 1951:1106):
@@ -102,13 +105,14 @@ fun SettingsScreen(
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // Згруповано за прямим запитом користувача: "Активності" (Відстеження,
                 // Категорії, Виключені застосунки, Ворота) — над "Загальні" (Мова, Резервне
                 // копіювання, Запропонувати функцію, T-1 спайк) — порядок розділів поміняно
                 // місцями за прямим запитом користувача.
-                GlassSectionHeader(stringResource(R.string.settings_activities_section))
+                // Видимі відстані: 16dp зверху, 8dp знизу; проміжок списку 6dp додається сам, тож відступи заголовка — 10 і 2.
+                GlassSectionHeader(stringResource(R.string.settings_activities_section), topPadding = 18.dp, bottomPadding = 2.dp)
                 GlassRow(
                     label = stringResource(R.string.settings_tracking_action),
                     onClick = onOpenTracking,
@@ -140,13 +144,28 @@ fun SettingsScreen(
                     trailing = { NavChevron() }
                 )
 
-                GlassSectionHeader(stringResource(R.string.settings_general_section))
+                GlassSectionHeader(stringResource(R.string.settings_general_section), topPadding = 18.dp, bottomPadding = 2.dp)
                 GlassRow(
                     label = stringResource(R.string.settings_language_action),
                     onClick = onOpenLanguage,
                     leading = { TeperaIconCircle(TeperaSymbols.Language) },
                     trailing = { NavChevron() }
                 )
+                // Тема — Системна / Світла / Темна (ThemeStore). Приховано, поки темна тема не готова
+                // (ThemeStore.THEME_CHOICE_ENABLED = false); блок не видалено, щоб повернути одним прапорем.
+                if (ThemeStore.THEME_CHOICE_ENABLED) {
+                    TeperaCard(title = stringResource(R.string.settings_theme_action)) {
+                        PillSegmentedControl(
+                            options = listOf(
+                                ThemeStore.Mode.SYSTEM to stringResource(R.string.settings_theme_system),
+                                ThemeStore.Mode.LIGHT to stringResource(R.string.settings_theme_light),
+                                ThemeStore.Mode.DARK to stringResource(R.string.settings_theme_dark)
+                            ),
+                            selected = ThemeStore.current(),
+                            onSelect = { ThemeStore.set(context, it) }
+                        )
+                    }
+                }
                 GlassRow(
                     label = stringResource(R.string.settings_backup_restore_action),
                     onClick = onOpenBackupRestore,

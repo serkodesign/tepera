@@ -115,7 +115,7 @@ fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier)
                 val gapPx = gap.toPx()
                 val cellW = (size.width - gapPx * 5) / 6f
                 val cellH = (size.height - gapPx * 3) / 4f
-                val radius = CornerRadius(4.dp.toPx())
+                val radius = CornerRadius(8.dp.toPx())
                 val cellSize = Size(cellW, cellH)
                 for (hour in 0 until 24) {
                     val topLeft = Offset((hour % 6) * (cellW + gapPx), (hour / 6) * (cellH + gapPx))

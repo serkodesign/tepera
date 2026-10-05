@@ -69,6 +69,8 @@ data class TeperaColors(
     val navSelected: Color,
     val navSelectedContent: Color,
     val navUnselectedContent: Color,
+    /** Заливка невибраних вкладок навбару (Figma: surface-card, суцільна). */
+    val navTabUnselected: Color,
     /** Крапки перемикача сторінок карток Home. */
     val pagerDotActive: Color,
     val pagerDotInactive: Color,
@@ -94,11 +96,12 @@ val LegacyTeperaColors = TeperaColors(
     chipContent = Color.Black,
     iconButtonFill = Color(0x80FFFFFF),
     iconButtonContent = Color(0xFF003926),
-    moreTimeFill = Color(0xFFB4D8BC),
+    moreTimeFill = Color(0xFFC5E2CB),
     navPill = Color(0xFFFFFFFF),
     navSelected = Color(0xFFB2E5D3),
     navSelectedContent = Color(0xFF003926),
     navUnselectedContent = Color(0xFF505050),
+    navTabUnselected = Color(0x1AF0F3F4),
     pagerDotActive = Color.White,
     pagerDotInactive = Color.White.copy(alpha = 0.5f),
     lightSystemBars = true
@@ -120,56 +123,65 @@ val RedesignLightColors = TeperaColors(
     backgroundBottom = Color(0xFFEDE9E8),
     backgroundBlobTopRight = Color(0xFFFFF2D2), // Ellipse 5, fill-opacity 1
     backgroundBlobBottomLeft = Color(0x4DC2BDF6), // Ellipse 7, fill-opacity 0.3
-    ink = Color(0xFF113A2C),
+    ink = Color(0xFF003926),
     textSecondary = Color(0xFF767676), // підпис "5/8" у image 4
-    brand = Color(0xFF32613F),
+    brand = Color(0xFF006944),
     surfaceBrandLight = Color(0xFFFEFEFE),
-    switchTrackOff = Color(0xFFECEDEA), // трек прогресу "0/1" у image 4
+    switchTrackOff = Color(0xFFF0F3F4), // трек прогресу "0/1" у image 4
     card = Color(0xFFEDF1E5),
     cardActive = Color(0xFFFCFCFB),
     // За прямим запитом користувача: рядки-активності Щоденника (HistoryEntryRow) на тій самій
     // rgba(255,255,255,0.7), що решта "скляних" карток/рядків застосунку.
     listItem = Color(0xB3FFFFFF),
-    primaryFill = Color(0xFF113A2C),
+    primaryFill = Color(0xFF003926),
     onPrimary = Color.White,
     chipFill = Color(0xFFFEFEFE),
-    chipContent = Color(0xFF113A2C),
+    chipContent = Color(0xFF003926),
     iconButtonFill = Color(0xFFFCFBF7),
-    iconButtonContent = Color(0xFF113A2C),
+    iconButtonContent = Color(0xFF003926),
     moreTimeFill = Color(0xFFFCFBF7),
-    navPill = Color(0xFF003926),
-    navSelected = Color(0xFFDCF6ED),
-    navSelectedContent = Color(0xFF003926),
-    navUnselectedContent = Color(0xFFFFFFFF),
-    pagerDotActive = Color(0xFF113A2C),
-    pagerDotInactive = Color(0xFF113A2C).copy(alpha = 0.25f),
+    // Навбар за Figma "App concept" node 395:1011: скляний контейнер Surface/surface-card-transparent (#FFFFFF4D),
+    // вибрана вкладка Surface/surface-brand (#006944) з вмістом Surface/surface-brand-light (#DCF6ED), невибрані —
+    // суцільний Surface/surface-card (#FFFFFF) з іконкою Text/text-secondary (#505050).
+    navPill = Color(0x4DFFFFFF),
+    navSelected = Color(0xFF006944),
+    navSelectedContent = Color(0xFFDCF6ED),
+    navUnselectedContent = Color(0xFF505050),
+    navTabUnselected = Color(0xFFFFFFFF),
+    pagerDotActive = Color(0xFF003926),
+    pagerDotInactive = Color(0xFF003926).copy(alpha = 0.25f),
     lightSystemBars = true
 )
 
 /** Image 1-3 (334:31/34/37): темний зелений градієнт, кремові акценти. */
 val RedesignDarkColors = TeperaColors(
     isDark = true,
-    backgroundTop = Color(0xFF030A0A),
+    // Темна тема за макетом 362:516 (узгоджено 03.10): фон градієнт #062814 → #11322E, картки #164233,
+    // чіпи #003926, навбар лишається світлим (#F1F0F1) з темно-зеленою вибраною вкладкою.
+    backgroundTop = Color(0xFF062814),
     backgroundBottom = Color(0xFF11322E),
     ink = Color(0xFFFEFFEF),
     textSecondary = Color(0xFFC5DCD9), // текст повідомлення в image 1
     brand = Color(0xFFFEFFEF),
     surfaceBrandLight = Color(0xFF1A3D38),
     switchTrackOff = Color(0xFF1A3D38),
-    card = Color(0xFF062924),
+    card = Color(0xFF164233),
     cardActive = Color(0xFF1A3D38),
-    listItem = Color(0xFF062924),
+    listItem = Color(0xFF164233),
     primaryFill = Color(0xFFFEFFEF),
     onPrimary = Color(0xFF062924),
-    chipFill = Color(0xFF1A3D38),
+    chipFill = Color(0xFF003926),
     chipContent = Color(0xFFFEFFEF),
-    iconButtonFill = Color(0xFF00140F),
+    iconButtonFill = Color(0xFF164233),
     iconButtonContent = Color(0xFFFEFFEF),
-    moreTimeFill = Color(0xFF00140F),
-    navPill = Color(0xFFFEFFED),
-    navSelected = Color(0xFF062924),
-    navSelectedContent = Color(0xFFFEFFEF),
-    navUnselectedContent = Color(0xFF062924),
+    moreTimeFill = Color(0xFFC5E2CB),
+    // Темний навбар: той самий скляний контейнер; вибрана вкладка — кремова (як основна кнопка темної теми),
+    // невибрані — темна картка. Токенів темного фрейму в Figma немає — підібрано під палітру темної теми.
+    navPill = Color(0x4DFFFFFF),
+    navSelected = Color(0xFFFEFFEF),
+    navSelectedContent = Color(0xFF062924),
+    navUnselectedContent = Color(0xFFFEFFEF),
+    navTabUnselected = Color(0xFF1A3D38),
     pagerDotActive = Color(0xFFFEFFEF),
     pagerDotInactive = Color(0xFFFEFFEF).copy(alpha = 0.3f),
     lightSystemBars = false

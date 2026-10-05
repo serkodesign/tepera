@@ -94,7 +94,7 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
 
             Column(
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 TeperaHint(
                     text = stringResource(

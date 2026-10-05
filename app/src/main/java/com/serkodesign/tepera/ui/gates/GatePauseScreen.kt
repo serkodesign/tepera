@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.gates
 
 import android.app.Activity
+import androidx.compose.ui.draw.clipToBounds
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -53,6 +54,7 @@ import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.util.findActivity
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.scallopedBlobPath
 import kotlin.math.cos
@@ -173,8 +175,9 @@ fun GatePauseScreen(
                     size = TeperaButtonSize.Big,
                     type = TeperaButtonType.Secondary,
                     modifier = Modifier
-                        .padding(start = 8.dp)
-                        .weight(1f)
+                        .padding(start = 8.dp * reveal)
+                        .weight(reveal)
+                        .clipToBounds()
                         .graphicsLayer { alpha = reveal }
                 )
             }
@@ -193,10 +196,12 @@ private const val BREATH_SCALE_SMALL = 145f / 215f
 private const val BREATH_SCALE_LARGE = 1f
 
 private val BADGE_SIZE = 215.dp
-// Figma: заливка бейджа #DCF6ED (з SVG-ассета Star 1), цифра #005E3E 96sp — цифра НЕ масштабується.
-// ui-redesign: ролі тих самих токенів (#DCF6ED = surfaceBrandLight, #005E3E = brandAccent) — у темі.
-private val BADGE_FILL: Color @Composable @ReadOnlyComposable get() = TeperaPalette.surfaceBrandLight
-private val BADGE_NUMBER: Color @Composable @ReadOnlyComposable get() = TeperaPalette.brandAccent
+// Figma: заливка бейджа #DCF6ED (з SVG-ассета Star 1), цифра #006944 96sp — цифра НЕ масштабується.
+// За запитом користувача квітка світла й у темній темі (та сама #DCF6ED), тому кольори фіксовані, не з теми;
+// цифра — темно-зелена, як у світлій темі, для контрасту на світлій квітці.
+// Світла тема — біла квітка; темна — #DCF6ED (світла, як узгоджено раніше).
+private val BADGE_FILL: Color @Composable get() = if (LocalTeperaColors.current.isDark) Color(0xFFDCF6ED) else Color.White
+private val BADGE_NUMBER: Color = Color(0xFF006944)
 
 // Зовнішня напівпрозора «квітка» (Figma node 2:3526, Star 2): та сама форма, 50% прозорості, повернута на 15°; розмір як в основної
 // (263.32/215) за основну. Дихає в тому самому ритмі, але з відставанням — виглядає як хвиля, що розходиться від центру.

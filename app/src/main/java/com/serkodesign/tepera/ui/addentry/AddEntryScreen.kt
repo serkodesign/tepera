@@ -8,12 +8,22 @@ import androidx.compose.ui.semantics.heading
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.tween
+import com.serkodesign.tepera.ui.theme.TeperaMotion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -135,6 +145,7 @@ fun AddEntryScreen(
     )
     val categories by viewModel.categories.collectAsState()
     val state by viewModel.uiState.collectAsState()
+    val noteSuggestions by viewModel.noteSuggestions.collectAsState()
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     // "Додати час" з картки категорії (Home/віджет) приходить із вже відомою категорією — сітку
@@ -226,12 +237,66 @@ fun AddEntryScreen(
                     IntervalSummary(state = state, onEndNextDay = viewModel::endNextDay)
                 }
 
+                // Швидкі відповіді: найчастіші нотатки цієї категорії (тап вставляє текст у поле).
+                // Показуються, коли нотатка порожня або ще не збігається з підказкою.
+                // Теги і поле нотатки — одна група з проміжком 6dp (зовнішній Column дає 32dp між групами).
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                // Поява/зникнення блоку тегів плавно (розгортання + прозорість), як і окремого тега (масштаб + прозорість).
+                AnimatedVisibility(
+                    visible = noteSuggestions.isNotEmpty(),
+                    enter = fadeIn(tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized)) +
+                        expandVertically(tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized)),
+                    exit = fadeOut(tween(TeperaMotion.SHORT4)) + shrinkVertically(tween(TeperaMotion.SHORT4))
+                ) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        noteSuggestions.forEach { suggestion ->
+                            // Тег за Figma 375:503: #C5E2CB, радіус 22, "+" 20dp, текст 12sp #0F0F10, відступи 4/12/12.
+                            AnimatedVisibility(
+                                visible = suggestion != state.note,
+                                enter = fadeIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.EmphasizedDecelerate)) +
+                                    scaleIn(tween(TeperaMotion.MEDIUM2, easing = TeperaMotion.EmphasizedDecelerate), initialScale = 0.8f),
+                                exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
+                                    scaleOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate), targetScale = 0.8f)
+                            ) {
+                            Row(
+                                modifier = Modifier
+                                    .height(32.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color(0xFFC5E2CB))
+                                    .clickable(role = Role.Button, onClick = { viewModel.setNote(suggestion) })
+                                    .padding(start = 4.dp, end = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    TeperaSymbols.Add,
+                                    contentDescription = null,
+                                    tint = Color(0xFF0F0F10),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = suggestion,
+                                    fontSize = 12.sp,
+                                    lineHeight = 15.6.sp,
+                                    letterSpacing = 0.012.sp,
+                                    color = Color(0xFF0F0F10)
+                                )
+                            }
+                            }
+                        }
+                    }
+                }
+
                 GlassTextField(
                     value = state.note,
                     onValueChange = viewModel::setNote,
                     placeholder = stringResource(R.string.add_entry_note_label),
                     minLines = 3
                 )
+                }
 
                 // Запас під sticky-панель Cancel/Save нижче (поза скролом) — без цього останнє
                 // поле форми впиралось би прямо в неї без жодного проміжку.
@@ -449,7 +514,7 @@ private fun GlassTextField(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardTranslucentLight)
+            .background(TeperaPalette.inputSurface)
             .padding(12.dp)
     ) {
         BasicTextField(
