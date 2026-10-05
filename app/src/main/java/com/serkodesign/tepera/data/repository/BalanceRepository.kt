@@ -9,6 +9,7 @@ import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import com.serkodesign.tepera.util.SleepWindowCalculator
 import com.serkodesign.tepera.util.TargetSuggestion
 import com.serkodesign.tepera.util.TimeSpan
+import com.serkodesign.tepera.util.foregroundSessions
 import com.serkodesign.tepera.util.mergeTimeSpans
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
@@ -113,32 +114,8 @@ class BalanceRepository(
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages(context)
         try {
-            val events = usm.queryEvents(from, to)
-            val foregroundSince = HashMap<String, Long>()
-            val spans = mutableListOf<TimeSpan>()
-            val event = UsageEvents.Event()
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event)
-                // Екран вимкнено (16) або блокування (17): відкриті сесії тут закінчуються — інакше застосунок,
-                // від якого не прийшло MOVE_TO_BACKGROUND (напр. на G84: 409 хв "висячої" сесії), рахувався б до "зараз".
-                if (event.eventType == 16 || event.eventType == 17) {
-                    foregroundSince.forEach { (_, start) -> spans.add(TimeSpan(start, event.timeStamp)) }
-                    foregroundSince.clear()
-                    continue
-                }
-                val packageName = event.packageName ?: continue
-                if (packageName in excluded) continue
-                when (event.eventType) {
-                    UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
-                    // 23 = ACTIVITY_STOPPED: застосунок більше не видимий, сесія закінчується.
-                    UsageEvents.Event.MOVE_TO_BACKGROUND, 23 -> foregroundSince.remove(packageName)?.let {
-                        spans.add(TimeSpan(it, event.timeStamp))
-                    }
-                }
-            }
-            // Застосунок, що й досі на передньому плані на момент "to" — рахуємо його до "to".
-            foregroundSince.values.forEach { spans.add(TimeSpan(it, to)) }
-            mergeTimeSpans(spans)
+            // Сесії — спільна логіка з PatternRepository (див. foregroundSessions).
+            mergeTimeSpans(foregroundSessions(usm.queryEvents(from, to), excluded, to))
         } catch (e: SecurityException) {
             emptyList()
         }
@@ -168,41 +145,10 @@ class BalanceRepository(
         // по сирих подіях MOVE_TO_FOREGROUND/MOVE_TO_BACKGROUND, обрізаних рівно по [from, to],
         // той самий підхід, що й системні лічильники екранного часу.
         try {
-            val events = usm.queryEvents(from, to)
-            val foregroundSince = HashMap<String, Long>()
-            var totalMs = 0L
-            val event = UsageEvents.Event()
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event)
-                // Екран вимкнено (16) або блокування (17): відкриті сесії тут закінчуються (див. getOnlineIntervals).
-                if (event.eventType == 16 || event.eventType == 17) {
-                    for (start in foregroundSince.values) {
-                        totalMs += (event.timeStamp - start).coerceAtLeast(0)
-                    }
-                    foregroundSince.clear()
-                    continue
-                }
-                val packageName = event.packageName ?: continue
-                if (packageName in excluded) continue
-                when (event.eventType) {
-                    UsageEvents.Event.MOVE_TO_FOREGROUND ->
-                        foregroundSince[packageName] = event.timeStamp
-                    // 23 = ACTIVITY_STOPPED: застосунок більше не видимий, сесія закінчується.
-                    UsageEvents.Event.MOVE_TO_BACKGROUND, 23 -> {
-                        val start = foregroundSince.remove(packageName)
-                        if (start != null) {
-                            totalMs += (event.timeStamp - start).coerceAtLeast(0)
-                        }
-                    }
-                }
-            }
-            // Застосунок, що й досі на передньому плані на момент "to" (напр. "зараз"), ніколи
-            // не отримає завершального MOVE_TO_BACKGROUND у вибірці — рахуємо його до "to".
-            for (start in foregroundSince.values) {
-                totalMs += (to - start).coerceAtLeast(0)
-            }
-
-            (totalMs / 60_000L).toInt()
+            // Той самий підрахунок, що й getOnlineIntervals (спільна логіка — foregroundSessions), щоб число
+            // Online збігалось із смугою на Home.
+            val merged = mergeTimeSpans(foregroundSessions(usm.queryEvents(from, to), excluded, to))
+            (merged.sumOf { it.durationMillis } / 60_000L).toInt()
         } catch (e: SecurityException) {
             0
         }

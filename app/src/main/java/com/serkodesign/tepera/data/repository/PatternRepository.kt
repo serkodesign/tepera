@@ -4,6 +4,7 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
+import com.serkodesign.tepera.util.foregroundSessions
 import com.serkodesign.tepera.util.startOfTodayMillis
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
@@ -37,29 +38,10 @@ class PatternRepository(
             var dayStart = from
             while (dayStart < to) {
                 val dayEnd = minOf(dayStart + DAY_MILLIS, to)
-                val events = usm.queryEvents(dayStart, dayEnd)
-                val event = UsageEvents.Event()
-                val foregroundSince = HashMap<String, Long>()
-                while (events.hasNextEvent()) {
-                    events.getNextEvent(event)
-                    // Екран вимкнено (16) / блокування (17): відкриті сесії тут закінчуються (як у BalanceRepository).
-                    if (event.eventType == 16 || event.eventType == 17) {
-                        foregroundSince.forEach { (_, start) -> addToHourBuckets(buckets, start, event.timeStamp) }
-                        foregroundSince.clear()
-                        continue
-                    }
-                    val packageName = event.packageName ?: continue
-                    if (packageName in excluded) continue
-                    when (event.eventType) {
-                        UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
-                        // 23 = ACTIVITY_STOPPED: сесія застосунку закінчується.
-                        UsageEvents.Event.MOVE_TO_BACKGROUND, 23 -> {
-                            val start = foregroundSince.remove(packageName)
-                            if (start != null) addToHourBuckets(buckets, start, event.timeStamp)
-                        }
-                    }
+                // Ті самі сесії, що й Online (спільна логіка — foregroundSessions), тож тепловий патерн узгоджений з Home.
+                for (span in foregroundSessions(usm.queryEvents(dayStart, dayEnd), excluded, dayEnd)) {
+                    addToHourBuckets(buckets, span.start, span.end)
                 }
-                for (start in foregroundSince.values) addToHourBuckets(buckets, start, dayEnd)
                 dayStart = dayEnd
             }
         } catch (e: SecurityException) {

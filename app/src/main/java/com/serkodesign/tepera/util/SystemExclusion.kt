@@ -23,5 +23,7 @@ fun systemExclusionPackages(context: Context): Set<String> {
     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     val keyboardPackages = imm.enabledInputMethodList.map { it.packageName }.toSet()
 
-    return launcherPackages + keyboardPackages
+    // Власний застосунок: час у Tepera не є Online (так само, як у Digital Wellbeing — перевірено на S23:
+    // Wellbeing 3 год 33 хв = сума сесій без Tepera і лаунчера, а Tepera рахував ще ~66 хв власного часу).
+    return launcherPackages + keyboardPackages + context.packageName
 }
