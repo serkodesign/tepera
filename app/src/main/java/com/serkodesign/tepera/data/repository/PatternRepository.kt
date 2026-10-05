@@ -42,11 +42,18 @@ class PatternRepository(
                 val foregroundSince = HashMap<String, Long>()
                 while (events.hasNextEvent()) {
                     events.getNextEvent(event)
+                    // Екран вимкнено (16) / блокування (17): відкриті сесії тут закінчуються (як у BalanceRepository).
+                    if (event.eventType == 16 || event.eventType == 17) {
+                        foregroundSince.forEach { (_, start) -> addToHourBuckets(buckets, start, event.timeStamp) }
+                        foregroundSince.clear()
+                        continue
+                    }
                     val packageName = event.packageName ?: continue
                     if (packageName in excluded) continue
                     when (event.eventType) {
                         UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
-                        UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                        // 23 = ACTIVITY_STOPPED: сесія застосунку закінчується.
+                        UsageEvents.Event.MOVE_TO_BACKGROUND, 23 -> {
                             val start = foregroundSince.remove(packageName)
                             if (start != null) addToHourBuckets(buckets, start, event.timeStamp)
                         }

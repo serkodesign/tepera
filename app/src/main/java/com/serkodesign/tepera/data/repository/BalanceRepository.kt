@@ -119,11 +119,19 @@ class BalanceRepository(
             val event = UsageEvents.Event()
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
+                // Екран вимкнено (16) або блокування (17): відкриті сесії тут закінчуються — інакше застосунок,
+                // від якого не прийшло MOVE_TO_BACKGROUND (напр. на G84: 409 хв "висячої" сесії), рахувався б до "зараз".
+                if (event.eventType == 16 || event.eventType == 17) {
+                    foregroundSince.forEach { (_, start) -> spans.add(TimeSpan(start, event.timeStamp)) }
+                    foregroundSince.clear()
+                    continue
+                }
                 val packageName = event.packageName ?: continue
                 if (packageName in excluded) continue
                 when (event.eventType) {
                     UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
-                    UsageEvents.Event.MOVE_TO_BACKGROUND -> foregroundSince.remove(packageName)?.let {
+                    // 23 = ACTIVITY_STOPPED: застосунок більше не видимий, сесія закінчується.
+                    UsageEvents.Event.MOVE_TO_BACKGROUND, 23 -> foregroundSince.remove(packageName)?.let {
                         spans.add(TimeSpan(it, event.timeStamp))
                     }
                 }
@@ -166,12 +174,21 @@ class BalanceRepository(
             val event = UsageEvents.Event()
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
+                // Екран вимкнено (16) або блокування (17): відкриті сесії тут закінчуються (див. getOnlineIntervals).
+                if (event.eventType == 16 || event.eventType == 17) {
+                    for (start in foregroundSince.values) {
+                        totalMs += (event.timeStamp - start).coerceAtLeast(0)
+                    }
+                    foregroundSince.clear()
+                    continue
+                }
                 val packageName = event.packageName ?: continue
                 if (packageName in excluded) continue
                 when (event.eventType) {
                     UsageEvents.Event.MOVE_TO_FOREGROUND ->
                         foregroundSince[packageName] = event.timeStamp
-                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                    // 23 = ACTIVITY_STOPPED: застосунок більше не видимий, сесія закінчується.
+                    UsageEvents.Event.MOVE_TO_BACKGROUND, 23 -> {
                         val start = foregroundSince.remove(packageName)
                         if (start != null) {
                             totalMs += (event.timeStamp - start).coerceAtLeast(0)
