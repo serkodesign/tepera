@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,8 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.semantics
@@ -44,6 +48,7 @@ import com.serkodesign.tepera.ui.diary.HistoryEntryRow
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
@@ -53,6 +58,42 @@ import com.serkodesign.tepera.util.roundToQuarterHour
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+/**
+ * Порожній стан історії категорії: значок категорії в її кольорі, текст і кнопка "Додати активність" —
+ * та сама форма додавання, що з картки на Home, з уже вибраною цією категорією.
+ */
+@Composable
+private fun CategoryEmptyState(category: CategoryEntity, onAddEntry: () -> Unit) {
+    val accent = categoryColor(category.colorHex)
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier.size(88.dp).clip(CircleShape).background(accent.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            val glyphColor = categoryGlyphColor(accent, badgeAlpha = 0.3f)
+            val lineArt = categoryLineArtIconRes(category.iconName)
+            if (lineArt != null) {
+                Icon(painterResource(lineArt), contentDescription = null, tint = glyphColor, modifier = Modifier.size(40.dp))
+            } else {
+                Icon(categoryIcon(category.iconName), contentDescription = null, tint = glyphColor, modifier = Modifier.size(40.dp))
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(
+            stringResource(R.string.category_history_empty),
+            style = MaterialTheme.typography.bodyLarge,
+            color = TeperaPalette.textSecondary,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(24.dp))
+        TeperaButton(text = stringResource(R.string.diary_add_entry_action), onClick = onAddEntry)
+    }
+}
 
 /**
  * Тап по тілу картки категорії на Home (не по кнопках таймера/додавання часу) — повна історія
@@ -65,6 +106,7 @@ fun CategoryHistoryScreen(
     activityRepository: ActivityRepository,
     categoryId: String,
     onEditEntry: (String) -> Unit,
+    onAddEntry: () -> Unit,
     onBack: () -> Unit
 ) {
     val viewModel: CategoryHistoryViewModel = viewModel(
@@ -97,25 +139,29 @@ fun CategoryHistoryScreen(
                                 contentDescription = stringResource(R.string.category_edit_action),
                                 onClick = { showEditDialog = true },
                                 shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
-                                containerColor = Color.White.copy(alpha = 0.8f)
+                                containerColor = TeperaPalette.headerButtonFill
                             )
                             TeperaIconButton(
                                 icon = TeperaSymbols.Delete,
                                 contentDescription = stringResource(R.string.category_delete_action),
                                 onClick = { showDeleteConfirm = true },
                                 shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
-                                containerColor = Color.White.copy(alpha = 0.8f)
+                                containerColor = TeperaPalette.headerButtonFill
                             )
                         }
                     }
                 }
             )
             if (category == null || state.groups.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(vertical = 48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(stringResource(R.string.category_history_empty))
+                if (category != null) {
+                    CategoryEmptyState(category = category, onAddEntry = onAddEntry)
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(vertical = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(stringResource(R.string.category_history_empty))
+                    }
                 }
             } else {
                 Column(

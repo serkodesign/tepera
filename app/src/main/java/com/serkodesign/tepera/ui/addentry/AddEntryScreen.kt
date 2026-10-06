@@ -5,6 +5,7 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.heading
 
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
@@ -148,11 +149,16 @@ fun AddEntryScreen(
     val noteSuggestions by viewModel.noteSuggestions.collectAsState()
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    // "Додати час" з картки категорії (Home/віджет) приходить із вже відомою категорією — сітку
-    // вибору ховаємо за прямим запитом користувача. Редагування показує сітку завжди (можна
-    // змінити категорію заднім числом), незалежно від того, чи прийшло воно з попередньо обраною
-    // категорією.
-    val showCategoryGrid = viewModel.isEditing || initialCategoryId == null
+    // Додавання з конкретної категорії (меню категорії або "додати час" на картці): спершу плашка
+    // категорії з кнопкою "Змінити" (сітка прихована, щоб не відволікати), один тап — повна сітка.
+    // Щоденник і редагування показують сітку одразу.
+    var gridExpanded by remember { mutableStateOf(false) }
+    val isFromCategory = !viewModel.isEditing && initialCategoryId != null
+    val showCategoryGrid = !isFromCategory || gridExpanded
+    val selectedCategory = categories.firstOrNull { it.id == state.selectedCategoryId }
+    val categoryNames = categories.associate { it.id to categoryDisplayName(it) }
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val overlapIntro = stringResource(R.string.add_entry_overlap_body)
 
     LaunchedEffect(state.saved) {
         if (state.saved) onSaved()
@@ -161,14 +167,26 @@ fun AddEntryScreen(
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             GlassScreenHeader(
-                title = stringResource(
-                    if (viewModel.isEditing) R.string.edit_entry_screen_title
-                    else R.string.add_entry_screen_title
-                ),
+                // Додавання з конкретної категорії (меню категорії або "додати час" на картці) — назва категорії;
+                // "Нова активність" лишається лише для додавання зі Щоденника.
+                title = if (!viewModel.isEditing && initialCategoryId != null) {
+                    categories.firstOrNull { it.id == initialCategoryId }?.let { categoryDisplayName(it) }
+                        ?: stringResource(R.string.add_entry_screen_title)
+                } else {
+                    stringResource(
+                        if (viewModel.isEditing) R.string.edit_entry_screen_title
+                        else R.string.add_entry_screen_title
+                    )
+                },
                 onBack = onBack,
                 trailing = {
                     if (viewModel.isEditing) {
-                        TeperaIconButton(icon = TeperaSymbols.Delete, contentDescription = stringResource(R.string.edit_entry_delete_action), onClick = { showDeleteConfirm = true })
+                        TeperaIconButton(
+                            icon = TeperaSymbols.Delete,
+                            contentDescription = stringResource(R.string.edit_entry_delete_action),
+                            onClick = { showDeleteConfirm = true },
+                            containerColor = TeperaPalette.headerButtonFill // той самий фон, що кнопки налаштувань на головній
+                        )
                     }
                 }
             )
@@ -181,27 +199,31 @@ fun AddEntryScreen(
                     .padding(top = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                if (showCategoryGrid) {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Text(
-                            stringResource(R.string.add_entry_category_label),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium, fontSize = 18.sp)
-                        )
-                        if (categories.isEmpty()) {
-                            Text(stringResource(R.string.add_entry_category_empty))
-                        } else {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        stringResource(R.string.add_entry_category_label),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium, fontSize = 18.sp)
+                    )
+                    when {
+                        categories.isEmpty() -> Text(stringResource(R.string.add_entry_category_empty))
+                        !showCategoryGrid -> selectedCategory?.let { category ->
+                            SelectedCategoryPlate(category = category, onChange = { gridExpanded = true })
+                        }
+                        else -> {
                             CategoryGrid(
                                 categories = categories,
                                 selectedId = state.selectedCategoryId,
                                 onSelect = viewModel::selectCategory
                             )
                         }
-                        if (state.categoryRequiredError) {
-                            Text(
-                                stringResource(R.string.add_entry_select_category_first),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
+                    }
+                    // Категорія обов'язкова: кнопка "Зберегти" неактивна, доки її нема — підказка пояснює чому.
+                    if (state.selectedCategoryId == null && categories.isNotEmpty()) {
+                        Text(
+                            stringResource(R.string.add_entry_select_category_first),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TeperaPalette.textSecondary
+                        )
                     }
                 }
 
@@ -233,6 +255,20 @@ fun AddEntryScreen(
                             maxDayMillis = state.maxEndDayMillis,
                             invalid = !state.intervalValid
                         )
+                    }
+                    // Швидка тривалість: задає початок від кінця (інтервал лишається один). Вибрана — заливка.
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(15, 30, 60).forEach { minutes ->
+                            TeperaButton(
+                                text = if (minutes < 60) stringResource(R.string.minutes_short_format, minutes)
+                                else stringResource(R.string.hours_short_format, 1),
+                                onClick = { viewModel.setDurationMinutes(minutes) },
+                                modifier = Modifier.weight(1f),
+                                size = TeperaButtonSize.Small,
+                                type = if (state.intervalValid && state.durationMinutes == minutes) TeperaButtonType.Primary
+                                else TeperaButtonType.Secondary
+                            )
+                        }
                     }
                     IntervalSummary(state = state, onEndNextDay = viewModel::endNextDay)
                 }
@@ -296,6 +332,15 @@ fun AddEntryScreen(
                     placeholder = stringResource(R.string.add_entry_note_label),
                     minLines = 3
                 )
+                // Лічильник з'являється ближче до ліміту (від 200 символів), щоб обрізання не було мовчазним.
+                if (state.note.length >= 200) {
+                    Text(
+                        "${state.note.length}/$MAX_NOTE_LENGTH",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TeperaPalette.textSecondary,
+                        modifier = Modifier.align(Alignment.End)
+                    )
+                }
                 }
 
                 // Запас під sticky-панель Cancel/Save нижче (поза скролом) — без цього останнє
@@ -327,7 +372,7 @@ fun AddEntryScreen(
                     onClick = { viewModel.save() },
                     modifier = Modifier.weight(1f),
                     type = TeperaButtonType.Primary,
-                    enabled = state.intervalValid
+                    enabled = state.intervalValid && state.selectedCategoryId != null
                 )
             }
         }
@@ -347,14 +392,68 @@ fun AddEntryScreen(
         )
     }
 
-    if (state.overlapEntries != null) {
+    state.overlapEntries?.let { overlaps ->
+        // Конфлікти перелічені з часом і категорією, щоб було видно, з чим саме перетинається запис.
+        val overlapText = buildString {
+            append(overlapIntro)
+            overlaps.sortedBy { it.startTime }.forEach { entry ->
+                val start = timeFormat.format(Date(entry.startTime))
+                val end = timeFormat.format(Date(entry.startTime + entry.durationMinutes * 60_000L))
+                append("\n• ").append(start).append(" – ").append(end)
+                categoryNames[entry.categoryId]?.let { append(" · ").append(it) }
+            }
+        }
         TeperaDialog(
             onDismissRequest = viewModel::dismissOverlapDialog,
             title = stringResource(R.string.add_entry_overlap_title),
-            text = stringResource(R.string.add_entry_overlap_body),
+            text = overlapText,
             confirmText = stringResource(R.string.add_entry_overlap_confirm),
             onConfirm = { viewModel.save(forceOverwrite = true) },
-            dismissText = stringResource(R.string.dialog_cancel)
+            // "Змінити час" закриває діалог і лишає форму як є — людина міняє час, а не підтверджує перетин.
+            dismissText = stringResource(R.string.add_entry_overlap_change_time)
+        )
+    }
+}
+
+/**
+ * Плашка вибраної категорії для додавання з її меню: іконка й назва в кольорі категорії, кнопка
+ * "Змінити" розкриває повну сітку. Категорія видна одразу, без вибору з 6–8 плиток.
+ */
+@Composable
+private fun SelectedCategoryPlate(category: CategoryEntity, onChange: () -> Unit) {
+    val accent = categoryColor(category.colorHex)
+    val lineArtRes = categoryLineArtIconRes(category.iconName)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(accent.copy(alpha = 0.35f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(accent.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            val glyphColor = categoryGlyphColor(accent, badgeAlpha = 0.5f)
+            if (lineArtRes != null) {
+                Icon(painterResource(lineArtRes), contentDescription = null, tint = glyphColor, modifier = Modifier.size(20.dp))
+            } else {
+                Icon(categoryIcon(category.iconName), contentDescription = null, tint = glyphColor, modifier = Modifier.size(20.dp))
+            }
+        }
+        Text(
+            categoryDisplayName(category),
+            style = MaterialTheme.typography.bodyLarge,
+            color = TeperaPalette.textPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        TeperaButton(
+            text = stringResource(R.string.add_entry_change_category),
+            onClick = onChange,
+            size = TeperaButtonSize.Small,
+            type = TeperaButtonType.Secondary
         )
     }
 }

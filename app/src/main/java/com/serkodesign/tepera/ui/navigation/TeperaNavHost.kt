@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
@@ -84,6 +85,7 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
+import com.serkodesign.tepera.util.SavedEntryUndo
 import com.serkodesign.tepera.util.ShortcutScreen
 import com.serkodesign.tepera.ui.addentry.AddEntryScreen
 import com.serkodesign.tepera.ui.category.CategoriesScreen
@@ -112,6 +114,9 @@ import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
 import com.serkodesign.tepera.ui.settings.WidgetSettingsScreen
 import com.serkodesign.tepera.ui.splash.SplashScreen
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.SystemBarsAppearance
@@ -525,6 +530,7 @@ fun TeperaNavHost(
                     activityRepository = activityRepository,
                     categoryId = entry.arguments?.getString("categoryId").orEmpty(),
                     onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
+                    onAddEntry = { navController.navigate(Routes.addEntry(entry.arguments?.getString("categoryId").orEmpty())) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -663,6 +669,15 @@ fun TeperaNavHost(
         }
     }
     }
+    // Снекбар "Записано · Скасувати" після збереження нового запису — вище за екрани, бо форма вже закрита.
+    val undoPending by SavedEntryUndo.pending.collectAsState()
+    undoPending?.let { pending ->
+        UndoSavedSnackbar(
+            pending = pending,
+            activityRepository = activityRepository,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
     if (currentRoute in Routes.BOTTOM_NAV_ROUTES) {
         TeperaBottomNavBar(
             currentRoute = currentRoute,
@@ -703,6 +718,53 @@ private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRep
  * Surface/surface-brand-light, невибрані — суцільні білі (Surface/surface-card) з сірою іконкою. Іконки — `TeperaIcons` (SVG 1:1 з компонента "Navbar icons", node
  * 274:484). Додавання часу лишається per-категорійним (HomeScreen.CategoryCard).
  */
+/**
+ * Снекбар після збереження: тихий (Monastic Style), без анімованих акцентів. Зникає сам через 4 с;
+ * "Скасувати" видаляє щойно створений запис (усі його частини, якщо активність через дві доби).
+ * Над нижнім навбаром, щоб не перекривати його.
+ */
+@Composable
+private fun UndoSavedSnackbar(
+    pending: SavedEntryUndo.Pending,
+    activityRepository: ActivityRepository,
+    modifier: Modifier = Modifier
+) {
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(pending) {
+        delay(4_000)
+        SavedEntryUndo.clear()
+    }
+    Row(
+        modifier = modifier
+            .padding(start = 16.dp, end = 16.dp, bottom = 120.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(TeperaPalette.dialogSurface)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            stringResource(R.string.add_entry_saved_snackbar),
+            style = MaterialTheme.typography.bodyLarge,
+            color = TeperaPalette.textPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        TeperaButton(
+            text = stringResource(R.string.dialog_cancel),
+            onClick = {
+                scope.launch {
+                    pending.ids.forEach { id ->
+                        activityRepository.getById(id)?.let { activityRepository.deleteWholeActivity(it) }
+                    }
+                }
+                SavedEntryUndo.clear()
+            },
+            size = TeperaButtonSize.Small,
+            type = TeperaButtonType.Secondary
+        )
+    }
+}
+
 @Composable
 private fun TeperaBottomNavBar(
     currentRoute: String?,

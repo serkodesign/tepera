@@ -41,7 +41,7 @@ private class FakeActivityRepository : ActivityRepository {
     override suspend fun sumDurationForCategory(categoryId: String, from: Long, to: Long): Int = 0
     override suspend fun addEntry(entry: ActivityEntryEntity, forceOverwrite: Boolean): SaveEntryResult {
         entries[entry.id] = entry
-        return SaveEntryResult.Success
+        return SaveEntryResult.Success()
     }
     override suspend fun update(entry: ActivityEntryEntity) { entries[entry.id] = entry }
     override suspend fun delete(entry: ActivityEntryEntity) { entries.remove(entry.id) }
@@ -50,7 +50,7 @@ private class FakeActivityRepository : ActivityRepository {
     override suspend fun saveInterval(
         categoryId: String, startMillis: Long, endMillis: Long, note: String?,
         replaceIds: List<String>, seriesId: String?, forceOverwrite: Boolean
-    ): SaveEntryResult = SaveEntryResult.Success
+    ): SaveEntryResult = SaveEntryResult.Success()
     override suspend fun getWholeActivity(id: String): List<ActivityEntryEntity> = listOfNotNull(entries[id])
     override suspend fun deleteWholeActivity(entry: ActivityEntryEntity) { entries.remove(entry.id) }
 }

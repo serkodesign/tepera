@@ -414,6 +414,9 @@
          14:791) — повна історія записів цієї категорії, без обмеження "сьогодні+вчора". -->
     <string name="category_history_screen_title_fallback">Історія</string>
     <string name="category_history_empty">Ще немає записів цієї категорії</string>
+    <string name="add_entry_change_category">Змінити</string>
+    <string name="add_entry_overlap_change_time">Змінити час</string>
+    <string name="add_entry_saved_snackbar">Записано</string>
 
     <!-- "База знань" — T-16 частина А (tepera-dev-spec.md), реальний контент. Частина Б
          (вікі про думскролінг/дофамін) лишається заблокованою рішенням власника — свідомо

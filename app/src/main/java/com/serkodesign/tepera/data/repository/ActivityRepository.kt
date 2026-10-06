@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 sealed class SaveEntryResult {
-    data object Success : SaveEntryResult()
+    /** [ids] — записи, що щойно створені (для "Скасувати" після збереження); при редагуванні — замінені. */
+    data class Success(val ids: List<String> = emptyList()) : SaveEntryResult()
     data class OverlapDetected(val existing: List<ActivityEntryEntity>) : SaveEntryResult()
 }
 
@@ -69,7 +70,7 @@ class RoomActivityRepository(
             }
         }
         dao.insert(entry)
-        return SaveEntryResult.Success
+        return SaveEntryResult.Success(listOf(entry.id))
     }
 
     override suspend fun update(entry: ActivityEntryEntity) = dao.update(entry)
@@ -112,7 +113,7 @@ class RoomActivityRepository(
             )
         }
         dao.replaceAll(deleteIds = replaceIds.drop(parts.size), entries = entries)
-        return SaveEntryResult.Success
+        return SaveEntryResult.Success(entries.map { it.id })
     }
 
     override suspend fun getWholeActivity(id: String): List<ActivityEntryEntity> {

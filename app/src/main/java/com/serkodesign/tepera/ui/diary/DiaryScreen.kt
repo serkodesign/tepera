@@ -65,6 +65,7 @@ import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaScreenTitle
 import com.serkodesign.tepera.ui.theme.TeperaIcons
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaStatsBar
 import com.serkodesign.tepera.util.roundToQuarterHour
@@ -158,8 +159,10 @@ fun DiaryScreen(
                 .padding(end = 20.dp, bottom = bottomNavClearance())
                 .width(64.dp),
             shape = CircleShape,
-            containerColor = Color(0xFF006944),
-            contentColor = TeperaPalette.onPrimary,
+            // Темна тема: світлий зелений Brand/200 (#B2E5D3) з темно-зеленою іконкою — помітніше на тлі.
+            // Світла тема без змін (#006944 з іконкою onPrimary).
+            containerColor = if (LocalTeperaColors.current.isDark) Color(0xFFB2E5D3) else Color(0xFF006944),
+            contentColor = if (LocalTeperaColors.current.isDark) Color(0xFF003926) else TeperaPalette.onPrimary,
             height = 64.dp,
             iconSize = 32.dp
         )
@@ -338,7 +341,8 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             onClick = onEdit,
             modifier = Modifier.width(40.dp),
             shape = CircleShape,
-            containerColor = Color.Transparent,
+            // Той самий фон, що кнопки налаштувань і бази знань на головній (за запитом).
+            containerColor = TeperaPalette.headerButtonFill,
             contentColor = TeperaPalette.buttonBrandDark,
             height = 40.dp
         )

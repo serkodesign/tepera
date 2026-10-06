@@ -8,6 +8,7 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.repository.SaveEntryResult
+import com.serkodesign.tepera.util.SavedEntryUndo
 import com.serkodesign.tepera.util.localStartOfDay
 import com.serkodesign.tepera.util.minuteOfDay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-private const val MAX_NOTE_LENGTH = 250
+const val MAX_NOTE_LENGTH = 250
 private const val MAX_SUGGESTIONS = 5
 private const val SUGGESTION_WINDOW_MILLIS = 90L * 24 * 60 * 60 * 1000
 private const val SUGGESTION_FUTURE_MILLIS = 24L * 60 * 60 * 1000
@@ -162,6 +163,15 @@ class AddEntryViewModel(
         }
     }
 
+    /**
+     * Швидка тривалість (15 / 30 / 60 хв): кінець лишається як є, початок перераховується. Це не нові
+     * "режими" вводу — інтервал один, просто його початок задається від кінця. Виправляє й некоректний інтервал.
+     */
+    fun setDurationMinutes(minutes: Int) {
+        val state = _uiState.value
+        _uiState.value = state.copy(startMillis = state.endMillis - minutes * MINUTE_MILLIS)
+    }
+
     fun selectCategory(categoryId: String) {
         _uiState.value = _uiState.value.copy(selectedCategoryId = categoryId, categoryRequiredError = false)
     }
@@ -229,8 +239,11 @@ class AddEntryViewModel(
                 forceOverwrite = forceOverwrite
             )
             when (result) {
-                is SaveEntryResult.Success ->
+                is SaveEntryResult.Success -> {
+                    // Снекбар "Записано · Скасувати" лише для нового запису: при редагуванні замінені записи вже не відновити.
+                    if (!isEditing) SavedEntryUndo.show(result.ids)
                     _uiState.value = _uiState.value.copy(saved = true, overlapEntries = null)
+                }
                 is SaveEntryResult.OverlapDetected ->
                     _uiState.value = _uiState.value.copy(overlapEntries = result.existing)
             }

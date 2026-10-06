@@ -397,6 +397,9 @@
          node 14:791) — full history of entries for that category, not limited to today/yesterday. -->
     <string name="category_history_screen_title_fallback">History</string>
     <string name="category_history_empty">No entries for this category yet</string>
+    <string name="add_entry_change_category">Change</string>
+    <string name="add_entry_overlap_change_time">Change time</string>
+    <string name="add_entry_saved_snackbar">Saved</string>
 
     <!-- "Knowledge base" — T-16 part A (tepera-dev-spec.md), real content. Part B (the
          doomscrolling/dopamine wiki) stays blocked on the owner's decision — deliberately
