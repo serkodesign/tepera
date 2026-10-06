@@ -124,29 +124,6 @@ internal fun EmptyPagerCard(modifier: Modifier = Modifier) {
     }
 }
 
-/** Кольорова плашка значення (плитки "This week", "First unlock" у Day usage): радіус 4, паддінг 4. */
-@Composable
-internal fun HomeTintChip(
-    text: String,
-    textColor: Color,
-    fill: Color,
-    modifier: Modifier = Modifier,
-    borderColor: Color? = null,
-    fontSize: Int = 16
-) {
-    Box(
-        modifier = modifier
-            .defaultMinSize(minWidth = 24.dp, minHeight = 24.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(fill)
-            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, RoundedCornerShape(4.dp)) else Modifier)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text, fontSize = fontSize.sp, fontWeight = FontWeight.Medium, color = textColor, maxLines = 1)
-    }
-}
-
 /**
  * "Оцінка → реальність" — дві картки поруч замість голого тексту (за прямим запитом користувача:
  * "по всьому застосунку оформлення такого контенту зроби більш графічно"). Спільний вигляд для

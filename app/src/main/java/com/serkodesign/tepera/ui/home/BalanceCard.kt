@@ -385,12 +385,6 @@ private fun formatClock(millis: Long): String {
     return "%02d:%02d".format(time.hour, time.minute)
 }
 
-/** Час у форматі `Г:ХХ` (Figma "2:45"), округлений до 15 хв — та сама логіка, що [formatBalanceDuration]. */
-private fun formatClockDuration(minutes: Int): String {
-    val (hours, remainder) = roundToQuarterHour(minutes)
-    return "%d:%02d".format(hours, remainder)
-}
-
 /**
  * Округлення до 15 хв (за запитом користувача, замість "245 хв") — напр. "3 год 45 хв",
  * а не "3 год 47 хв".

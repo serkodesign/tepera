@@ -17,8 +17,6 @@
     <string name="category_errands">Справи</string>
     <string name="category_sleep">Сон</string>
 
-    <string name="add_entry_button">Додати активність</string>
-    <string name="home_today_summary">Сьогодні</string>
     <string name="tile_quick_add">Додати активність</string>
     <string name="usage_access_prompt_title">Дозвольте побачити структуру дня</string>
     <string name="usage_access_prompt_body">Дозволь доступ до статистики використання застосунків, щоб побачити структуру свого дня</string>
@@ -45,21 +43,15 @@
     <string name="diary_add_entry_action">Додати активність</string>
 
     <!-- Привітання на Home, за часом доби (Figma-фрейм Everyday_Designs) -->
-    <string name="greeting_morning">Доброго ранку</string>
-    <string name="greeting_day">Доброго дня</string>
-    <string name="greeting_evening">Доброго вечора</string>
-    <string name="greeting_night">Доброї ночі</string>
     <!-- Другий (великий) рядок заголовка Home, Figma "App concept" node 347:3037 — за прямим запитом
          користувача НЕ переклад мотиваційного гасла мокапу ("Make your day productive", суперечить
          FR-P.1–P.6, "без мотиваційних цитат"), а нейтральна назва розділу. -->
-    <string name="home_header_headline">Твій день</string>
     <string name="home_header_subtitle">Сьогодні</string>
 
     <!-- Структура доби (FR-3.1–3.12, SRS v2.5, розділ 3.3) — раніше "Online/Offline баланс" (v2.1);
          перейменовано у v2.2, бо пряме протиставлення Online/Offline структурно гарантувало
          відчуття провини. Тепер три нейтральні складові: Online, категорії "Ти відмітив",
          "Решта дня" — без окремої відсоткової оцінки (FR-P.6). -->
-    <string name="my_day_title_format">Твій день: %1$s</string>
     <string name="balance_online_label">Online</string>
     <string name="stats_offline_label">Без телефону</string>
     <string name="stats_below_five_min">&lt;5 хв</string>
@@ -68,8 +60,6 @@
     <string name="home_add_category">Додати</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
-    <string name="onboarding_screen_title">Структура твого дня</string>
-    <string name="onboarding_explanation">Tepera показує структуру твого дня: скільки часу онлайн, скільки ти відмітив у записах, і скільки лишається на все інше. Для Online-частини потрібен доступ до статистики використання застосунків — системний дозвіл, який не можна надати звичайним вікном, лише вручну в Налаштуваннях, щоб показати реальне число поруч із твоєю оцінкою. Без нього записи активностей лишаються повністю робочими.</string>
     <string name="onboarding_skip">Пропустити</string>
     <string name="perm_title">Перед тим як почати</string>
     <string name="perm_body">Дані лишаються на телефоні. Назовні йдуть лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
@@ -139,8 +129,6 @@
     <string name="unlock_estimate_range_under_30">До 30</string>
     <string name="unlock_estimate_range_30_70">30–70</string>
     <string name="unlock_estimate_range_over_70">Понад 70</string>
-    <string name="stats_unlock_count_today_format">Розблокувань сьогодні: %1$d</string>
-    <string name="stats_unlock_count_yesterday_format">Розблокувань учора: %1$d</string>
     <string name="stats_unlock_week_label">Розблокувань за тиждень</string>
 
     <!-- T-10 (tepera-dev-spec.md): онбординг-оцінка часу останнього дотику до телефону -->
@@ -150,7 +138,6 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">Після 01:00</string>
-    <string name="stats_last_phone_use_yesterday_format">Востаннє брав телефон учора: %1$s</string>
     <string name="stats_last_phone_use_week_label">Медіана останнього дотику</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
@@ -174,12 +161,9 @@
     <string name="pattern_card_title">Патерн екрану вчора</string>
     <string name="pattern_card_title_average">Добовий патерн використання</string>
     <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається трохи більше даних</string>
-    <string name="pattern_heat_legend_no_data">Без даних</string>
 
     <!-- Картка "Цей тиждень" — досліджено з Figma-макета (node 2062:2862), не в SRS буквально -->
     <string name="weekly_digest_card_title">Цей тиждень</string>
-    <string name="weekly_digest_reading_format">%1$d · %2$s</string>
-    <string name="weekly_digest_count_format">%1$d</string>
     <string name="weekly_digest_day_start_label">День зазвичай починається</string>
 
     <!-- T-6 (tepera-dev-spec.md), FR-P.3: "свідчення спроможності" — тихий факт про ворота -->
@@ -223,7 +207,6 @@
     <string name="settings_target_increase">Збільшити орієнтир</string>
     <string name="settings_sleep_window_label">Вікно сну</string>
     <string name="settings_sleep_window_info">Не облік сну — лише технічний параметр. Впливає на: початок дня (нічні розблокування у вікні його не починають), довжину дня, пошук пауз, рядок «Без телефону» в Статистиці й лічильник розблокувань. На шкалі не показується. Працюєш ночами — онови межі.</string>
-    <string name="settings_sleep_window_hour_format">%d:00</string>
     <string name="settings_sleep_window_start_label">Початок</string>
     <string name="settings_sleep_window_end_label">Кінець</string>
 
@@ -354,8 +337,6 @@
     <string name="categories_screen_title">Категорії</string>
     <string name="categories_section_active">Активні</string>
     <string name="categories_section_archived">Архівовано</string>
-    <string name="category_archive_action">Архівувати</string>
-    <string name="category_unarchive_action">Повернути з архіву</string>
     <string name="category_add_custom">Додати свою категорію</string>
     <string name="category_custom_limit_reached">Можна мати не більше п\'яти власних категорій</string>
     <string name="category_delete_action">Видалити</string>
@@ -386,9 +367,7 @@
     <string name="add_entry_time_label">Час</string>
     <string name="add_entry_time_mode_keyboard">Ввести час з клавіатури</string>
     <string name="add_entry_time_mode_dial">Обрати час на циферблаті</string>
-    <string name="time_field_format">%1$s: %2$s</string>
     <string name="add_entry_note_label">Нотатка (необов\'язково)</string>
-    <string name="add_entry_note_counter">%1$d/%2$d</string>
     <string name="add_entry_save">Зберегти</string>
     <string name="add_entry_select_category_first">Спершу оберіть категорію</string>
     <string name="add_entry_interval_invalid">Час завершення має бути пізніше початку</string>
@@ -415,7 +394,6 @@
     <string name="home_backfill_processing">Обробляємо історію…</string>
 
     <!-- Історія активностей на Stats (за прямим запитом користувача, не в SRS) -->
-    <string name="stats_history_title">Історія</string>
     <string name="diary_unlock_today_label">Розблокувань сьогодні</string>
     <string name="diary_unlock_yesterday_label">Розблокувань учора</string>
     <string name="diary_unlock_label">Розблокувань</string>
@@ -431,7 +409,6 @@
     <string name="stats_day_compare_yesterday">Online вчора</string>
     <string name="stats_day_compare_typical">Типово (медіана за %1$d дн.)</string>
     <string name="stats_history_edit_action">Редагувати запис</string>
-    <string name="history_entry_row_format">%1$s–%2$s · %3$s</string>
 
     <!-- Тап по тілу картки категорії на Home (Figma user-flow k6s4prQ9oK9x2uUvzHRghR, node
          14:791) — повна історія записів цієї категорії, без обмеження "сьогодні+вчора". -->
@@ -452,7 +429,6 @@
     <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ти спав. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань.</string>
     <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>
     <string name="knowledge_base_section_4_body">Tepera не надсилає сповіщень, що кличуть повернутись, не рахує серій днів поспіль і не видає балів чи бейджів за використання. Числа на екранах — це факти про час, який уже минув, не ціль, до якої треба дотягнутись: тому в застосунку немає слова «ціль», лише «орієнтир», і кольори ніколи не стають «тривожними», скільки б часу не минуло. Порівняння — лише з власною історією, ніколи з середніми показниками інших людей.</string>
-    <string name="onboarding_learn_more">Дізнатись більше про дані</string>
     <string name="home_card_first_unlock_label">Початок</string>
     <string name="home_card_day_last_label">День триває</string>
     <string name="home_card_day_since_format">З %1$s минуло</string>
@@ -519,7 +495,6 @@
     <string name="heat_grid_description_none">Online за годинами доби: даних поки немає.</string>
     <string name="trend_chart_description">Online за днями: %1$s.</string>
     <string name="timeline_description_prefix">Хронологія вчорашньої доби, приблизно: %1$s.</string>
-    <string name="balance_target_label">Орієнтир</string>
     <string name="loading_description">Завантаження</string>
     <string name="widget_grid_legend_before_start">До початку дня</string>
     <string name="widget_grid_legend_rest">Решта доби</string>
