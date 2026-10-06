@@ -274,7 +274,7 @@ fun AddEntryScreen(
                                 Icon(
                                     TeperaSymbols.Add,
                                     contentDescription = null,
-                                    tint = Color(0xFF0F0F10),
+                                    tint = TeperaPalette.textPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Text(
@@ -282,7 +282,7 @@ fun AddEntryScreen(
                                     fontSize = 12.sp,
                                     lineHeight = 15.6.sp,
                                     letterSpacing = 0.012.sp,
-                                    color = Color(0xFF0F0F10)
+                                    color = TeperaPalette.textPrimary
                                 )
                             }
                             }

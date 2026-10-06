@@ -74,6 +74,28 @@ data class TeperaColors(
     /** Крапки перемикача сторінок карток Home. */
     val pagerDotActive: Color,
     val pagerDotInactive: Color,
+    /** Прогрес-бар "Твій день" (BalanceCard): фон і рамка рамки, трек незайнятої частини, штрихи, сегмент "Решта дня", орієнтир. */
+    val barFrame: Color,
+    val barFrameBorder: Color,
+    val barTrack: Color,
+    val barHatchStripe: Color,
+    val barRestSegment: Color,
+    val barTargetLine: Color,
+    val barTargetFill: Color,
+    /** Тло діалогів і календаря (TeperaDialog, TeperaPickers): окремо від surfaceBrandLight. */
+    val dialogSurface: Color,
+    /** Основний текст (LocalContentColor, onSurface, onBackground) — за docs/design-tokens-figma.md, п. 3 (раніше ink). */
+    val textPrimary: Color,
+    /** Білий текст на темних фото / темно-бірюзових поверхнях. НЕ для тексту на brand/primary — там onPrimary. */
+    val textOnDark: Color,
+    val textPlaceholder: Color,
+    val textDisabled: Color,
+    val textError: Color,
+    /** Рамка за замовчуванням (контраст ≥3:1). */
+    val borderDefault: Color,
+    val borderStrong: Color,
+    val borderError: Color,
+    val borderBrand: Color,
     /** Темні іконки системних барів (true) чи світлі (false). */
     val lightSystemBars: Boolean
 )
@@ -104,6 +126,23 @@ val LegacyTeperaColors = TeperaColors(
     navTabUnselected = Color(0x1AF0F3F4),
     pagerDotActive = Color.White,
     pagerDotInactive = Color.White.copy(alpha = 0.5f),
+    barFrame = Color(0xFFFFFFFF),
+    barFrameBorder = Color(0xFFDDE2E4),
+    barTrack = Color(0xFFE2DED1),
+    barHatchStripe = Color(0x80FFFFFF),
+    barRestSegment = Color(0xFF006944),
+    barTargetLine = Color(0xFFF5C401),
+    barTargetFill = Color(0x33F5C401),
+    dialogSurface = Color(0xFFDCF6ED),
+    textPrimary = Color(0xFF0F0F10),
+    textOnDark = Color.White,
+    textPlaceholder = Color(0xFF767676),
+    textDisabled = Color(0xFFADADAD),
+    textError = Color(0xFFE70F1A),
+    borderDefault = Color(0xFFDDE2E4),
+    borderStrong = Color(0xFF505050),
+    borderError = Color(0xFFE70F1A),
+    borderBrand = Color(0xFF006944),
     lightSystemBars = true
 )
 
@@ -150,40 +189,78 @@ val RedesignLightColors = TeperaColors(
     navTabUnselected = Color(0xFFFFFFFF),
     pagerDotActive = Color(0xFF003926),
     pagerDotInactive = Color(0xFF003926).copy(alpha = 0.25f),
+    barFrame = Color(0xFFFFFFFF),
+    barFrameBorder = Color(0xFFDDE2E4),
+    barTrack = Color(0xFFE2DED1),
+    barHatchStripe = Color(0x80FFFFFF),
+    barRestSegment = Color(0xFF006944),
+    barTargetLine = Color(0xFFF5C401),
+    barTargetFill = Color(0x33F5C401),
+    dialogSurface = Color(0xFFFEFEFE), // як surfaceBrandLight у світлій темі (поточне значення)
+    textPrimary = Color(0xFF0F0F10), // docs/design-tokens-figma.md, п. 3 — рішення власника
+    textOnDark = Color.White,
+    textPlaceholder = Color(0xFF6B6B6B),
+    textDisabled = Color(0xFFADADAD),
+    textError = Color(0xFFE70F1A),
+    borderDefault = Color(0xFF888888),
+    borderStrong = Color(0xFF505050),
+    borderError = Color(0xFFE70F1A),
+    borderBrand = Color(0xFF006944),
     lightSystemBars = true
 )
 
 /** Image 1-3 (334:31/34/37): темний зелений градієнт, кремові акценти. */
 val RedesignDarkColors = TeperaColors(
     isDark = true,
-    // Темна тема за макетом 362:516 (узгоджено 03.10): фон градієнт #062814 → #11322E, картки #164233,
+    // Темна тема за макетом 362:516 (узгоджено 03.10): фон градієнт #062814 → #11322E, картки #0F0F10,
     // чіпи #003926, навбар лишається світлим (#F1F0F1) з темно-зеленою вибраною вкладкою.
-    backgroundTop = Color(0xFF062814),
-    backgroundBottom = Color(0xFF11322E),
+    // docs/design-tokens-figma.md, розділ A (темна колонка): градієнт, плями, текст, картки, чіпи, рамки.
+    backgroundTop = Color(0xFF0F0F10),
+    backgroundBottom = Color(0xFF03190C),
+    // Розмиті кола прибрано за запитом користувача — лишився лише градієнт (null = не малюються).
+    backgroundBlobTopRight = null,
+    backgroundBlobBottomLeft = null,
     ink = Color(0xFFFEFFEF),
     textSecondary = Color(0xFFC5DCD9), // текст повідомлення в image 1
     brand = Color(0xFFFEFFEF),
-    surfaceBrandLight = Color(0xFF1A3D38),
-    switchTrackOff = Color(0xFF1A3D38),
-    card = Color(0xFF164233),
-    cardActive = Color(0xFF1A3D38),
-    listItem = Color(0xFF164233),
+    surfaceBrandLight = Color(0x24FFFFFF),
+    switchTrackOff = Color(0x24FFFFFF),
+    card = Color(0xFF0F0F10),
+    cardActive = Color(0x24FFFFFF),
+    listItem = Color(0x24FFFFFF),
     primaryFill = Color(0xFFFEFFEF),
     onPrimary = Color(0xFF062924),
-    chipFill = Color(0xFF003926),
+    chipFill = Color(0x24FFFFFF),
     chipContent = Color(0xFFFEFFEF),
-    iconButtonFill = Color(0xFF164233),
+    iconButtonFill = Color(0x24FFFFFF),
     iconButtonContent = Color(0xFFFEFFEF),
-    moreTimeFill = Color(0xFFC5E2CB),
+    moreTimeFill = Color(0xFF71CCA4),
     // Темний навбар: той самий скляний контейнер; вибрана вкладка — кремова (як основна кнопка темної теми),
     // невибрані — темна картка. Токенів темного фрейму в Figma немає — підібрано під палітру темної теми.
     navPill = Color(0x4DFFFFFF),
     navSelected = Color(0xFFFEFFEF),
     navSelectedContent = Color(0xFF062924),
     navUnselectedContent = Color(0xFFFEFFEF),
-    navTabUnselected = Color(0xFF1A3D38),
+    navTabUnselected = Color(0x24FFFFFF),
     pagerDotActive = Color(0xFFFEFFEF),
     pagerDotInactive = Color(0xFFFEFFEF).copy(alpha = 0.3f),
+    barFrame = Color(0xFF0F0F10),
+    barFrameBorder = Color(0xFF767676),
+    barTrack = Color(0x24FFFFFF),
+    barHatchStripe = Color(0x24FFFFFF),
+    barRestSegment = Color(0xFF71CCA4),
+    barTargetLine = Color(0xFFF5C401),
+    barTargetFill = Color(0x33F5C401),
+    dialogSurface = Color(0xFF1B1B1D),
+    textPrimary = Color(0xFFFFFFFF),
+    textOnDark = Color(0xFFFFFFFF),
+    textPlaceholder = Color(0xFFA7A7A7),
+    textDisabled = Color(0x24FFFFFF),
+    textError = Color(0xFFFF5A61),
+    borderDefault = Color(0x24FFFFFF), // FFFFFF 14%
+    borderStrong = Color(0xFF888888),
+    borderError = Color(0xFFFF5A61),
+    borderBrand = Color(0xFF26A377),
     lightSystemBars = false
 )
 
@@ -200,14 +277,14 @@ fun RedesignScope(colors: TeperaColors, content: @Composable () -> Unit) {
         primary = colors.primaryFill,
         onPrimary = colors.onPrimary,
         background = colors.backgroundTop ?: base.background,
-        onBackground = colors.ink,
+        onBackground = colors.textPrimary,
         surface = colors.card,
-        onSurface = colors.ink,
+        onSurface = colors.textPrimary,
         onSurfaceVariant = colors.textSecondary
     )
     CompositionLocalProvider(LocalTeperaColors provides colors) {
         MaterialTheme(colorScheme = scheme, shapes = MaterialTheme.shapes, typography = MaterialTheme.typography) {
-            CompositionLocalProvider(LocalContentColor provides colors.ink, content = content)
+            CompositionLocalProvider(LocalContentColor provides colors.textPrimary, content = content)
         }
     }
 }

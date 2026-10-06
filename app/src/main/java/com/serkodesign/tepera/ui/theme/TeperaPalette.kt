@@ -46,15 +46,16 @@ object TeperaPalette {
     // категорійний колір сегмента, як і решта на шкалі (Online, кожна категорія), не умовна
     // traffic-light оцінка — колір завжди той самий, незалежно від значення (FR-4.3 лишається
     // чинним).
-    val restOfDayCard = Color(0xFFC5E2CB) // #C5E2CB — колір "Офлайн-життя" (палітра категорій)
+    // docs/design-tokens-figma.md, розділ D (одна схема): #71CCA4 замість попереднього #C5E2CB.
+    val restOfDayCard = Color(0xFF71CCA4)
 
     // За прямим запитом користувача: усі "скляні" картки/рядки (GlassRow, контекстні картки Home)
     // у світлому редизайні тепер на тій самій rgba(255,255,255,0.7), що й My day/Pattern/Weekly
     // digest вище — раніше бралась роль `card` (опаковий кремовий #EDF1E5), темну не чіпаємо.
-    val cardTranslucent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) card else Color(0xB3FFFFFF) } // rgba(255,255,255,0.5)
-    val cardTranslucentLight: Color @Composable @ReadOnlyComposable get() = themed(Color(0x4DFFFFFF)) { if (isDark) card else Color(0xB3FFFFFF) } // rgba(255,255,255,0.3) — обгортка "Life balance"
+    val cardTranslucent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) } // rgba(255,255,255,0.5)
+    val cardTranslucentLight: Color @Composable @ReadOnlyComposable get() = themed(Color(0x4DFFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) } // rgba(255,255,255,0.3) — обгортка "Life balance"
     /** Картки-рядки Налаштувань (GlassRow): білий 50% (за запитом), у темній — як інші картки. */
-    val settingsCardFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) card else Color(0xB3FFFFFF) }
+    val settingsCardFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
     val cardActive: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFFFFFFF)) { cardActive }
 
     val navPill = Color(0xB3FFFFFF)
@@ -100,25 +101,26 @@ object TeperaPalette {
     // тему свідомо не чіпаємо (лишається на попередніх ролях).
     // За запитом: білий 70% (rgba(255,255,255,0.7)) — як картки Щоденника й Налаштувань у світлій темі.
     // Темна тема (макет 362:516): звичайна картка #1D5945, активна (таймер) #DCF6ED з темним текстом.
-    val activityCardIdle: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) Color(0xFF1D5945) else Color(0xB3FFFFFF) }
+    val activityCardIdle: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
     val activityCardActive: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF006944)) { if (isDark) Color(0xFFDCF6ED) else Color(0xFF006944) }
-    // За прямим запитом (Figma 336:537 "more_time"): #C5E2CB у світлій темі; темна — moreTimeFill (#C5E2CB).
-    val activityMoreTime: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFC5E2CB)) { if (isDark) moreTimeFill else Color(0xFFC5E2CB) }
+    // За прямим запитом (Figma 336:537 "more_time"): #C5E2CB у світлій темі; темна — #DCF6ED з прозорістю 30%.
+    val activityMoreTime: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFC5E2CB)) { if (isDark) Color(0x4DDCF6ED) else Color(0xFFC5E2CB) }
     // Іконка на кнопці "додати час": у темній темі темна (на світлій #C5E2CB), у світлій — як buttonBrandDark.
-    val activityMoreTimeContent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF003926)) { if (isDark) Color(0xFF062924) else Color(0xFF003926) }
+    val activityMoreTimeContent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF003926)) { if (isDark) Color(0xFFDCF6ED) else Color(0xFF003926) }
     /** Рамка 1dp ідлу-картки активності (node 347:3052: `border border-white`) — лише світлий редизайн, активна картка й легасі її не мають. */
-    val activityCardIdleBorder: Color? @Composable @ReadOnlyComposable get() = if (LocalTeperaColors.current.let { it !== LegacyTeperaColors && !it.isDark }) Color.White else null
+    val activityCardIdleBorder: Color? @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.let { if (it === LegacyTeperaColors) null else if (it.isDark) it.listItem else Color(0xB3FFFFFF) }
     val headerButtonFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { iconButtonFill } // білий 50% (було 80% за Figma; змінено за запитом користувача)
-    val homeCardFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { card } // білий 70% (було 65% за Figma; за запитом користувача) — Патерн / Цей тиждень
+    val homeCardFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else card } // білий 70% (було 65% за Figma; за запитом користувача) — Патерн / Цей тиждень
     // Твій день (node 347:3166, "My day"): rgba(255,255,255,0.7) буквально — редизайн світлої теми
     // тепер теж на цьому значенні (раніше брав роль `card`, інший колір), темну не чіпаємо (лишається `card`).
-    val homeCardFillMyDay: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) card else Color(0xB3FFFFFF) }
+    val homeCardFillMyDay: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
     // Патерн доби: та сама заливка, що й "Твій день" (rgba(255,255,255,0.7)) — за запитом користувача,
     // щоб обидві картки пейджера Home виглядали однаково. Біла рамка 1dp лишається (див. нижче).
-    val homeCardFillPattern: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) card else Color(0xB3FFFFFF) }
-    val homeCardBorderPattern: Color? @Composable @ReadOnlyComposable get() = if (LocalTeperaColors.current.let { it !== LegacyTeperaColors && !it.isDark }) Color.White else null
+    val homeCardFillPattern: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
+    // Темна тема — без рамки, як "Мій день" (MyDayCard): інформаційні картки лише заливкою listItem.
+    val homeCardBorderPattern: Color? @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.let { if (it === LegacyTeperaColors || it.isDark) null else Color(0xB3FFFFFF) }
     // Цей тиждень (node 347:3267, "This week"): rgba(255,255,255,0.65), без рамки — лише світлий редизайн.
-    val homeCardFillWeeklyDigest: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) card else Color(0xB3FFFFFF) }
+    val homeCardFillWeeklyDigest: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
 
     // "Новий екран додавання активності" (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node
     // 61:3516) — фіолетовий акцент лише для чіпів часу (Початок/Фініш, підсумок тривалості),
@@ -135,9 +137,9 @@ object TeperaPalette {
     // За прямим запитом користувача кошик "0-15" — окремий колір (не найсвітліша альфа amber
     // з макета), непрозорість 100%.
     val heatmapLowBucket = Color(0xFFC3C3C3)
-    /** Кошик "0-1 хв": у темному редизайні — тон невибраного чипа (за рішенням власника), інакше @see heatmapLowBucket. */
+    /** Кошик "0-1 хв": у темному редизайні #FFFFFF @14% (surface-glass), інакше @see heatmapLowBucket. */
     val heatmapEmptyBucket: Color @Composable @ReadOnlyComposable get() =
-        LocalTeperaColors.current.let { if (it.isDark) it.chipFill else heatmapLowBucket }
+        LocalTeperaColors.current.let { if (it.isDark) Color(0x24FFFFFF) else heatmapLowBucket }
     val heatmapNoDataFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFF0F3F4)) { if (isDark) chipFill else Color(0xFFF0F3F4) }
     val heatmapNoDataBorder: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFD4DADD)) { if (isDark) textSecondary.copy(alpha = 0.3f) else Color(0xFFD4DADD) }
 
@@ -145,19 +147,37 @@ object TeperaPalette {
     val colors: TeperaColors @Composable @ReadOnlyComposable get() = LocalTeperaColors.current
 
     // Редизайн (TeperaColors.kt): ролі, що в legacy були прописані в коді як конкретні кольори.
-    val textPrimary: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF0F0F10)) { ink }
+    // Основний текст: docs/design-tokens-figma.md, п. 3 (рішення власника) — раніше повертав ink.
+    val textPrimary: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF0F0F10)) { textPrimary }
+    val dialogSurface: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFDCF6ED)) { dialogSurface }
+    val barFrame: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFFFFFFF)) { barFrame }
+    val barFrameBorder: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFDDE2E4)) { barFrameBorder }
+    val barTrack: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFE2DED1)) { barTrack }
+    val barHatchStripe: Color @Composable @ReadOnlyComposable get() = themed(Color(0x80FFFFFF)) { barHatchStripe }
+    val barRestSegment: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF006944)) { barRestSegment }
+    val barTargetLine: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFF5C401)) { barTargetLine }
+    val barTargetFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0x33F5C401)) { barTargetFill }
+    val textOnDark: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { textOnDark }
+    val textPlaceholder: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF767676)) { textPlaceholder }
+    val textDisabled: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFADADAD)) { textDisabled }
+    val textError: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFE70F1A)) { textError }
+    val borderDefault: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFDDE2E4)) { borderDefault }
+    val borderStrong: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF505050)) { borderStrong }
+    val borderError: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFE70F1A)) { borderError }
+    val borderBrand: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF006944)) { borderBrand }
     val textSecondary: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF505050)) { textSecondary }
     // node 347:3052: ідлу-картка — "text-black", не узагальнена роль `ink`.
-    val categoryName: Color @Composable @ReadOnlyComposable get() = themed(Color.Black) { if (isDark) ink else Color.Black }
+    val categoryName: Color @Composable @ReadOnlyComposable get() = themed(Color.Black) { textPrimary }
     val onPrimary: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { onPrimary }
     // Кнопка play/pause на картці категорії (Figma node 347:3042/3052, "pause"): бейдж білий В
     // ОБОХ станах (не інверсія активна/ідлу, як припускала попередня редизайн-роль `primaryFill`/
     // `chipFill`), іконка — той самий near-black `#0F0F10` в обох станах (звірено з SVG pause/play
     // іконок, не з узагальненої ролі `onPrimary`/`chipContent`). Темну тему не чіпаємо.
-    val playFill: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { Color.White }
+    val playFill: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { if (isDark) Color(0xFFDCF6ED) else Color.White }
     val playContent: Color @Composable @ReadOnlyComposable get() = themed(Color.Black) { if (isDark) onPrimary else Color(0xFF0F0F10) }
-    val playActiveFill: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { if (isDark) chipFill else Color.White }
-    val playActiveContent: Color @Composable @ReadOnlyComposable get() = themed(Color.Black) { if (isDark) chipContent else Color(0xFF0F0F10) }
+    // Активна картка — кнопка паузи: у світлій темі біла з темною іконкою (як play на ідлу), у темній — green/925 (#062924) з кремовою іконкою (ink).
+    val playActiveFill: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { if (isDark) Color(0xFF062924) else Color.White }
+    val playActiveContent: Color @Composable @ReadOnlyComposable get() = themed(Color.Black) { if (isDark) ink else Color(0xFF0F0F10) }
     /** Біла 80% плашка всередині картки (рядки пауз, смуга активного таймера). */
     val innerSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White.copy(alpha = 0.7f)) { cardActive }
     /** Тон "оцінки" в GuessRevealRow — 8% основного тексту, як і в legacy (#003926 @ 0x14). */
@@ -166,13 +186,14 @@ object TeperaPalette {
     val pagerDotInactive: Color @Composable @ReadOnlyComposable get() = themed(Color.White.copy(alpha = 0.5f)) { pagerDotInactive }
     val chipSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { chipFill }
     /** Фон текстових полів (пошук, поля редагування): F0F3F4 у світлій темі, як за запитом; у темній — chipFill. */
-    val inputSurface: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFF0F3F4)) { if (isDark) chipFill else Color(0xFFF0F3F4) }
+    // Темна — #003926 (docs/design-tokens-figma.md, розділ B), не chipFill: той тепер #505050.
+    val inputSurface: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFF0F3F4)) { if (isDark) Color(0x24FFFFFF) else Color(0xFFF0F3F4) }
     /** Чип запису Щоденника: лежить на білому рядку списку, тож у світлій темі — колір картки, а не білий. */
     val entryChipSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { if (isDark) chipFill else card }
     /** Рамка поля часу (Налаштування, розклад воріт): legacy #DDE2E4, у темній — приглушений другорядний текст. */
-    val fieldBorder: Color @Composable @ReadOnlyComposable get() = themed(borderLight) { if (isDark) textSecondary.copy(alpha = 0.3f) else borderLight }
+    val fieldBorder: Color @Composable @ReadOnlyComposable get() = themed(borderLight) { if (isDark) borderDefault else borderLight }
     // За прямим запитом користувача: той самий rgba(255,255,255,0.7), що решта "скляних" карток (вище).
-    val cardSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White.copy(alpha = 0.7f)) { if (isDark) card else Color(0xB3FFFFFF) }
+    val cardSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White.copy(alpha = 0.7f)) { if (isDark) listItem else Color(0xB3FFFFFF) }
     /** Primary-кнопка Medium/Small: legacy — біла з #006944, редизайн — головна дія (темно-зелена / кремова). */
     val primaryButtonFill: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { primaryFill }
     val primaryButtonContent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF006944)) { onPrimary }

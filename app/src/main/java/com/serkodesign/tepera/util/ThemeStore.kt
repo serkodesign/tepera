@@ -13,16 +13,15 @@ object ThemeStore {
     private const val KEY_MODE = "theme_mode"
 
     /**
-     * Вибір теми в Налаштуваннях → Загальні → Тема приховано (за рішенням власника): застосунок завжди світлий.
-     * Код вибору лишається — щоб повернути, достатньо поставити true. Коли false, [TeperaTheme] ігнорує
-     * збережений режим і системну тему.
+     * Вибір теми в Налаштуваннях → Загальні → Тема. Увімкнено за запитом власника. За замовчуванням — системна
+     * (слідує за темою телефона). false — приховує вибір і робить застосунок завжди світлим (SRS FR-6.7 v4.2).
      */
-    const val THEME_CHOICE_ENABLED = false
+    const val THEME_CHOICE_ENABLED = true
 
     enum class Mode { SYSTEM, LIGHT, DARK }
 
-    /** За замовчуванням — світла тема (не системна). */
-    private val defaultMode = Mode.LIGHT
+    /** За замовчуванням — системна тема: слідує за темою телефона, як вирішив власник. */
+    private val defaultMode = Mode.SYSTEM
     private val state = mutableStateOf(defaultMode)
     private var loaded = false
 

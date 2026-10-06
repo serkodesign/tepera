@@ -65,7 +65,7 @@ fun TeperaTextField(
             singleLine = singleLine,
             enabled = enabled,
             interactionSource = interactionSource,
-            textStyle = TextStyle(fontSize = 16.sp, lineHeight = 21.sp, color = Color(0xFF0F0F10)),
+            textStyle = TextStyle(fontSize = 16.sp, lineHeight = 21.sp, color = TeperaPalette.textPrimary),
             cursorBrush = SolidColor(TeperaPalette.buttonBrand),
             modifier = Modifier.fillMaxWidth()
         )

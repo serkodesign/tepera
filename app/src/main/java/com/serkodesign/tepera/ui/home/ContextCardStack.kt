@@ -173,7 +173,8 @@ internal fun ContextCardHeader(
 @Composable
 internal fun Modifier.contextInfoSurface(): Modifier {
     val shape = RoundedCornerShape(24.dp)
-    val border = TeperaPalette.activityCardIdleBorder
+    // Та сама рамка, що в PatternMiniCard (світла — білий 70%, темна — без рамки як у "Мій день").
+    val border = TeperaPalette.homeCardBorderPattern
     return this
         .clip(shape)
         .background(TeperaPalette.cardTranslucentLight)

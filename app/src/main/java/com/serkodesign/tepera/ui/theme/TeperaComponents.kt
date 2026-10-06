@@ -230,7 +230,7 @@ fun <T> PillSegmentedControl(
             .height(44.dp)
             .clip(RoundedCornerShape(100.dp))
             .background(TeperaPalette.cardTranslucent)
-            .border(1.dp, TeperaPalette.borderLight, RoundedCornerShape(100.dp))
+            .border(1.dp, TeperaPalette.fieldBorder, RoundedCornerShape(100.dp))
             .padding(4.dp)
     ) {
         val itemWidth = (maxWidth - gap * (options.size - 1)) / options.size
@@ -435,7 +435,8 @@ fun TeperaButton(
 
     val background: Color = when (type) {
         TeperaButtonType.Primary -> TeperaPalette.primaryButtonFill
-        TeperaButtonType.Filled -> TeperaPalette.surfaceBrandLight.copy(alpha = 0.5f)
+        // Темна тема — #DCF6ED 30% (за запитом), світла — як раніше.
+        TeperaButtonType.Filled -> if (LocalTeperaColors.current.isDark) Color(0x4DDCF6ED) else TeperaPalette.surfaceBrandLight.copy(alpha = 0.5f)
         else -> Color.Transparent
     }
     val contentColor: Color = when {
@@ -522,7 +523,7 @@ fun HourStepper(
             modifier = Modifier.width(44.dp),
             shape = CircleShape,
             containerColor = brand,
-            contentColor = Color.White,
+            contentColor = TeperaPalette.onPrimary,
             enabled = hours > minHours,
             height = 44.dp,
             iconSize = 24.dp
@@ -554,7 +555,7 @@ fun HourStepper(
             modifier = Modifier.width(44.dp),
             shape = CircleShape,
             containerColor = brand,
-            contentColor = Color.White,
+            contentColor = TeperaPalette.onPrimary,
             enabled = hours < maxHours,
             height = 44.dp,
             iconSize = 24.dp
@@ -863,7 +864,8 @@ fun TeperaChip(
     label: String,
     modifier: Modifier = Modifier,
     value: String? = null,
-    compact: Boolean = false // 24dp заввишки, 12sp — для щільних списків (напр. значення в легенді картки дня)
+    compact: Boolean = false, // 24dp заввишки, 12sp — для щільних списків (напр. значення в легенді картки дня)
+    leading: (@Composable () -> Unit)? = null // необов'язковий елемент перед підписом (напр. кольорова крапка сегмента)
 ) {
     val labelStyle = androidx.compose.ui.text.TextStyle(
         fontFamily = TeperaPalette.headlineFont,
@@ -881,6 +883,7 @@ fun TeperaChip(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        leading?.invoke()
         Text(label, style = labelStyle, color = TeperaPalette.buttonBrand, maxLines = 1)
         value?.let {
             Text(it, style = labelStyle.copy(fontWeight = FontWeight.SemiBold), color = TeperaPalette.buttonBrandDark, maxLines = 1)
@@ -1056,7 +1059,7 @@ fun TeperaDialog(
             modifier = modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
-                .background(TeperaPalette.surfaceBrandLight)
+                .background(TeperaPalette.dialogSurface)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

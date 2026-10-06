@@ -242,7 +242,7 @@ internal val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
 // ui-redesign: ті самі значення, що @color/widget_circle_unselected і @color/widget_glyph_unselected у values-night — сам
 // віджет бере їх із ресурсів; ці константи лише для Compose-прев'ю віджета в онбордингу.
 internal val WIDGET_GLYPH_UNSELECTED_NIGHT = Color(0xFFFEFFEF)
-internal val WIDGET_CIRCLE_UNSELECTED_NIGHT = Color(0xFF1A3D38)
+internal val WIDGET_CIRCLE_UNSELECTED_NIGHT = Color(0x24FFFFFF)
 
 // Figma node 234:678 (4x2): віджет з відступом 12, без окремої картки; сітка 12x4 — горизонтальні
 // пігулки висотою 16 з проміжком 3; між блоками — 8.

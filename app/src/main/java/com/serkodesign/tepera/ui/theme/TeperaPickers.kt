@@ -111,7 +111,7 @@ fun TeperaDatePickerDialog(
         }
     )
     val pickerColors = DatePickerDefaults.colors(
-        containerColor = TeperaPalette.surfaceBrandLight,
+        containerColor = TeperaPalette.dialogSurface,
         titleContentColor = TeperaPalette.buttonBrandDark,
         headlineContentColor = TeperaPalette.buttonBrandDark,
         weekdayContentColor = TeperaPalette.buttonBrand,

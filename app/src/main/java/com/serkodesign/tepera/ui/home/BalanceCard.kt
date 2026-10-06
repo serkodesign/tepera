@@ -44,6 +44,7 @@ import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -158,12 +159,13 @@ internal fun BalanceUiState.hasDayData(): Boolean =
 private fun daySegments(state: BalanceUiState): List<DaySegment> {
     val onlineLabel = stringResource(R.string.balance_online_label)
     val restLabel = stringResource(R.string.balance_rest_of_day_label)
+    val restColor = TeperaPalette.barRestSegment
     return buildList {
         if (state.onlineMinutes > 0) add(DaySegment(onlineLabel, TeperaPalette.onlineCard, state.onlineMinutes))
         state.categorySegments.forEach {
             add(DaySegment(categoryDisplayName(it.category), categoryColor(it.category.colorHex), it.minutes))
         }
-        if (state.restOfDayMinutes > 0) add(DaySegment(restLabel, RestSegmentColor, state.restOfDayMinutes))
+        if (state.restOfDayMinutes > 0) add(DaySegment(restLabel, restColor, state.restOfDayMinutes))
     }
 }
 
@@ -204,18 +206,9 @@ private val LegendDotSize = 8.dp // кружок-маркер у легенді 
 // Figma node 395:1037 (шкала структури дня): білий контейнер, рамка 1dp #DDE2E4, радіус 14, відступ 3dp.
 // Висота 40dp → сегменти 32dp (40 − 2 рамки − 6 відступу), орієнтир 37dp (по 2.5dp над і під сегментами).
 private val BarFrameHeight = 40.dp
-private val BarFrameBorderColor = Color(0xFFDDE2E4)
 private val SegmentGap = 1.dp // gap-px у макеті
 private val SegmentRadius = 12.dp
 
-// Незайнята частина дня — суцільний бежевий #E2DED1; сегмент "Офлайн" — суцільний зелений #006944, як у чіпі легенди.
-private val BarTrackColor = Color(0xFFE2DED1)
-// Штрихи на "Решта дня" — світлі діагональні смуги поверх бежевого (як у макеті 395:1033).
-private val HatchStripeColor = Color(0x80FFFFFF)
-private val RestSegmentColor = Color(0xFF006944)
-// Орієнтир (Figma 395:1037): жовтий #F5C401 — заливка 20%, права рамка 1dp без прозорості.
-private val TargetFillColor = Color(0x33F5C401)
-private val TargetBorderColor = Color(0xFFF5C401)
 
 /**
  * Шкала структури доби: пігулка з сегментів (Online, категорії, "Без телефону" і світла "решта дня" = ще не
@@ -250,22 +243,23 @@ private fun DayStructureBar(
                 .fillMaxWidth()
                 .height(BarFrameHeight)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color.White)
-                .border(1.dp, BarFrameBorderColor, RoundedCornerShape(14.dp))
+                .background(TeperaPalette.barFrame)
+                .border(1.dp, TeperaPalette.barFrameBorder, RoundedCornerShape(14.dp))
         ) {
             // Внутрішня зона всередині рамки (1dp): орієнтир від її початку до позначки, за сегментами.
             Box(Modifier.fillMaxSize().padding(1.dp)) {
                 if (markerFraction != null) {
+                    val targetLine = TeperaPalette.barTargetLine
                     Box(
                         Modifier
                             .align(Alignment.CenterStart)
                             .fillMaxWidth(markerFraction)
                             .height(37.dp)
-                            .background(TargetFillColor)
+                            .background(TeperaPalette.barTargetFill)
                             .drawBehind {
                                 val border = 2.dp.toPx()
                                 drawLine(
-                                    TargetBorderColor,
+                                    targetLine,
                                     Offset(size.width - border / 2, 0f),
                                     Offset(size.width - border / 2, size.height),
                                     strokeWidth = border
@@ -305,7 +299,7 @@ private fun DayStructureBar(
                             .weight(futureMinutes.toFloat())
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(SegmentRadius))
-                            .hatched(BarTrackColor)
+                            .hatched(TeperaPalette.barTrack, TeperaPalette.barHatchStripe)
                     )
                 }
             }
@@ -341,31 +335,19 @@ private fun DayStructureLegend(segments: List<DaySegment>) {
     }
 }
 
+/** Чіп легенди — той самий єдиний [TeperaChip], що й решта чіпів застосунку; крапка сегмента — лівий слот. */
 @Composable
-private fun LegendChipSurface(content: @Composable RowScope.() -> Unit) {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.chipSurface)
-            .border(1.dp, TeperaPalette.inputSurface, RoundedCornerShape(16.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        content = content
+private fun LegendChip(segment: DaySegment) {
+    TeperaChip(
+        label = segment.label,
+        value = formatBalanceDuration(segment.minutes),
+        compact = true,
+        leading = { Box(Modifier.size(LegendDotSize).clip(RoundedCornerShape(2.dp)).background(segment.color)) }
     )
 }
 
-@Composable
-private fun LegendChip(segment: DaySegment) {
-    LegendChipSurface {
-        Box(Modifier.size(LegendDotSize).clip(RoundedCornerShape(2.dp)).background(segment.color))
-        Text(segment.label, fontSize = 12.sp, color = HomeCardTextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(formatBalanceDuration(segment.minutes), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = HomeCardTextPrimary, maxLines = 1)
-    }
-}
-
 /** Діагональне штрихування поверх [base] (Figma: "Решта дня" — незайнята частина дня), без субкомпозиції. */
-private fun Modifier.hatched(base: Color): Modifier = drawBehind {
+private fun Modifier.hatched(base: Color, stripe: Color): Modifier = drawBehind {
     drawRect(base)
     val step = 6.dp.toPx()
     val stroke = 2.dp.toPx()
@@ -373,7 +355,7 @@ private fun Modifier.hatched(base: Color): Modifier = drawBehind {
     clipRect(0f, 0f, size.width, size.height) {
         var x = -size.height
         while (x < size.width) {
-            drawLine(HatchStripeColor, Offset(x, size.height), Offset(x + size.height, 0f), strokeWidth = stroke)
+            drawLine(stripe, Offset(x, size.height), Offset(x + size.height, 0f), strokeWidth = stroke)
             x += step
         }
     }
