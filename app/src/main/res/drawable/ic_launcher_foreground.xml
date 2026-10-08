@@ -1,31 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Логотип "Т" (Figma "App concept", node 234:438 "Union", 633.576 x 593.214 у фреймі 1000x1000 на
-     позиції (180.607, 220.930)); градієнт #003926 -> #699129 і контур — з SVG-асета макета 1:1.
-     Задній шар — ic_launcher_background.xml. -->
+<!-- Логотип "Т" — редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 395:1226, вузол
+     "Union" (вже сплющена boolean-операція, шлях 1:1 з SVG-експорта MCP download_assets, колір
+     #FEFEFE). Задній шар — ic_launcher_background.xml. Той самий прийом safe zone, що в
+     попередній версії: контент вписаний у видимі центральні ~72% 108dp канви (scale 0.72 навколо
+     центру фрейму 1400x1400), щоб не обрізався різними масками лаунчерів (коло/сквіркл/тощо). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="1000"
-    android:viewportHeight="1000">
+    android:viewportWidth="1400"
+    android:viewportHeight="1400">
 
-    <!-- Логотип вписано у видиму зону (scale 0.72), як і фон. -->
-    <group android:scaleX="0.72" android:scaleY="0.72" android:pivotX="500" android:pivotY="500">
-    <group
-        android:translateX="180.607"
-        android:translateY="220.930">
+    <group android:scaleX="0.72" android:scaleY="0.72" android:pivotX="700" android:pivotY="700">
         <path
-            android:pathData="M633.576,22.8564C633.576,101.754 569.617,165.714 490.719,165.714H470.005C444.758,165.714 424.291,186.181 424.291,211.428V450.356C424.291,529.254 360.331,593.214 281.434,593.214H212.862V285.714C212.862,127.918 340.781,0.000114289 498.576,0H633.576V22.8564ZM263.472,1.24316C265.664,1.2434 267.441,3.02117 267.441,5.21387C267.441,92.9277 196.335,164.033 108.621,164.033H3.9707C1.77796,164.033 0.000164236,162.256 0,160.063C0,72.3495 71.1064,1.24316 158.82,1.24316H263.472Z">
-            <aapt:attr name="android:fillColor">
-                <gradient
-                    android:type="linear"
-                    android:startX="340.717" android:startY="366.071"
-                    android:endX="597.858" android:endY="-113.93">
-                    <item android:offset="0" android:color="#003926" />
-                    <item android:offset="1" android:color="#699129" />
-                </gradient>
-            </aapt:attr>
-        </path>
-    </group>
+            android:pathData="M1148,346C1148,456.457 1058.46,546 948,546H919C883.654,546 855,574.654 855,610V944.5C855,1054.96 765.457,1144.5 655,1144.5H559V714C559,493.086 738.086,314 959,314H1148V346ZM756.795,314C661.875,364.775 585.514,445.71 540.513,544H261V514C261,403.543 350.543,314 461,314H756.795Z"
+            android:fillColor="#FEFEFE" />
     </group>
 </vector>

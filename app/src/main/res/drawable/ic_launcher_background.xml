@@ -1,44 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Іконка застосунку — Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 234:435 "App icon";
-     значення взяті через MCP (get_design_context/download_assets), не зі скриншота. Задній шар:
-     вертикальний градієнт неба (#F5E3C0 -> #FFF6E4 на 76.571%) і два пагорби (Ellipse 8 #B2E5D3,
-     Ellipse 7 #006944) з координатами макета 1:1 (viewport 1000x1000 = фрейм 1000x1000).
-     Жовтий screen-градієнт Rectangle 5010 у макеті прихований (hidden) — не відтворений.
-     Логотип "Т" — окремий передній шар (ic_launcher_foreground.xml). -->
+<!-- Іконка застосунку — редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 395:1226
+     "Frame 48855" (виведено через MCP download_assets як плаский SVG-експорт, значення взяті з
+     нього, не зі скриншота). Попередній варіант (небо/пагорби, node 234:435) СКАСОВАНО — новий
+     макет суцільний: лінійний градієнт #006944 -> #699129 на всю площу. Фоновий шар заповнює весь
+     108dp канвас без скорочення в safe zone (на відміну від переднього шару) — суцільна заливка
+     виглядає однаково під будь-якою маскою лаунчера, обрізання країв непомітне. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="1000"
-    android:viewportHeight="1000">
+    android:viewportWidth="1400"
+    android:viewportHeight="1400">
 
-    <!-- Adaptive-іконка показує лише центральні 72 із 108dp: увесь макет (1000x1000) вписано в цю
-         видиму зону (scale 0.72 = 72/100 навколо центру), тож іконка виглядає як у Figma. Фон-градієнт
-         розтягнуто за межі фрейму (-200..1200), щоб заповнити решту 108dp полотна; пагорби макета вже
-         достатньо великі. -->
-    <group android:scaleX="0.72" android:scaleY="0.72" android:pivotX="500" android:pivotY="500">
-
-    <path android:pathData="M-200,-200H1200V1200H-200Z">
+    <path android:pathData="M0,0H1400V1400H0Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="500" android:startY="0"
-                android:endX="500" android:endY="1000">
-                <item android:offset="0" android:color="#F5E3C0" />
-                <item android:offset="0.76571" android:color="#FFF6E4" />
-                <item android:offset="1" android:color="#FFF6E4" />
+                android:startX="752.875" android:startY="863.937"
+                android:endX="1381.31" android:endY="-234.415">
+                <item android:offset="0" android:color="#006944" />
+                <item android:offset="1" android:color="#699129" />
             </gradient>
         </aapt:attr>
     </path>
-
-    <!-- Ellipse 8: центр (26.08, 1551.43), радіуси 1179.64 x 1007.14 -->
-    <path
-        android:pathData="M-1153.56,1551.43A1179.64,1007.14 0 1 0 1205.72,1551.43A1179.64,1007.14 0 1 0 -1153.56,1551.43Z"
-        android:fillColor="#B2E5D3" />
-
-    <!-- Ellipse 7: центр (846.07, 1615.71), ті самі радіуси -->
-    <path
-        android:pathData="M-333.57,1615.71A1179.64,1007.14 0 1 0 2025.71,1615.71A1179.64,1007.14 0 1 0 -333.57,1615.71Z"
-        android:fillColor="#006944" />
-    </group>
 </vector>
