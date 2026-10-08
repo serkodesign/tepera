@@ -853,11 +853,15 @@ fun TeperaCard(
 }
 
 /**
- * Єдиний чіп "підпис значення" (M3 assist chip у фірмовому виконанні): тональний фон
- * [TeperaPalette.surfaceBrandLight] (#DCF6ED), повне заокруглення, висота від 32dp, горизонтальний
- * відступ 12; підпис — M3 labelLarge (14sp Medium) #006944, значення — те саме, але SemiBold #003926
- * (контраст підпису до фону ≈5.6:1, значення ≈11:1 — AA). Без значення — просто чіп-підпис.
- * Лише відображення (не натискається) — для дій є [TeperaButton].
+ * Єдиний чіп "підпис значення" (M3 assist chip у фірмовому виконанні) — Figma "App concept",
+ * node 408:2185 (темна тема)/407:1882 (світла): фон+рамка [TeperaPalette.labelChipFill]/
+ * [TeperaPalette.labelChipBorder], 16dp заокруглення (клипить у пігулку на висоті компонента),
+ * текст — [TeperaPalette.textPrimary] (не брендовий зелений — Figma показує нейтральний
+ * text/primary в обох варіантах підпису й значення, без двотонової схеми). Компактний розмір —
+ * буквальний Golos Text Regular 12sp/lh 1.3 з Figma (Body 2); некомпактний (14sp) зберігає раніше
+ * підібрану вагу Medium/SemiBold — ці два вузли Figma показують лише компактний варіант. Групування
+ * відступів теж з Figma: крапка+підпис — gap 4dp, ця група до значення — gap 8dp. Без значення —
+ * просто чіп-підпис. Лише відображення (не натискається) — для дій є [TeperaButton].
  */
 @Composable
 fun TeperaChip(
@@ -869,24 +873,29 @@ fun TeperaChip(
 ) {
     val labelStyle = androidx.compose.ui.text.TextStyle(
         fontFamily = TeperaPalette.headlineFont,
-        fontWeight = FontWeight.Medium,
+        fontWeight = if (compact) FontWeight.Normal else FontWeight.Medium,
         fontSize = if (compact) 12.sp else 14.sp,
         lineHeight = if (compact) 16.sp else 20.sp,
         letterSpacing = 0.1.sp
     )
+    val shape = RoundedCornerShape(16.dp)
+    val textColor = TeperaPalette.textPrimary
     Row(
         modifier = modifier
             .heightIn(min = if (compact) 24.dp else 32.dp)
-            .clip(RoundedCornerShape(100.dp))
-            .background(TeperaPalette.chipSurface)
-            .padding(horizontal = if (compact) 10.dp else 12.dp, vertical = if (compact) 4.dp else 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+            .clip(shape)
+            .background(TeperaPalette.labelChipFill)
+            .border(1.dp, TeperaPalette.labelChipBorder, shape)
+            .padding(horizontal = if (compact) 8.dp else 12.dp, vertical = if (compact) 4.dp else 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        leading?.invoke()
-        Text(label, style = labelStyle, color = TeperaPalette.buttonBrand, maxLines = 1)
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            leading?.invoke()
+            Text(label, style = labelStyle, color = textColor, maxLines = 1)
+        }
         value?.let {
-            Text(it, style = labelStyle.copy(fontWeight = FontWeight.SemiBold), color = TeperaPalette.buttonBrandDark, maxLines = 1)
+            Text(it, style = if (compact) labelStyle else labelStyle.copy(fontWeight = FontWeight.SemiBold), color = textColor, maxLines = 1)
         }
     }
 }

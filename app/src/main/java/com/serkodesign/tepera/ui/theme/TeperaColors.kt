@@ -59,6 +59,11 @@ data class TeperaColors(
     /** Невибраний чип / кнопка play на картці категорії. */
     val chipFill: Color,
     val chipContent: Color,
+    /** Фон/рамка єдиного чипа "підпис-значення" [TeperaChip] (Figma "App concept", node 408:2185 — темна тема,
+     * 407:1882 — світла) — окремо від [chipFill]/[chipContent] вище (ті лишаються для картки категорії/чипів
+     * воріт/вибору категорії, їх не чіпаємо). Текст чипа бере [textPrimary], не окремий токен. */
+    val labelChipFill: Color,
+    val labelChipBorder: Color,
     /** Кола-кнопки іконок (книга, шестерня, "назад"). */
     val iconButtonFill: Color,
     val iconButtonContent: Color,
@@ -116,6 +121,8 @@ val LegacyTeperaColors = TeperaColors(
     onPrimary = Color.White,
     chipFill = Color.White,
     chipContent = Color.Black,
+    labelChipFill = Color.White,
+    labelChipBorder = Color.Transparent,
     iconButtonFill = Color(0x80FFFFFF),
     iconButtonContent = Color(0xFF003926),
     moreTimeFill = Color(0xFFC5E2CB),
@@ -176,6 +183,9 @@ val RedesignLightColors = TeperaColors(
     onPrimary = Color.White,
     chipFill = Color(0xFFFEFEFE),
     chipContent = Color(0xFF003926),
+    // Figma node 407:1882: surface/default #FFFFFF + border input/fill #F0F3F4 (get_variable_defs).
+    labelChipFill = Color(0xFFFFFFFF),
+    labelChipBorder = Color(0xFFF0F3F4),
     iconButtonFill = Color(0xFFFCFBF7),
     iconButtonContent = Color(0xFF003926),
     moreTimeFill = Color(0xFFFCFBF7),
@@ -232,6 +242,9 @@ val RedesignDarkColors = TeperaColors(
     onPrimary = Color(0xFF062924),
     chipFill = Color(0x24FFFFFF),
     chipContent = Color(0xFFFEFFEF),
+    // Figma node 408:2185: surface/card #505050 + border/default #767676 (get_variable_defs).
+    labelChipFill = Color(0xFF505050),
+    labelChipBorder = Color(0xFF767676),
     iconButtonFill = Color(0x24FFFFFF),
     iconButtonContent = Color(0xFFFEFFEF),
     moreTimeFill = Color(0xFF71CCA4),
