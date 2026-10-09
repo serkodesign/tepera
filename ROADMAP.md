@@ -1974,6 +1974,30 @@ tap/screenshot) і `logcat` наявного встановлення.
   реального віджета з 3+ кольорами легенди того дня; (2) чи досі показується статичний
   `previewImage`, а не динамічне прев'ю, у системному віджет-пікері.
 
+## P-0/P-1/P-2 (`docs/CLAUDE-CODE-PLAN-pro.md`, гілка `feature/pro-prep`, 09.10.2026)
+
+Підготовка до Tepera Pro, окремо від закритого тесту 1.0 (заморозка скоупу D-04 цього не
+стосується — окремий план власника). **P-0** (аудит, без коду): `docs/AUDIT-P-0.md` — БД v16,
+`BalanceRepository.getOnlineMinutes()` вже єдине перевикористовне джерело Online за добу; гілка
+`feature/monetization-revenuecat` відстала на 80 комітів від `ui-redesign`, але реінтеграція
+(перевірено тестовим `git revert` у disposable worktree, прибрано після) — лише 3 файли/5
+конфліктів; знайдено розбіжність SRS v4.2/DECISIONS із фактичним кодом (темна тема вже зроблена,
+документи про це не знають). **P-1** (рішення власника, D-39): варіант B+ — `day_summaries`
+дозаписується з наявного `WidgetUpdateWorker`/`WidgetRolloverWorker`, не лише при відкритті
+застосунку, щоб розрив для довгих перерв був мінімальним (свідомий відступ від духу D-25).
+**P-2** (D-40): `day_summaries` реалізовано — БД v17, `MIGRATION_16_17`, чиста логіка вибору діб
+`util/DaySummaryBackfill` (7 нових юніт-тестів), резервна копія (SCHEMA_VERSION 2). Деталі —
+`DECISIONS-Tepera.md` D-39/D-40, протокол перевірки `V-28`. **Попутно виправлено:** `strings.xml`
+не мав рядків для перейменованих бакетів `OnlineEstimateOnboardingScreen` (чужа незавершена
+правка, блокувала компіляцію). **P-3** (D-41): позначка ранньої установки — `SettingsStore.
+firstSeenVersionCode`/`firstSeenAt` (сіється один раз у `TeperaApp.seedInitialData()`), чиста
+`util/EarlyUser.isEarlyUser()` із запасним джерелом `PackageInfo.firstInstallTime` (6 нових
+юніт-тестів). **P-4** (D-42): `data/repository/ProAccess.kt` — інтерфейс `ProAccess` +
+`FreeOnlyProAccess` (`isPro` завжди `false`, `isEarlyUser()` рахує реально через P-3 із
+сентинелями `Int.MAX_VALUE`/`Long.MAX_VALUE` до запуску Pro, `TODO(P-20)`); `TeperaApp.proAccess`
+додано, жоден екран ще не читає. Release-маніфест перевірено без `BILLING`.
+**Не перевірено на пристрої** — жоден не підключений цієї сесії.
+
 ## Фаза 8 — Закрите тестування Google Play (14+ днів)
 *(Не розпочато. Стартує після закриття пунктів Фази 7 вище — зокрема Data Safety, екрана "Про застосунок", скріншотів.)*
 - [ ] Рекрутинг 12+ тестувальників заздалегідь (Threads-аудиторія)

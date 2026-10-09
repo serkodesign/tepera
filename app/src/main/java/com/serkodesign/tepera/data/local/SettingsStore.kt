@@ -43,6 +43,11 @@ private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestio
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
+// P-3 (CLAUDE-CODE-PLAN-pro.md): grandfathering — versionCode, на якому Tepera вперше побачила
+// цей код (не плутати з FIRST_LAUNCH_AT_KEY вище — інша семантика, інший поріг, та сама ідея
+// "сіяти один раз і не перезаписувати").
+private val FIRST_SEEN_VERSION_CODE_KEY = intPreferencesKey("first_seen_version_code")
+private val FIRST_SEEN_AT_KEY = longPreferencesKey("first_seen_at")
 
 
 /**
@@ -110,6 +115,31 @@ class SettingsStore(private val context: Context) {
     suspend fun seedFirstLaunchMillisIfUnset() {
         val alreadySet = context.settingsDataStore.data.first()[FIRST_LAUNCH_AT_KEY] != null
         if (!alreadySet) context.settingsDataStore.edit { it[FIRST_LAUNCH_AT_KEY] = System.currentTimeMillis() }
+    }
+
+    /**
+     * P-3 (`CLAUDE-CODE-PLAN-pro.md`): grandfathering (Ж-5) — хто встановив Tepera ДО виходу Pro,
+     * зберігає весь наявний безкоштовний функціонал назавжди. [firstSeenVersionCode] — `null`,
+     * доки не засіяно жодного разу. Перевстановлення чи "Видалити всі дані" скидає обидва поля —
+     * прийнятний нюанс (DECISIONS, D-41): людина знову вважається "новою" з точки зору DataStore,
+     * хоча `PackageInfo.firstInstallTime` (не зберігається тут, читається окремо як запасне
+     * джерело для `EarlyUser.isEarlyUser()`) теж скидається при реальному перевстановленні, тож
+     * розбіжності між двома джерелами немає саме в цьому сценарії.
+     */
+    val firstSeenVersionCode: Flow<Int?> = context.settingsDataStore.data
+        .map { it[FIRST_SEEN_VERSION_CODE_KEY] }
+
+    val firstSeenAt: Flow<Long> = context.settingsDataStore.data
+        .map { it[FIRST_SEEN_AT_KEY] ?: 0L }
+
+    suspend fun seedFirstSeenIfUnset(versionCode: Int, atMillis: Long = System.currentTimeMillis()) {
+        val alreadySet = context.settingsDataStore.data.first()[FIRST_SEEN_VERSION_CODE_KEY] != null
+        if (!alreadySet) {
+            context.settingsDataStore.edit {
+                it[FIRST_SEEN_VERSION_CODE_KEY] = versionCode
+                it[FIRST_SEEN_AT_KEY] = atMillis
+            }
+        }
     }
 
     /**

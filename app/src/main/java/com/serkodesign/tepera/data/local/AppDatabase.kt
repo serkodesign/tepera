@@ -7,6 +7,7 @@ import com.serkodesign.tepera.data.local.dao.ActivityEntryDao
 import com.serkodesign.tepera.data.local.dao.AppGateDao
 import com.serkodesign.tepera.data.local.dao.CardShowDao
 import com.serkodesign.tepera.data.local.dao.CategoryDao
+import com.serkodesign.tepera.data.local.dao.DaySummaryDao
 import com.serkodesign.tepera.data.local.dao.DetectedGapDao
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import com.serkodesign.tepera.data.local.dao.GateEventDao
@@ -16,6 +17,7 @@ import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.AppGateEntity
 import com.serkodesign.tepera.data.local.entity.CardShowEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.data.local.entity.DaySummaryEntity
 import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
 import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
 import com.serkodesign.tepera.data.local.entity.GateEventEntity
@@ -73,6 +75,8 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * CC-6: додано `repeatCount`/`lastShownAtMillis` до AppGateEntity (зростаюча затримка воріт) — версія 15, `MIGRATION_14_15`.
  * W-2 (`CLAUDE-CODE-TASK-widgets.md`): додано `labeledAtMillis` до DetectedGapEntity (вікно
  * скасування називання паузи, 5 хв) — версія 16, `MIGRATION_15_16`.
+ * P-2 (`CLAUDE-CODE-PLAN-pro.md`): додано DaySummaryEntity (щоденний Online-підсумок для
+ * майбутньої Pro-статистики "Місяць"/"Рік", D-39) — версія 17, `MIGRATION_16_17`.
  */
 @Database(
     entities = [
@@ -84,9 +88,10 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         UserEstimateEntity::class,
         AppGateEntity::class,
         CardShowEntity::class,
-        GateEventEntity::class
+        GateEventEntity::class,
+        DaySummaryEntity::class
     ],
-    version = 16,
+    version = 17,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -100,4 +105,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appGateDao(): AppGateDao
     abstract fun cardShowDao(): CardShowDao
     abstract fun gateEventDao(): GateEventDao
+    abstract fun daySummaryDao(): DaySummaryDao
 }

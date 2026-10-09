@@ -232,3 +232,28 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
         db.execSQL("ALTER TABLE detected_gaps ADD COLUMN labeledAtMillis INTEGER DEFAULT NULL")
     }
 }
+
+/**
+ * Версія 17 (P-2, `CLAUDE-CODE-PLAN-pro.md`): `day_summaries` — щоденний підсумок Online/
+ * розблокувань/старту дня для майбутньої Pro-статистики "Місяць"/"Рік". На відміну від старої
+ * `daily_snapshots` (версія 12, видалена в 13, D-25) — ширша схема (`unlocks`, `dayStartMinute`,
+ * `lastUseMinute`, `onlineByHour`, хеші налаштувань) і записується НЕ окремим фоновим `Worker`,
+ * а з уже існуючого `WidgetUpdateWorker`/`WidgetRolloverWorker` (D-39, варіант B+).
+ */
+val MIGRATION_16_17 = object : Migration(16, 17) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `day_summaries` (" +
+                "`date` INTEGER NOT NULL, " +
+                "`onlineMinutes` INTEGER NOT NULL, " +
+                "`unlocks` INTEGER, " +
+                "`dayStartMinute` INTEGER, " +
+                "`lastUseMinute` INTEGER, " +
+                "`onlineByHour` TEXT NOT NULL, " +
+                "`exclusionHash` INTEGER NOT NULL, " +
+                "`sleepWindowHash` INTEGER NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`date`))"
+        )
+    }
+}

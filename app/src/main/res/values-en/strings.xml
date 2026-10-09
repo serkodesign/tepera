@@ -106,9 +106,9 @@
 
     <!-- T-3 (tepera-dev-spec.md): online-time estimate onboarding, before the permission explanation -->
     <string name="online_estimate_onboarding_title">How long do you think you were online yesterday?</string>
-    <string name="online_estimate_range_under_1h">Under 1h</string>
-    <string name="online_estimate_range_1_3h">1–3h</string>
-    <string name="online_estimate_range_over_3h">Over 3h</string>
+    <string name="online_estimate_range_under_3h">Under 3h</string>
+    <string name="online_estimate_range_3_5h">3–5h</string>
+    <string name="online_estimate_range_over_5h">Over 5h</string>
     <string name="online_estimate_reveal_title">Your estimate for yesterday</string>
 
     <!-- T-14 (tepera-dev-spec.md): unlock count estimate onboarding -->

@@ -3,6 +3,7 @@ package com.serkodesign.tepera
 import android.app.Application
 import android.os.Build
 import android.util.Log
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.serkodesign.tepera.widget.TeperaWidget1x1Receiver
 import com.serkodesign.tepera.widget.TeperaWidget2x1Receiver
@@ -29,6 +30,7 @@ import com.serkodesign.tepera.data.local.MIGRATION_12_13
 import com.serkodesign.tepera.data.local.MIGRATION_13_14
 import com.serkodesign.tepera.data.local.MIGRATION_14_15
 import com.serkodesign.tepera.data.local.MIGRATION_15_16
+import com.serkodesign.tepera.data.local.MIGRATION_16_17
 import com.serkodesign.tepera.data.repository.WelcomeBackRepository
 import com.serkodesign.tepera.widget.DaySnapshotRepository
 import com.serkodesign.tepera.widget.WeekSnapshotRepository
@@ -38,11 +40,14 @@ import com.serkodesign.tepera.data.repository.BackupRepository
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.data.repository.CardHistoryRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
+import com.serkodesign.tepera.data.repository.DaySummaryRepository
 import com.serkodesign.tepera.data.repository.ExcludedAppRepository
 import com.serkodesign.tepera.data.repository.GateEventRepository
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.data.repository.InstalledAppsProvider
 import com.serkodesign.tepera.data.repository.PatternRepository
+import com.serkodesign.tepera.data.repository.ProAccess
+import com.serkodesign.tepera.data.repository.FreeOnlyProAccess
 import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.RoomActivityRepository
 import com.serkodesign.tepera.data.repository.RoomCategoryRepository
@@ -73,7 +78,7 @@ class TeperaApp : Application() {
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                 MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
                 MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
-                MIGRATION_15_16
+                MIGRATION_15_16, MIGRATION_16_17
             )
             .build()
     }
@@ -111,6 +116,23 @@ class TeperaApp : Application() {
     }
 
     val unlockRepository: UnlockRepository by lazy { UnlockRepository(this) }
+
+    // P-4 (CLAUDE-CODE-PLAN-pro.md): єдина точка доступу до стану Pro — поки без платіжного
+    // шару (Ж-1), жодного споживача ще немає. Майбутні Pro-екрани (P-11…) читають лише звідси.
+    val proAccess: ProAccess by lazy { FreeOnlyProAccess(this, settingsStore) }
+
+    // P-2 (CLAUDE-CODE-PLAN-pro.md): щоденний Online-підсумок для майбутньої Pro-статистики
+    // "Місяць"/"Рік" — викликається з WidgetUpdateWorker/WidgetRolloverWorker (D-39, варіант B+),
+    // не читається жодним Free-екраном.
+    val daySummaryRepository: DaySummaryRepository by lazy {
+        DaySummaryRepository(
+            database.daySummaryDao(),
+            balanceRepository,
+            unlockRepository,
+            database.excludedAppDao(),
+            sleepWindowRepository
+        )
+    }
 
     val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository) }
 
@@ -178,6 +200,13 @@ class TeperaApp : Application() {
         // T-12: дефолт SRS "вікно сну (00:00-06:00)" — слот 1 ввімкнений, слот 2 (друге
         // вікно для плаваючого графіка) вимкнений, доки користувач не ввімкне сам.
         sleepWindowRepository.seedDefaultsIfUnset()
+        // P-3 (CLAUDE-CODE-PLAN-pro.md): grandfathering — versionCode, на якому Tepera вперше
+        // побачила цей код. runCatching: власний пакет теоретично завжди знаходиться, але це той
+        // самий обережний стиль, що вже є для версії застосунку в AboutScreen.kt.
+        runCatching {
+            val info = packageManager.getPackageInfo(packageName, 0)
+            settingsStore.seedFirstSeenIfUnset(PackageInfoCompat.getLongVersionCode(info).toInt())
+        }
     }
 
     /**

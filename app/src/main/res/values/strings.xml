@@ -119,9 +119,9 @@
 
     <!-- T-3 (tepera-dev-spec.md): онбординг-оцінка Online-часу перед поясненням дозволу -->
     <string name="online_estimate_onboarding_title">Скільки, по-твоєму, ти був онлайн учора?</string>
-    <string name="online_estimate_range_under_1h">До 1 год</string>
-    <string name="online_estimate_range_1_3h">1–3 год</string>
-    <string name="online_estimate_range_over_3h">Понад 3 год</string>
+    <string name="online_estimate_range_under_3h">До 3 год</string>
+    <string name="online_estimate_range_3_5h">3–5 год</string>
+    <string name="online_estimate_range_over_5h">Понад 5 год</string>
     <string name="online_estimate_reveal_title">Твоя вчорашня оцінка</string>
 
     <!-- T-14 (tepera-dev-spec.md): онбординг-оцінка кількості розблокувань -->

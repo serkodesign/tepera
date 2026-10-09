@@ -10,4 +10,12 @@ class Converters {
 
     @TypeConverter
     fun localDateToEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
+
+    /** P-2 (`CLAUDE-CODE-PLAN-pro.md`): `DaySummaryEntity.onlineByHour` (24 значення) — Room не
+     * підтримує `IntArray` нативно, зберігається як рядок, розділений комами. */
+    @TypeConverter
+    fun fromIntArray(hours: IntArray?): String? = hours?.joinToString(",")
+
+    @TypeConverter
+    fun toIntArray(value: String?): IntArray? = value?.split(",")?.map { it.toInt() }?.toIntArray()
 }

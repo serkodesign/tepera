@@ -5,6 +5,7 @@ import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.data.local.entity.DaySummaryEntity
 import com.serkodesign.tepera.data.local.entity.EntrySource
 import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,9 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
-private const val SCHEMA_VERSION = 1
+// P-2 (CLAUDE-CODE-PLAN-pro.md): версія 2 додає необов'язковий масив "daySummaries" — старі
+// файли версії 1 (без ключа) імпортуються нормально, просто без цих даних (root.optJSONArray).
+private const val SCHEMA_VERSION = 2
 
 /**
  * FR-6.2: ручний JSON-експорт/імпорт — доповнення до Android Auto Backup (FR-6.1), яке працює
@@ -49,6 +52,9 @@ class BackupRepository(
         root.put("excludedApps", JSONArray().apply {
             excludedApps.forEach { put(excludedAppToJson(it)) }
         })
+        root.put("daySummaries", JSONArray().apply {
+            database.daySummaryDao().getAllOnce().forEach { put(daySummaryToJson(it)) }
+        })
 
         root.toString(2)
     }
@@ -66,6 +72,10 @@ class BackupRepository(
         val excludedApps = root.getJSONArray("excludedApps").let { array ->
             List(array.length()) { excludedAppFromJson(array.getJSONObject(it)) }
         }
+        // P-2: старі файли (SCHEMA_VERSION 1) не мають цього ключа — optJSONArray дає null, імпорт без цих даних.
+        val daySummaries = root.optJSONArray("daySummaries")?.let { array ->
+            List(array.length()) { daySummaryFromJson(array.getJSONObject(it)) }
+        } ?: emptyList()
         val settingsJson = root.optJSONObject("settings")
         // CC-1: немає значення (або 0) — орієнтира немає; імпорт повністю замінює поточний.
         val targetMinutes = if (settingsJson == null || settingsJson.isNull("targetMinutes")) null else settingsJson.optInt("targetMinutes").takeIf { it > 0 }
@@ -74,10 +84,12 @@ class BackupRepository(
             database.activityEntryDao().deleteAll() // спершу дочірня таблиця (FK на categories)
             database.categoryDao().deleteAll()
             database.excludedAppDao().deleteAll()
+            database.daySummaryDao().deleteAll()
 
             database.categoryDao().insertAll(categories)
             database.activityEntryDao().insertAll(entries)
             database.excludedAppDao().insertAll(excludedApps)
+            database.daySummaryDao().insertAll(daySummaries)
         }
 
         settingsStore.setTargetMinutes(targetMinutes)
@@ -143,4 +155,33 @@ class BackupRepository(
         cachedLabel = o.getString("cachedLabel"),
         addedAt = o.getLong("addedAt")
     )
+
+    // P-2 (CLAUDE-CODE-PLAN-pro.md): накопичені щоденні підсумки (не читаються Free-UI, лише
+    // переносяться разом з рештою резервної копії).
+    private fun daySummaryToJson(s: DaySummaryEntity) = JSONObject().apply {
+        put("date", s.date)
+        put("onlineMinutes", s.onlineMinutes)
+        put("unlocks", s.unlocks ?: JSONObject.NULL)
+        put("dayStartMinute", s.dayStartMinute ?: JSONObject.NULL)
+        put("lastUseMinute", s.lastUseMinute ?: JSONObject.NULL)
+        put("onlineByHour", JSONArray(s.onlineByHour.toList()))
+        put("exclusionHash", s.exclusionHash)
+        put("sleepWindowHash", s.sleepWindowHash)
+        put("createdAt", s.createdAt)
+    }
+
+    private fun daySummaryFromJson(o: JSONObject): DaySummaryEntity {
+        val hours = o.getJSONArray("onlineByHour")
+        return DaySummaryEntity(
+            date = o.getLong("date"),
+            onlineMinutes = o.getInt("onlineMinutes"),
+            unlocks = if (o.isNull("unlocks")) null else o.getInt("unlocks"),
+            dayStartMinute = if (o.isNull("dayStartMinute")) null else o.getInt("dayStartMinute"),
+            lastUseMinute = if (o.isNull("lastUseMinute")) null else o.getInt("lastUseMinute"),
+            onlineByHour = IntArray(hours.length()) { hours.getInt(it) },
+            exclusionHash = o.getInt("exclusionHash"),
+            sleepWindowHash = o.getInt("sleepWindowHash"),
+            createdAt = o.getLong("createdAt")
+        )
+    }
 }
