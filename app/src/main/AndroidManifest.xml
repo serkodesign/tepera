@@ -119,6 +119,23 @@
         </receiver>
 
 
+        <!-- ЕКСПЕРИМЕНТАЛЬНО, НЕ ДЛЯ РЕЛІЗУ (CLAUDE.md, "AccessibilityService-ворота"): окрема
+             гілка-бенч, перехоплення відкриття застосунків системно через Accessibility API,
+             на заміну/поруч із shortcut-механізмом T-4/T-5. Дозвіл запитується лише з GatesScreen,
+             і лише в момент, коли людина свідомо перемикає режим воріт на "accessibility" —
+             НІКОЛИ автоматично й не на онбордингу. settingsActivity веде назад у MainActivity. -->
+        <service
+            android:name=".service.TeperaGateAccessibilityService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <!-- Quick Settings Tile (FR-4.4) -->
         <service
             android:name=".widget.QuickLogTileService"

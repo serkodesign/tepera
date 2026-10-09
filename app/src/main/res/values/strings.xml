@@ -106,7 +106,7 @@
          перед Home, після пропозиції віджета. Функція лишається доступною й без цього кроку
          (Налаштування → Застосунки з затримкою) — це лише повідомлення про існування. -->
     <string name="gates_onboarding_title">Застосунки з затримкою</string>
-    <string name="gates_onboarding_body">Можеш поставити коротку паузу перед відкриттям обраних застосунків — щоб на мить зупинитись і вирішити свідомо, а не за звичкою. Налаштувати можна будь-коли в Налаштуваннях → Застосунки з затримкою.</string>
+    <string name="gates_onboarding_body">Можеш поставити коротку паузу перед відкриттям обраних застосунків — щоб на мить зупинитись і вирішити свідомо, а не за звичкою. Налаштувати можна будь-коли в Налаштуваннях → Застосунки з затримкою. Там же — експериментальна можливість перехоплювати відкриття будь-яким шляхом, не лише ярликом; це окремий дозвіл, і він потрібен лише якщо сам захочеш його увімкнути.</string>
     <string name="gates_onboarding_action">Зрозуміло</string>
 
 
@@ -119,9 +119,9 @@
 
     <!-- T-3 (tepera-dev-spec.md): онбординг-оцінка Online-часу перед поясненням дозволу -->
     <string name="online_estimate_onboarding_title">Скільки, по-твоєму, ти був онлайн учора?</string>
-    <string name="online_estimate_range_under_1h">До 1 год</string>
-    <string name="online_estimate_range_1_3h">1–3 год</string>
-    <string name="online_estimate_range_over_3h">Понад 3 год</string>
+    <string name="online_estimate_range_under_3h">До 3 год</string>
+    <string name="online_estimate_range_3_5h">3–5 год</string>
+    <string name="online_estimate_range_over_5h">Понад 5 год</string>
     <string name="online_estimate_reveal_title">Твоя вчорашня оцінка</string>
 
     <!-- T-14 (tepera-dev-spec.md): онбординг-оцінка кількості розблокувань -->
@@ -332,6 +332,18 @@
     <string name="gate_pause_open_format">Відкрити %1$s</string>
     <string name="gates_growing_delay_label">Зростаюча затримка</string>
     <string name="gates_growing_delay_hint">Затримка трохи росте з кожним повторним відкриттям — до 20 с, і скидається за пів години тиші.</string>
+
+    <!-- ЕКСПЕРИМЕНТАЛЬНО, НЕ ДЛЯ РЕЛІЗУ (CLAUDE.md, "AccessibilityService-ворота") — окрема
+         гілка-бенч перехоплення через Accessibility API, поруч із shortcut-механізмом T-4/T-5. -->
+    <string name="gates_interception_mode_label">Спосіб перехоплення</string>
+    <string name="gates_interception_mode_shortcut">Ярлик</string>
+    <string name="gates_interception_mode_accessibility">Accessibility (експериментально)</string>
+    <string name="gates_interception_hint">Ярлик — перевірений спосіб: пауза показується лише при тапі по закріпленому ярлику воріт. Accessibility — пауза показується незалежно від того, як відкрили застосунок (іконка, недавні, сповіщення), але потребує окремого системного дозволу й ще не перевірена для публічного релізу.</string>
+    <string name="gates_interception_enable_dialog_title">Увімкнути Accessibility</string>
+    <string name="gates_interception_enable_dialog_body">Щоб ворота перехоплювали застосунки незалежно від способу відкриття, Tepera потрібен дозвіл Accessibility в системних Налаштуваннях. Застосунок читає лише назву застосунку, що відкривається, — не вміст екрана.</string>
+    <string name="gates_interception_enable_dialog_confirm">Відкрити Налаштування</string>
+    <string name="gates_interception_not_enabled_yet">Дозвіл ще не ввімкнено в системних Налаштуваннях — увімкни його там і повернись сюди.</string>
+    <string name="accessibility_gate_service_description">Tepera використовує цей дозвіл, щоб визначити момент відкриття застосунку з воротами (коротка пауза перед запуском) незалежно від того, як його відкрили — іконка, список недавніх застосунків чи сповіщення. Застосунок не читає вміст екрана.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Категорії</string>

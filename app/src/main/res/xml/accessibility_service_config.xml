@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Експериментально, НЕ для релізу (CLAUDE.md, "AccessibilityService-ворота"): конфігурація
+    TeperaGateAccessibilityService. canRetrieveWindowContent="false" — сервісу потрібен лише
+    packageName з TYPE_WINDOW_STATE_CHANGED, не вміст екрана; це свідомо вузько, щоб:
+    (1) не читати нічого зайвого з приватності користувача, (2) полегшити майбутню Permissions
+    Declaration Form (чим вужчий canRetrieveWindowContent/accessibilityEventTypes, тим легше
+    пояснити Google, навіщо дозвіл конкретно потрібен).
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canRetrieveWindowContent="false"
+    android:description="@string/accessibility_gate_service_description"
+    android:notificationTimeout="100"
+    android:settingsActivity="com.serkodesign.tepera.MainActivity" />

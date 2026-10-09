@@ -43,6 +43,10 @@ private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestio
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
+// Експериментальна гілка accessibility-воріт: "shortcut" (дефолт, поточний pin-shortcut механізм)
+// чи "accessibility" (системне перехоплення через TeperaGateAccessibilityService). НЕ для релізу —
+// див. CLAUDE.md, розділ "AccessibilityService-ворота".
+private val GATE_INTERCEPTION_MODE_KEY = stringPreferencesKey("gate_interception_mode")
 
 
 /**
@@ -337,6 +341,18 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setGateGrowingDelay(enabled: Boolean) {
         context.settingsDataStore.edit { it[GATE_GROWING_DELAY_KEY] = enabled }
+    }
+
+    /**
+     * Експериментально (не для релізу): "shortcut" (дефолт) чи "accessibility". Перемикається лише
+     * з `GatesScreen`, після того як системний Accessibility-сервіс реально увімкнений — дозвіл
+     * обов'язковий саме в цей момент, не раніше (онбординг лише згадує можливість, не запитує).
+     */
+    val gateInterceptionMode: Flow<String> =
+        context.settingsDataStore.data.map { it[GATE_INTERCEPTION_MODE_KEY] ?: "shortcut" }
+
+    suspend fun setGateInterceptionMode(mode: String) {
+        context.settingsDataStore.edit { it[GATE_INTERCEPTION_MODE_KEY] = mode }
     }
 
     /** CC-4: момент попереднього справжнього відкриття Tepera (0 — ще ніколи). */

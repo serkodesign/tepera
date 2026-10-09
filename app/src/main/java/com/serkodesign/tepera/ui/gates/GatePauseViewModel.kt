@@ -24,7 +24,11 @@ data class GatePauseUiState(
     // CC-6: індекс тексту з `R.array.gate_texts` (ротація «мішком»); сам рядок підставляє екран — з урахуванням мови застосунку.
     val textIndex: Int = 0,
     val canContinue: Boolean = false,
-    val finished: Boolean = false
+    val finished: Boolean = false,
+    // ЕКСПЕРИМЕНТАЛЬНО (CLAUDE.md, accessibility-ворота): чи `finished` настав через скасування
+    // ("Не зараз"/"назад"), а не через успішний прохід. `GatePauseScreen` використовує це, щоб
+    // піти на Home явним Intent-ом замість `moveTaskToBack()` — див. [GatePauseViewModel.cancel].
+    val cancelled: Boolean = false
 )
 
 /**
@@ -116,6 +120,12 @@ class GatePauseViewModel(
      * і викликає САМЕ цей метод, не покладається на дефолтне згортання `NavBackStackEntry`): без
      * цього подія T-6 фіксувалась би лише для тапу по кнопці, а вихід "назад" лишався б
      * непорахованим "рішенням", хоча продуктово це те саме скасування.
+     *
+     * `cancelled = true` у стані — `GatePauseScreen` звідси йде явно на Home, а не покладається
+     * на `moveTaskToBack()` (реальний нескінченний цикл, знайдений живим тестом на Samsung S23 в
+     * accessibility-режимі: `MainActivity` відкривається ПОВЕРХ задачі застосунку-цілі, що саме
+     * резюмується, тож `moveTaskToBack()` розкриває не робочий стіл, а ту саму задачу-ціль —
+     * вона одразу знову спрацьовує `TYPE_WINDOW_STATE_CHANGED`, паузу показано знову, нескінченно).
      */
     fun cancel() {
         waitJob?.cancel()
@@ -124,7 +134,7 @@ class GatePauseViewModel(
                 gateEventRepository.record(packageName, GateEventResult.CANCELLED)
             }
         }
-        _uiState.value = _uiState.value.copy(finished = true)
+        _uiState.value = _uiState.value.copy(finished = true, cancelled = true)
     }
 
     private suspend fun proceed() {

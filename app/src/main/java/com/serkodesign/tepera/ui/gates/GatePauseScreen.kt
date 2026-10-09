@@ -2,6 +2,7 @@ package com.serkodesign.tepera.ui.gates
 
 import android.app.Activity
 import androidx.compose.ui.draw.clipToBounds
+import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -95,9 +96,33 @@ fun GatePauseScreen(
     // застосунку. onDone() спершу прибирає GATE_PAUSE (і будь-що під ним у back stack, напр.
     // GatesScreen, якщо ворота відкрились, поки застосунок уже був на цьому екрані) — інакше
     // moveTaskToBack показав би цей проміжний екран при наступному відкритті Tepera з лаунчера.
+    //
+    // **Скасування (`state.cancelled`) йде на Home ЯВНИМ Intent-ом, не `moveTaskToBack()`:**
+    // реальний нескінченний цикл, знайдений живим тестом на Samsung S23 в accessibility-режимі
+    // (`TeperaGateAccessibilityService`) — коли ворота спрацьовують через Accessibility,
+    // `MainActivity` відкривається ПОВЕРХ задачі застосунку-цілі, яка саме резюмується (на
+    // відміну від shortcut-режиму, де під Tepera нема такої задачі взагалі). `moveTaskToBack()`
+    // просто знімає фокус з поточної задачі — система тоді розкриває НАСТУПНУ задачу в
+    // недавніх, і це завжди задача-ціль, яка одразу знову резюмується й повторно спрацьовує
+    // `TYPE_WINDOW_STATE_CHANGED`: пауза відкривається знову, нескінченно (підтверджено прямим
+    // аналізом `dumpsys activity activities`/logcat — цикл розірвано на пристрої лише
+    // `am force-stop` застосунку-цілі). Явний `ACTION_MAIN`/`CATEGORY_HOME` примусово виводить
+    // лаунчер на передній план — задача-ціль лишається "stopped" і не резюмується, тож новий
+    // `TYPE_WINDOW_STATE_CHANGED` для неї не виникає. При успішному проходженні паузи цей ризик
+    // не стосується (`launchTarget()` сам свідомо й контрольовано запускає застосунок-ціль,
+    // а `PROCEED_DEBOUNCE_MILLIS` у `GateRepository` придушує повторне спрацювання).
     LaunchedEffect(state.finished) {
         if (state.finished) {
             onDone()
+            if (state.cancelled) {
+                runCatching {
+                    context.startActivity(
+                        Intent(Intent.ACTION_MAIN)
+                            .addCategory(Intent.CATEGORY_HOME)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                }
+            }
             context.findActivity()?.moveTaskToBack(true)
         }
     }

@@ -106,11 +106,24 @@ fun GatesScreen(
     )
     val state by viewModel.uiState.collectAsState()
     val growingDelay by viewModel.growingDelay.collectAsState()
+    val interceptionMode by viewModel.interceptionMode.collectAsState()
     val scope = rememberCoroutineScope()
+
+    // ЕКСПЕРИМЕНТАЛЬНО, НЕ ДЛЯ РЕЛІЗУ: дозвіл Accessibility стає обов'язковим лише в момент,
+    // коли людина сама намагається увімкнути цей режим — не раніше (онбординг лише згадує, що
+    // можливість існує). `pendingAccessibilitySwitch` переживає похід у системні Налаштування і
+    // повернення назад (LifecycleResumeEffect нижче).
+    var showAccessibilityEnableDialog by remember { mutableStateOf(false) }
+    var pendingAccessibilitySwitch by rememberSaveable { mutableStateOf(false) }
 
     // Видалення ярлика воріт відбувається поза застосунком (long-press на робочому столі) — без
     // цього ефекту список лишався б "активним" до наступного повного перестворення ViewModel.
+    // Той самий ефект ловить і повернення із системних Налаштувань Accessibility.
     LifecycleResumeEffect(Unit) {
+        if (pendingAccessibilitySwitch && viewModel.isAccessibilityServiceEnabled()) {
+            pendingAccessibilitySwitch = false
+            viewModel.setInterceptionMode(GateRepository.MODE_ACCESSIBILITY)
+        }
         viewModel.refresh()
         onPauseOrDispose { }
     }
@@ -207,6 +220,40 @@ fun GatesScreen(
                                 text = stringResource(R.string.gates_growing_delay_hint),
                                 modifier = Modifier.padding(horizontal = 12.dp)
                             )
+
+                            // ЕКСПЕРИМЕНТАЛЬНО, НЕ ДЛЯ РЕЛІЗУ (CLAUDE.md, "AccessibilityService-
+                            // ворота"): перемикач способу перехоплення. Дозвіл Accessibility —
+                            // обов'язковий лише в момент цього тапу, не раніше.
+                            Text(
+                                text = stringResource(R.string.gates_interception_mode_label),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                            )
+                            PillSegmentedControl(
+                                options = listOf(
+                                    GateRepository.MODE_SHORTCUT to stringResource(R.string.gates_interception_mode_shortcut),
+                                    GateRepository.MODE_ACCESSIBILITY to stringResource(R.string.gates_interception_mode_accessibility)
+                                ),
+                                selected = interceptionMode,
+                                onSelect = { mode ->
+                                    if (mode == GateRepository.MODE_ACCESSIBILITY && !viewModel.isAccessibilityServiceEnabled()) {
+                                        showAccessibilityEnableDialog = true
+                                    } else {
+                                        viewModel.setInterceptionMode(mode)
+                                    }
+                                },
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                            TeperaHint(
+                                text = stringResource(R.string.gates_interception_hint),
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                            if (pendingAccessibilitySwitch) {
+                                TeperaHint(
+                                    text = stringResource(R.string.gates_interception_not_enabled_yet),
+                                    modifier = Modifier.padding(horizontal = 12.dp)
+                                )
+                            }
                         }
                     }
 
@@ -315,9 +362,20 @@ fun GatesScreen(
             onDismiss = { pendingApp = null },
             onConfirm = { delaySeconds ->
                 pendingApp = null
+                // ЕКСПЕРИМЕНТАЛЬНО: фіксуємо режим ДО створення — `createGate()` сам вирішує
+                // гілку за тим самим значенням (GateRepository.createGate()), і режим не
+                // змінюється всередині цього короткого виклику.
+                val modeAtCreation = interceptionMode
                 scope.launch {
                     val created = viewModel.createGate(app, delaySeconds)
-                    if (created) instructionApp = app else pinFailed = true
+                    if (!created) {
+                        pinFailed = true
+                    } else if (modeAtCreation != GateRepository.MODE_ACCESSIBILITY) {
+                        // У режимі Accessibility ярлика немає взагалі (shortcutId = "") — діалог
+                        // "прибери оригінальну іконку" тут був би оманливим (реальний косметичний
+                        // баг, знайдений живим тестом на Samsung S23, сесія 09.10.2026).
+                        instructionApp = app
+                    }
                 }
             }
         )
@@ -340,6 +398,23 @@ fun GatesScreen(
             text = stringResource(R.string.gates_pin_failed),
             confirmText = stringResource(R.string.gates_instruction_done),
             onConfirm = { pinFailed = false }
+        )
+    }
+
+    // ЕКСПЕРИМЕНТАЛЬНО, НЕ ДЛЯ РЕЛІЗУ: єдине місце, де цей дозвіл стає обов'язковим — саме тут,
+    // у момент свідомого перемикання режиму, а не на онбордингу чи при першому запуску.
+    if (showAccessibilityEnableDialog) {
+        TeperaDialog(
+            onDismissRequest = { showAccessibilityEnableDialog = false },
+            title = stringResource(R.string.gates_interception_enable_dialog_title),
+            text = stringResource(R.string.gates_interception_enable_dialog_body),
+            confirmText = stringResource(R.string.gates_interception_enable_dialog_confirm),
+            onConfirm = {
+                showAccessibilityEnableDialog = false
+                pendingAccessibilitySwitch = true
+                viewModel.openAccessibilitySettings()
+            },
+            dismissText = stringResource(R.string.dialog_cancel)
         )
     }
 }

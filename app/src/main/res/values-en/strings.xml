@@ -93,7 +93,7 @@
     <string name="onboarding_skip_all">Skip all</string>
 
     <string name="gates_onboarding_title">Apps with a delay</string>
-    <string name="gates_onboarding_body">You can add a short pause before opening specific apps — a moment to stop and decide on purpose, not out of habit. Set it up anytime in Settings → Apps with a delay.</string>
+    <string name="gates_onboarding_body">You can add a short pause before opening specific apps — a moment to stop and decide on purpose, not out of habit. Set it up anytime in Settings → Apps with a delay. There\'s also an experimental option to intercept opening any way, not just by shortcut — a separate permission, needed only if you choose to turn it on.</string>
     <string name="gates_onboarding_action">Got it</string>
 
 
@@ -106,9 +106,9 @@
 
     <!-- T-3 (tepera-dev-spec.md): online-time estimate onboarding, before the permission explanation -->
     <string name="online_estimate_onboarding_title">How long do you think you were online yesterday?</string>
-    <string name="online_estimate_range_under_1h">Under 1h</string>
-    <string name="online_estimate_range_1_3h">1–3h</string>
-    <string name="online_estimate_range_over_3h">Over 3h</string>
+    <string name="online_estimate_range_under_3h">Under 3h</string>
+    <string name="online_estimate_range_3_5h">3–5h</string>
+    <string name="online_estimate_range_over_5h">Over 5h</string>
     <string name="online_estimate_reveal_title">Your estimate for yesterday</string>
 
     <!-- T-14 (tepera-dev-spec.md): unlock count estimate onboarding -->
@@ -317,6 +317,18 @@
     <string name="gate_pause_open_format">Open %1$s</string>
     <string name="gates_growing_delay_label">Growing delay</string>
     <string name="gates_growing_delay_hint">The delay grows a little with each repeat open — up to 20s — and resets after half an hour of quiet.</string>
+
+    <!-- EXPERIMENTAL, NOT FOR RELEASE (CLAUDE.md, "AccessibilityService gates") — separate bench
+         branch intercepting via the Accessibility API, alongside the T-4/T-5 shortcut mechanism. -->
+    <string name="gates_interception_mode_label">Interception method</string>
+    <string name="gates_interception_mode_shortcut">Shortcut</string>
+    <string name="gates_interception_mode_accessibility">Accessibility (experimental)</string>
+    <string name="gates_interception_hint">Shortcut — the tested method: the pause only shows when you tap the pinned gate shortcut. Accessibility — the pause shows no matter how the app was opened (icon, recents, notification), but it needs a separate system permission and hasn\'t been verified for public release yet.</string>
+    <string name="gates_interception_enable_dialog_title">Turn on Accessibility</string>
+    <string name="gates_interception_enable_dialog_body">For gates to intercept apps regardless of how they\'re opened, Tepera needs the Accessibility permission in system Settings. The app only reads the name of the app being opened — never screen content.</string>
+    <string name="gates_interception_enable_dialog_confirm">Open Settings</string>
+    <string name="gates_interception_not_enabled_yet">Not turned on in system Settings yet — turn it on there and come back here.</string>
+    <string name="accessibility_gate_service_description">Tepera uses this permission to detect the moment a gated app opens (a short pause before it launches), regardless of how it was opened — icon, recents list, or notification. The app never reads screen content.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Categories</string>

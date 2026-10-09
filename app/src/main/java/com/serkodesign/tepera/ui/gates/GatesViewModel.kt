@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -80,6 +81,21 @@ class GatesViewModel(
         viewModelScope.launch { gateRepository.setGrowingDelay(enabled) }
     }
 
+    /**
+     * ЕКСПЕРИМЕНТАЛЬНО, НЕ ДЛЯ РЕЛІЗУ (CLAUDE.md, "AccessibilityService-ворота") — окрема
+     * гілка-бенч. [GateRepository.MODE_SHORTCUT] лишається дефолтом.
+     */
+    val interceptionMode: StateFlow<String> = gateRepository.interceptionMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GateRepository.MODE_SHORTCUT)
+
+    fun setInterceptionMode(mode: String) {
+        viewModelScope.launch { gateRepository.setInterceptionMode(mode) }
+    }
+
+    fun isAccessibilityServiceEnabled(): Boolean = gateRepository.isAccessibilityServiceEnabled()
+
+    fun openAccessibilitySettings() = gateRepository.openAccessibilitySettings()
+
     init {
         refresh()
     }
@@ -101,6 +117,15 @@ class GatesViewModel(
             // для вже видаленого з робочого столу ярлика встиг би на мить показатись.
             gateRepository.reconcileExpiredPause()
             gateRepository.pruneRemovedShortcuts()
+            // Експериментально: якщо режим "accessibility", але сервіс вимкнули в системних
+            // Налаштуваннях поза застосунком (людина сама, або OEM агресивно вбив службу) —
+            // ворота мовчки перестали б працювати. Тихо повертаємось на перевірений shortcut-режим,
+            // а не лишаємо людину з воротами, що ніколи не спрацюють.
+            if (gateRepository.interceptionMode.first() == GateRepository.MODE_ACCESSIBILITY &&
+                !gateRepository.isAccessibilityServiceEnabled()
+            ) {
+                gateRepository.setInterceptionMode(GateRepository.MODE_SHORTCUT)
+            }
             _availableApps.value = installedAppsProvider.listUsedApps()
             _loading.value = false
         }

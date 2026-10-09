@@ -16,6 +16,7 @@ import com.serkodesign.tepera.util.GatePausePresets
 import com.serkodesign.tepera.util.GateSchedule
 import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.util.buildGateShortcutIcon
+import com.serkodesign.tepera.util.AccessibilityGateUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -71,7 +72,28 @@ class GateRepository(
      * непередбачувану затримку, через яку деякі лаунчери мовчки відмовлялись показати діалог.
      * Лише вставка в Room явно йде на IO — єдина частина, що справді потребує фонового потоку.
      */
+    /**
+     * Експериментально (не для релізу): у режимі [MODE_ACCESSIBILITY] ворота не потребують
+     * закріпленого ярлика взагалі — перехоплення відбувається системно
+     * (`TeperaGateAccessibilityService`), тож рядок у `app_gates` створюється одразу, без
+     * `requestPinShortcut()`. [AppGateEntity.originalIconHandled] = true одразу: немає "оригінальної
+     * іконки, яку треба прибрати" — Accessibility не ховає нічого, оригінальна іконка лишається
+     * як і була.
+     */
     suspend fun createGate(packageName: String, label: String, delaySeconds: Int): Boolean {
+        if (settingsStore.gateInterceptionMode.first() == MODE_ACCESSIBILITY) {
+            withContext(Dispatchers.IO) {
+                dao.insert(
+                    AppGateEntity(
+                        packageName = packageName,
+                        delaySeconds = delaySeconds,
+                        originalIconHandled = true,
+                        shortcutId = ""
+                    )
+                )
+            }
+            return true
+        }
         if (!isPinShortcutSupported()) return false
 
         val id = "gate_${packageName}_${System.currentTimeMillis()}"
@@ -111,8 +133,9 @@ class GateRepository(
      * тап по ньому більше нічого не відкриває (ShortcutManager сам показує системне пояснення).
      */
     suspend fun removeGate(packageName: String) = withContext(Dispatchers.IO) {
+        // Порожній shortcutId = ворота режиму MODE_ACCESSIBILITY, ярлика не було взагалі.
         val shortcutId = dao.getByPackageName(packageName)?.shortcutId
-        if (shortcutId != null) {
+        if (!shortcutId.isNullOrBlank()) {
             context.getSystemService(ShortcutManager::class.java)?.disableShortcuts(listOf(shortcutId))
         }
         dao.deleteByPackageName(packageName)
@@ -135,10 +158,18 @@ class GateRepository(
         val shortcutManager = context.getSystemService(ShortcutManager::class.java) ?: return@withContext
         val pinnedIds = shortcutManager.pinnedShortcuts.map { it.id }.toSet()
         dao.getAllOnce().forEach { gate ->
+            // Порожній shortcutId = ворота режиму MODE_ACCESSIBILITY — нема ярлика, який можна
+            // вилучити з робочого столу, тож і звіряти з pinnedShortcuts нема сенсу.
+            if (gate.shortcutId.isBlank()) return@forEach
             if (gate.shortcutId !in pinnedIds) {
                 dao.deleteByPackageName(gate.packageName)
             }
         }
+    }
+
+    /** Чи є рядок воріт для цього пакета — викликається з `TeperaGateAccessibilityService`. */
+    suspend fun hasGate(packageName: String): Boolean = withContext(Dispatchers.IO) {
+        dao.getByPackageName(packageName) != null
     }
 
     /**
@@ -256,6 +287,17 @@ class GateRepository(
 
     suspend fun setGrowingDelay(enabled: Boolean) = settingsStore.setGateGrowingDelay(enabled)
 
+    // --- Експериментально, НЕ для релізу: режим перехоплення (CLAUDE.md, "AccessibilityService-
+    // ворота") ------------------------------------------------------------------------------
+
+    val interceptionMode: Flow<String> = settingsStore.gateInterceptionMode
+
+    suspend fun setInterceptionMode(mode: String) = settingsStore.setGateInterceptionMode(mode)
+
+    fun isAccessibilityServiceEnabled(): Boolean = AccessibilityGateUtil.isServiceEnabled(context)
+
+    fun openAccessibilitySettings() = AccessibilityGateUtil.openAccessibilitySettings(context)
+
     suspend fun getDelaySeconds(packageName: String): Int? = withContext(Dispatchers.IO) {
         dao.getByPackageName(packageName)?.delaySeconds
     }
@@ -276,5 +318,7 @@ class GateRepository(
     companion object {
         const val GATE_TARGET_PACKAGE_EXTRA = "gate_target_package"
         private const val PROCEED_DEBOUNCE_MILLIS = 30_000L
+        const val MODE_SHORTCUT = "shortcut"
+        const val MODE_ACCESSIBILITY = "accessibility"
     }
 }
