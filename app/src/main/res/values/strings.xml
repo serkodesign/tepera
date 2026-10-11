@@ -85,6 +85,10 @@
     <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не прийде. Дозволити можна в системних налаштуваннях — решта працює як раніше.</string>
     <string name="weekly_summary_channel_name">Тижневий підсумок</string>
     <string name="weekly_summary_notification_text">Підсумок твого тижня готовий.</string>
+    <string name="update_dialog_title">Доступне оновлення</string>
+    <string name="update_dialog_fallback_text">У новій версії є покращення.</string>
+    <string name="update_dialog_confirm">Оновити</string>
+    <string name="update_dialog_dismiss">Не зараз</string>
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — у розробці</string>
@@ -219,6 +223,7 @@
 
     <!-- "Запропонувати функцію" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Запропонувати функцію</string>
+    <string name="settings_rate_action">Оцінити застосунок</string>
     <string name="settings_suggest_feature_confirm_title">Відкрити форму в браузері?</string>
     <string name="settings_suggest_feature_confirm_body">Відкриється форма Google в браузері — відповіді приймає Google, не Tepera.</string>
     <string name="settings_suggest_feature_confirm_action">Відкрити</string>

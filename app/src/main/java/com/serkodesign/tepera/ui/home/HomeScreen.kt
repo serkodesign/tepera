@@ -218,6 +218,25 @@ fun HomeScreen(
         )
     }
 
+    // CC-9: м'яка пропозиція оновитись (Firebase Remote Config) — незалежна від ContextCardStack/
+    // CardEngine (не "картка даних" із тижневим бюджетом, а системний нагад, що має право з'явитись
+    // при кожному відкритті Home, доки людина не оновиться або не закриє саме ЦЮ версію).
+    val updateViewModel: UpdateViewModel = viewModel(
+        factory = UpdateViewModel.Factory(LocalContext.current.applicationContext, settingsStore)
+    )
+    val updateState by updateViewModel.uiState.collectAsState()
+    if (updateState.visible) {
+        TeperaDialog(
+            onDismissRequest = updateViewModel::dismiss,
+            title = stringResource(R.string.update_dialog_title),
+            text = updateState.whatsNew.ifBlank { stringResource(R.string.update_dialog_fallback_text) },
+            confirmText = stringResource(R.string.update_dialog_confirm),
+            onConfirm = updateViewModel::openStoreListing,
+            dismissText = stringResource(R.string.update_dialog_dismiss),
+            onDismiss = updateViewModel::dismiss
+        )
+    }
+
     val balanceViewModel: BalanceViewModel = viewModel(
         factory = BalanceViewModel.Factory(balanceRepository, activityRepository, categoryRepository, settingsStore, sleepWindowRepository)
     )

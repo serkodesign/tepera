@@ -48,6 +48,9 @@ private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_
 // "сіяти один раз і не перезаписувати").
 private val FIRST_SEEN_VERSION_CODE_KEY = intPreferencesKey("first_seen_version_code")
 private val FIRST_SEEN_AT_KEY = longPreferencesKey("first_seen_at")
+// CC-9: м'яка пропозиція оновитись (UpdateChecker/UpdateViewModel) — versionCode, для якого
+// людина вже закрила діалог; показується знову лише коли Remote Config назве НОВІШУ версію.
+private val UPDATE_DISMISSED_VERSION_CODE_KEY = longPreferencesKey("update_dismissed_version_code")
 
 
 /**
@@ -374,6 +377,14 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setLastOpenMillis(millis: Long) {
         context.settingsDataStore.edit { it[LAST_OPEN_KEY] = millis }
+    }
+
+    /** CC-9: остання версія, для якої людина закрила пропозицію оновитись ("Не зараз"); 0 — ще жодної. */
+    val updateDismissedVersionCode: Flow<Long> =
+        context.settingsDataStore.data.map { it[UPDATE_DISMISSED_VERSION_CODE_KEY] ?: 0L }
+
+    suspend fun setUpdateDismissedVersionCode(versionCode: Long) {
+        context.settingsDataStore.edit { it[UPDATE_DISMISSED_VERSION_CODE_KEY] = versionCode }
     }
 
     /** CC-4: початок перерви (момент попереднього відкриття), для якої ще чекає підсумок; 0 — нема. */

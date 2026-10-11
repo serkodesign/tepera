@@ -58,6 +58,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -114,6 +115,12 @@ dependencies {
     // (CLAUDE.md: жодної usage-аналітики в MVP, тільки crash-репорти).
     implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
     implementation("com.google.firebase:firebase-crashlytics")
+
+    // CC-9: м'яка пропозиція оновитись — Remote Config (той самий Firebase-проєкт) носить
+    // "latest_version_code"/"whats_new_*", без власного бекенду. kotlinx-coroutines-play-services
+    // дає Task.await() для fetchAndActivate().
+    implementation("com.google.firebase:firebase-config")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
 
     // T-13 (tepera-dev-spec.md): перший юніт-тест у проєкті — "рушій карток" навмисно спроєктований
     // як чиста Kotlin-логіка без Android-залежностей (CardEngine + CardHistorySource), тому досить

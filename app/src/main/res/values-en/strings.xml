@@ -76,6 +76,10 @@
     <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings — everything else still works.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
+    <string name="update_dialog_title">Update available</string>
+    <string name="update_dialog_fallback_text">The new version has improvements.</string>
+    <string name="update_dialog_confirm">Update</string>
+    <string name="update_dialog_dismiss">Not now</string>
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — in development</string>
@@ -204,6 +208,7 @@
 
     <!-- "Suggest a feature" (FR-6.4–6.6, SRS v2.7) -->
     <string name="settings_suggest_feature_action">Suggest a feature</string>
+    <string name="settings_rate_action">Rate the app</string>
     <string name="settings_suggest_feature_confirm_title">Open the form in your browser?</string>
     <string name="settings_suggest_feature_confirm_body">This opens a Google Form in your browser — Google handles it, not Tepera.</string>
     <string name="settings_suggest_feature_confirm_action">Open</string>

@@ -38,6 +38,7 @@ import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.util.FeedbackForm
+import com.serkodesign.tepera.util.PlayStore
 import com.serkodesign.tepera.util.ThemeStore
 
 /**
@@ -178,6 +179,15 @@ fun SettingsScreen(
                     label = stringResource(R.string.settings_suggest_feature_action),
                     onClick = { showSuggestFeatureConfirm = true },
                     leading = { TeperaIconCircle(TeperaSymbols.Feedback) },
+                    trailing = { NavChevron() }
+                )
+                // CC-10: "Оцінити застосунок" — пряме посилання на лістинг Play Store (не Play
+                // In-App Review API — та бібліотека для контекстних підказок, не для явного пункту
+                // меню, деталі в PlayStore.kt), одразу на розділ відгуків/оцінки.
+                GlassRow(
+                    label = stringResource(R.string.settings_rate_action),
+                    onClick = { PlayStore.openListing(context, forReview = true) },
+                    leading = { TeperaIconCircle(TeperaSymbols.Star) },
                     trailing = { NavChevron() }
                 )
                 // CC-8: тижневий підсумок — одне тихе сповіщення раз на тиждень, вимкнене за замовчуванням.

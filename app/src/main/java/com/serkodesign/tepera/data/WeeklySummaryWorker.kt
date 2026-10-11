@@ -103,12 +103,20 @@ class WeeklySummaryWorker(context: Context, params: WorkerParameters) : Coroutin
         }
 
         private fun notifyNow(context: Context) {
+            // FLAG_ACTIVITY_CLEAR_TOP додано поверх NEW_TASK/SINGLE_TOP (були й раніше) — тап
+            // по сповіщенню, коли застосунок довго не відкривався (процес мертвий, таск, можливо,
+            // прибраний системою), має надійно підняти/перестворити ЦЕЙ таск, а не мовчки нічого
+            // не зробити, якщо лаунчер уже тримає якийсь застарілий запис про задачу Tepera.
             val open = PendingIntent.getActivity(
                 context,
                 NOTIFICATION_ID,
                 Intent(context, MainActivity::class.java)
                     .putExtra(MainActivity.EXTRA_OPEN_WEEKLY_SUMMARY, true)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                    .addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    ),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             val notification = NotificationCompat.Builder(context, CHANNEL_ID)
