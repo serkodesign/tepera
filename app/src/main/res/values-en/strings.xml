@@ -72,8 +72,8 @@
     <string name="welcome_back_logged_format">Noted: %1$s</string>
     <string name="welcome_back_online_format">Online on average: %1$s per day</string>
     <string name="weekly_summary_label">Weekly summary</string>
-    <string name="weekly_summary_hint">Once a week, Sunday evening — one quiet notification with your week\'s summary. No other notifications.</string>
-    <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings — everything else still works.</string>
+    <string name="weekly_summary_hint">Once a week, Sunday evening — one quiet summary notification. No others.</string>
+    <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
     <string name="update_dialog_title">Update available</string>
@@ -83,10 +83,10 @@
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — in development</string>
-    <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments yet — just a question for you. Curious? Tell us what would help.</string>
+    <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments — just a question. Tell us what would help.</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="crash_reports_label">Crash reports</string>
-    <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, categories or app usage time in it. Turn it off anytime.</string>
+    <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, categories or app time. Turn it off anytime.</string>
 
     <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), shown on both branches of "access granted? yes/no". -->
@@ -97,7 +97,7 @@
     <string name="onboarding_skip_all">Skip all</string>
 
     <string name="gates_onboarding_title">Apps with a delay</string>
-    <string name="gates_onboarding_body">You can add a short pause before opening specific apps — a moment to stop and decide on purpose, not out of habit. Set it up anytime in Settings → Apps with a delay.</string>
+    <string name="gates_onboarding_body">Add a short pause before chosen apps — to decide on purpose, not out of habit. Set it up later in Settings → Apps with a delay.</string>
     <string name="gates_onboarding_action">Got it</string>
 
 
@@ -155,10 +155,8 @@
 
     <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
     <string name="weekly_digest_card_title">This week</string>
-    <string name="weekly_digest_day_start_label">Day usually starts</string>
+    <string name="weekly_digest_day_start_label">Day starts</string>
     <string name="weekly_digest_day_start_value">at %1$s</string>
-    <string name="weekly_digest_pauses_label">Phone-free breaks</string>
-    <string name="weekly_digest_pauses_longest">· up to %1$s</string>
     <string name="weekly_digest_top_category_label">Most time</string>
 
     <!-- T-6 (tepera-dev-spec.md), FR-P.3: "evidence of capability" — a quiet fact about gates -->
@@ -194,18 +192,18 @@
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_language_screen_title">Language</string>
-    <string name="settings_target_info">Roughly how many hours of screen time fit into your day — shown as a quiet tick on the scale, with no judgment.</string>
+    <string name="settings_target_info">Roughly how many screen hours fit your day. A quiet tick on the scale, no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_target_decrease">Decrease target</string>
     <string name="settings_target_increase">Increase target</string>
     <string name="settings_sleep_window_label">Sleep window</string>
-    <string name="settings_sleep_window_info">Not sleep tracking — just a calculation setting. It affects: day start (unlocks inside the window don\'t start it), day length, pause detection, the \"Away from the phone\" row in Stats, and the unlock counter. Never shown on the scale. Work nights? Adjust it.</string>
+    <string name="settings_sleep_window_info">Not sleep tracking — just a calculation setting. It affects day start, day length, pause detection and the unlock counter. Never shown on the scale. Work nights? Adjust it.</string>
     <string name="settings_sleep_window_start_label">Start</string>
     <string name="settings_sleep_window_end_label">End</string>
 
     <!-- T-11 (tepera-dev-spec.md): gap detection sensitivity preset -->
     <string name="settings_gap_sensitivity_label">Pause detection sensitivity</string>
-    <string name="settings_gap_sensitivity_info">How often the app suggests labeling pauses. Doesn\'t affect logged activity — only how many it suggests.</string>
+    <string name="settings_gap_sensitivity_info">How often the app suggests labeling pauses. Logged activity is not affected.</string>
     <string name="settings_gap_sensitivity_rare">Rare</string>
     <string name="settings_gap_sensitivity_normal">Normal</string>
     <string name="settings_gap_sensitivity_frequent">Frequent</string>
@@ -221,13 +219,13 @@
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export data (JSON)</string>
     <string name="backup_import_action">Import data (JSON)</string>
-    <string name="backup_not_included_note">The file includes categories, entries, excluded apps and the reference. Not included: sleep window, pauses, delayed apps, widget buttons, pause sensitivity, language and seconds — set those up again.</string>
+    <string name="backup_not_included_note">The file includes categories, entries, excluded apps and the reference. Other settings (sleep window, widget, language, etc.) need to be set up again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
     <string name="backup_import_failure">Couldn\'t import the data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
-    <string name="backup_import_confirm_body">Importing will completely replace categories, activity entries, excluded apps and the reference with the data from the file. This cannot be undone. The sleep window, labelled pauses, delayed apps, widget buttons and pause sensitivity are not restored from the file.</string>
+    <string name="backup_import_confirm_body">Importing replaces categories, entries, excluded apps and the reference with the data from the file. This cannot be undone. Other settings are not restored.</string>
     <string name="backup_import_confirm_action">Import</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -288,7 +286,7 @@
     <string name="gates_delay_picker_cancel">Cancel</string>
     <string name="gates_pin_failed">Couldn\'t create the shortcut — please retry</string>
     <string name="gates_instruction_title">Shortcut created</string>
-    <string name="gates_instruction_body">Android won\'t let us remove %1$s\'s icon for you — long-press it on your home screen and drag it to \"Remove\".</string>
+    <string name="gates_instruction_body">Android won\'t let us remove the %1$s icon — long-press it on your home screen and drag it to \"Remove\".</string>
     <string name="gates_instruction_done">Done</string>
     <string name="gates_instruction_later">I\'ll do it later</string>
     <!-- Gate pause screen redesign per a provided mockup (direct user request, not T-5) -->
@@ -429,8 +427,8 @@
     <string name="home_card_day_since_format">Elapsed since %1$s</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
-    <string name="day_usage_info_body">Each square is one hour of yesterday; color shows how many minutes the phone was online. No judgment — just a picture of the day.</string>
-    <string name="weekly_digest_info_body">A summary of the last 7 days: how many times you logged activities, what took most of your time, when your day usually starts (median) and how many phone-free breaks you had (the longest is shown next to it). Tiles without data aren\'t shown.</string>
+    <string name="day_usage_info_body">Each square is one hour of yesterday; color shows minutes online. No judgment.</string>
+    <string name="weekly_digest_info_body">A summary of the last 7 days: how many times you logged activities, what took most of your time, when your day usually starts (median). Tiles without data aren\'t shown.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
     <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): widget-picker description — now "Today" (day shape), not category buttons. -->
@@ -452,7 +450,7 @@
     <string name="backup_delete_section">Data deletion</string>
     <string name="backup_delete_action">Delete all data</string>
     <string name="backup_delete_title">Delete all data?</string>
-    <string name="backup_delete_body">This deletes entries, categories, delayed apps, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nIf you\'re unsure, save a copy first: \"Export data\" above.\n\nThis doesn\'t touch an Android Auto Backup copy (if enabled) — you can turn that off in system settings.</string>
+    <string name="backup_delete_body">This deletes entries, categories, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nNot sure? Save a copy first: \"Export data\".\n\nAn Android Auto Backup copy (if enabled) is not affected.</string>
     <string name="backup_delete_next">Continue</string>
     <string name="backup_delete_final_title">One last confirmation</string>
     <string name="backup_delete_final_body">To delete everything for good, type the word \"%1$s\".</string>

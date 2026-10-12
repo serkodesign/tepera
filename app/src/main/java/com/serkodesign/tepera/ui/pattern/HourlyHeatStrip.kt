@@ -94,8 +94,9 @@ fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier)
     val empty = TeperaPalette.heatmapEmptyBucket
     val noDataFill = TeperaPalette.heatmapNoDataFill
     val noDataBorder = TeperaPalette.heatmapNoDataBorder
-    val colors = remember(hourlyMinutes, empty) {
-        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty) } }
+    val ramp = TeperaPalette.heatmapRamp
+    val colors = remember(hourlyMinutes, empty, ramp) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty, ramp) } }
     }
     val gap = 3.dp
     val description = heatGridDescription(hourlyMinutes)
@@ -151,8 +152,9 @@ private fun HeatGridRows(hourlyMinutes: List<Int>?) {
     val empty = TeperaPalette.heatmapEmptyBucket
     val noDataFill = TeperaPalette.heatmapNoDataFill
     val noDataBorder = TeperaPalette.heatmapNoDataBorder
-    val colors = remember(hourlyMinutes, empty) {
-        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty) } }
+    val ramp = TeperaPalette.heatmapRamp
+    val colors = remember(hourlyMinutes, empty, ramp) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty, ramp) } }
     }
     val gap = 3.dp
     Canvas(
@@ -197,26 +199,27 @@ private fun HeatGridRows(hourlyMinutes: List<Int>?) {
  * Абсолютні кошики хвилин/годину — 0-1/1-15/15-30/30-45/45-60. Колишній кошик "0-15" за
  * запитом користувача розділено: рівно 0 хв — нейтральний сірий, 1-14 хв — амбер 15%.
  */
-private fun heatBucketColor(minutes: Int, empty: Color): Color = when {
+private fun heatBucketColor(minutes: Int, empty: Color, ramp: List<Color>): Color = when {
     minutes < 1 -> empty
-    minutes < 15 -> TeperaPalette.heatmapAmber.copy(alpha = 0.15f)
-    minutes < 30 -> TeperaPalette.heatmapAmber.copy(alpha = 0.45f)
-    minutes < 45 -> TeperaPalette.heatmapAmber.copy(alpha = 0.7f)
-    else -> TeperaPalette.heatmapAmber
+    minutes < 15 -> ramp[0]
+    minutes < 30 -> ramp[1]
+    minutes < 45 -> ramp[2]
+    else -> ramp[3]
 }
 
 @Composable
 private fun HeatGridLegend() {
+    val ramp = TeperaPalette.heatmapRamp
     // П'ять елементів у рядок (пункт "Без даних" прибрано за запитом користувача — стан "немає даних"
     // і так пояснює текст картки): без рівних ваг і без переносу підписів (softWrap = false), інакше
     // "15-30"/"30-45"/"45-60" ламались на два рядки; вільне місце розподіляє SpaceBetween.
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         listOf(
             TeperaPalette.heatmapEmptyBucket to "0-1",
-            TeperaPalette.heatmapAmber.copy(alpha = 0.15f) to "1-15",
-            TeperaPalette.heatmapAmber.copy(alpha = 0.45f) to "15-30",
-            TeperaPalette.heatmapAmber.copy(alpha = 0.7f) to "30-45",
-            TeperaPalette.heatmapAmber to "45-60"
+            ramp[0] to "1-15",
+            ramp[1] to "15-30",
+            ramp[2] to "30-45",
+            ramp[3] to "45-60"
         ).forEach { (color, label) ->
             LegendItem {
                 Box(

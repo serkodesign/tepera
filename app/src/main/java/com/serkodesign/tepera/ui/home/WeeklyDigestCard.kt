@@ -40,7 +40,6 @@ private val MovementText = Color(0xFF026813)
 private val ReadingText = Color(0xFF220D99)
 private val HobbyText = Color(0xFF750D99)
 private val DayStartText = Color(0xFF986800)
-private val PauseText = Color(0xFF00566B)
 private val TopCategoryText = Color(0xFF003926)
 
 private const val HOBBY_WINDOW_DAYS = 7
@@ -110,14 +109,6 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
             val value = stringResource(R.string.weekly_digest_day_start_value, formatTimeOfDay(minuteOfDay))
             add(DigestItem(stringResource(R.string.weekly_digest_day_start_label), value, numberColor(DayStartText)))
         }
-        if (state.pauseCount > 0) {
-            add(
-                DigestItem(
-                    stringResource(R.string.weekly_digest_pauses_label), state.pauseCount.toString(), numberColor(PauseText),
-                    note = stringResource(R.string.weekly_digest_pauses_longest, formatDuration(state.longestPauseMinutes))
-                )
-            )
-        }
         state.topCategory?.let { category ->
             add(
                 DigestItem(
@@ -173,13 +164,13 @@ private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(TeperaPalette.cardActive)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         // До двох рядків: "День зазвичай починається" не вміщалось у половину картки й обрізалось.
         Text(
             item.label,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.labelMedium,
             color = HomeCardTextSecondary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
@@ -190,8 +181,8 @@ private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
                 color = item.mainColor,
                 fontFamily = TeperaPalette.headlineFont,
                 fontWeight = FontWeight.Medium,
-                fontSize = 24.sp,
-                lineHeight = 28.sp,
+                fontSize = 20.sp,
+                lineHeight = 24.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 // Довга власна назва категорії обрізається "…", а не витісняє пояснення поруч.

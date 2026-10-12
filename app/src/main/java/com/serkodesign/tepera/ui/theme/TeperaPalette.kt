@@ -139,7 +139,18 @@ object TeperaPalette {
     val heatmapLowBucket = Color(0xFFC3C3C3)
     /** Кошик "0-1 хв": у темному редизайні #FFFFFF @14% (surface-glass), інакше @see heatmapLowBucket. */
     val heatmapEmptyBucket: Color @Composable @ReadOnlyComposable get() =
-        LocalTeperaColors.current.let { if (it.isDark) Color(0x24FFFFFF) else heatmapLowBucket }
+        LocalTeperaColors.current.let { if (it.isDark) Color(0xFF22403B) else heatmapLowBucket }
+    /**
+     * Кошики 1-15 / 15-30 / 30-45 / 45-60 хв. Світла тема — бурштин з альфою (як у макеті). Темна — суцільні кольори:
+     * напівпрозорий бурштин на сірій картці давав брудно-оливкові відтінки; тепер шкала йде від глибокого зеленого
+     * (в тон фірмовій палітрі) через теплий мед до яскравого бурштину.
+     */
+    val heatmapRamp: List<Color> @Composable @ReadOnlyComposable get() =
+        if (LocalTeperaColors.current.isDark) {
+            listOf(Color(0xFF4A5B3A), Color(0xFF8C7A24), Color(0xFFC99A1A), Color(0xFFF2B81C))
+        } else {
+            listOf(0.15f, 0.45f, 0.7f, 1f).map { heatmapAmber.copy(alpha = it) }
+        }
     val heatmapNoDataFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFF0F3F4)) { if (isDark) chipFill else Color(0xFFF0F3F4) }
     val heatmapNoDataBorder: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFD4DADD)) { if (isDark) textSecondary.copy(alpha = 0.3f) else Color(0xFFD4DADD) }
 
