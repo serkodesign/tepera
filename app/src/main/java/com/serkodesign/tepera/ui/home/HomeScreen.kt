@@ -258,7 +258,9 @@ fun HomeScreen(
     // Досліджено з Figma-макета (node 2062:2862, "This week") — тижневий дайджест лічильників,
     // окрема картка стеку (ContextCardStack.kt), не в SRS буквально.
     val weeklyDigestViewModel: WeeklyDigestViewModel = viewModel(
-        factory = WeeklyDigestViewModel.Factory(activityRepository, balanceRepository, settingsStore, sleepWindowRepository)
+        factory = WeeklyDigestViewModel.Factory(
+            activityRepository, balanceRepository, categoryRepository, pauseRepository, settingsStore, sleepWindowRepository
+        )
     )
     val weeklyDigestState by weeklyDigestViewModel.uiState.collectAsState()
 

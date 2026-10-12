@@ -156,6 +156,10 @@
     <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
     <string name="weekly_digest_card_title">This week</string>
     <string name="weekly_digest_day_start_label">Day usually starts</string>
+    <string name="weekly_digest_day_start_value">at %1$s</string>
+    <string name="weekly_digest_pauses_label">Phone-free breaks</string>
+    <string name="weekly_digest_pauses_longest">· up to %1$s</string>
+    <string name="weekly_digest_top_category_label">Most time</string>
 
     <!-- T-6 (tepera-dev-spec.md), FR-P.3: "evidence of capability" — a quiet fact about gates -->
     <string name="gate_events_summary_card_title">This month</string>
@@ -426,7 +430,7 @@
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
     <string name="day_usage_info_body">Each square is one hour of yesterday; color shows how many minutes the phone was online. No judgment — just a picture of the day.</string>
-    <string name="weekly_digest_info_body">A summary of the last 7 days: how many times you logged activities and when your day usually starts. Tiles without data aren\'t shown.</string>
+    <string name="weekly_digest_info_body">A summary of the last 7 days: how many times you logged activities, what took most of your time, when your day usually starts (median) and how many phone-free breaks you had (the longest is shown next to it). Tiles without data aren\'t shown.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
     <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): widget-picker description — now "Today" (day shape), not category buttons. -->

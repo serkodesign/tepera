@@ -3,11 +3,12 @@ package com.serkodesign.tepera.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -23,9 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.theme.LegacyTeperaColors
 import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -37,24 +40,38 @@ private val MovementText = Color(0xFF026813)
 private val ReadingText = Color(0xFF220D99)
 private val HobbyText = Color(0xFF750D99)
 private val DayStartText = Color(0xFF986800)
+private val PauseText = Color(0xFF00566B)
+private val TopCategoryText = Color(0xFF003926)
 
 private const val HOBBY_WINDOW_DAYS = 7
 
-/** Одна плитка: підпис, головне число (великий шрифт) і необов'язкове пояснення поруч (приглушене). */
-private class DigestItem(val label: String, val main: String, val mainColor: Color, val note: String? = null)
+/**
+ * Одна плитка: підпис, головне число (великий шрифт) і необов'язкове пояснення поруч (приглушене).
+ * [wide] — плитка на весь рядок (назва категорії 24sp у половині картки обрізалась би).
+ */
+private class DigestItem(
+    val label: String,
+    val main: String,
+    val mainColor: Color,
+    val note: String? = null,
+    val wide: Boolean = false
+)
 
 /**
  * "Цей тиждень" — третя сторінка горизонтального пейджера Home (Figma "App concept"
  * k6s4prQ9oK9x2uUvzHRghR, node 192:726, "This week"): заголовок + ⓘ + "×" і сітка плиток 2 колонки.
  * Плитки: Рух/спорт (кількість записів), Читання (кількість + сумарний час), Хобі ("N з 7 днів"
  * — за запитом користувача метрика з макета повернена; знаменник 7 = довжина вікна, орієнтира
- * користувача нема), "День зазвичай починається" (середня точка старту). Плитка без даних не
+ * користувача нема), "День зазвичай починається о …" (медіанна точка старту), "Паузи без
+ * телефону" (кількість + найдовша) і "Найбільше часу" (категорія з найбільшим відміченим часом,
+ * плитка на весь рядок). Плитка без даних не
  * показується (незалогованість ніколи не подається як докір, FR-3.4-подібний принцип).
  * Кнопки закриття "×" нема (за запитом користувача).
  *
- * Розкладка під спільну висоту карток пейджера: ряди плиток ділять усю вільну висоту порівну
- * (`weight(1f)`), а всередині плитки підпис зверху й число знизу — на вищій картці плитки просто
- * вищі, а не з порожнечею під вмістом. Число — великим шрифтом замість дрібних кольорових плашок.
+ * Розкладка: кожен ряд — власної природної висоти (`IntrinsicSize.Min`, плитки в ряду однакові), а не
+ * рівна частка картки — з `weight(1f)` на рядах найвищий ряд (двоярусний підпис) роздував усі ряди, і
+ * пейджер, що вирівнює сторінки за найвищою, витягував і решту карток. Усередині плитки підпис зверху,
+ * число знизу. Число — великим шрифтом замість дрібних кольорових плашок.
  */
 @Composable
 fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) {
@@ -89,9 +106,32 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
             )
         }
         state.dayUsuallyStartsMinuteOfDay?.let { minuteOfDay ->
-            add(DigestItem(stringResource(R.string.weekly_digest_day_start_label), formatTimeOfDay(minuteOfDay), numberColor(DayStartText)))
+            // "о 07:42", а не голе "07:42" — без прийменника час доби читався як тривалість.
+            val value = stringResource(R.string.weekly_digest_day_start_value, formatTimeOfDay(minuteOfDay))
+            add(DigestItem(stringResource(R.string.weekly_digest_day_start_label), value, numberColor(DayStartText)))
+        }
+        if (state.pauseCount > 0) {
+            add(
+                DigestItem(
+                    stringResource(R.string.weekly_digest_pauses_label), state.pauseCount.toString(), numberColor(PauseText),
+                    note = stringResource(R.string.weekly_digest_pauses_longest, formatDuration(state.longestPauseMinutes))
+                )
+            )
+        }
+        state.topCategory?.let { category ->
+            add(
+                DigestItem(
+                    stringResource(R.string.weekly_digest_top_category_label), categoryDisplayName(category),
+                    numberColor(TopCategoryText),
+                    note = "· " + formatDuration(state.topCategoryMinutes),
+                    wide = true
+                )
+            )
         }
     }
+    // Звичайні плитки — по дві в ряд (остання без пари розтягується на весь ряд, без порожнього місця),
+    // широкі — кожна окремим рядком унизу.
+    val rows = items.filterNot { it.wide }.chunked(2) + items.filter { it.wide }.map { listOf(it) }
 
     // Figma node 347:3267 ("This week"): радіус 24 (не загальні 28dp), rgba(255,255,255,0.65) без
     // рамки, асиметричний відступ top-16/sides-12/bottom-12 (не рівний 16 звідусіль).
@@ -106,13 +146,12 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
             onInfo = { showInfo = true }
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            items.chunked(2).forEach { rowItems ->
+            rows.forEach { rowItems ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     rowItems.forEach { item -> DigestTile(item, Modifier.weight(1f).fillMaxHeight()) }
-                    if (rowItems.size < 2) Spacer(Modifier.weight(1f))
                 }
             }
         }
@@ -137,7 +176,14 @@ private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
             .padding(12.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(item.label, style = MaterialTheme.typography.labelLarge, color = HomeCardTextSecondary, maxLines = 1)
+        // До двох рядків: "День зазвичай починається" не вміщалось у половину картки й обрізалось.
+        Text(
+            item.label,
+            style = MaterialTheme.typography.labelLarge,
+            color = HomeCardTextSecondary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
             Text(
                 text = item.main,
@@ -146,7 +192,10 @@ private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Medium,
                 fontSize = 24.sp,
                 lineHeight = 28.sp,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                // Довга власна назва категорії обрізається "…", а не витісняє пояснення поруч.
+                modifier = Modifier.weight(1f, fill = false)
             )
             item.note?.let {
                 Text(
