@@ -39,9 +39,9 @@ import java.time.LocalDate
  * назад саме текст діапазону, не representativeMinutes, — `fromRepresentativeMinutes` нижче).
  */
 enum class DailyOnlineGuess(val representativeMinutes: Long) {
-    UNDER_1H(30),
-    ONE_TO_3H(120),
-    OVER_3H(240);
+    UNDER_3H(90),
+    THREE_TO_5H(240),
+    OVER_5H(360);
 
     companion object {
         fun fromRepresentativeMinutes(minutes: Long): DailyOnlineGuess? =
@@ -93,7 +93,7 @@ fun OnlineEstimateOnboardingScreen(
             verticalArrangement = Arrangement.Center
         ) {
             TeperaOnboardingTitle(text = stringResource(R.string.online_estimate_onboarding_title))
-            // Варіанти один під одним на всю ширину: у ряд третій ("Понад 3 год") обрізався до "Понад …".
+            // Варіанти один під одним на всю ширину: у ряд третій ("Понад 5 год") обрізався до "Понад …".
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -126,7 +126,7 @@ fun OnlineEstimateOnboardingScreen(
 
 @Composable
 internal fun dailyGuessLabel(guess: DailyOnlineGuess): String = when (guess) {
-    DailyOnlineGuess.UNDER_1H -> stringResource(R.string.online_estimate_range_under_1h)
-    DailyOnlineGuess.ONE_TO_3H -> stringResource(R.string.online_estimate_range_1_3h)
-    DailyOnlineGuess.OVER_3H -> stringResource(R.string.online_estimate_range_over_3h)
+    DailyOnlineGuess.UNDER_3H -> stringResource(R.string.online_estimate_range_under_3h)
+    DailyOnlineGuess.THREE_TO_5H -> stringResource(R.string.online_estimate_range_3_5h)
+    DailyOnlineGuess.OVER_5H -> stringResource(R.string.online_estimate_range_over_5h)
 }

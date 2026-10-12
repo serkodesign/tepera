@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Капсула під рядом кнопок віджета (Figma node 236:956): Surface/surface-card-transparent
+     #FFFFFF@30% (#4DFFFFFF), радіус 100 — більший за половину висоти, тож виходить повне заокруглення. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#4DFFFFFF" />
+    <corners android:radius="100dp" />
+</shape>

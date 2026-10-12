@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Іконка застосунку — редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 395:1226
+     "Frame 48855" (виведено через MCP download_assets як плаский SVG-експорт, значення взяті з
+     нього, не зі скриншота). Попередній варіант (небо/пагорби, node 234:435) СКАСОВАНО — новий
+     макет суцільний: лінійний градієнт #006944 -> #699129 на всю площу. Фоновий шар заповнює весь
+     108dp канвас без скорочення в safe zone (на відміну від переднього шару) — суцільна заливка
+     виглядає однаково під будь-якою маскою лаунчера, обрізання країв непомітне. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1400"
+    android:viewportHeight="1400">
+
+    <path android:pathData="M0,0H1400V1400H0Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="752.875" android:startY="863.937"
+                android:endX="1381.31" android:endY="-234.415">
+                <item android:offset="0" android:color="#006944" />
+                <item android:offset="1" android:color="#699129" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

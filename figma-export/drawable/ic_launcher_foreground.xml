@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Логотип "Т" — редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 395:1226, вузол
+     "Union" (вже сплющена boolean-операція, шлях 1:1 з SVG-експорта MCP download_assets, колір
+     #FEFEFE). Задній шар — ic_launcher_background.xml. Той самий прийом safe zone, що в
+     попередній версії: контент вписаний у видимі центральні ~72% 108dp канви (scale 0.72 навколо
+     центру фрейму 1400x1400), щоб не обрізався різними масками лаунчерів (коло/сквіркл/тощо). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1400"
+    android:viewportHeight="1400">
+
+    <group android:scaleX="0.72" android:scaleY="0.72" android:pivotX="700" android:pivotY="700">
+        <path
+            android:pathData="M1148,346C1148,456.457 1058.46,546 948,546H919C883.654,546 855,574.654 855,610V944.5C855,1054.96 765.457,1144.5 655,1144.5H559V714C559,493.086 738.086,314 959,314H1148V346ZM756.795,314C661.875,364.775 585.514,445.71 540.513,544H261V514C261,403.543 350.543,314 461,314H756.795Z"
+            android:fillColor="#FEFEFE" />
+    </group>
+</vector>

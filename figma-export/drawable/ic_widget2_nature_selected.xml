@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 234:442 "Activity icons 2" — camping, ВИБРАНИЙ (filled) стан; контур 1:1 з SVG-асета через MCP.
+     Заливка чорна — колір накладається Glance ColorFilter.tint() (у макеті темний відтінок категорії). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="25.5dp"
+    android:height="25.5dp"
+    android:viewportWidth="25.5"
+    android:viewportHeight="25.5">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3.65625 23.1094C3.10397 23.1094 2.65625 22.6617 2.65625 22.1094V18.9284C2.65625 18.7137 2.72535 18.5047 2.85332 18.3323L11.759 6.33622L10.2266 4.28878L11.5077 3.33067L12.75 5.00597L14.0024 3.33067L15.2734 4.28878L13.7511 6.33622L22.647 18.3324C22.7748 18.5047 22.8437 18.7135 22.8437 18.9281V22.1094C22.8437 22.6617 22.396 23.1094 21.8437 23.1094H3.65625ZM8.55525 21.5156H16.9447L12.75 15.6453L8.55525 21.5156Z" />
+</vector>

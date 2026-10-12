@@ -1,0 +1,243 @@
+package com.serkodesign.tepera.ui.pattern
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.runtime.remember
+import kotlin.math.roundToInt
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaPalette
+
+/**
+ * FR-D.8: "тепловий" графік доби, редизайн за Figma "App concept"
+ * (k6s4prQ9oK9x2uUvzHRghR, node 154:287, "Day usage") — замінює попередню неперервну
+ * альфа-шкалу (24 бари, інтенсивність відносно піку години) на дискретну сітку 12×2 (24
+ * години) з фіксованими кошиками АБСОЛЮТНИХ хвилин Online-часу за годину (0-15/15-30/30-45/
+ * 45-60) і легендою під нею — той самий принцип "показати факт, без коментаря" (FR-D.8), лише
+ * тепер зчитується явним кольором-кошиком, а не відносною інтенсивністю. Спільна для
+ * компактної картки на Home (`PatternMiniCard`) і повної картки на Stats (`StatsScreen`) —
+ * за прямим рішенням користувача ОБИДВІ версії ідентичні макету (без окремого "стиснутого"
+ * варіанта чи додаткових годинних підписів, які показувала попередня версія на Stats).
+ *
+ * [hourlyMinutes] — 24 значення (Online-хвилини за годину), або `null`, коли даних замало
+ * (`PatternUiState.hasEnoughData == false`) — тоді всі 24 клітинки рендеряться в нейтральному
+ * "без даних" стилі з легенди, замість того, щоб ховати сітку цілком. Нуль хвилин у РЕАЛЬНИХ
+ * даних — це кошик "0-15" (людина була офлайн ту годину — валідний факт), не "без даних";
+ * "без даних" стосується лише випадку, коли даних немає взагалі.
+ */
+@Composable
+fun HourlyHeatGrid(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
+    val description = heatGridDescription(hourlyMinutes)
+    Column(
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HeatGridRows(hourlyMinutes)
+        HeatGridLegend()
+    }
+}
+
+/**
+ * Текстова альтернатива сітці (WCAG 1.1.1): інформація в сітці лише кольором клітинок, тож скрінрідеру віддаємо
+ * головне — три години з найбільшим Online-часом (за зростанням годин). Самі клітинки й легенда для нього
+ * приховані ([clearAndSetSemantics]).
+ */
+@Composable
+private fun heatGridDescription(hourlyMinutes: List<Int>?): String {
+    val top = hourlyMinutes?.withIndex()?.filter { it.value > 0 }?.sortedByDescending { it.value }?.take(3)
+    return if (top.isNullOrEmpty()) {
+        stringResource(R.string.heat_grid_description_none)
+    } else {
+        stringResource(
+            R.string.heat_grid_description_peak,
+            top.sortedBy { it.index }.joinToString(", ") { "%02d:00".format(it.index) }
+        )
+    }
+}
+
+/**
+ * Висока версія патерну для картки Home, де є вільна висота (усі картки пейджера однієї висоти, тож
+ * "Патерн" отримує стільки, скільки займає найвища): 6 колонок × 4 рядки — рядок = 6 годин
+ * (00–05, 06–11, 12–17, 18–23), підписи початку рядка ліворуч. Клітинки більші й читаються краще,
+ * ніж 24 квадрати 12×2. Висоту бере у батька (`Modifier.weight(1f)`), легенда — внизу. Ті самі кошики й
+ * кольори, що [HourlyHeatGrid] (Stats лишається 12×2). Один Canvas на сітку — з тієї ж причини (P9).
+ */
+@Composable
+fun HourlyHeatGridTall(hourlyMinutes: List<Int>?, modifier: Modifier = Modifier) {
+    val empty = TeperaPalette.heatmapEmptyBucket
+    val noDataFill = TeperaPalette.heatmapNoDataFill
+    val noDataBorder = TeperaPalette.heatmapNoDataBorder
+    val colors = remember(hourlyMinutes, empty) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty) } }
+    }
+    val gap = 3.dp
+    val description = heatGridDescription(hourlyMinutes)
+    Column(
+        modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(gap)) {
+                listOf(0, 6, 12, 18).forEach { hour ->
+                    Box(modifier = Modifier.weight(1f).width(20.dp), contentAlignment = Alignment.CenterStart) {
+                        Text("%02d".format(hour), fontSize = 12.sp, lineHeight = 14.sp, color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f))
+                    }
+                }
+            }
+            Canvas(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                val gapPx = gap.toPx()
+                val cellW = (size.width - gapPx * 5) / 6f
+                val cellH = (size.height - gapPx * 3) / 4f
+                val radius = CornerRadius(8.dp.toPx())
+                val cellSize = Size(cellW, cellH)
+                for (hour in 0 until 24) {
+                    val topLeft = Offset((hour % 6) * (cellW + gapPx), (hour / 6) * (cellH + gapPx))
+                    val color = colors[hour]
+                    if (color == null) {
+                        drawRoundRect(noDataFill, topLeft, cellSize, radius)
+                        val stroke = 1.dp.toPx()
+                        drawRoundRect(
+                            noDataBorder,
+                            Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
+                            Size(cellW - stroke, cellH - stroke),
+                            CornerRadius(radius.x - stroke / 2),
+                            style = Stroke(stroke)
+                        )
+                    } else {
+                        drawRoundRect(color, topLeft, cellSize, radius)
+                    }
+                }
+            }
+        }
+        HeatGridLegend()
+    }
+}
+
+/**
+ * Сітка 12x2 одним Canvas, а не 24 окремими `Box.clip().background()`: на Huawei P9 (Android 8)
+ * сторінка з патерном у слайдері Home давала +15 пунктів рваних кадрів ("Slow UI thread") — 24
+ * вузлів із власним clip/graphicsLayer перевимірювались і перезаписувались на кожному кадрі
+ * свайпу. Один Canvas — один вузол, ті самі 24 закруглені прямокутники (радіус 4dp, проміжок 3dp).
+ */
+@Composable
+private fun HeatGridRows(hourlyMinutes: List<Int>?) {
+    val empty = TeperaPalette.heatmapEmptyBucket
+    val noDataFill = TeperaPalette.heatmapNoDataFill
+    val noDataBorder = TeperaPalette.heatmapNoDataBorder
+    val colors = remember(hourlyMinutes, empty) {
+        List(24) { hour -> hourlyMinutes?.getOrNull(hour)?.let { heatBucketColor(it, empty) } }
+    }
+    val gap = 3.dp
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .layout { measurable, constraints ->
+                val width = constraints.maxWidth
+                val cell = (width - gap.roundToPx() * 11) / 12f
+                val height = (cell * 2 + gap.roundToPx()).roundToInt()
+                val placeable = measurable.measure(Constraints.fixed(width, height))
+                layout(width, height) { placeable.place(0, 0) }
+            }
+    ) {
+        val gapPx = gap.toPx()
+        val cell = (size.width - gapPx * 11) / 12f
+        val radius = CornerRadius(4.dp.toPx())
+        val cellSize = Size(cell, cell)
+        for (hour in 0 until 24) {
+            val row = hour / 12
+            val col = hour % 12
+            val topLeft = Offset(col * (cell + gapPx), row * (cell + gapPx))
+            val color = colors[hour]
+            if (color == null) {
+                // "Немає даних": світла заливка + рамка 1dp (внутрішня, як border у Compose).
+                drawRoundRect(noDataFill, topLeft, cellSize, radius)
+                val stroke = 1.dp.toPx()
+                drawRoundRect(
+                    noDataBorder,
+                    Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
+                    Size(cell - stroke, cell - stroke),
+                    CornerRadius(radius.x - stroke / 2),
+                    style = Stroke(stroke)
+                )
+            } else {
+                drawRoundRect(color, topLeft, cellSize, radius)
+            }
+        }
+    }
+}
+
+/**
+ * Абсолютні кошики хвилин/годину — 0-1/1-15/15-30/30-45/45-60. Колишній кошик "0-15" за
+ * запитом користувача розділено: рівно 0 хв — нейтральний сірий, 1-14 хв — амбер 15%.
+ */
+private fun heatBucketColor(minutes: Int, empty: Color): Color = when {
+    minutes < 1 -> empty
+    minutes < 15 -> TeperaPalette.heatmapAmber.copy(alpha = 0.15f)
+    minutes < 30 -> TeperaPalette.heatmapAmber.copy(alpha = 0.45f)
+    minutes < 45 -> TeperaPalette.heatmapAmber.copy(alpha = 0.7f)
+    else -> TeperaPalette.heatmapAmber
+}
+
+@Composable
+private fun HeatGridLegend() {
+    // П'ять елементів у рядок (пункт "Без даних" прибрано за запитом користувача — стан "немає даних"
+    // і так пояснює текст картки): без рівних ваг і без переносу підписів (softWrap = false), інакше
+    // "15-30"/"30-45"/"45-60" ламались на два рядки; вільне місце розподіляє SpaceBetween.
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        listOf(
+            TeperaPalette.heatmapEmptyBucket to "0-1",
+            TeperaPalette.heatmapAmber.copy(alpha = 0.15f) to "1-15",
+            TeperaPalette.heatmapAmber.copy(alpha = 0.45f) to "15-30",
+            TeperaPalette.heatmapAmber.copy(alpha = 0.7f) to "30-45",
+            TeperaPalette.heatmapAmber to "45-60"
+        ).forEach { (color, label) ->
+            LegendItem {
+                Box(
+                    Modifier
+                        .size(10.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(color)
+                )
+                Text(label, style = MaterialTheme.typography.bodySmall, softWrap = false)
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegendItem(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        content()
+    }
+}

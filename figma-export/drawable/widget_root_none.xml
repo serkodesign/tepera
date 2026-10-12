@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Фон без заливки для 4x1 і менших розмірів — завжди задається (див. WidgetContent), лише змінюється drawable. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#00000000" />
+</shape>

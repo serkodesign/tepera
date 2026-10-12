@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Картка сітки доби у 4x2 (Figma node 234:855): Surface/surface-card-transparent #FFFFFF @30%
+     (#FFFFFF4D), радіус 16. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#4DFFFFFF" />
+    <corners android:radius="16dp" />
+</shape>

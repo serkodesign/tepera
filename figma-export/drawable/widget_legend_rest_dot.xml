@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Точка легенди "Решта доби" — як майбутні клітинки сітки: напівпрозорий сірий (#A7A7A7 50%)
+     коло з пунктирною білою обвідкою (макет 234:678). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#80A7A7A7" />
+    <stroke
+        android:width="1dp"
+        android:color="#FFFFFFFF"
+        android:dashWidth="3dp"
+        android:dashGap="2dp" />
+</shape>
