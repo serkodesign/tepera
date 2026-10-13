@@ -36,10 +36,10 @@ private const val CONTACT_EMAIL = "serkodesign@gmail.com"
  * GAP-8 (SRS v3.1): "Про застосунок" — версія, посилання на Privacy Policy й контакт. Посилання на політику в самому
  * застосунку — вимога Google Play. Обидва рядки лише передають намір системі (браузер / поштовий клієнт) і не
  * потребують дозволу INTERNET; відсутність відповідного застосунку ловиться й показується спокійним повідомленням.
+ * "База знань" звідси прибрана 13.10.2026 — тепер вона рядком у розділі "Про Tepera" головного екрана Налаштувань.
  */
 @Composable
 fun AboutScreen(
-    onOpenKnowledgeBase: () -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -79,12 +79,6 @@ fun AboutScreen(
                     label = stringResource(R.string.about_privacy_policy),
                     onClick = { open(Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_POLICY_URL))) },
                     leading = { TeperaIconCircle(TeperaSymbols.PrivacyTip) },
-                    trailing = { NavChevron() }
-                )
-                GlassRow(
-                    label = stringResource(R.string.settings_knowledge_base_action),
-                    onClick = onOpenKnowledgeBase,
-                    leading = { TeperaIconCircle(TeperaSymbols.MenuBook) },
                     trailing = { NavChevron() }
                 )
                 GlassRow(

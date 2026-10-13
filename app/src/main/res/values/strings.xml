@@ -145,10 +145,11 @@
     <string name="stats_last_phone_use_week_label">Медіана останнього дотику</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
-    <string name="weekly_reflection_question">Скільки, на твою думку, ти був онлайн цього тижня?</string>
-    <string name="weekly_reflection_range_under_10">До 10 год</string>
-    <string name="weekly_reflection_range_10_20">10–20 год</string>
-    <string name="weekly_reflection_range_over_20">Понад 20 год</string>
+    <string name="weekly_reflection_question">Скільки, по-твоєму, ти в середньому був онлайн на день цього тижня?</string>
+    <string name="weekly_reflection_hint">Обери діапазон — потім покажемо, скільки було насправді.</string>
+    <string name="weekly_reflection_range_under_3">&lt;3 год</string>
+    <string name="weekly_reflection_range_3_5">3–5</string>
+    <string name="weekly_reflection_range_over_5">5+ год</string>
     <string name="weekly_reflection_skip">Можна пропустити</string>
     <string name="weekly_reflection_your_guess_label">Твоя оцінка</string>
     <string name="weekly_reflection_actual_label">Насправді</string>
@@ -193,20 +194,23 @@
     <string name="settings_language_system">Системна</string>
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
-    <string name="settings_backup_restore_action">Резервне копіювання</string>
     <string name="settings_general_section">Загальні</string>
-    <string name="settings_activities_section">Активності</string>
+    <string name="settings_time_tracking_section">Облік часу</string>
+    <string name="settings_habits_section">Звички й екран</string>
+    <string name="settings_about_section">Про Tepera</string>
+    <string name="settings_data_privacy_action">Дані й приватність</string>
+    <string name="settings_notifications_section">Сповіщення</string>
+    <string name="settings_privacy_section">Приватність</string>
+    <string name="backup_copy_section">Копія даних</string>
 
     <!-- Згруповано в окремі під-екрани за прямим запитом користувача (той самий патерн, що
          Категорії/Виключені застосунки/Ворота — рядок з ">" веде на новий екран). -->
     <string name="settings_tracking_action">Відстеження</string>
     <string name="settings_tracking_screen_title">Відстеження</string>
-    <string name="settings_language_action">Мова</string>
     <string name="settings_theme_action">Тема</string>
     <string name="settings_theme_system">Системна</string>
     <string name="settings_theme_light">Світла</string>
     <string name="settings_theme_dark">Темна</string>
-    <string name="settings_language_screen_title">Мова</string>
     <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день. Тиха риска на шкалі, без оцінки.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_target_decrease">Зменшити орієнтир</string>

@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,8 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
@@ -37,6 +33,7 @@ import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.util.AppLocale
 import com.serkodesign.tepera.util.FeedbackForm
 import com.serkodesign.tepera.util.PlayStore
 import com.serkodesign.tepera.util.ThemeStore
@@ -44,26 +41,26 @@ import com.serkodesign.tepera.util.ThemeStore
 /**
  * Стиль перенесений з Figma-фрейму Everyday_Designs (сторінка "Tepera", node 1951:1106):
  * власний заголовок (GlassScreenHeader) замість TopAppBar, "скляні" картки-рядки для навігації
- * замість ListItem. Резервне копіювання (Export/Import JSON) — окремий екран (BackupRestoreScreen).
- * **За прямим запитом користувача (не в Figma-фреймі)**: "Орієнтир Online-часу"/"Вікно сну"/
- * "Чутливість детекції пауз" згруповано в окремий під-екран "Відстеження", "Мова застосунку" —
- * у свій під-екран "Мова" (`TrackingSettingsScreen`/`LanguageSettingsScreen`) — той самий патерн
- * навігації, що вже був у Категорій/Виключених застосунків/Воріт, замість інлайн-блоків тут.
- * **Два розділи (за прямим запитом користувача, звіряючись із Figma node 2156:84):** "Активності"
- * (Відстеження, Категорії, Виключені застосунки, Ворота) і "Загальні" (Мова, Резервне
- * копіювання, Запропонувати функцію, debug-only T-1 спайк) — замість єдиного "Інше". Порядок
- * розділів (Активності вище Загальних) — окремий прямий запит користувача.
+ * замість ListItem.
+ *
+ * **Перегруповано 13.10.2026 за прямим запитом власника** (попередні "Активності" + перевантажені "Загальні"):
+ * - "Облік часу": Відстеження (орієнтир, виключені застосунки, вікно сну, паузи), Категорії.
+ * - "Звички й екран": Застосунки з затримкою, Кнопки віджета.
+ * - "Загальні": Мова й Тема — перемикачі прямо тут (окремий екран "Мова" з одним перемикачем прибрано: зайвий тап),
+ *   і "Дані й приватність" (резервна копія, тижневий підсумок, звіти про збої, видалення даних — `BackupRestoreScreen`).
+ *   Довгі перемикачі з поясненнями (тижневий підсумок, звіти про збої) більше не займають головний екран.
+ * - "Про Tepera": База знань (раніше на два рівні в глибину, через "Про застосунок"), Запропонувати функцію,
+ *   Оцінити застосунок, Tepera Pro (за прямою вимогою власника лишається видимим рядком на цьому екрані), Про застосунок.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onOpenTracking: () -> Unit,
-    onOpenLanguage: () -> Unit,
-    onOpenExclusionList: () -> Unit,
     onOpenCategories: () -> Unit,
-    onOpenBackupRestore: () -> Unit,
+    onOpenDataPrivacy: () -> Unit,
     onOpenGates: () -> Unit,
     onOpenWidgetSettings: () -> Unit,
+    onOpenKnowledgeBase: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenProInterest: () -> Unit,
     onBack: () -> Unit
@@ -97,10 +94,8 @@ fun SettingsScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             GlassScreenHeader(title = stringResource(R.string.settings_screen_title), onBack = onBack)
 
-            // verticalScroll: без нього нижні рядки ("Резервне копіювання", "Запропонувати
-            // функцію") виходять за межі екрана й лишаються недосяжними для дотику на пристроях
-            // з високою щільністю контенту (підтверджено на Samsung S23) — Column сам по собі
-            // не скролиться.
+            // verticalScroll: без нього нижні рядки виходять за межі екрана й лишаються недосяжними
+            // для дотику (підтверджено на Samsung S23) — Column сам по собі не скролиться.
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -108,12 +103,9 @@ fun SettingsScreen(
                     .padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Згруповано за прямим запитом користувача: "Активності" (Відстеження,
-                // Категорії, Виключені застосунки, Ворота) — над "Загальні" (Мова, Резервне
-                // копіювання, Запропонувати функцію, T-1 спайк) — порядок розділів поміняно
-                // місцями за прямим запитом користувача.
-                // Видимі відстані: 16dp зверху, 8dp знизу; проміжок списку 6dp додається сам, тож відступи заголовка — 10 і 2.
-                GlassSectionHeader(stringResource(R.string.settings_activities_section), topPadding = 18.dp, bottomPadding = 2.dp)
+                // Видимі відстані заголовків: 16dp зверху, 8dp знизу; проміжок списку 6dp додається сам, тож відступи — 10 і 2
+                // (у першого — 18, бо над ним нема попереднього рядка).
+                GlassSectionHeader(stringResource(R.string.settings_time_tracking_section), topPadding = 18.dp, bottomPadding = 2.dp)
                 GlassRow(
                     label = stringResource(R.string.settings_tracking_action),
                     onClick = onOpenTracking,
@@ -126,12 +118,8 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(TeperaSymbols.Category) },
                     trailing = { NavChevron() }
                 )
-                GlassRow(
-                    label = stringResource(R.string.settings_exclusion_list_action),
-                    onClick = onOpenExclusionList,
-                    leading = { TeperaIconCircle(TeperaSymbols.VisibilityOff) },
-                    trailing = { NavChevron() }
-                )
+
+                GlassSectionHeader(stringResource(R.string.settings_habits_section), topPadding = 10.dp, bottomPadding = 2.dp)
                 GlassRow(
                     label = stringResource(R.string.settings_gates_action),
                     onClick = onOpenGates,
@@ -145,15 +133,22 @@ fun SettingsScreen(
                     trailing = { NavChevron() }
                 )
 
-                GlassSectionHeader(stringResource(R.string.settings_general_section), topPadding = 18.dp, bottomPadding = 2.dp)
-                GlassRow(
-                    label = stringResource(R.string.settings_language_action),
-                    onClick = onOpenLanguage,
-                    leading = { TeperaIconCircle(TeperaSymbols.Language) },
-                    trailing = { NavChevron() }
-                )
-                // Тема — Системна / Світла / Темна (ThemeStore). Приховано, поки темна тема не готова
-                // (ThemeStore.THEME_CHOICE_ENABLED = false); блок не видалено, щоб повернути одним прапорем.
+                GlassSectionHeader(stringResource(R.string.settings_general_section), topPadding = 10.dp, bottomPadding = 2.dp)
+                // Мова застосовується на місці (AppLocale — Compose-state + ProvideAppLocale у MainActivity), без
+                // Activity.recreate(): перезапуск обривав анімацію перемикача й давав мигання. LocaleStore, а не
+                // AppCompatDelegate — пояснення в util/LocaleStore.kt і CLAUDE.md.
+                TeperaCard(title = stringResource(R.string.settings_language_label)) {
+                    PillSegmentedControl(
+                        options = listOf(
+                            "" to stringResource(R.string.settings_language_system),
+                            "uk" to stringResource(R.string.settings_language_uk),
+                            "en" to stringResource(R.string.settings_language_en)
+                        ),
+                        selected = AppLocale.tag(context),
+                        onSelect = { tag -> AppLocale.set(context, tag) }
+                    )
+                }
+                // Тема — Системна / Світла / Темна (ThemeStore). Вимикається одним прапорем (THEME_CHOICE_ENABLED).
                 if (ThemeStore.THEME_CHOICE_ENABLED) {
                     TeperaCard(title = stringResource(R.string.settings_theme_action)) {
                         PillSegmentedControl(
@@ -168,9 +163,17 @@ fun SettingsScreen(
                     }
                 }
                 GlassRow(
-                    label = stringResource(R.string.settings_backup_restore_action),
-                    onClick = onOpenBackupRestore,
-                    leading = { TeperaIconCircle(TeperaSymbols.Archive) },
+                    label = stringResource(R.string.settings_data_privacy_action),
+                    onClick = onOpenDataPrivacy,
+                    leading = { TeperaIconCircle(TeperaSymbols.PrivacyTip) },
+                    trailing = { NavChevron() }
+                )
+
+                GlassSectionHeader(stringResource(R.string.settings_about_section), topPadding = 10.dp, bottomPadding = 2.dp)
+                GlassRow(
+                    label = stringResource(R.string.settings_knowledge_base_action),
+                    onClick = onOpenKnowledgeBase,
+                    leading = { TeperaIconCircle(TeperaSymbols.MenuBook) },
                     trailing = { NavChevron() }
                 )
                 // FR-6.4: чесне попередження перед відкриттям браузера. Свідомо без бейджа й без
@@ -181,20 +184,16 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(TeperaSymbols.Feedback) },
                     trailing = { NavChevron() }
                 )
-                // CC-10: "Оцінити застосунок" — пряме посилання на лістинг Play Store (не Play
-                // In-App Review API — та бібліотека для контекстних підказок, не для явного пункту
-                // меню, деталі в PlayStore.kt), одразу на розділ відгуків/оцінки.
+                // CC-10: "Оцінити застосунок" — пряме посилання на лістинг Play Store (не Play In-App Review API —
+                // та бібліотека для контекстних підказок, не для явного пункту меню, деталі в PlayStore.kt).
                 GlassRow(
                     label = stringResource(R.string.settings_rate_action),
                     onClick = { PlayStore.openListing(context, forReview = true) },
                     leading = { TeperaIconCircle(TeperaSymbols.Star) },
                     trailing = { NavChevron() }
                 )
-                // CC-8: тижневий підсумок — одне тихе сповіщення раз на тиждень, вимкнене за замовчуванням.
-                WeeklySummaryToggle(settingsStore = (context.applicationContext as com.serkodesign.tepera.TeperaApp).settingsStore)
-                // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
-                CrashReportsToggle()
-                // CC-11: fake door — «Tepera Pro — у розробці», без цін і оплат.
+                // CC-11: fake door — «Tepera Pro — у розробці», без цін і оплат. За прямою вимогою власника — видимий
+                // рядок на головному екрані Налаштувань, не всередині "Про застосунок".
                 GlassRow(
                     label = stringResource(R.string.settings_pro_interest_action),
                     onClick = onOpenProInterest,

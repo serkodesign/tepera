@@ -18,13 +18,17 @@ private const val WEEK_MILLIS = 7 * 24 * 60 * 60 * 1000L
 private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
 private const val MIN_DAYS_BEFORE_FIRST_SHOW = 7
 
-/** FR-P.1: три робочі діапазони з тексту SRS ("напр. до 10 год / 10-20 год / понад 20"). */
-enum class WeeklyOnlineGuess { UNDER_10, FROM_10_TO_20, OVER_20 }
+/**
+ * FR-P.1: три діапазони. **13.10.2026 за прямим запитом власника — у середньому за день, а не сумарно за тиждень**
+ * (раніше "до 10 / 10-20 / понад 20 год" на тиждень): ті самі межі, що питання онбордингу про вчорашній Online
+ * ([com.serkodesign.tepera.ui.onboarding.DailyOnlineGuess]) — людині легше уявити свій звичайний день, ніж суму за тиждень.
+ */
+enum class WeeklyOnlineGuess { UNDER_3, FROM_3_TO_5, OVER_5 }
 
 data class WeeklyReflectionUiState(
     val isDue: Boolean = false,
     val guess: WeeklyOnlineGuess? = null, // не-null => картка в режимі "оцінка → реальність"
-    val actualMinutes: Int = 0
+    val actualMinutes: Int = 0 // середнє Online-хвилин на день за останні 7 днів
 )
 
 /**
@@ -68,7 +72,8 @@ class WeeklyReflectionViewModel(
     fun selectGuess(guess: WeeklyOnlineGuess) {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            val actualMinutes = balanceRepository.getOnlineMinutes(now - WEEK_MILLIS, now)
+            // Середнє на день: Online за останні 7 повних діб (ковзні 168 год до "зараз") / 7.
+            val actualMinutes = balanceRepository.getOnlineMinutes(now - WEEK_MILLIS, now) / 7
             _uiState.value = _uiState.value.copy(guess = guess, actualMinutes = actualMinutes)
         }
     }

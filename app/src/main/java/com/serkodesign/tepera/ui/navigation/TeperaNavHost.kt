@@ -108,7 +108,6 @@ import com.serkodesign.tepera.ui.settings.AboutScreen
 import com.serkodesign.tepera.ui.settings.ProInterestScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
-import com.serkodesign.tepera.ui.settings.LanguageSettingsScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
@@ -142,7 +141,6 @@ private object Routes {
     const val GATES_ONBOARDING = "gates_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
-    const val LANGUAGE_SETTINGS = "language_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val ABOUT = "about"
@@ -174,7 +172,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, LANGUAGE_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WIDGET_SUGGESTION_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
@@ -592,12 +590,11 @@ fun TeperaNavHost(
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
-                    onOpenLanguage = { navController.navigate(Routes.LANGUAGE_SETTINGS) },
-                    onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
-                    onOpenBackupRestore = { navController.navigate(Routes.BACKUP_RESTORE) },
+                    onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
+                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onBack = { navController.popBackStack() }
@@ -608,11 +605,9 @@ fun TeperaNavHost(
                     settingsStore = settingsStore,
                     sleepWindowRepository = sleepWindowRepository,
                     balanceRepository = balanceRepository,
+                    onOpenExclusionList = { navController.navigate(Routes.EXCLUSION_LIST) },
                     onBack = { navController.popBackStack() }
                 )
-            }
-            composable(Routes.LANGUAGE_SETTINGS) {
-                LanguageSettingsScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.GATES) {
                 GatesScreen(
@@ -656,7 +651,6 @@ fun TeperaNavHost(
             }
             composable(Routes.ABOUT) {
                 AboutScreen(
-                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onBack = { navController.popBackStack() }
                 )
             }

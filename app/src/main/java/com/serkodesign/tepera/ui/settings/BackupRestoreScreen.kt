@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,6 +54,9 @@ import java.util.Locale
 /**
  * FR-6.2: ручний JSON-експорт/імпорт — окремий екран у стилі Figma-фрейму Everyday_Designs
  * (node 1951:2112, "Settings - Backup and restore"), раніше це були інлайн-дії в SettingsScreen.
+ * **13.10.2026 за прямим запитом власника — екран "Дані й приватність":** крім копії даних тут тепер тижневий
+ * підсумок (CC-8) і звіти про збої (D-15), перенесені з головного екрана Налаштувань, і видалення всіх даних.
+ * Заголовок першого розділу — власний рядок "Копія даних" (раніше помилково позичений "Активні" з Категорій).
  */
 @Composable
 fun BackupRestoreScreen(
@@ -161,13 +166,16 @@ fun BackupRestoreScreen(
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            GlassScreenHeader(title = stringResource(R.string.settings_backup_restore_action), onBack = onBack)
+            GlassScreenHeader(title = stringResource(R.string.settings_data_privacy_action), onBack = onBack)
 
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                GlassSectionHeader(stringResource(R.string.categories_section_active))
+                GlassSectionHeader(stringResource(R.string.backup_copy_section))
                 GlassRow(
                     label = stringResource(R.string.backup_export_action),
                     onClick = {
@@ -188,6 +196,12 @@ fun BackupRestoreScreen(
                     text = stringResource(R.string.backup_not_included_note),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
+                // CC-8: тижневий підсумок — одне тихе сповіщення раз на тиждень, вимкнене за замовчуванням.
+                GlassSectionHeader(stringResource(R.string.settings_notifications_section))
+                WeeklySummaryToggle(settingsStore = (context.applicationContext as com.serkodesign.tepera.TeperaApp).settingsStore)
+                // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
+                GlassSectionHeader(stringResource(R.string.settings_privacy_section))
+                CrashReportsToggle()
                 GlassSectionHeader(stringResource(R.string.backup_delete_section))
                 GlassRow(
                     label = stringResource(R.string.backup_delete_action),

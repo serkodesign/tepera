@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +48,7 @@ import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.ui.theme.TeperaTimeField
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.HourStepper
+import com.serkodesign.tepera.ui.theme.NavChevron
 import com.serkodesign.tepera.ui.theme.PillSegmentedControl
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
@@ -67,12 +71,16 @@ import kotlin.math.roundToInt
  * - Вікно сну: два поля часу ("Початок"/"Кінець", системний вибір часу до хвилини) замість двох великих повзунків
  *   годин — інтервал читається одним рядком, і його не треба вгадувати за довжиною заповнення.
  * - Пауза: три пресети + рядок із реальними порогами обраного пресета (мінімум хвилин і стеля на день).
+ * - Виключені застосунки (за прямим запитом користувача перенесено сюди з головного екрана Налаштувань): картка
+ *   того самого вигляду, що відкриває окремий екран списку. Стоїть одразу під орієнтиром — обидва визначають, що
+ *   саме рахується як Online.
  */
 @Composable
 fun TrackingSettingsScreen(
     settingsStore: SettingsStore,
     sleepWindowRepository: SleepWindowRepository,
     balanceRepository: BalanceRepository,
+    onOpenExclusionList: () -> Unit,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -166,6 +174,15 @@ fun TrackingSettingsScreen(
                     }
                 }
 
+                // --- Виключені застосунки: навігаційна картка (весь рядок — кнопка) на окремий екран списку.
+                SettingCard(
+                    icon = TeperaSymbols.VisibilityOff,
+                    title = stringResource(R.string.settings_exclusion_list_action),
+                    supporting = stringResource(R.string.exclusion_list_hint),
+                    onClick = onOpenExclusionList,
+                    trailing = { NavChevron(modifier = Modifier.align(Alignment.CenterVertically)) }
+                )
+
                 // --- Вікно сну
                 SettingCard(
                     icon = TeperaSymbols.Bedtime,
@@ -238,6 +255,7 @@ fun TrackingSettingsScreen(
 /**
  * Картка одного налаштування: іконка в кружку, назва (+ необов'язкова ⓘ з докладним поясненням), стисле пояснення
  * під назвою, [trailing] (напр. перемикач) праворуч у заголовку й [content] під ним (повзунок, поля часу тощо).
+ * [onClick] робить усю картку кнопкою-переходом (напр. "Виключені застосунки" з шевроном у [trailing]).
  */
 @Composable
 private fun SettingCard(
@@ -247,7 +265,8 @@ private fun SettingCard(
     modifier: Modifier = Modifier,
     onInfo: (() -> Unit)? = null,
     infoDescription: String = "",
-    trailing: @Composable () -> Unit = {},
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
     Column(
@@ -255,6 +274,7 @@ private fun SettingCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(TeperaPalette.cardTranslucent)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
