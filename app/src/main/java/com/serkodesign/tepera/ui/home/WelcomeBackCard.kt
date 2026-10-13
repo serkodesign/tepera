@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,21 +32,29 @@ fun WelcomeBackCard(state: WelcomeBackUiState, onDismiss: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ContextCardHeader(title = stringResource(R.string.welcome_back_title), onDismiss = onDismiss)
-        Text(
-            text = pluralStringResource(R.plurals.welcome_back_period, state.days, state.days),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        if (state.loggedMinutes > 0) {
+        // Той самий основний текст, що в GateEventsSummaryCard ("Цей місяць", Figma 367:1535):
+        // 18sp Medium, темно-зелений. Кілька фактів — один під одним із вужчим проміжком (4dp),
+        // щоб вони читались як єдиний блок під заголовком.
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = stringResource(R.string.welcome_back_logged_format, formatBalanceDuration(state.loggedMinutes)),
-                style = MaterialTheme.typography.bodyMedium
+                text = pluralStringResource(R.plurals.welcome_back_period, state.days, state.days),
+                style = ContextCardBodyStyle,
+                color = TeperaPalette.buttonBrandDark
             )
-        }
-        state.averageOnlineMinutes?.let {
-            Text(
-                text = stringResource(R.string.welcome_back_online_format, formatBalanceDuration(it)),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            if (state.loggedMinutes > 0) {
+                Text(
+                    text = stringResource(R.string.welcome_back_logged_format, formatBalanceDuration(state.loggedMinutes)),
+                    style = ContextCardBodyStyle,
+                    color = TeperaPalette.buttonBrandDark
+                )
+            }
+            state.averageOnlineMinutes?.let {
+                Text(
+                    text = stringResource(R.string.welcome_back_online_format, formatBalanceDuration(it)),
+                    style = ContextCardBodyStyle,
+                    color = TeperaPalette.buttonBrandDark
+                )
+            }
         }
     }
 }
