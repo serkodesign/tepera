@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.data.repository
 
+import com.serkodesign.tepera.util.queryEventsOrNull
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -32,7 +33,7 @@ class UnlockRepository(private val context: Context) {
             if (!isSupported()) return@withContext 0
             val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
             try {
-                val events = usm.queryEvents(from, to)
+                val events = usm.queryEventsOrNull(from, to) ?: return@withContext 0
                 val event = UsageEvents.Event()
                 var count = 0
                 while (events.hasNextEvent()) {
@@ -63,7 +64,7 @@ class UnlockRepository(private val context: Context) {
         if (!isSupported()) return@withContext emptyMap()
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         try {
-            val events = usm.queryEvents(from, to)
+            val events = usm.queryEventsOrNull(from, to) ?: return@withContext emptyMap()
             val event = UsageEvents.Event()
             val counts = HashMap<Long, Int>()
             var earliest: Long? = null

@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.util.withReliableUsageEvents
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -102,7 +103,9 @@ class LastPhoneUseEstimateViewModel(
     fun selectGuess(guess: LastPhoneUseGuess) {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            val yesterday = pauseRepository.lastPhoneUseForShiftedDay(now, daysBack = 0)
+            // Збій запиту подій — нічого не зберігаємо, картка лишається з питанням.
+            val yesterday = withReliableUsageEvents { pauseRepository.lastPhoneUseForShiftedDay(now, daysBack = 0) }
+                ?: return@launch
             val actualMillis = yesterday.lastUseMillis
             if (actualMillis == null) {
                 // Рідкісний крайовий випадок: дані зникли між checkDataReady() (перевіряв 5 з 7

@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.data.repository
 
+import com.serkodesign.tepera.util.withReliableUsageEvents
 import com.serkodesign.tepera.data.local.dao.DaySummaryDao
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import com.serkodesign.tepera.data.local.entity.DaySummaryEntity
@@ -46,7 +47,12 @@ class DaySummaryRepository(
         val exclusionHash = excludedAppDao.getExcludedPackageNames().toSet().hashCode()
         val sleepWindowHash = sleepWindows.hashCode()
 
-        candidates.forEach { day -> dao.insert(buildSummary(day, zone, sleepWindows, exclusionHash, sleepWindowHash)) }
+        // Рядок незмінний після запису — тож якщо під час підрахунку доби запит подій збоїв (queryEventsOrNull дав
+        // запасні нулі), таку добу не пишемо: вона дозапишеться при наступному виклику (~30 хв).
+        candidates.forEach { day ->
+            withReliableUsageEvents { buildSummary(day, zone, sleepWindows, exclusionHash, sleepWindowHash) }
+                ?.let { dao.insert(it) }
+        }
     }
 
     private suspend fun buildSummary(

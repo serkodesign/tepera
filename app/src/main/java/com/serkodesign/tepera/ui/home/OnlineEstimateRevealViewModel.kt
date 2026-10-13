@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.util.withReliableUsageEvents
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -63,7 +64,12 @@ class OnlineEstimateRevealViewModel(
             val actualMinutes = estimate.actualValue ?: run {
                 val dayStart = estimate.forDate.startOfDayMillis()
                 val dayEnd = estimate.forDate.plusDays(1).startOfDayMillis()
-                val computed = balanceRepository.getOnlineMinutes(dayStart, dayEnd).toLong()
+                // Збій запиту подій — не зберігати нуль як "насправді": картку сховано до наступного refresh().
+                val computed = withReliableUsageEvents { balanceRepository.getOnlineMinutes(dayStart, dayEnd).toLong() }
+                    ?: run {
+                        _uiState.value = OnlineEstimateRevealUiState()
+                        return@launch
+                    }
                 userEstimateRepository.setActualValue(estimate.id, computed)
                 computed
             }

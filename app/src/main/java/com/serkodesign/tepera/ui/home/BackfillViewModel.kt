@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.util.withReliableUsageEvents
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -63,14 +64,21 @@ class BackfillViewModel(
             val sleepWindows = sleepWindowRepository.getEnabledWindows()
             val config = GapDetectionConfig.forSensitivity(settingsStore.gapSensitivity.first())
             val todayStart = startOfTodayMillis()
+            // Доба, на якій запит подій збоїв, не пишеться (порожній скан стер би її паузи), а бекфіл не
+            // позначається завершеним — повториться при наступному відкритті Home.
+            var allDaysScanned = true
             for (daysAgo in 1..BACKFILL_LOOKBACK_DAYS) {
                 val dayStart = todayStart - daysAgo * DAY_MILLIS
                 val dayEnd = dayStart + DAY_MILLIS
-                val scan = pauseRepository.scan(dayStart, dayEnd, sleepWindows, config)
+                val scan = withReliableUsageEvents { pauseRepository.scan(dayStart, dayEnd, sleepWindows, config) }
+                if (scan == null) {
+                    allDaysScanned = false
+                    continue
+                }
                 pauseRepository.persist(dayStart, dayEnd, scan.gaps)
             }
 
-            settingsStore.setHistoryBackfillCompletedAt(System.currentTimeMillis())
+            if (allDaysScanned) settingsStore.setHistoryBackfillCompletedAt(System.currentTimeMillis())
             _uiState.value = BackfillUiState(isProcessing = false)
         }
     }

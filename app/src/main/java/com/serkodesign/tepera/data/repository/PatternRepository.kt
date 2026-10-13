@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.data.repository
 
+import com.serkodesign.tepera.util.queryEventsOrNull
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -39,7 +40,9 @@ class PatternRepository(
             while (dayStart < to) {
                 val dayEnd = minOf(dayStart + DAY_MILLIS, to)
                 // Ті самі сесії, що й Online (спільна логіка — foregroundSessions), тож тепловий патерн узгоджений з Home.
-                for (span in foregroundSessions(usm.queryEvents(dayStart, dayEnd), excluded, dayEnd)) {
+                // Збій однієї доби — увесь патерн порожній (як без доступу), а не частково заповнений.
+                val events = usm.queryEventsOrNull(dayStart, dayEnd) ?: return@withContext List(24) { 0 }
+                for (span in foregroundSessions(events, excluded, dayEnd)) {
                     addToHourBuckets(buckets, span.start, span.end)
                 }
                 dayStart = dayEnd
@@ -68,7 +71,7 @@ class PatternRepository(
             // пізніше за now - maxDays, тож тиждень давав 6 днів, а місяць — 29.
             val todayStart = startOfTodayMillis()
             val from = todayStart - maxDays * DAY_MILLIS
-            val events = usm.queryEvents(from, nowMillis)
+            val events = usm.queryEventsOrNull(from, nowMillis) ?: return@withContext 0
             val event = UsageEvents.Event()
             var earliest: Long? = null
             while (events.hasNextEvent()) {

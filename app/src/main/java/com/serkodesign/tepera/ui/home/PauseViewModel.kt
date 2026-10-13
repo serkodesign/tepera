@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.util.withReliableUsageEvents
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -105,8 +106,10 @@ class PauseViewModel(
                         return@launch
                     }
                     val now = System.currentTimeMillis()
-                    val scan = pauseRepository.scan(todayDayStart, now, sleepWindows, config)
-                    pauseRepository.persist(todayDayStart, now, scan.gaps)
+                    // Збій запиту подій дав би порожній скан, а persist() стер би непозначені паузи проміжку —
+                    // тоді лише показуємо вже збережені.
+                    val scan = withReliableUsageEvents { pauseRepository.scan(todayDayStart, now, sleepWindows, config) }
+                    if (scan != null) pauseRepository.persist(todayDayStart, now, scan.gaps)
                     val rawGaps = pauseRepository.getUnresolvedGaps(todayDayStart, now)
                     val entries = activityRepository.observeEntriesInRange(todayDayStart, now).first()
                     val gaps = pauseRepository.reconcileWithEntries(rawGaps, entries)
@@ -133,8 +136,8 @@ class PauseViewModel(
                         _uiState.value = PauseCardUiState()
                         return@launch
                     }
-                    val scan = pauseRepository.scan(yesterdayDayStart, todayDayStart, sleepWindows, config)
-                    pauseRepository.persist(yesterdayDayStart, todayDayStart, scan.gaps)
+                    val scan = withReliableUsageEvents { pauseRepository.scan(yesterdayDayStart, todayDayStart, sleepWindows, config) }
+                    if (scan != null) pauseRepository.persist(yesterdayDayStart, todayDayStart, scan.gaps)
                     val rawGaps = pauseRepository.getUnresolvedGaps(yesterdayDayStart, todayDayStart)
                     val entries = activityRepository.observeEntriesInRange(yesterdayDayStart, todayDayStart).first()
                     val gaps = pauseRepository.reconcileWithEntries(rawGaps, entries)

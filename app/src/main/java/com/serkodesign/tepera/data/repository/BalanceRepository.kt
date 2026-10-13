@@ -11,6 +11,7 @@ import com.serkodesign.tepera.util.TargetSuggestion
 import com.serkodesign.tepera.util.TimeSpan
 import com.serkodesign.tepera.util.foregroundSessions
 import com.serkodesign.tepera.util.mergeTimeSpans
+import com.serkodesign.tepera.util.queryEventsOrNull
 import com.serkodesign.tepera.util.systemExclusionPackages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -69,7 +70,7 @@ class BalanceRepository(
     suspend fun earliestUsageEventMillis(fromMillis: Long): Long? = withContext(Dispatchers.IO) {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         try {
-            val events = usm.queryEvents(fromMillis, System.currentTimeMillis())
+            val events = usm.queryEventsOrNull(fromMillis, System.currentTimeMillis()) ?: return@withContext null
             val event = UsageEvents.Event()
             // Події йдуть у хронологічному порядку — перша й є найдавнішою.
             if (events.hasNextEvent()) {
@@ -115,7 +116,8 @@ class BalanceRepository(
         val excluded = excludedAppDao.getExcludedPackageNames().toSet() + systemExclusionPackages(context)
         try {
             // Сесії — спільна логіка з PatternRepository (див. foregroundSessions).
-            mergeTimeSpans(foregroundSessions(usm.queryEvents(from, to), excluded, to))
+            val events = usm.queryEventsOrNull(from, to) ?: return@withContext emptyList()
+            mergeTimeSpans(foregroundSessions(events, excluded, to))
         } catch (e: SecurityException) {
             emptyList()
         }
@@ -147,7 +149,8 @@ class BalanceRepository(
         try {
             // Той самий підрахунок, що й getOnlineIntervals (спільна логіка — foregroundSessions), щоб число
             // Online збігалось із смугою на Home.
-            val merged = mergeTimeSpans(foregroundSessions(usm.queryEvents(from, to), excluded, to))
+            val events = usm.queryEventsOrNull(from, to) ?: return@withContext 0
+            val merged = mergeTimeSpans(foregroundSessions(events, excluded, to))
             (merged.sumOf { it.durationMillis } / 60_000L).toInt()
         } catch (e: SecurityException) {
             0
@@ -238,7 +241,10 @@ class BalanceRepository(
             // стартує з 05:00 (за прямим запитом користувача). До 05:00 день ще не почався.
             val searchFrom = midnight + DAY_START_EARLIEST_HOUR * 3_600_000L
             if (searchFrom >= now) return@withContext now
-            val events = usm.queryEvents(searchFrom, now)
+            // Збій передачі подій через binder (див. queryEventsOrNull) — не падати, а вважати, що суттєвого
+            // розблокування поки не видно: для "сьогодні" це порожній стан до наступного refresh(), для минулих
+            // діб викликач і так трактує [searchEndMillis] як "не знайдено".
+            val events = usm.queryEventsOrNull(searchFrom, now) ?: return@withContext now
             val event = UsageEvents.Event()
             var pendingStart: Long? = null
             while (events.hasNextEvent()) {
@@ -291,7 +297,7 @@ class BalanceRepository(
             val toMillis = fromMillis + slotMillis * slotCount
             val buckets = IntArray(slotCount)
             try {
-                val events = usm.queryEvents(fromMillis, toMillis)
+                val events = usm.queryEventsOrNull(fromMillis, toMillis) ?: return@withContext buckets
                 val event = UsageEvents.Event()
                 val foregroundSince = HashMap<String, Long>()
                 while (events.hasNextEvent()) {

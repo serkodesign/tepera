@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.data.repository
 
+import com.serkodesign.tepera.util.queryEventsOrNull
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -83,7 +84,7 @@ class PauseRepository(
     ): PhoneUsageScan = withContext(Dispatchers.IO) {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         try {
-            val events = usm.queryEvents(from, to)
+            val events = usm.queryEventsOrNull(from, to) ?: return@withContext PhoneUsageScan(emptyList(), null, null)
             val event = UsageEvents.Event()
             val foregroundApps = HashSet<String>()
             var sessionStart: Long? = null

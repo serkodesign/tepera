@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.home
 
+import com.serkodesign.tepera.util.withReliableUsageEvents
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -92,7 +93,10 @@ class UnlockEstimateViewModel(
             val yesterdayEnd = startOfTodayMillis()
             val yesterdayStart = yesterdayEnd - DAY_MILLIS
             val sleepWindows = sleepWindowRepository.getEnabledWindows()
-            val actual = unlockRepository.countUnlocks(yesterdayStart, yesterdayEnd, sleepWindows).toLong()
+            // Збій запиту подій — не зберігати 0 як реальне значення; картка лишається з питанням, можна тапнути ще раз.
+            val actual = withReliableUsageEvents {
+                unlockRepository.countUnlocks(yesterdayStart, yesterdayEnd, sleepWindows).toLong()
+            } ?: return@launch
             userEstimateRepository.saveResolvedEstimate(
                 type = EstimateType.UNLOCK_COUNT,
                 estimatedValue = guess.representativeCount,
