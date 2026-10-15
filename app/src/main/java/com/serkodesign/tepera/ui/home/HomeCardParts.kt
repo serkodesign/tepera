@@ -109,22 +109,6 @@ internal fun HomeCardTitleRow(title: String, onInfo: () -> Unit) {
 }
 
 /**
- * Fallback-сторінка горизонтального пейджера Home, коли жодна з карток з даними ("Мій день",
- * Патерн, "Цей тиждень") ще не має що показати (щойно встановлений застосунок на пристрої без
- * власної історії ОС) — той самий контейнер, що решта сторінок, лише один рядок тексту.
- */
-@Composable
-internal fun EmptyPagerCard(modifier: Modifier = Modifier) {
-    HomeCardSurface(modifier = modifier) {
-        Text(
-            text = stringResource(R.string.home_no_entries_today),
-            style = MaterialTheme.typography.bodyMedium,
-            color = HomeCardTextPrimary
-        )
-    }
-}
-
-/**
  * "Оцінка → реальність" — дві картки поруч замість голого тексту (за прямим запитом користувача:
  * "по всьому застосунку оформлення такого контенту зроби більш графічно"). Спільний вигляд для
  * [WeeklyReflectionCard]/[UnlockEstimateCard]/[LastPhoneUseEstimateCard]/[OnlineEstimateRevealCard] —

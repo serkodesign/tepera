@@ -96,6 +96,8 @@ import com.serkodesign.tepera.ui.gates.GatePauseScreen
 import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.gates.GateScheduleScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
+import com.serkodesign.tepera.ui.home.MiniPlayer
+import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
@@ -440,6 +442,14 @@ fun TeperaNavHost(
                     gateEventRepository = gateEventRepository,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
+                    // "Відкрити в статистиці" у шторці підсумків — той самий перехід, що вкладка "Статистика" в навбарі.
+                    onOpenStats = {
+                        navController.navigate(Routes.STATS) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
                     onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
@@ -671,6 +681,30 @@ fun TeperaNavHost(
             activityRepository = activityRepository,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+    // Міні-плеєр сесії (HANDOFF, розділ 7): над навбаром на вкладках, крім Home (там — активний рядок списку).
+    if (currentRoute in Routes.BOTTOM_NAV_ROUTES && currentRoute != Routes.HOME) {
+        val activeTimers by activeTimerStore.activeTimers.collectAsState(initial = emptyMap())
+        val allCategories by categoryRepository.observeAllCategories().collectAsState(initial = emptyList())
+        // Одночасно йде лише один таймер; якщо їх кілька (застарілий стан) — показуємо найновіший.
+        val runningCategory = activeTimers.entries.maxByOrNull { it.value }
+            ?.let { running -> allCategories.firstOrNull { it.id == running.key } }
+        if (runningCategory != null) {
+            val miniPlayerScope = rememberCoroutineScope()
+            val navigationBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            MiniPlayer(
+                category = runningCategory,
+                onOpen = { navController.navigate(Routes.categoryHistory(runningCategory.id)) },
+                onStop = {
+                    miniPlayerScope.launch { toggleCategoryTimer(activeTimerStore, activityRepository, runningCategory.id) }
+                },
+                hazeState = hazeState,
+                // Над таблеткою навбару: 62dp висота + 16dp нижній відступ + системний інсет + 8dp проміжок.
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(start = 8.dp, end = 8.dp, bottom = 62.dp + 16.dp + navigationBarInset + 8.dp)
+            )
+        }
     }
     if (currentRoute in Routes.BOTTOM_NAV_ROUTES) {
         TeperaBottomNavBar(

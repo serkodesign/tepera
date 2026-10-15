@@ -9,7 +9,9 @@ import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.util.logicalDayStartFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
@@ -39,6 +41,10 @@ class HomeViewModel(
     // "to" = Long.MAX_VALUE навмисно: діапазон лише відсікає записи ДО півночі, а не querить
     // заново з новим "зараз" — інакше запис, доданий пізніше в тому самому сеансі Home-екрана,
     // міг би випасти з фіксованого на момент ініціалізації верхнього кордону.
+    // true після першої емісії списку — відрізняє "ще вантажиться" (скелетони) від "категорій нема" (порожній стан).
+    private val summaryLoadedFlow = MutableStateFlow(false)
+    val summaryLoaded: StateFlow<Boolean> = summaryLoadedFlow
+
     val todaySummary: StateFlow<List<CategoryTodaySummary>> = combine(
         categoryRepository.observeActiveCategories(),
         logicalDayStartFlow().flatMapLatest { activityRepository.observeEntriesInRange(it, Long.MAX_VALUE) },
@@ -48,7 +54,8 @@ class HomeViewModel(
             val minutes = entries.filter { it.categoryId == category.id }.sumOf { it.durationMinutes }
             CategoryTodaySummary(category, minutes, activeTimers[category.id])
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    }.onEach { summaryLoadedFlow.value = true }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /**
      * Перемикач: почати таймер, якщо для цієї категорії він не йде, інакше зупинити й зберегти.

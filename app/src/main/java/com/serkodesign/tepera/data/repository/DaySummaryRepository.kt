@@ -55,6 +55,11 @@ class DaySummaryRepository(
         }
     }
 
+    /** Home FINAL: підсумки завершених діб за діапазон дат включно — для тізерів "Вчора / Тиждень / Місяць" і шторки. */
+    suspend fun getRange(from: LocalDate, to: LocalDate): List<DaySummaryEntity> = withContext(Dispatchers.IO) {
+        dao.getRange(from.toEpochDay(), to.toEpochDay())
+    }
+
     private suspend fun buildSummary(
         day: LocalDate,
         zone: ZoneId,

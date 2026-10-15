@@ -44,7 +44,9 @@ data class BalanceUiState(
     val targetMinutes: Int? = null,
     val denominatorMinutes: Int = 180,
     /** Точка старту дня (перше суттєве розблокування) — для плашки "Перше розблокування" на Home. */
-    val dayStartMillis: Long = 0L
+    val dayStartMillis: Long = 0L,
+    /** Home FINAL hero (docs/HANDOFF.md, розділ 4): хвилини від точки старту дня до "зараз" ("з 07:30 минуло"). */
+    val elapsedMinutes: Int = 0
 )
 
 /**
@@ -120,7 +122,8 @@ class BalanceViewModel(
             daySpanMinutes = daySpan,
             targetMinutes = target,
             denominatorMinutes = balanceRepository.calculateDenominatorMinutes(dayStart, windows),
-            dayStartMillis = dayStart
+            dayStartMillis = dayStart,
+            elapsedMinutes = ((System.currentTimeMillis() - dayStart) / 60_000L).toInt().coerceAtLeast(0)
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BalanceUiState())
 

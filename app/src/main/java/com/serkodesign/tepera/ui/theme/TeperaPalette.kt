@@ -154,6 +154,13 @@ object TeperaPalette {
     val heatmapNoDataFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFF0F3F4)) { if (isDark) chipFill else Color(0xFFF0F3F4) }
     val heatmapNoDataBorder: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFD4DADD)) { if (isDark) textSecondary.copy(alpha = 0.3f) else Color(0xFFD4DADD) }
 
+    // Home FINAL hero (docs/HANDOFF.md, розділ 3): у legacy-наборі ті самі значення, що у світлому редизайні.
+    val heroSurface: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroSurface
+    val heroOnLight: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroOnLight
+    val heroBorder: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroBorder
+    val heroTrack: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroTrack
+    val addTimeTonal: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.addTimeTonal
+
     /** Поточний набір кольорів теми — для ролей, яких нема серед іменованих токенів нижче. */
     val colors: TeperaColors @Composable @ReadOnlyComposable get() = LocalTeperaColors.current
 

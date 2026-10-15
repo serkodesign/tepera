@@ -102,7 +102,18 @@ data class TeperaColors(
     val borderError: Color,
     val borderBrand: Color,
     /** Темні іконки системних барів (true) чи світлі (false). */
-    val lightSystemBars: Boolean
+    val lightSystemBars: Boolean,
+    // Home FINAL (docs/HANDOFF.md, Figma "App concept" сторінка UI design, Tepera Theme): hero-картка "Наповнення".
+    /** `hero/surface-alt` — фон hero-картки. */
+    val heroSurface: Color,
+    /** `hero/on-light` — темний текст/іконки на світлих елементах hero (м'ятна "вода", біла пілюля). */
+    val heroOnLight: Color,
+    /** `hero/border` — контур hero (1dp). */
+    val heroBorder: Color,
+    /** `hero/track` — порожня доріжка графіків, фон кнопок/пілюль/скелетонів у hero. */
+    val heroTrack: Color,
+    /** `button/add-time-tonal` — кружок "додати час" на рядку активності. */
+    val addTimeTonal: Color
 )
 
 val LegacyTeperaColors = TeperaColors(
@@ -150,7 +161,12 @@ val LegacyTeperaColors = TeperaColors(
     borderStrong = Color(0xFF505050),
     borderError = Color(0xFFE70F1A),
     borderBrand = Color(0xFF006944),
-    lightSystemBars = true
+    lightSystemBars = true,
+    heroSurface = Color(0xFF11322E),
+    heroOnLight = Color(0xFF003926),
+    heroBorder = Color(0x00FFFFFF),
+    heroTrack = Color(0x1AFFFFFF),
+    addTimeTonal = Color(0xFFDCF6ED)
 )
 
 /**
@@ -216,7 +232,12 @@ val RedesignLightColors = TeperaColors(
     borderStrong = Color(0xFF505050),
     borderError = Color(0xFFE70F1A),
     borderBrand = Color(0xFF006944),
-    lightSystemBars = true
+    lightSystemBars = true,
+    heroSurface = Color(0xFF11322E),
+    heroOnLight = Color(0xFF003926),
+    heroBorder = Color(0x00FFFFFF),
+    heroTrack = Color(0x1AFFFFFF),
+    addTimeTonal = Color(0xFFDCF6ED)
 )
 
 /** Image 1-3 (334:31/34/37): темний зелений градієнт, кремові акценти. */
@@ -274,7 +295,12 @@ val RedesignDarkColors = TeperaColors(
     borderStrong = Color(0xFF888888),
     borderError = Color(0xFFFF5A61),
     borderBrand = Color(0xFF26A377),
-    lightSystemBars = false
+    lightSystemBars = false,
+    heroSurface = Color(0xFF164233),
+    heroOnLight = Color(0xFF003926),
+    heroBorder = Color(0x24FFFFFF), // FFFFFF 14%
+    heroTrack = Color(0x2EFFFFFF), // FFFFFF 18%
+    addTimeTonal = Color(0x38DCF6ED) // DCF6ED 22%
 )
 
 val LocalTeperaColors = staticCompositionLocalOf { LegacyTeperaColors }

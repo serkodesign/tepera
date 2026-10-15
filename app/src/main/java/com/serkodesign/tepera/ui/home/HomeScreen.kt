@@ -128,6 +128,7 @@ fun HomeScreen(
     gateEventRepository: GateEventRepository,
     onOpenSettings: () -> Unit,
     onOpenKnowledgeBase: () -> Unit,
+    onOpenStats: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
     onOpenCategoryHistory: (String) -> Unit,
     onShowOnboarding: () -> Unit,
@@ -147,6 +148,7 @@ fun HomeScreen(
         factory = HomeViewModel.Factory(categoryRepository, activityRepository, activeTimerStore)
     )
     val summary by viewModel.todaySummary.collectAsState()
+    val summaryLoaded by viewModel.summaryLoaded.collectAsState()
 
     // За прямим запитом користувача: активна категорія переїжджає на початок сітки замість
     // окремого рядка "Зараз іде: X" над нею (ActiveTimerBar прибрано). Порядок — знімок, а не
@@ -255,17 +257,8 @@ fun HomeScreen(
     )
     val pauseState by pauseViewModel.uiState.collectAsState()
 
-    // Досліджено з Figma-макета (node 2062:2862, "This week") — тижневий дайджест лічильників,
-    // окрема картка стеку (ContextCardStack.kt), не в SRS буквально.
-    val weeklyDigestViewModel: WeeklyDigestViewModel = viewModel(
-        factory = WeeklyDigestViewModel.Factory(
-            activityRepository, balanceRepository, categoryRepository, pauseRepository, settingsStore, sleepWindowRepository
-        )
-    )
-    val weeklyDigestState by weeklyDigestViewModel.uiState.collectAsState()
-
     // FR-D.8/D.9: тепловий патерн доби — власний інстанс на Home (Stats має свій, з тими самими
-    // Repository, але окремим refresh-циклом).
+    // Repository, але окремим refresh-циклом). Живить лише теплову сітку у шторці підсумків (вкладка "Вчора").
     val patternViewModel: PatternViewModel = viewModel(
         // Home показує патерн ВЧОРАШНЬОЇ доби (1 день), не середнє за тиждень.
         factory = PatternViewModel.Factory(
@@ -274,6 +267,15 @@ fun HomeScreen(
         )
     )
     val patternState by patternViewModel.uiState.collectAsState()
+
+    // Home FINAL: тізери "Вчора / Тиждень / Місяць" у hero і шторка підсумків (docs/HANDOFF.md, розділи 5 і 8).
+    val summaryViewModel: HomeSummaryViewModel = viewModel(
+        factory = HomeSummaryViewModel.Factory(
+            (LocalContext.current.applicationContext as com.serkodesign.tepera.TeperaApp).daySummaryRepository
+        )
+    )
+    val summaryDays by summaryViewModel.days.collectAsState()
+    var summarySheetTab by remember { mutableStateOf<SummaryTab?>(null) }
 
     // T-3 (tepera-dev-spec.md), крок 5 "Повернення → реальне число поруч із оцінкою": один
     // механізм покриває і негайне повернення з системних Налаштувань, і випадок "дозвіл з'явився
@@ -343,7 +345,7 @@ fun HomeScreen(
         balanceViewModel.refresh()
         pauseViewModel.refresh()
         patternViewModel.refresh()
-        weeklyDigestViewModel.refresh()
+        summaryViewModel.refresh()
         onlineEstimateRevealViewModel.refresh()
         backfillViewModel.runIfNeeded()
         resumeGeneration++
@@ -355,7 +357,7 @@ fun HomeScreen(
     // місце для наступної в черзі, без очікування наступного LifecycleResumeEffect).
     LaunchedEffect(
         onlineEstimateRevealState, pauseState, weeklyReflectionState, unlockEstimateState,
-        lastPhoneUseEstimateState, weeklyDigestState, patternState, gateEventsSummaryState, welcomeBackState
+        lastPhoneUseEstimateState, gateEventsSummaryState, welcomeBackState
     ) {
         cardStackViewModel.evaluate(
             listOf(
@@ -365,8 +367,6 @@ fun HomeScreen(
                 CardSource(CardType.WEEKLY_REFLECTION, priority = 2, minIntervalDays = 7, dataReady = weeklyReflectionState.isDue),
                 CardSource(CardType.UNLOCK_ESTIMATE, priority = 3, minIntervalDays = 14, dataReady = unlockEstimateState.isDue),
                 CardSource(CardType.LAST_PHONE_USE_ESTIMATE, priority = 4, minIntervalDays = 14, dataReady = lastPhoneUseEstimateState.isDue),
-                CardSource(CardType.WEEKLY_DIGEST, priority = 5, minIntervalDays = null, dataReady = weeklyDigestState.visible),
-                CardSource(CardType.PATTERN, priority = 6, minIntervalDays = null, dataReady = patternState.visible),
                 CardSource(CardType.GATE_EVENTS_SUMMARY, priority = 7, minIntervalDays = 30, dataReady = gateEventsSummaryState.isDue)
             )
         )
@@ -456,8 +456,10 @@ fun HomeScreen(
     val context = LocalContext.current
 
     val scrollState = rememberScrollState()
+    // Тап по сповіщенню "підсумок тижня": відкриває шторку підсумків на вкладці "Тиждень" (картки "Цей тиждень" на
+    // Home більше нема).
     LaunchedEffect(weeklySummaryNonce) {
-        if (weeklySummaryNonce != null) weeklyDigestViewModel.refresh()
+        if (weeklySummaryNonce != null) summarySheetTab = SummaryTab.WEEK
     }
 
     LaunchedEffect(scrollToTopSignal) {
@@ -482,7 +484,46 @@ fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            HomeHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
+            // Home FINAL (docs/HANDOFF.md): hero-картка замінила шапку з датою й слайдер "Мій день / Патерн /
+            // Цей тиждень". Орб, смуга дня й слот тізерів (етап 4). Контекстні картки — під списком активностей.
+            val heroState = rememberHeroState(balanceState)
+            val today = remember(heroState) { java.time.LocalDate.now() }
+            val todayOffline = (heroState as? HeroUiState.Data)?.offlineMinutes
+            // Запасний варіант слота (HANDOFF, п. 5.9): шрифт ≥ 130% або ширина < 340dp — одна широка плитка.
+            val configuration = LocalConfiguration.current
+            val forceWideTeaser = configuration.fontScale >= 1.3f || configuration.screenWidthDp < 340
+            val teaserSlot = remember(summaryDays, todayOffline, forceWideTeaser, today) {
+                buildTeaserSlot(
+                    yesterday = summaryDays[today.minusDays(1)],
+                    week = buildPeriod(today, SUMMARY_WEEK_DAYS, summaryDays, todayOffline),
+                    month = buildPeriod(today, SUMMARY_MONTH_DAYS, summaryDays, todayOffline),
+                    today = today,
+                    forceWide = forceWideTeaser
+                )
+            }
+            HomeHero(
+                state = heroState,
+                onOpenSettings = onOpenSettings,
+                onOpenKnowledgeBase = onOpenKnowledgeBase,
+                onGrantAccess = { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) },
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                teaser = { SummaryTeaserSlot(slot = teaserSlot, onOpen = { summarySheetTab = it }) }
+            )
+            summarySheetTab?.let { initialTab ->
+                SummarySheet(
+                    initialTab = initialTab,
+                    today = today,
+                    completed = summaryDays,
+                    todayOffline = todayOffline,
+                    todayOnline = (heroState as? HeroUiState.Data)?.onlineMinutes,
+                    yesterdayHourlyMinutes = if (patternState.hasEnoughData) patternState.hourlyMinutes else null,
+                    onOpenStats = {
+                        summarySheetTab = null
+                        onOpenStats()
+                    },
+                    onDismiss = { summarySheetTab = null }
+                )
+            }
 
             // T-2 (tepera-dev-spec.md): "обробка... з індикатором" — короткий тихий рядок, доки
             // триває одноразовий бекфіл історії пауз (BackfillViewModel), зазвичай зникає
@@ -495,47 +536,48 @@ fun HomeScreen(
                 )
             }
 
-            // Горизонтальний слайдер (Figma "App concept" node 192:726): "Мій день" → "Патерн
-            // вчора" → "Цей тиждень". Сторінки з даними додаються за тим самим рушієм карток
-            // (`visibleCards`), що й раніше, коли ці картки були в вертикальному стеку.
-            // "Мій день" пропускається, коли день (точка старту Tepera) ще не почався і показати
-            // нема чого (за прямим запитом користувача — раніше картка займала місце порожнім
-            // "Поки порожньо" замість одразу показати першу сторінку з реальними даними, напр.
-            // Патерн — той майже завжди має реальну історію ОС навіть на щойно встановленому
-            // застосунку, T-2). Виняток — стан "доступ не надано/ще перевіряється": там картка й
-            // далі потрібна для самого запиту доступу, це не "нема даних".
-            var weeklyDigestPage: Int? = null
-            HomeCardsPager(
-                pages = buildList<@Composable () -> Unit> {
-                    if (balanceState.hasUsageAccess != true || balanceState.hasDayData()) {
-                        add {
-                            MyDayCard(
-                                state = balanceState,
-                                onOpenUsageAccessSettings = {
-                                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                                },
-                                onLearnMore = onShowOnboarding
-                            )
-                        }
-                    }
-                    if (CardType.PATTERN in visibleCards) {
-                        add { PatternMiniCard(state = patternState) }
-                    }
-                    if (CardType.WEEKLY_DIGEST in visibleCards) {
-                        weeklyDigestPage = size
-                        add { WeeklyDigestCard(state = weeklyDigestState) }
-                    }
-                    if (isEmpty()) {
-                        add { EmptyPagerCard() }
-                    }
-                },
-                // Аргументи обчислюються після pages — індекс картки "Цей тиждень" уже відомий.
-                jumpToPage = weeklyDigestPage,
-                jumpNonce = weeklySummaryNonce
+            // Те саме, що Налаштування → Категорії → "Додати свою категорію" (FR-2.2, ліміт 2).
+            // На ліміті кнопка лишається натискною — тап пояснює, чому додати не можна (не `enabled = false`).
+            ActivitiesSectionHeader(
+                title = stringResource(R.string.activities_title),
+                actionLabel = stringResource(R.string.home_add_category),
+                onAction = { if (customSlotAvailable) showCreateCategoryDialog = true else showCategoryLimitNotice = true }
             )
 
-            // FR-D.10/D.10a/D.11: вертикальний стек контекстних карток під слайдером,
-            // пріоритизований за актуальністю — кожна сама вирішує, чи їй бути видимою.
+            if (!summaryLoaded) {
+                // Скелетони `ActivityRow Type=Loading` (HANDOFF, розділ 6), доки список категорій вантажиться.
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    repeat(4) { ActivityRowSkeleton() }
+                }
+            } else if (summary.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(stringResource(R.string.home_no_entries_today))
+                }
+            } else {
+                // Горизонтальні рядки (Home FINAL): активний рядок закріплено першим (знімок при поверненні на
+                // Home, див. pinnedCategoryId вище — тап по play не смикає список під час перегляду).
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    orderedSummary.forEach { item ->
+                        ActivityRow(
+                            item = item,
+                            onToggleTimer = { viewModel.toggleTimer(item.category.id) },
+                            onAddTime = { onAddEntryForCategory(item.category.id) },
+                            onOpenHistory = { onOpenCategoryHistory(item.category.id) }
+                        )
+                    }
+                }
+            }
+
+            // "Патерн вчора" і "Цей тиждень" з Home прибрано (рішення власника, 15.10.2026): патерн — у шторці
+            // підсумків (вкладка "Вчора") і на Статистиці, а "Цей тиждень" у макеті Home Final не передбачений.
+            // FR-D.10/D.10a/D.11: вертикальний стек контекстних карток, пріоритизований за актуальністю —
+            // кожна сама вирішує, чи їй бути видимою.
             ContextCardStack(
                 visibleCards = visibleCards,
                 onlineEstimateRevealState = onlineEstimateRevealState,
@@ -560,278 +602,10 @@ fun HomeScreen(
                 onDismissWelcomeBack = welcomeBackViewModel::dismiss
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.activities_title),
-                    modifier = Modifier.semantics { heading() },
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 22.sp,
-                    color = TeperaPalette.buttonBrandDark
-                )
-                // Те саме, що Налаштування → Категорії → "Додати свою категорію" (FR-2.2, ліміт 2).
-                // На ліміті кнопка виглядає неактивною (alpha), але лишається натискною — тап
-                // пояснює, чому додати не можна (не `enabled = false`, той блокує тап взагалі).
-                TeperaButton(
-                    text = stringResource(R.string.home_add_category),
-                    onClick = { if (customSlotAvailable) showCreateCategoryDialog = true else showCategoryLimitNotice = true },
-                    size = TeperaButtonSize.Small,
-                    textSizeOverride = 14.sp,
-                    type = TeperaButtonType.Filled,
-                    leadingIcon = TeperaSymbols.Add
-                )
-            }
-
-            if (summary.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(stringResource(R.string.home_no_entries_today))
-                }
-            } else {
-                // 2 колонки, побудовані вручну по рядках (замість LazyVerticalGrid) — категорій
-                // завжди небагато (до 6 дефолтних + 2 кастомні, FR-2.1/2.2, ліміт піднято в T-8),
-                // а весь екран скролиться одним Modifier.verticalScroll вище, всередині якого
-                // lazy-контейнер з Modifier.weight() непридатний (батько вимірює дітей з
-                // необмеженою висотою). За прямим запитом користувача повернуто з горизонтального
-                // скролу 2 рядки (Figma node 347:3037) назад до цього варіанту.
-                Column(
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    orderedSummary.chunked(2).forEach { rowItems ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            rowItems.forEach { item ->
-                                Box(modifier = Modifier.weight(1f)) {
-                                    CategoryCard(
-                                        item = item,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        onToggleTimer = { viewModel.toggleTimer(item.category.id) },
-                                        onAddTime = { onAddEntryForCategory(item.category.id) },
-                                        onOpenHistory = { onOpenCategoryHistory(item.category.id) }
-                                    )
-                                }
-                            }
-                            if (rowItems.size < 2) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
-                }
-            }
-
             // Запас під напівпрозору навбар-"таблетку" знизу (той самий 100.dp, що раніше був
             // bottom-паддінгом сітки) — гарантує, що остання картка прокручується НАД нею, а не
             // впирається в неї впритул.
             Spacer(modifier = Modifier.height(bottomNavClearance()))
-        }
-    }
-}
-
-@Composable
-private fun HomeHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Unit) {
-    Row(
-        // Figma node 347:3116: асиметричний паддінг (pl-24/pr-16/py-16, не симетричний 16/8, що
-        // був тут раніше) і gap-13 між текстовим блоком і колом кнопок.
-        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(13.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Два рівні (Figma "App concept" node 347:3037): малий підпис — те саме привітання за
-        // часом доби, що й раніше; великий рядок — НЕ переклад мотиваційного гасла мокапу
-        // ("Make your day productive", суперечить FR-P.1–P.6), а нейтральна назва розділу.
-        Column(
-            modifier = Modifier.weight(1f),
-            // Відступ між підзаголовком і датою прибрано (0dp).
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.home_header_subtitle),
-                color = TeperaPalette.buttonBrandDark,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp
-                )
-            )
-            // Великий рядок — поточна дата ("3 жовтня") мовою застосунку.
-            val locale = LocalConfiguration.current.locales[0]
-            val todayText = remember(locale) {
-                SimpleDateFormat("d MMMM", locale).format(Date())
-            }
-            Text(
-                text = todayText,
-                color = TeperaPalette.buttonBrandDark,
-                modifier = Modifier.semantics { heading() },
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 27.sp,
-                    lineHeight = 30.sp
-                )
-            )
-        }
-        // Figma "App concept" node 192:726: дві кнопки 44dp з асиметричними радіусами (ліва —
-        // закруглена зліва 22/справа 8, права навпаки), біла заливка 80%, проміжок 4dp. Книга
-        // відкриває "Базу знань" (перенесено з Налаштувань за запитом користувача).
-        // Figma 347:3118: проміжок 4dp, асиметричні радіуси (книга — 22 зліва/8 справа, шестерня навпаки),
-        // без окремих кіл — за запитом користувача в редизайні теж.
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TeperaIconButton(
-                icon = TeperaIcons.Book,
-                contentDescription = stringResource(R.string.settings_knowledge_base_action),
-                onClick = onOpenKnowledgeBase,
-                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
-                containerColor = TeperaPalette.headerButtonFill,
-                contentColor = TeperaPalette.buttonBrandDark
-            )
-            TeperaIconButton(
-                icon = TeperaIcons.Settings,
-                contentDescription = stringResource(R.string.settings_nav_action),
-                onClick = onOpenSettings,
-                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 22.dp, bottomEnd = 22.dp),
-                containerColor = TeperaPalette.headerButtonFill,
-                contentColor = TeperaPalette.buttonBrandDark
-            )
-        }
-    }
-}
-
-/**
- * Картка категорії (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node 192:726, "Activities").
- * Кружок-іконка й назва зверху, знизу кнопка play/pause (тап-таймер, HomeViewModel.toggleTimer) і
- * окрема "more_time" (ручне додавання часу САМЕ цій категорії, AddEntryScreen з попередньо
- * вибраною категорією).
- *
- * **Стан таймера (за запитом користувача):** коли таймер активний, картка стає суцільною
- * `#006944` з білим текстом 18sp, кнопка паузи розтягується на всю ширину, а "more_time"
- * зникає. Усі переходи — анімації Material 3 ([TeperaMotion]): колір/розмір тексту 500 мс по
- * "emphasized" кривій, вхід/вихід кнопки "more_time" — розширення/стиснення по ширині (500 мс)
- * плюс fade (декелерація на вході 200 мс, акселерація на виході 150 мс).
- * Тап по тілу картки (іконка/назва) відкриває повну історію категорії. Кастомна категорія в
- * неактивному стані — прозора з білою рамкою 50% (як "Custom" у макеті). Іконки — ті самі
- * Figma-гліфи, що на віджеті й екрані додавання (`categoryLineArtIconRes`), кастомні — Material.
- * Картка на всю ширину колонки (2 колонки, вертикальний список — за прямим запитом користувача
- * повернуто з горизонтально скрольованої сітки 2 рядки).
- */
-@Composable
-private fun CategoryCard(
-    item: CategoryTodaySummary,
-    onToggleTimer: () -> Unit,
-    onAddTime: () -> Unit,
-    onOpenHistory: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isTracking = item.trackingStartTime != null
-    val accentColor = categoryColor(item.category.colorHex)
-    val displayName = categoryDisplayName(item.category)
-    val shape = RoundedCornerShape(28.dp)
-
-    val colorSpec = tween<Color>(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized)
-    val containerColor by animateColorAsState(
-        targetValue = when {
-            isTracking -> TeperaPalette.activityCardActive
-            else -> TeperaPalette.activityCardIdle
-        },
-        animationSpec = colorSpec, label = "cardContainer"
-    )
-    val nameColor by animateColorAsState(if (isTracking) TeperaPalette.onPrimary else TeperaPalette.categoryName, colorSpec, label = "cardName")
-    // Бейдж-кружок: 30% непрозорості (node 347:3042/3052: rgba(255,255,255,0.3) активна,
-    // rgba(accent,0.3) ідлу — було 0.2, не збігалось з мокапом).
-    val badgeColor by animateColorAsState(
-        if (isTracking) TeperaPalette.onPrimary.copy(alpha = 0.3f) else accentColor.copy(alpha = 0.3f), colorSpec, label = "cardBadge"
-    )
-    val glyphColor by animateColorAsState(if (isTracking) TeperaPalette.onPrimary else categoryGlyphColor(accentColor), colorSpec, label = "cardGlyph")
-    val nameSize by animateFloatAsState(
-        targetValue = if (isTracking) 18f else 16f,
-        animationSpec = tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), label = "cardNameSize"
-    )
-    // node 347:3042 (active, p-8) vs 347:3052 (idle, p-9) — ідлу-картка на 1dp товщий внутрішній
-    // відступ, компенсує білу рамку (нижче), якої в активної нема.
-    val cardPadding = if (isTracking) 8.dp else 9.dp
-    val idleBorder = TeperaPalette.activityCardIdleBorder
-
-    Column(
-        modifier = modifier
-            .heightIn(min = 132.dp) // зростає разом зі шрифтом (WCAG 1.4.4), а не обрізає назву
-            // Без тіні (за прямим запитом користувача — тіней у застосунку немає ніде).
-            .clip(shape)
-            .background(containerColor)
-            .then(
-                if (!isTracking && idleBorder != null) Modifier.border(1.dp, idleBorder, shape) else Modifier
-            )
-            .padding(cardPadding),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(
-            modifier = Modifier.padding(4.dp).clickable(role = Role.Button, onClick = onOpenHistory),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(32.dp).clip(CircleShape).background(badgeColor),
-                contentAlignment = Alignment.Center
-            ) {
-                val lineArt = categoryLineArtIconRes(item.category.iconName)
-                if (lineArt != null) {
-                    Icon(painterResource(lineArt), contentDescription = null, tint = glyphColor, modifier = Modifier.size(16.dp))
-                } else {
-                    Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = glyphColor, modifier = Modifier.size(16.dp))
-                }
-            }
-            Text(
-                text = displayName,
-                color = nameColor,
-                fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Medium,
-                fontSize = nameSize.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TeperaIconButton(
-                icon = if (isTracking) TeperaSymbols.Pause else TeperaSymbols.PlayArrow,
-                // З назвою категорії: інакше вісім кнопок поспіль озвучуються однаково — "Почати" (WCAG 2.4.6/4.1.2).
-                contentDescription = stringResource(
-                    if (isTracking) R.string.category_stop_action else R.string.category_start_action
-                ) + ": " + displayName,
-                onClick = onToggleTimer,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(32.dp),
-                containerColor = if (isTracking) TeperaPalette.playActiveFill else TeperaPalette.playFill,
-                contentColor = if (isTracking) TeperaPalette.playActiveContent else TeperaPalette.playContent
-            )
-            AnimatedVisibility(
-                visible = !isTracking,
-                enter = fadeIn(tween(TeperaMotion.SHORT4, easing = TeperaMotion.EmphasizedDecelerate)) +
-                    expandHorizontally(tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), expandFrom = Alignment.Start),
-                exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
-                    shrinkHorizontally(tween(TeperaMotion.LONG2, easing = TeperaMotion.Emphasized), shrinkTowards = Alignment.Start)
-            ) {
-                Row {
-                    Spacer(Modifier.width(4.dp))
-                    TeperaIconButton(
-                        icon = TeperaSymbols.MoreTime,
-                        contentDescription = stringResource(R.string.add_time_action_format, displayName),
-                        onClick = onAddTime,
-                        containerColor = TeperaPalette.activityMoreTime,
-                        contentColor = TeperaPalette.activityMoreTimeContent
-                    )
-                }
-            }
         }
     }
 }
