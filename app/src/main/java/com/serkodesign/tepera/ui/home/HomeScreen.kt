@@ -546,7 +546,7 @@ fun HomeScreen(
 
             if (!summaryLoaded) {
                 // Скелетони `ActivityRow Type=Loading` (HANDOFF, розділ 6), доки список категорій вантажиться.
-                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     repeat(4) { ActivityRowSkeleton() }
                 }
             } else if (summary.isEmpty()) {
@@ -561,7 +561,7 @@ fun HomeScreen(
                 // Home, див. pinnedCategoryId вище — тап по play не смикає список під час перегляду).
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     orderedSummary.forEach { item ->
                         ActivityRow(

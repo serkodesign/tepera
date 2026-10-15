@@ -145,16 +145,18 @@ fun GlassRow(
     label: String,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    // 24dp — для рядків категорій (та сама форма, що рядок активності на Home); решта рядків Налаштувань — 16dp.
+    cornerRadius: Dp = 16.dp,
     leading: @Composable () -> Unit,
     trailing: @Composable () -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(cornerRadius))
             .background(TeperaPalette.settingsCardFill)
             // Обводка 1dp білим 100% (за запитом) — лише світла тема, як у картках активностей.
-            .then(TeperaPalette.activityCardIdleBorder?.let { Modifier.border(1.dp, it, RoundedCornerShape(16.dp)) } ?: Modifier)
+            .then(TeperaPalette.activityCardIdleBorder?.let { Modifier.border(1.dp, it, RoundedCornerShape(cornerRadius)) } ?: Modifier)
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,

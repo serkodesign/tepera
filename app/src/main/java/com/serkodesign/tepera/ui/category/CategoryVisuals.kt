@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -177,6 +178,12 @@ private inline fun categoryDisplayName(category: CategoryEntity, resolve: (Int) 
     }
 
 /**
+ * Форма плитки іконки категорії — заокруглений квадрат, як у рядку активності на Home (44dp → радіус 16, тобто
+ * ~0.36 від розміру); радіус масштабується з розміром, тож плитки 28/40/88dp виглядають однаково. Раніше скрізь було коло.
+ */
+fun categoryTileShape(size: Dp): RoundedCornerShape = RoundedCornerShape(size * 0.36f)
+
+/**
  * Той самий вигляд бейджа іконки категорії, що на картці Home (`HomeScreen.CategoryCard`) —
  * контурна Figma-іконка ([categoryLineArtIconRes]), якщо є для цього iconName, інакше Material
  * Symbols-гліф ([categoryIcon]). За прямим запитом користувача винесено сюди, щоб Налаштування →
@@ -195,7 +202,7 @@ fun CategoryIconBadge(
     Box(
         modifier = modifier
             .size(size)
-            .clip(CircleShape)
+            .clip(categoryTileShape(size))
             .background(accent.copy(alpha = badgeAlpha)),
         contentAlignment = Alignment.Center
     ) {

@@ -72,7 +72,7 @@ private fun CategoryEmptyState(category: CategoryEntity, onAddEntry: () -> Unit)
         verticalArrangement = Arrangement.Center
     ) {
         Box(
-            modifier = Modifier.size(88.dp).clip(CircleShape).background(accent.copy(alpha = 0.3f)),
+            modifier = Modifier.size(88.dp).clip(categoryTileShape(88.dp)).background(accent.copy(alpha = 0.3f)),
             contentAlignment = Alignment.Center
         ) {
             val glyphColor = categoryGlyphColor(accent, badgeAlpha = 0.3f)

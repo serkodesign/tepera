@@ -126,6 +126,7 @@ fun CategoryOnboardingScreen(
                     val enabled = selected[category.id] ?: true
                     GlassRow(
                         label = categoryDisplayName(category),
+                        cornerRadius = 24.dp,
                         // За прямим запитом користувача: та сама іконка, що на картці категорії Home.
                         leading = { CategoryIconBadge(iconName = category.iconName, colorHex = category.colorHex) },
                         trailing = {

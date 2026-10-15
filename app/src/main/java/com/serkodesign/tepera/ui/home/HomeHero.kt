@@ -78,7 +78,7 @@ fun HomeHero(
     teaser: (@Composable () -> Unit)? = null
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val shape = RoundedCornerShape(36.dp)
+    val shape = RoundedCornerShape(24.dp)
     val glowColor = Color(0xFF3BB58A)
     Column(
         modifier = modifier
@@ -96,8 +96,8 @@ fun HomeHero(
                 )
             }
             .animateContentSize()
-            .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         HeroHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
         when (state) {
@@ -229,11 +229,11 @@ private fun HeroData(state: HeroUiState.Data, expanded: Boolean, onToggleExpande
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        HeroOrb(level = state.waterLevel, contentTopPadding = 40.dp) {
+        HeroOrb(level = state.waterLevel, contentTopPadding = 32.dp) {
             val onWater = state.waterLevel >= 0.55f
             val textColor = if (onWater) TeperaPalette.heroOnLight else TeperaPalette.textOnDark
             HeroText(stringResource(R.string.hero_orb_label), size = 11, color = textColor)
-            HeroText(heroDuration(state.offlineMinutes), size = 22, weight = FontWeight.Medium, color = textColor)
+            HeroText(heroDuration(state.offlineMinutes), size = 18, weight = FontWeight.Medium, color = textColor)
             HeroText(stringResource(R.string.hero_orb_percent_format, state.percent), size = 11, alpha = 0.85f, color = textColor)
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -284,9 +284,9 @@ private fun HeroEmpty(state: HeroUiState.Empty) {
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        HeroOrb(level = 0f, contentTopPadding = 20.dp) {
+        HeroOrb(level = 0f, contentTopPadding = 16.dp) {
             HeroText(stringResource(R.string.hero_orb_label), size = 11, alpha = 0.8f)
-            HeroText("—", size = 22, weight = FontWeight.Medium)
+            HeroText("—", size = 18, weight = FontWeight.Medium)
             HeroText(stringResource(R.string.hero_orb_no_data), size = 11, alpha = 0.7f)
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -332,7 +332,7 @@ private fun HeroLoading() {
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(150.dp).clip(CircleShape).background(track))
+        Box(Modifier.size(120.dp).clip(CircleShape).background(track))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.width(72.dp).height(11.dp).clip(RoundedCornerShape(6.dp)).background(track))
             Box(Modifier.fillMaxWidth().height(27.dp).clip(RoundedCornerShape(8.dp)).background(track))
@@ -427,12 +427,12 @@ private fun HeroOrb(
     // Озвучується одним елементом: тексти всередині орба ("без телефону", значення, відсоток) читаються підряд.
     Box(
         modifier = Modifier
-            .size(150.dp)
+            .size(120.dp)
             .clip(CircleShape)
             .semantics(mergeDescendants = true) {},
         contentAlignment = Alignment.Center
     ) {
-        Canvas(Modifier.size(150.dp)) {
+        Canvas(Modifier.size(120.dp)) {
             drawCircle(track)
             if (level > 0f) {
                 val top = size.height * (1f - level)
@@ -450,8 +450,8 @@ private fun HeroOrb(
                     }
                     drawPath(path, color)
                 }
-                wave(4.dp.toPx(), 110.dp.toPx(), 0.8f, -3.dp.toPx(), water.copy(alpha = 0.5f))
-                wave(3.dp.toPx(), 90.dp.toPx(), 2.4f, 0f, water)
+                wave(4.dp.toPx(), 88.dp.toPx(), 0.8f, -3.dp.toPx(), water.copy(alpha = 0.5f))
+                wave(3.dp.toPx(), 72.dp.toPx(), 2.4f, 0f, water)
             }
             val stroke = 1.5.dp.toPx()
             drawCircle(

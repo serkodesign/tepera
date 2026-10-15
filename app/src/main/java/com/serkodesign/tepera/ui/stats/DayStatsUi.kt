@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
+import com.serkodesign.tepera.ui.category.categoryTileShape
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
@@ -325,7 +326,7 @@ private fun PausesCard(summary: PauseSummary, timeFormat: SimpleDateFormat) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             val badgeColor = category?.let { categoryColor(it.colorHex) } ?: SlotPause
             Box(
-                modifier = Modifier.size(28.dp).clip(CircleShape).background(badgeColor.copy(alpha = 0.2f)),
+                modifier = Modifier.size(28.dp).clip(categoryTileShape(28.dp)).background(badgeColor.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 // За прямим запитом користувача: та сама іконка, що на картці категорії Home

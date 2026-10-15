@@ -94,6 +94,7 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.repository.ActivityRepository
 import com.serkodesign.tepera.data.repository.CategoryRepository
 import com.serkodesign.tepera.ui.category.categoryColor
+import com.serkodesign.tepera.ui.category.categoryTileShape
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryGlyphColor
@@ -433,7 +434,7 @@ private fun SelectedCategoryPlate(category: CategoryEntity, onChange: () -> Unit
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(accent.copy(alpha = 0.2f)),
+            modifier = Modifier.size(40.dp).clip(categoryTileShape(40.dp)).background(accent.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             val glyphColor = categoryGlyphColor(accent, badgeAlpha = 0.5f)
@@ -510,7 +511,7 @@ private fun CategoryTile(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Box(
-            modifier = Modifier.size(28.dp).clip(CircleShape).background(accentColor.copy(alpha = 0.2f)),
+            modifier = Modifier.size(28.dp).clip(categoryTileShape(28.dp)).background(accentColor.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             if (lineArtRes != null) {

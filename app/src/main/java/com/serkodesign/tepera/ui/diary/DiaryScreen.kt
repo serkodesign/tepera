@@ -58,6 +58,7 @@ import com.serkodesign.tepera.data.repository.PauseRepository
 import com.serkodesign.tepera.data.repository.SleepWindowRepository
 import com.serkodesign.tepera.data.repository.UnlockRepository
 import com.serkodesign.tepera.ui.category.categoryColor
+import com.serkodesign.tepera.ui.category.categoryTileShape
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryGlyphColor
@@ -279,7 +280,8 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            // Така сама форма картки (24) і плитки іконки (44, радіус 16), як рядок активності на Home.
+            .clip(RoundedCornerShape(24.dp))
             .background(TeperaPalette.colors.listItem)
             .clickable(role = Role.Button, onClick = onEdit)
             .padding(12.dp),
@@ -287,7 +289,7 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(accentColor.copy(alpha = 0.2f)),
+            modifier = Modifier.size(44.dp).clip(categoryTileShape(44.dp)).background(accentColor.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             val lineArt = categoryLineArtIconRes(item.category.iconName)

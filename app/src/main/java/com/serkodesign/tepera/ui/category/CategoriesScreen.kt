@@ -136,6 +136,7 @@ fun CategoriesScreen(
                     item {
                         GlassRow(
                             label = stringResource(R.string.category_add_custom),
+                            cornerRadius = 24.dp,
                             onClick = { showCreateDialog = true },
                             leading = { TeperaIconCircle(TeperaSymbols.Add) },
                             trailing = { }
@@ -210,6 +211,7 @@ private fun CategoryRow(
 ) {
     GlassRow(
         label = categoryDisplayName(category),
+        cornerRadius = 24.dp,
         leading = {
             // За прямим запитом користувача: та сама іконка, що на картці категорії на Home
             // (контурний Figma-гліф, якщо є, інакше Material Symbols) — раніше тут завжди був

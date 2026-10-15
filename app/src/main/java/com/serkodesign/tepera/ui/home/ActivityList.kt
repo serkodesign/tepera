@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
@@ -123,8 +124,10 @@ fun ActivityRow(
     val onActive = TeperaPalette.onPrimary
     val containerColor = if (isActive) TeperaPalette.activityCardActive else TeperaPalette.activityCardIdle
     val nameColor = if (isActive) onActive else TeperaPalette.textPrimary
-    val tileColor = if (isActive) onActive.copy(alpha = 0.3f) else accent.copy(alpha = 0.3f)
-    val iconTint = if (isActive) onActive else TeperaPalette.textPrimary
+    // Плитка простою — ті самі кольори, що в Щоденнику й Налаштуваннях категорій: колір категорії @20% і гліф
+    // `categoryGlyphColor` (колір категорії, затемнений/освітлений до читабельного контрасту). Форма — нова (квадрат 16).
+    val tileColor = if (isActive) onActive.copy(alpha = 0.3f) else accent.copy(alpha = 0.2f)
+    val iconTint = if (isActive) onActive else categoryGlyphColor(accent)
     val pressedOverlay = if (isActive) onActive.copy(alpha = 0.16f) else TeperaPalette.buttonBrandDark.copy(alpha = 0.12f)
     val idleBorder = TeperaPalette.activityCardIdleBorder
 

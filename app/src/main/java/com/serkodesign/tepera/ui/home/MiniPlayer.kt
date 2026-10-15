@@ -31,6 +31,7 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -78,14 +79,16 @@ fun MiniPlayer(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(accent.copy(alpha = 0.3f)),
+            // Ті самі кольори плитки, що в Щоденнику й на рядку активності: колір категорії @20% і categoryGlyphColor.
+            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(accent.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
+            val glyph = categoryGlyphColor(accent)
             val lineArt = categoryLineArtIconRes(category.iconName)
             if (lineArt != null) {
-                Icon(painterResource(lineArt), contentDescription = null, tint = TeperaPalette.textPrimary, modifier = Modifier.size(20.dp))
+                Icon(painterResource(lineArt), contentDescription = null, tint = glyph, modifier = Modifier.size(20.dp))
             } else {
-                Icon(categoryIcon(category.iconName), contentDescription = null, tint = TeperaPalette.textPrimary, modifier = Modifier.size(20.dp))
+                Icon(categoryIcon(category.iconName), contentDescription = null, tint = glyph, modifier = Modifier.size(20.dp))
             }
         }
         Column(modifier = Modifier.weight(1f)) {

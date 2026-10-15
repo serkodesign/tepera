@@ -111,6 +111,7 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                             val isDragging = draggingId == id
                             GlassRow(
                                 label = categoryDisplayName(category),
+                                cornerRadius = 24.dp,
                                 modifier = Modifier
                                     .zIndex(if (isDragging) 1f else 0f)
                                     .graphicsLayer { translationY = if (isDragging) dragOffset else 0f },
@@ -174,6 +175,7 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                     available.forEach { category ->
                         GlassRow(
                             label = categoryDisplayName(category),
+                            cornerRadius = 24.dp,
                             onClick = if (full) null else ({ persist(order + category.id) }),
                             leading = { CategoryCircle(category) },
                             trailing = {
