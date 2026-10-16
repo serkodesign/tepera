@@ -105,6 +105,8 @@
     <string name="pro_interest_title">Tepera Pro — in development</string>
     <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments — just a question. Tell us what would help.</string>
     <string name="pro_interest_action">I want to know more</string>
+    <string name="extra_animations_label">Extra animations</string>
+    <string name="extra_animations_explanation">Liquid in the “without phone” circle (moves with tilt and shake), smoothly counting numbers and soft button transitions. Turn off to save battery or remove motion.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, categories or app time. Turn it off anytime.</string>
 

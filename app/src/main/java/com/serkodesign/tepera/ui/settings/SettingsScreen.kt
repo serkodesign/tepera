@@ -162,6 +162,7 @@ fun SettingsScreen(
                         )
                     }
                 }
+                ExtraAnimationsToggle()
                 GlassRow(
                     label = stringResource(R.string.settings_data_privacy_action),
                     onClick = onOpenDataPrivacy,

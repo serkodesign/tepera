@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaMotion
@@ -127,12 +128,15 @@ fun ContextCardStack(
 
 @Composable
 private fun ContextCardSlot(visible: Boolean, content: @Composable () -> Unit) {
+    // Тумблер "Додаткові анімації" вимкнено → картка з'являється/зникає без руху (прозорість лишається коротким
+    // fade, щоб не повернути артефакт-"привид" із коментаря вище).
+    val motion = com.serkodesign.tepera.ui.theme.extraAnimationsEnabled()
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(tween(TeperaMotion.SHORT4, easing = TeperaMotion.EmphasizedDecelerate)) +
-            expandVertically(TeperaSpecs.spatial()),
+            (if (motion) expandVertically(TeperaSpecs.spatial()) else expandVertically(snap())),
         exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
-            shrinkVertically(TeperaSpecs.spatial())
+            (if (motion) shrinkVertically(TeperaSpecs.spatial()) else shrinkVertically(snap()))
     ) {
         content()
     }

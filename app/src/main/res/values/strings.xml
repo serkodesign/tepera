@@ -114,6 +114,8 @@
     <string name="pro_interest_title">Tepera Pro — у розробці</string>
     <string name="pro_interest_body">Думаємо, чи потрібна розширена версія Tepera. Без цін і оплат — просто питання до тебе. Розкажи, що було б корисним.</string>
     <string name="pro_interest_action">Хочу дізнатись</string>
+    <string name="extra_animations_label">Додаткові анімації</string>
+    <string name="extra_animations_explanation">Рідина в колі «без телефону» (рух від нахилу й струсу), числа, що плавно докручуються, і м’які переходи кнопок. Вимкни, щоб заощадити заряд або прибрати рух.</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, категорій і часу в застосунках. Можна вимкнути будь-коли.</string>
 

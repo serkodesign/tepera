@@ -536,6 +536,34 @@ fun HomeScreen(
                 )
             }
 
+            // "Патерн вчора" і "Цей тиждень" з Home прибрано (рішення власника, 15.10.2026): патерн — у шторці
+            // підсумків (вкладка "Вчора") і на Статистиці, а "Цей тиждень" у макеті Home Final не передбачений.
+            // FR-D.10/D.10a/D.11: вертикальний стек контекстних карток, пріоритизований за актуальністю —
+            // кожна сама вирішує, чи їй бути видимою. Розміщено НАД списком активностей (16.10.2026, за запитом власника).
+            ContextCardStack(
+                visibleCards = visibleCards,
+                onlineEstimateRevealState = onlineEstimateRevealState,
+                onDismissOnlineEstimateReveal = onlineEstimateRevealViewModel::dismiss,
+                pauseState = pauseState,
+                categories = summary.map { it.category },
+                onLabelGap = pauseViewModel::labelGap,
+                onDismissGap = pauseViewModel::dismissGap,
+                onDismissPauseCard = pauseViewModel::dismissCard,
+                weeklyState = weeklyReflectionState,
+                onSelectGuess = weeklyReflectionViewModel::selectGuess,
+                onDismissWeekly = weeklyReflectionViewModel::dismiss,
+                unlockEstimateState = unlockEstimateState,
+                onSelectUnlockGuess = unlockEstimateViewModel::selectGuess,
+                onDismissUnlockEstimate = unlockEstimateViewModel::dismiss,
+                lastPhoneUseEstimateState = lastPhoneUseEstimateState,
+                onSelectLastPhoneUseGuess = lastPhoneUseEstimateViewModel::selectGuess,
+                onDismissLastPhoneUseEstimate = lastPhoneUseEstimateViewModel::dismiss,
+                gateEventsSummaryState = gateEventsSummaryState,
+                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss,
+                welcomeBackState = welcomeBackState,
+                onDismissWelcomeBack = welcomeBackViewModel::dismiss
+            )
+
             // Те саме, що Налаштування → Категорії → "Додати свою категорію" (FR-2.2, ліміт 2).
             // На ліміті кнопка лишається натискною — тап пояснює, чому додати не можна (не `enabled = false`).
             ActivitiesSectionHeader(
@@ -573,34 +601,6 @@ fun HomeScreen(
                     }
                 }
             }
-
-            // "Патерн вчора" і "Цей тиждень" з Home прибрано (рішення власника, 15.10.2026): патерн — у шторці
-            // підсумків (вкладка "Вчора") і на Статистиці, а "Цей тиждень" у макеті Home Final не передбачений.
-            // FR-D.10/D.10a/D.11: вертикальний стек контекстних карток, пріоритизований за актуальністю —
-            // кожна сама вирішує, чи їй бути видимою.
-            ContextCardStack(
-                visibleCards = visibleCards,
-                onlineEstimateRevealState = onlineEstimateRevealState,
-                onDismissOnlineEstimateReveal = onlineEstimateRevealViewModel::dismiss,
-                pauseState = pauseState,
-                categories = summary.map { it.category },
-                onLabelGap = pauseViewModel::labelGap,
-                onDismissGap = pauseViewModel::dismissGap,
-                onDismissPauseCard = pauseViewModel::dismissCard,
-                weeklyState = weeklyReflectionState,
-                onSelectGuess = weeklyReflectionViewModel::selectGuess,
-                onDismissWeekly = weeklyReflectionViewModel::dismiss,
-                unlockEstimateState = unlockEstimateState,
-                onSelectUnlockGuess = unlockEstimateViewModel::selectGuess,
-                onDismissUnlockEstimate = unlockEstimateViewModel::dismiss,
-                lastPhoneUseEstimateState = lastPhoneUseEstimateState,
-                onSelectLastPhoneUseGuess = lastPhoneUseEstimateViewModel::selectGuess,
-                onDismissLastPhoneUseEstimate = lastPhoneUseEstimateViewModel::dismiss,
-                gateEventsSummaryState = gateEventsSummaryState,
-                onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss,
-                welcomeBackState = welcomeBackState,
-                onDismissWelcomeBack = welcomeBackViewModel::dismiss
-            )
 
             // Запас під напівпрозору навбар-"таблетку" знизу (той самий 100.dp, що раніше був
             // bottom-паддінгом сітки) — гарантує, що остання картка прокручується НАД нею, а не

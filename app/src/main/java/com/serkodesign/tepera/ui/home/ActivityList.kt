@@ -1,5 +1,17 @@
 package com.serkodesign.tepera.ui.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +33,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -44,6 +58,11 @@ import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
+import com.serkodesign.tepera.ui.theme.TeperaMotion
+import com.serkodesign.tepera.ui.theme.extraAnimationsEnabled
+import com.serkodesign.tepera.ui.theme.rememberCountedInt
+import com.serkodesign.tepera.util.EntrySavedSignal
+import kotlinx.coroutines.delay
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 
@@ -117,19 +136,42 @@ fun ActivityRow(
     modifier: Modifier = Modifier
 ) {
     val isActive = item.trackingStartTime != null
+    val shownMinutes = rememberCountedInt(item.minutesToday)
     val accent = categoryColor(item.category.colorHex)
     val name = categoryDisplayName(item.category)
     val shape = RoundedCornerShape(24.dp)
 
     val onActive = TeperaPalette.onPrimary
-    val containerColor = if (isActive) TeperaPalette.activityCardActive else TeperaPalette.activityCardIdle
-    val nameColor = if (isActive) onActive else TeperaPalette.textPrimary
+    // Додаткові анімації: плавна зміна кольорів рядка при старті/зупинці таймера, м'яка підміна кнопок і одноразовий
+    // пульс після збереженого запису. Вимкнено → усе миттєво (snap), пульсу нема.
+    val motion = extraAnimationsEnabled()
+    val colorSpec = if (motion) tween<Color>(TeperaMotion.MEDIUM2, easing = TeperaMotion.Emphasized) else snap()
+    val containerColor by animateColorAsState(
+        if (isActive) TeperaPalette.activityCardActive else TeperaPalette.activityCardIdle, colorSpec, label = "rowContainer"
+    )
+    val nameColor by animateColorAsState(if (isActive) onActive else TeperaPalette.textPrimary, colorSpec, label = "rowName")
     // Плитка простою — ті самі кольори, що в Щоденнику й Налаштуваннях категорій: колір категорії @20% і гліф
     // `categoryGlyphColor` (колір категорії, затемнений/освітлений до читабельного контрасту). Форма — нова (квадрат 16).
-    val tileColor = if (isActive) onActive.copy(alpha = 0.3f) else accent.copy(alpha = 0.2f)
-    val iconTint = if (isActive) onActive else categoryGlyphColor(accent)
+    val tileColor by animateColorAsState(
+        if (isActive) onActive.copy(alpha = 0.3f) else accent.copy(alpha = 0.2f), colorSpec, label = "rowTile"
+    )
+    val iconTint by animateColorAsState(if (isActive) onActive else categoryGlyphColor(accent), colorSpec, label = "rowIcon")
     val pressedOverlay = if (isActive) onActive.copy(alpha = 0.16f) else TeperaPalette.buttonBrandDark.copy(alpha = 0.12f)
     val idleBorder = TeperaPalette.activityCardIdleBorder
+
+    // Пульс після збереженого запису (EntrySavedSignal): раз підсвічує рядок кольором категорії й гасне.
+    val savedCategoryId by EntrySavedSignal.categoryId.collectAsState()
+    val pulse = remember { Animatable(0f) }
+    LaunchedEffect(savedCategoryId, motion) {
+        if (savedCategoryId == item.category.id) {
+            if (motion) {
+                delay(250) // Home ще "в'їжджає" після закриття форми
+                pulse.animateTo(1f, tween(250))
+                pulse.animateTo(0f, tween(550))
+            }
+            EntrySavedSignal.consume(item.category.id)
+        }
+    }
 
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
@@ -144,6 +186,7 @@ fun ActivityRow(
             .drawWithContent {
                 drawContent()
                 if (pressed) drawRect(pressedOverlay)
+                if (pulse.value > 0f) drawRect(accent.copy(alpha = 0.22f * pulse.value))
             }
             .clickable(interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onOpenHistory)
             .padding(10.dp),
@@ -177,11 +220,11 @@ fun ActivityRow(
                 if (isActive) {
                     Box(Modifier.size(6.dp).clip(CircleShape).background(onActive))
                     SubText(stringResource(R.string.activity_row_running), onActive.copy(alpha = 0.85f))
-                    if (item.minutesToday > 0) SubText(heroDuration(item.minutesToday), onActive)
+                    if (item.minutesToday > 0) SubText(heroDuration(shownMinutes), onActive)
                 } else {
                     SubText(stringResource(R.string.home_header_subtitle), TeperaPalette.textSecondary)
                     if (item.minutesToday > 0) {
-                        SubText(heroDuration(item.minutesToday), TeperaPalette.textPrimary)
+                        SubText(heroDuration(shownMinutes), TeperaPalette.textPrimary)
                     } else {
                         SubText("—", TeperaPalette.textSecondary)
                     }
@@ -189,7 +232,20 @@ fun ActivityRow(
             }
         }
 
-        if (isActive) {
+        // Кнопки м'яко підмінюють одна одну (затухання + легке масштабування); без додаткових анімацій — миттєво.
+        AnimatedContent(
+            targetState = isActive,
+            transitionSpec = {
+                if (motion) {
+                    (fadeIn(tween(TeperaMotion.SHORT4, delayMillis = 60)) + scaleIn(tween(TeperaMotion.SHORT4, delayMillis = 60), initialScale = 0.8f)) togetherWith
+                        (fadeOut(tween(TeperaMotion.SHORT3)) + scaleOut(tween(TeperaMotion.SHORT3), targetScale = 0.8f))
+                } else {
+                    EnterTransition.None togetherWith ExitTransition.None
+                }
+            },
+            label = "rowActions"
+        ) { active ->
+        if (active) {
             TeperaIconButton(
                 icon = TeperaSymbols.Pause,
                 // З назвою категорії: інакше рядки озвучуються однаково — "Зупинити" (WCAG 2.4.6/4.1.2).
@@ -218,6 +274,7 @@ fun ActivityRow(
                     contentColor = onActive
                 )
             }
+        }
         }
     }
 }

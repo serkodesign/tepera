@@ -242,6 +242,7 @@ class AddEntryViewModel(
                 is SaveEntryResult.Success -> {
                     // Снекбар "Записано · Скасувати" лише для нового запису: при редагуванні замінені записи вже не відновити.
                     if (!isEditing) SavedEntryUndo.show(result.ids)
+                    com.serkodesign.tepera.util.EntrySavedSignal.notify(categoryId)
                     _uiState.value = _uiState.value.copy(saved = true, overlapEntries = null)
                 }
                 is SaveEntryResult.OverlapDetected ->

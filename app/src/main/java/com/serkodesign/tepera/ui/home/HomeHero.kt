@@ -1,6 +1,21 @@
 package com.serkodesign.tepera.ui.home
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.provider.Settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,11 +36,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.math.atan2
+import kotlin.math.sqrt
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,8 +65,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -53,6 +82,10 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.theme.IntroPlayed
+import com.serkodesign.tepera.ui.theme.extraAnimationsEnabled
+import com.serkodesign.tepera.ui.theme.rememberCountedInt
+import com.serkodesign.tepera.ui.theme.rememberWavePhase
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -233,15 +266,15 @@ private fun HeroData(state: HeroUiState.Data, expanded: Boolean, onToggleExpande
             val onWater = state.waterLevel >= 0.55f
             val textColor = if (onWater) TeperaPalette.heroOnLight else TeperaPalette.textOnDark
             HeroText(stringResource(R.string.hero_orb_label), size = 11, color = textColor)
-            HeroText(heroDuration(state.offlineMinutes), size = 18, weight = FontWeight.Medium, color = textColor)
-            HeroText(stringResource(R.string.hero_orb_percent_format, state.percent), size = 11, alpha = 0.85f, color = textColor)
+            HeroText(heroDuration(rememberCountedInt(state.offlineMinutes)), size = 18, weight = FontWeight.Medium, color = textColor)
+            HeroText(stringResource(R.string.hero_orb_percent_format, rememberCountedInt(state.percent)), size = 11, alpha = 0.85f, color = textColor)
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             ElapsedBlock(state.dayStartMillis, state.elapsedMinutes)
             Spacer(Modifier.height(6.dp))
-            HeroStatRow(stringResource(R.string.balance_online_label), TeperaPalette.onlineCard, heroDuration(state.onlineMinutes))
+            HeroStatRow(stringResource(R.string.balance_online_label), TeperaPalette.onlineCard, heroDuration(rememberCountedInt(state.onlineMinutes)))
             if (!expanded) {
-                state.visibleActivities.forEach { HeroStatRow(it.name, it.color, heroDuration(it.minutes)) }
+                state.visibleActivities.forEach { HeroStatRow(it.name, it.color, heroDuration(rememberCountedInt(it.minutes))) }
             }
             if (state.isMany) {
                 HeroMorePill(
@@ -270,7 +303,7 @@ private fun AllActivities(state: HeroUiState.Data) {
             val columns = listOf(state.activities.take(4), state.activities.drop(4))
             columns.forEach { column ->
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    column.forEach { HeroStatRow(it.name, it.color, heroDuration(it.minutes)) }
+                    column.forEach { HeroStatRow(it.name, it.color, heroDuration(rememberCountedInt(it.minutes))) }
                 }
             }
         }
@@ -349,9 +382,10 @@ private fun HeroLoading() {
 private fun ElapsedBlock(dayStartMillis: Long, elapsedMinutes: Int) {
     val locale = LocalConfiguration.current.locales[0]
     val startText = remember(dayStartMillis, locale) { SimpleDateFormat("HH:mm", locale).format(Date(dayStartMillis)) }
+    val shownElapsed = rememberCountedInt(elapsedMinutes)
     HeroText(stringResource(R.string.hero_since_format, startText), size = 11, alpha = 0.8f)
     HeroText(
-        stringResource(R.string.hours_minutes_short_format, elapsedMinutes / 60, elapsedMinutes % 60),
+        stringResource(R.string.hours_minutes_short_format, shownElapsed / 60, shownElapsed % 60),
         size = 27, weight = FontWeight.Medium
     )
 }
@@ -424,6 +458,82 @@ private fun HeroOrb(
     val track = TeperaPalette.heroTrack
     val water = TeperaPalette.restOfDayCard
     val outline = TeperaPalette.textOnDark.copy(alpha = if (dashed) 0.5f else 0.4f)
+    // Рідина "тече": фази двох хвиль плавно біжать у протилежні боки (цикл 2π — без шва). Значення читається лише в
+    // draw-фазі Canvas, тож перекомпозиції немає; при вимкненій шкалі анімацій Compose сам зупиняє рух.
+    // Тумблер "Додаткові анімації" (і системна шкала): вимкнено → рівна нерухома вода, без датчика, без сплесків.
+    val motion = extraAnimationsEnabled()
+    val phaseA by rememberWavePhase(motion, 12000)
+    val phaseB by rememberWavePhase(motion, 18000)
+    // Реакції рідини: рівень плавно піднімається (вперше за сесію — з нуля), кола від тапу (з місця дотику) і
+    // м'який сплеск від струсу телефону (з центру).
+    val levelAnim = remember { Animatable(if (motion && !IntroPlayed.orb) 0f else level) }
+    LaunchedEffect(level, motion) {
+        if (motion) {
+            levelAnim.animateTo(level, tween(if (IntroPlayed.orb) 1500 else 2200, easing = FastOutSlowInEasing))
+            IntroPlayed.orb = true
+        } else {
+            levelAnim.snapTo(level)
+        }
+    }
+    val splash = remember { Animatable(1f) } // 0 → 1: прогрес поточного сплеску (1 = спокій)
+    var splashStrength by remember { mutableFloatStateOf(0f) }
+    var splashAt by remember { mutableFloatStateOf(0.5f) } // горизонтальна частка 0..1
+    var shakeCount by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(shakeCount) {
+        if (shakeCount > 0) {
+            splashStrength = 0.6f
+            splashAt = 0.5f
+            splash.snapTo(0f)
+            splash.animateTo(1f, tween(2600, easing = LinearEasing))
+        }
+    }
+    // Нахил телефону: вода прагне лишатись горизонтальною у світі — поверхню повертаємо проти нахилу корпусу (обсяг
+    // води зберігається, бо коло симетричне). Кут рухається за пружиною з легким недодемпфуванням: вода хитається
+    // й заспокоюється. Акселерометр слухаємо лише поки Home на екрані; вимкнена шкала анімацій → датчик не підписуємо.
+    val context = LocalContext.current
+    var gravX by remember { mutableFloatStateOf(0f) } // відфільтрований вектор "вгору" у площині екрана, м/с²
+    var gravY by remember { mutableFloatStateOf(SensorManager.GRAVITY_EARTH) }
+    var tiltAngle by remember { mutableFloatStateOf(0f) } // рад, + = за годинниковою (ліва сторона телефону вниз)
+    LifecycleResumeEffect(motion) {
+        val manager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val sensor = manager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        var lastShake = 0L
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                gravX += (event.values[0] - gravX) * 0.08f
+                gravY += (event.values[1] - gravY) * 0.08f
+                val x = event.values[0]; val y = event.values[1]; val z = event.values[2]
+                val now = System.currentTimeMillis()
+                if (abs(sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH) > 7f && now - lastShake > 1500L) {
+                    lastShake = now
+                    shakeCount++
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        if (motion && manager != null && sensor != null) {
+            manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+        }
+        onPauseOrDispose { manager?.unregisterListener(listener) }
+    }
+    LaunchedEffect(motion) {
+        if (!motion) { tiltAngle = 0f; return@LaunchedEffect }
+        var velocity = 0f
+        var last = 0L
+        val limit = 35f * PI.toFloat() / 180f
+        while (true) {
+            val now = androidx.compose.runtime.withFrameNanos { it }
+            val dt = if (last == 0L) 0.016f else ((now - last) / 1e9f).coerceAtMost(0.05f)
+            last = now
+            // Телефон лежить плазом (g майже перпендикулярна екрану) — кут у площині не визначений, повертаємось до 0.
+            val inPlane = sqrt(gravX * gravX + gravY * gravY)
+            val target = if (inPlane < 3f) 0f else (atan2(gravX, gravY) * 0.5f).coerceIn(-limit, limit)
+            // В'язка рідина: пружина з легким перетисканням демпфування (ζ≈1.04) — повільно й без хитання «тягнеться» до рівня.
+            velocity += (7f * (target - tiltAngle) - 5.5f * velocity) * dt
+            tiltAngle += velocity * dt
+        }
+    }
     // Озвучується одним елементом: тексти всередині орба ("без телефону", значення, відсоток) читаються підряд.
     Box(
         modifier = Modifier
@@ -432,26 +542,46 @@ private fun HeroOrb(
             .semantics(mergeDescendants = true) {},
         contentAlignment = Alignment.Center
     ) {
-        Canvas(Modifier.size(120.dp)) {
+        Canvas(
+            Modifier.size(120.dp).pointerInput(motion) {
+                if (motion) detectTapGestures { pos ->
+                    splashStrength = 1f
+                    splashAt = (pos.x / size.width).coerceIn(0f, 1f)
+                    scope.launch {
+                        splash.snapTo(0f)
+                        splash.animateTo(1f, tween(2600, easing = LinearEasing))
+                    }
+                }
+            }
+        ) {
             drawCircle(track)
-            if (level > 0f) {
-                val top = size.height * (1f - level)
+            if (levelAnim.value > 0.001f) {
+                val top = size.height * (1f - levelAnim.value)
+                val p = splash.value
+                val ripple = { x: Float ->
+                    if (p >= 1f) 0f else {
+                        val d = abs(x - splashAt * size.width)
+                        splashStrength * (1f - p) * 5.dp.toPx() * sin(2f * PI.toFloat() * (d / 40.dp.toPx() - p * 2f)) * exp(-d / 70.dp.toPx())
+                    }
+                }
                 fun wave(amplitude: Float, period: Float, phase: Float, offsetY: Float, color: Color) {
                     val path = Path().apply {
-                        moveTo(0f, size.height)
-                        var x = 0f
-                        lineTo(0f, top + offsetY + amplitude * sin(phase))
-                        while (x <= size.width) {
-                            lineTo(x, top + offsetY + amplitude * sin(2f * PI.toFloat() * x / period + phase))
+                        moveTo(-size.width, 2f * size.height)
+                        var x = -size.width
+                        lineTo(-size.width, top + offsetY + ripple(0f) + amplitude * sin(phase))
+                        while (x <= 2f * size.width) {
+                            lineTo(x, top + offsetY + ripple(x) + amplitude * sin(2f * PI.toFloat() * x / period + phase))
                             x += 2f
                         }
-                        lineTo(size.width, size.height)
+                        lineTo(2f * size.width, 2f * size.height)
                         close()
                     }
                     drawPath(path, color)
                 }
-                wave(4.dp.toPx(), 88.dp.toPx(), 0.8f, -3.dp.toPx(), water.copy(alpha = 0.5f))
-                wave(3.dp.toPx(), 72.dp.toPx(), 2.4f, 0f, water)
+                rotate(tiltAngle * 180f / PI.toFloat(), pivot = center) {
+                wave(4.dp.toPx(), 88.dp.toPx(), 0.8f - phaseB, -3.dp.toPx(), water.copy(alpha = 0.5f))
+                wave(3.dp.toPx(), 72.dp.toPx(), 2.4f + phaseA, 0f, water)
+                }
             }
             val stroke = 1.5.dp.toPx()
             drawCircle(
