@@ -137,12 +137,14 @@ fun HomeHero(
                 if (darkTheme) {
                     // Темна тема, Figma 721:23488: коло r=120, #FDFFD2 @30%, розмиття σ≈79 → ядро гауса ≈ 0.68 у центрі, ~0.45 на
                     // краю кола й затухання до нуля на ~280dp. Наближено радіальним градієнтом із цими опорними точками.
-                    val radius = 280.dp.toPx()
+                    // Жовта пляма трохи менша за зелену нижню: крутіше затухання й радіус 220dp (за запитом власника).
+                    val radius = 220.dp.toPx()
                     drawCircle(
                         brush = Brush.radialGradient(
-                            0f to glowDark.copy(alpha = 0.205f),
-                            0.43f to glowDark.copy(alpha = 0.135f),
-                            0.71f to glowDark.copy(alpha = 0.045f),
+                            0f to glowDark.copy(alpha = 0.17f),
+                            0.35f to glowDark.copy(alpha = 0.11f),
+                            0.6f to glowDark.copy(alpha = 0.05f),
+                            0.82f to glowDark.copy(alpha = 0.012f),
                             1f to Color.Transparent,
                             center = center,
                             radius = radius
