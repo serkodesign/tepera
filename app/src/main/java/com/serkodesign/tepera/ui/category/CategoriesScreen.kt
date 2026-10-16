@@ -22,7 +22,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -277,6 +278,7 @@ internal fun EditCategoryDialog(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CategoryEditorDialog(
     title: String,
@@ -329,9 +331,9 @@ private fun CategoryEditorDialog(
                 style = MaterialTheme.typography.labelLarge,
                 color = TeperaPalette.buttonBrandDark
             )
-            Row(
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.horizontalScroll(rememberScrollState())
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 customCategoryIconChoices.forEach { iconKey ->
                     if (selectedIcon == iconKey) {
@@ -363,9 +365,9 @@ private fun CategoryEditorDialog(
                 style = MaterialTheme.typography.labelLarge,
                 color = TeperaPalette.buttonBrandDark
             )
-            Row(
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.horizontalScroll(rememberScrollState())
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 customCategoryColorChoices.forEach { colorHex ->
                     Box(

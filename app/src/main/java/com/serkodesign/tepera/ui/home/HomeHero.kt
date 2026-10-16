@@ -67,6 +67,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -113,8 +114,19 @@ fun HomeHero(
     var expanded by rememberSaveable { mutableStateOf(false) }
     val shape = RoundedCornerShape(24.dp)
     val glowColor = Color(0xFF3BB58A)
+    val glowDark = Color(0xFFFDFFD2)
+    val glowGreen = Color(0xFF65FF93)
+    val darkTheme = com.serkodesign.tepera.ui.theme.LocalTeperaColors.current.isDark
+    // Заголовок (дата + кнопки) стоїть НАД карткою (Figma 721:23245): відступи 24/16 від країв екрана — 16/8 тут, бо
+    // зовнішній `modifier` уже дає 8dp з боків.
+    Column(modifier = modifier.fillMaxWidth()) {
+    HeroHeader(
+        onOpenSettings = onOpenSettings,
+        onOpenKnowledgeBase = onOpenKnowledgeBase,
+        modifier = Modifier.padding(start = 16.dp, end = 8.dp, bottom = 16.dp)
+    )
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .clip(shape)
             .background(TeperaPalette.heroSurface)
@@ -122,17 +134,51 @@ fun HomeHero(
             // Світіння у верхньому правому куті (Figma "glow", 240dp, центр ≈ 50dp від правого краю й 29dp від верху).
             .drawBehind {
                 val center = Offset(size.width - 50.dp.toPx(), 29.dp.toPx())
-                drawCircle(
-                    brush = Brush.radialGradient(listOf(glowColor.copy(alpha = 0.28f), Color.Transparent), center, 170.dp.toPx()),
-                    radius = 170.dp.toPx(),
-                    center = center
-                )
+                if (darkTheme) {
+                    // Темна тема, Figma 721:23488: коло r=120, #FDFFD2 @30%, розмиття σ≈79 → ядро гауса ≈ 0.68 у центрі, ~0.45 на
+                    // краю кола й затухання до нуля на ~280dp. Наближено радіальним градієнтом із цими опорними точками.
+                    val radius = 280.dp.toPx()
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            0f to glowDark.copy(alpha = 0.205f),
+                            0.43f to glowDark.copy(alpha = 0.135f),
+                            0.71f to glowDark.copy(alpha = 0.045f),
+                            1f to Color.Transparent,
+                            center = center,
+                            radius = radius
+                        ),
+                        radius = radius,
+                        center = center
+                    )
+                    // Друга пляма — зелена, знизу (Figma 721:23868): еліпс rx≈190, ry=120, #65FF93 @30%, те саме розмиття; центр
+                    // на 123dp від лівого краю й на 113dp НИЖЧЕ нижнього краю картки — у картку заходить лише її верхній край.
+                    val greenCenter = Offset(123.5.dp.toPx(), size.height + 113.dp.toPx())
+                    scale(scaleX = 190.5f / 120f, scaleY = 1f, pivot = greenCenter) {
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                0f to glowGreen.copy(alpha = 0.205f),
+                                0.43f to glowGreen.copy(alpha = 0.135f),
+                                0.71f to glowGreen.copy(alpha = 0.045f),
+                                1f to Color.Transparent,
+                                center = greenCenter,
+                                radius = radius
+                            ),
+                            radius = radius,
+                            center = greenCenter
+                        )
+                    }
+                } else {
+                    drawCircle(
+                        brush = Brush.radialGradient(listOf(glowColor.copy(alpha = 0.28f), Color.Transparent), center, 170.dp.toPx()),
+                        radius = 170.dp.toPx(),
+                        center = center
+                    )
+                }
             }
             .animateContentSize()
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeroHeader(onOpenSettings = onOpenSettings, onOpenKnowledgeBase = onOpenKnowledgeBase)
         when (state) {
             HeroUiState.Loading -> HeroLoading()
             HeroUiState.NoAccess -> HeroNoAccess(onGrantAccess)
@@ -147,6 +193,7 @@ fun HomeHero(
                 teaser?.invoke()
             }
         }
+    }
     }
 }
 
@@ -217,37 +264,42 @@ private fun HeroText(
 }
 
 @Composable
-private fun HeroHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Unit) {
+private fun HeroHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Unit, modifier: Modifier = Modifier) {
+    // Заголовок лежить на фоні екрана, не на картці: у темній темі — білий текст і кнопки hero/track (Figma 721:23828),
+    // у світлій — темно-зелений текст (hero/on-light) і ледь помітна темна заливка кнопок.
+    val dark = com.serkodesign.tepera.ui.theme.LocalTeperaColors.current.isDark
+    val onPage = if (dark) TeperaPalette.textOnDark else TeperaPalette.heroOnLight
+    val buttonBg = if (dark) TeperaPalette.heroTrack else TeperaPalette.heroOnLight.copy(alpha = 0.08f)
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         val locale = LocalConfiguration.current.locales[0]
         val todayText = remember(locale) { SimpleDateFormat("d MMMM", locale).format(Date()) }
         Column {
-            HeroText(stringResource(R.string.home_header_subtitle), size = 12, alpha = 0.8f, lineHeight = 1.3f)
+            HeroText(stringResource(R.string.home_header_subtitle), size = 12, alpha = 0.8f, lineHeight = 1.3f, color = onPage)
             HeroText(
-                todayText, size = 27, weight = FontWeight.Medium,
+                todayText, size = 27, weight = FontWeight.Medium, color = onPage,
                 modifier = Modifier.semantics { heading() }
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TeperaIconButton(
                 icon = TeperaIcons.Book,
                 contentDescription = stringResource(R.string.settings_knowledge_base_action),
                 onClick = onOpenKnowledgeBase,
                 shape = CircleShape,
-                containerColor = TeperaPalette.heroTrack,
-                contentColor = TeperaPalette.textOnDark
+                containerColor = buttonBg,
+                contentColor = onPage
             )
             TeperaIconButton(
                 icon = TeperaIcons.Settings,
                 contentDescription = stringResource(R.string.settings_nav_action),
                 onClick = onOpenSettings,
                 shape = CircleShape,
-                containerColor = TeperaPalette.heroTrack,
-                contentColor = TeperaPalette.textOnDark
+                containerColor = buttonBg,
+                contentColor = onPage
             )
         }
     }
@@ -260,7 +312,7 @@ private fun HeroData(state: HeroUiState.Data, expanded: Boolean, onToggleExpande
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(20.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
         HeroOrb(level = state.waterLevel, contentTopPadding = 32.dp) {
             val onWater = state.waterLevel >= 0.55f
