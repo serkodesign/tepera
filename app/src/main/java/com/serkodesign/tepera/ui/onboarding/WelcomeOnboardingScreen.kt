@@ -1,6 +1,6 @@
 package com.serkodesign.tepera.ui.onboarding
 
-import androidx.compose.foundation.Canvas
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +24,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,16 +37,16 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.TeperaPalette
-import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import kotlinx.coroutines.launch
 
 /**
- * Перший екран онбордингу (Figma "App concept", Onboarding / Welcome, світла й темна версії): одним екраном
- * пояснює цінність — тихий трекер без суду. Іконка застосунку в "орбіті", заголовок, один абзац і три принципи
- * (без оцінок, без шеймінгу, без порівнянь з нормою — розділи 2.1/2.2 ТЗ і FR-P.5). Одна дія — «Почати».
- * "Показано" фіксується при натисканні (як решта кроків, що мають власну кнопку).
+ * Перший екран онбордингу (Figma "App concept", Onboarding / Welcome — переоформлений за референсом
+ * node 607:2475): одним екраном пояснює цінність — тихий трекер без суду. Усе вирівняно по лівому краю: іконка
+ * застосунку, великий заголовок, абзац і список цінностей БЕЗ карток — лише кругла напівпрозора плитка з
+ * лінійною іконкою й великий підпис поруч (як у референсі). Три цінності: без оцінок і балів, без шеймінгу й
+ * поспіху, дані лишаються на телефоні (розділи 2.1/2.2 ТЗ, FR-P.5). Одна дія — «Почати».
+ * "Показано" фіксується при натисканні.
  */
 @Composable
 fun WelcomeOnboardingScreen(
@@ -73,28 +73,33 @@ fun WelcomeOnboardingScreen(
                         .weight(1f)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    WelcomeOrb()
-                    TeperaOnboardingTitle(
+                    AppIconTile()
+                    Text(
                         text = stringResource(R.string.welcome_onboarding_title),
-                        modifier = Modifier.padding(top = 24.dp)
+                        color = ink,
+                        fontFamily = TeperaPalette.headlineFont,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 34.sp,
+                        lineHeight = 36.sp,
+                        modifier = Modifier
+                            .padding(top = 28.dp)
+                            .semantics { heading() }
                     )
                     Text(
                         text = stringResource(R.string.welcome_onboarding_body),
-                        color = ink.copy(alpha = 0.75f),
+                        color = ink.copy(alpha = 0.7f),
                         style = MaterialTheme.typography.bodyLarge,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         modifier = Modifier.padding(top = 12.dp)
                     )
                     Column(
-                        modifier = Modifier.padding(top = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.padding(top = 32.dp),
+                        verticalArrangement = Arrangement.spacedBy(28.dp)
                     ) {
-                        PrincipleRow(stringResource(R.string.welcome_principle_no_scores))
-                        PrincipleRow(stringResource(R.string.welcome_principle_no_shaming))
-                        PrincipleRow(stringResource(R.string.welcome_principle_no_norm))
+                        ValueRow(R.drawable.ic_welcome_scores, stringResource(R.string.welcome_principle_no_scores))
+                        ValueRow(R.drawable.ic_welcome_calm, stringResource(R.string.welcome_principle_no_shaming))
+                        ValueRow(R.drawable.ic_welcome_private, stringResource(R.string.welcome_principle_private))
                     }
                 }
                 TeperaButton(
@@ -120,71 +125,60 @@ fun WelcomeOnboardingScreen(
     }
 }
 
-/** Іконка застосунку в тонкій орбіті — тиха, без анімації (Welcome має читатись миттєво). */
+/** Іконка застосунку (72dp, кут 20.6dp) — той самий візерунок, що на екрані дозволів, але менший. */
 @Composable
-private fun WelcomeOrb() {
-    val ring = TeperaPalette.buttonBrandDark.copy(alpha = 0.12f)
-    val glow = TeperaPalette.buttonBrand.copy(alpha = 0.14f)
-    Box(modifier = Modifier.size(180.dp), contentAlignment = Alignment.Center) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawCircle(color = glow, radius = size.minDimension / 2f, center = Offset(size.width / 2f, size.height / 2f))
-            drawCircle(
-                color = ring,
-                radius = size.minDimension / 2f - 6.dp.toPx(),
-                style = Stroke(width = 1.dp.toPx())
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(96.dp)
-                .clip(RoundedCornerShape(27.4.dp))
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize()
-            )
-            Image(
-                painter = painterResource(R.drawable.ic_launcher_foreground),
-                contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+private fun AppIconTile() {
+    Box(
+        modifier = Modifier
+            .size(72.dp)
+            .clip(RoundedCornerShape(20.6.dp))
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_background),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+        )
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_foreground),
+            contentDescription = stringResource(R.string.app_name),
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
-/** Рядок принципу: темне коло з галкою + підпис, на скляній картці (як чекліст дозволів). */
+/**
+ * Рядок цінності за референсом (Figma 607:2478): плитка-коло 56dp з 10% кольору тексту, лінійна іконка по центру
+ * (вектор 160dp масштабується до плитки) і підпис 22sp Medium, проміжок 14dp. Без картки/фону рядка.
+ */
 @Composable
-private fun PrincipleRow(label: String) {
+private fun ValueRow(@DrawableRes icon: Int, label: String) {
+    val ink = TeperaPalette.buttonBrandDark
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardTranslucentLight)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(56.dp)
                 .clip(CircleShape)
-                .background(TeperaPalette.buttonBrandDark),
+                .background(ink.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                TeperaSymbols.Check,
+                painter = painterResource(icon),
                 contentDescription = null,
-                tint = TeperaPalette.onPrimary,
-                modifier = Modifier.size(20.dp)
+                tint = ink,
+                modifier = Modifier.size(56.dp)
             )
         }
         Text(
             text = label,
-            color = TeperaPalette.buttonBrandDark,
+            color = ink.copy(alpha = 0.88f),
             fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            fontSize = 22.sp,
+            lineHeight = 24.2.sp,
             modifier = Modifier.weight(1f)
         )
     }

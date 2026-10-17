@@ -83,9 +83,9 @@
     <string name="onboarding_skip">Пропустити</string>
     <string name="welcome_onboarding_title">Трекер без суду</string>
     <string name="welcome_onboarding_body">Tepera лише показує, як минає твій день: не оцінює і не підганяє. Порівнюєш себе тільки з собою.</string>
-    <string name="welcome_principle_no_scores">Без оцінок і вердиктів</string>
-    <string name="welcome_principle_no_shaming">Без шеймінгу і стріків</string>
-    <string name="welcome_principle_no_norm">Без порівнянь з «нормою»</string>
+    <string name="welcome_principle_no_scores">Без оцінок і балів</string>
+    <string name="welcome_principle_no_shaming">Без шеймінгу і поспіху</string>
+    <string name="welcome_principle_private">Усі дані лишаються на телефоні</string>
     <string name="welcome_onboarding_start">Почати</string>
     <string name="gates_onboarding_demo_description">Приклад екрана паузи: квітка повільно дихає, число відлічує секунди</string>
     <string name="onboarding_target_scale_description">Шкала годин на день</string>

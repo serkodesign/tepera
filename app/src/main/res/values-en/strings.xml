@@ -76,9 +76,9 @@
     <string name="onboarding_skip">Skip</string>
     <string name="welcome_onboarding_title">A tracker without judgement</string>
     <string name="welcome_onboarding_body">Tepera only shows how your day goes by: it doesn\'t grade you or rush you. You compare yourself only with yourself.</string>
-    <string name="welcome_principle_no_scores">No scores or verdicts</string>
-    <string name="welcome_principle_no_shaming">No shaming or streaks</string>
-    <string name="welcome_principle_no_norm">No comparison with a \"norm\"</string>
+    <string name="welcome_principle_no_scores">No scores, no points</string>
+    <string name="welcome_principle_no_shaming">No shaming, no rush</string>
+    <string name="welcome_principle_private">All data stays on your phone</string>
     <string name="welcome_onboarding_start">Start</string>
     <string name="gates_onboarding_demo_description">Pause screen example: the flower breathes slowly while the number counts down seconds</string>
     <string name="onboarding_target_scale_description">Hours per day scale</string>
