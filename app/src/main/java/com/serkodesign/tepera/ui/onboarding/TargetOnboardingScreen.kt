@@ -58,7 +58,7 @@ import kotlin.math.roundToInt
  * CC-1 / Figma "App concept", Onboarding / Target: крок «Орієнтир на день». З переносом дозволу в кінець
  * онбордингу історії використання тут ще немає — підказки зі середнім більше нема, лише нейтральний стартовий
  * вибір. Велике число + лінійка з рисками й маркером, що тягнеться пальцем (замість степпера).
- * Дві РІВНОЦІННІ кнопки («Пізніше» і «Задати» — той самий тип і розмір). «Пізніше» лишає орієнтир порожнім —
+ * «Задати» — Primary, «Пізніше» — Secondary, однакового розміру. «Пізніше» лишає орієнтир порожнім —
  * ніде не з'являється число-ціль; змінити можна в Налаштуваннях → Відстеження.
  */
 @Composable
@@ -103,7 +103,7 @@ fun TargetOnboardingScreen(
                     onHoursChange = { hours = it },
                     modifier = Modifier.padding(top = 40.dp)
                 )
-                // Рівноцінні варіанти: однаковий тип і розмір.
+                // «Задати» — головна дія (Primary), «Пізніше» — Secondary; розмір однаковий.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,7 +120,7 @@ fun TargetOnboardingScreen(
                         text = stringResource(R.string.target_onboarding_set),
                         onClick = { finish(setTarget = true) },
                         modifier = Modifier.weight(1f),
-                        type = TeperaButtonType.Secondary
+                        type = TeperaButtonType.Primary
                     )
                 }
             }
