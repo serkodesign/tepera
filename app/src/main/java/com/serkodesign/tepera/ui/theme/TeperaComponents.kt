@@ -791,6 +791,50 @@ fun OnboardingSkipAllButton(onClick: () -> Unit, modifier: Modifier = Modifier) 
     )
 }
 
+/** Кількість кроків онбордингу в індикаторі прогресу: Welcome → Категорії → Оцінка → Орієнтир → Затримка → Дозволи. */
+const val ONBOARDING_STEP_COUNT = 6
+
+/**
+ * Верхній рядок кроку онбордингу за Figma "App concept" (Onb/Progress, node 564:8635): "N/6", сегменти прогресу
+ * й тихе "Пропустити все" праворуч. Висота 48dp — контент кроку має починатися нижче (padding top ≥ 48dp).
+ */
+@Composable
+fun OnboardingTopBar(step: Int, onSkipAll: () -> Unit, modifier: Modifier = Modifier) {
+    val dark = TeperaPalette.buttonBrandDark
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 12.dp)
+            .height(48.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$step/$ONBOARDING_STEP_COUNT",
+            color = dark,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.clearAndSetSemantics {
+                contentDescription = "$step / $ONBOARDING_STEP_COUNT"
+            }
+        )
+        Row(
+            modifier = Modifier.padding(start = 12.dp).weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            repeat(ONBOARDING_STEP_COUNT) { index ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(if (index < step) TeperaPalette.buttonBrand else dark.copy(alpha = 0.18f))
+                )
+            }
+        }
+        OnboardingSkipAllButton(onClick = onSkipAll)
+    }
+}
+
 /** Заголовок екрана онбордингу по центру — той самий стиль, що [TeperaScreenTitle] (Golos Medium 27sp, #003926). */
 @Composable
 fun TeperaOnboardingTitle(text: String, modifier: Modifier = Modifier) {

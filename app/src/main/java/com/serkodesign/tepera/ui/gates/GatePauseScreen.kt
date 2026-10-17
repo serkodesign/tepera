@@ -210,7 +210,7 @@ private const val OUTER_SCALE_RATIO = 1f // розмір як в основно�
 private const val OUTER_ROTATION_DEGREES = 15f
 private const val OUTER_ALPHA = 0.5f
 
-private data class BreathState(
+internal data class BreathState(
     val scale: Animatable<Float, AnimationVector1D>,
     val outerScale: Animatable<Float, AnimationVector1D>,
     val inhaling: Boolean
@@ -236,7 +236,7 @@ private data class BreathState(
  * трансформації шару.
  */
 @Composable
-private fun rememberBreathState(paused: Boolean): BreathState {
+internal fun rememberBreathState(paused: Boolean): BreathState {
     val scale = remember { Animatable(BREATH_SCALE_SMALL) }
     val outerScale = remember { Animatable(BREATH_SCALE_SMALL) }
     var inhaling by remember { mutableStateOf(true) }
@@ -274,18 +274,19 @@ private fun rememberBreathState(paused: Boolean): BreathState {
  * (цифра зникає, дихальна анімація лишається й далі крутиться).
  */
 @Composable
-private fun BreathingBadge(
+internal fun BreathingBadge(
     scale: Animatable<Float, AnimationVector1D>,
     outerScale: Animatable<Float, AnimationVector1D>,
     number: Int?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    badgeSize: androidx.compose.ui.unit.Dp = BADGE_SIZE
 ) {
-    val diameterPx = with(LocalDensity.current) { BADGE_SIZE.toPx() }
+    val diameterPx = with(LocalDensity.current) { badgeSize.toPx() }
     val path = remember(diameterPx) {
         scallopedBlobPath(diameter = diameterPx, lobes = 12, wobbleFraction = 0.07f)
     }
     val badgeFill = BADGE_FILL
-    Box(modifier = modifier.size(BADGE_SIZE), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier.size(badgeSize), contentAlignment = Alignment.Center) {
         // Зовнішня напівпрозора форма — під основною (малюється першою), повернута на 15°, дихає із відставанням.
         Canvas(
             modifier = Modifier

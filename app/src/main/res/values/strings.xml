@@ -81,6 +81,16 @@
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
     <string name="onboarding_skip">Пропустити</string>
+    <string name="welcome_onboarding_title">Трекер без суду</string>
+    <string name="welcome_onboarding_body">Tepera лише показує, як минає твій день: не оцінює і не підганяє. Порівнюєш себе тільки з собою.</string>
+    <string name="welcome_principle_no_scores">Без оцінок і вердиктів</string>
+    <string name="welcome_principle_no_shaming">Без шеймінгу і стріків</string>
+    <string name="welcome_principle_no_norm">Без порівнянь з «нормою»</string>
+    <string name="welcome_onboarding_start">Почати</string>
+    <string name="gates_onboarding_demo_description">Приклад екрана паузи: квітка повільно дихає, число відлічує секунди</string>
+    <string name="onboarding_target_scale_description">Шкала годин на день</string>
+    <string name="onboarding_target_unit">год</string>
+    <string name="onboarding_target_chip">Орієнтир</string>
     <string name="perm_title">Перед тим як почати</string>
     <string name="perm_body">Дані лишаються на телефоні. Назовні йдуть лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
     <string name="perm_usage_label">Доступ до статистики</string>
@@ -145,6 +155,7 @@
 
     <!-- T-3 (tepera-dev-spec.md): онбординг-оцінка Online-часу перед поясненням дозволу -->
     <string name="online_estimate_onboarding_title">Скільки, по-твоєму, ти був онлайн учора?</string>
+    <string name="online_estimate_onboarding_hint">Просто здогадка — правильної відповіді нема.</string>
     <string name="online_estimate_range_under_3h">До 3 год</string>
     <string name="online_estimate_range_3_5h">3–5 год</string>
     <string name="online_estimate_range_over_5h">Понад 5 год</string>

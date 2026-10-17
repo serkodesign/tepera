@@ -30,5 +30,7 @@ enum class CardType(val isEstimate: Boolean, val isEvent: Boolean) {
      * разів ти вирішив не зараз" (ворота, T-5). НЕ [isEstimate]: жодного питання/оцінки, лише
      * констатація вже наявного факту — глобальний тижневий бюджет карток-оцінок на неї не діє.
      */
-    GATE_EVENTS_SUMMARY(isEstimate = false, isEvent = false)
+    GATE_EVENTS_SUMMARY(isEstimate = false, isEvent = false),
+    /** Пропозиція віджета — колишній крок онбордингу; одноразова, закривається "×" або дією. */
+    WIDGET_SUGGESTION(isEstimate = false, isEvent = false)
 }

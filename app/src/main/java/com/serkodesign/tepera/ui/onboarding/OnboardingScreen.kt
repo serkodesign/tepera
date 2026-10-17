@@ -46,7 +46,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
-import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
+import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
@@ -107,7 +107,7 @@ fun OnboardingScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 48.dp),
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -188,10 +188,11 @@ fun OnboardingScreen(
             )
         }
     }
-        OnboardingSkipAllButton(
-            onClick = onSkipAll,
+        OnboardingTopBar(
+            step = 6,
+            onSkipAll = onSkipAll,
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(Alignment.TopCenter)
                 .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
         )
     }

@@ -43,6 +43,7 @@ private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestio
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
+private val WELCOME_ONBOARDING_SEEN_KEY = booleanPreferencesKey("welcome_onboarding_seen")
 // P-3 (CLAUDE-CODE-PLAN-pro.md): grandfathering — versionCode, на якому Tepera вперше побачила
 // цей код (не плутати з FIRST_LAUNCH_AT_KEY вище — інша семантика, інший поріг, та сама ідея
 // "сіяти один раз і не перезаписувати").
@@ -185,6 +186,17 @@ class SettingsStore(private val context: Context) {
     }
 
     /**
+     * Перший екран онбордингу ("Трекер без суду"). Для тих, хто вже пройшов вибір категорій до появи цього кроку,
+     * вважається побаченим — наявним користувачам його не показуємо.
+     */
+    val welcomeOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[WELCOME_ONBOARDING_SEEN_KEY] ?: it[CATEGORY_ONBOARDING_SEEN_KEY] ?: false }
+
+    suspend fun setWelcomeOnboardingSeen() {
+        context.settingsDataStore.edit { it[WELCOME_ONBOARDING_SEEN_KEY] = true }
+    }
+
+    /**
      * Тихий вихід з усього ланцюжка онбордингу одним тапом (за прямим запитом користувача) —
      * позначає кожен крок побаченим за раз, тим самим значенням, що поставив би прохід крок за
      * кроком. Не зачіпає жодні дані, які кроки могли б записати (категорії лишаються дефолтним
@@ -192,6 +204,7 @@ class SettingsStore(private val context: Context) {
      */
     suspend fun skipAllOnboarding() {
         context.settingsDataStore.edit {
+            it[WELCOME_ONBOARDING_SEEN_KEY] = true
             it[CATEGORY_ONBOARDING_SEEN_KEY] = true
             it[ONLINE_ESTIMATE_ONBOARDING_SEEN_KEY] = true
             it[ONBOARDING_USAGE_ACCESS_SEEN_KEY] = true

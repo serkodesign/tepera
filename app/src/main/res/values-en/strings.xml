@@ -74,6 +74,16 @@
 
     <!-- Usage access onboarding (FR-7.1) -->
     <string name="onboarding_skip">Skip</string>
+    <string name="welcome_onboarding_title">A tracker without judgement</string>
+    <string name="welcome_onboarding_body">Tepera only shows how your day goes by: it doesn\'t grade you or rush you. You compare yourself only with yourself.</string>
+    <string name="welcome_principle_no_scores">No scores or verdicts</string>
+    <string name="welcome_principle_no_shaming">No shaming or streaks</string>
+    <string name="welcome_principle_no_norm">No comparison with a \"norm\"</string>
+    <string name="welcome_onboarding_start">Start</string>
+    <string name="gates_onboarding_demo_description">Pause screen example: the flower breathes slowly while the number counts down seconds</string>
+    <string name="onboarding_target_scale_description">Hours per day scale</string>
+    <string name="onboarding_target_unit">h</string>
+    <string name="onboarding_target_chip">Reference</string>
     <string name="perm_title">Before we begin</string>
     <string name="perm_body">Your data stays on your phone. Only anonymous crash reports leave it — turn them off anytime in Settings</string>
     <string name="perm_usage_label">Usage access</string>
@@ -132,6 +142,7 @@
 
     <!-- T-3 (tepera-dev-spec.md): online-time estimate onboarding, before the permission explanation -->
     <string name="online_estimate_onboarding_title">How long do you think you were online yesterday?</string>
+    <string name="online_estimate_onboarding_hint">Just a guess — there is no right answer.</string>
     <string name="online_estimate_range_under_3h">Under 3h</string>
     <string name="online_estimate_range_3_5h">3–5h</string>
     <string name="online_estimate_range_over_5h">Over 5h</string>

@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.serkodesign.tepera.ui.theme.GlassRow
+import com.serkodesign.tepera.ui.theme.TeperaIconCircle
+import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,7 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
+import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
@@ -79,50 +82,73 @@ fun OnlineEstimateOnboardingScreen(
         }
     }
 
+    // Той самий каркас, що кроку категорій: заголовок і підказка зверху, рядки-варіанти на всю ширину
+    // (скляні, радіус 24, плитка зліва), тиха дія «Пропустити» знизу.
     Scaffold(containerColor = Color.Transparent) { padding ->
         Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            TeperaOnboardingTitle(text = stringResource(R.string.online_estimate_onboarding_title))
-            // Варіанти один під одним на всю ширину: у ряд третій ("Понад 5 год") обрізався до "Понад …".
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .fillMaxSize()
+                    .padding(top = 48.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DailyOnlineGuess.entries.forEach { guess ->
-                    TeperaButton(
-                        text = dailyGuessLabel(guess),
-                        onClick = { finish(guess) },
-                        modifier = Modifier.fillMaxWidth(),
-                        type = TeperaButtonType.Secondary
-                    )
+                // Заголовок, підказка й варіанти — одним блоком по центру між верхнім рядком і «Пропустити».
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                TeperaOnboardingTitle(text = stringResource(R.string.online_estimate_onboarding_title))
+                Text(
+                    text = stringResource(R.string.online_estimate_onboarding_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(top = 24.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DailyOnlineGuess.entries.forEach { guess ->
+                        GlassRow(
+                            label = dailyGuessLabel(guess),
+                            cornerRadius = 24.dp,
+                            onClick = { finish(guess) },
+                            leading = { TeperaIconCircle(icon = TeperaSymbols.Schedule) },
+                            trailing = {
+                                Icon(
+                                    TeperaSymbols.ChevronRight,
+                                    contentDescription = null,
+                                    tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.5f)
+                                )
+                            }
+                        )
+                    }
                 }
+                }
+                TeperaButton(
+                    text = stringResource(R.string.onboarding_skip),
+                    onClick = { finish(null) },
+                    type = TeperaButtonType.Tertiary
+                )
             }
-            TeperaButton(
-                text = stringResource(R.string.onboarding_skip),
-                onClick = { finish(null) },
-                modifier = Modifier.padding(top = 24.dp),
-                type = TeperaButtonType.Tertiary
+            OnboardingTopBar(
+                step = 3,
+                onSkipAll = onSkipAll,
+                modifier = Modifier.align(Alignment.TopCenter)
             )
-        }
-        OnboardingSkipAllButton(
-            onClick = onSkipAll,
-            modifier = Modifier.align(Alignment.TopEnd)
-        )
         }
     }
 }
+
 
 @Composable
 internal fun dailyGuessLabel(guess: DailyOnlineGuess): String = when (guess) {

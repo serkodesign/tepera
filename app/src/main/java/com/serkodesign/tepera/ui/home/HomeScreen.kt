@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.cards.CardSource
 import com.serkodesign.tepera.data.cards.CardType
@@ -131,12 +132,7 @@ fun HomeScreen(
     onOpenStats: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
     onOpenCategoryHistory: (String) -> Unit,
-    onShowOnboarding: () -> Unit,
-    onShowCategoryOnboarding: () -> Unit,
-    onShowOnlineEstimateOnboarding: () -> Unit,
-    onShowTargetOnboarding: () -> Unit,
-    onShowWidgetSuggestion: () -> Unit,
-    onShowGatesOnboarding: () -> Unit,
+    onShowOnboardingStep: () -> Unit,
     // Повторний тап по вкладці "Головна" в навбарі, коли вже на ній (TeperaNavHost) — той самий
     // принцип, що й на Щоденнику/Статистиці: значення саме по собі не важливе, лише його ЗМІНА
     // (кожен тап на вже вибраній вкладці інкрементує лічильник у NavHost) прокручує сюди наверх.
@@ -352,12 +348,40 @@ fun HomeScreen(
         onPauseOrDispose { }
     }
 
+
+    // Онбординг — єдиний ланцюжок (Welcome → категорії → оцінка Online → орієнтир → ворота → дозвіл), порядок і
+    // умови — у `nextOnboardingRoute` (TeperaNavHost); Home лише вирішує, чи лишились непройдені кроки, і просить
+    // NavHost відкрити наступний. Усі прапорці стартують як "бачено" (initial = true), щоб до першого значення
+    // DataStore не було помилкового переходу.
+    val welcomeSeen by settingsStore.welcomeOnboardingSeen.collectAsState(initial = true)
+    val categoryOnboardingSeen by settingsStore.categoryOnboardingSeen.collectAsState(initial = true)
+    val onlineEstimateOnboardingSeen by settingsStore.onlineEstimateOnboardingSeen.collectAsState(initial = true)
+    val targetOnboardingSeen by settingsStore.targetOnboardingSeen.collectAsState(initial = true)
+    val gatesOnboardingSeen by settingsStore.gatesOnboardingSeen.collectAsState(initial = true)
+    val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
+    val permissionStepPending = balanceState.hasUsageAccess == false && !onboardingSeen
+    val onboardingPending = !welcomeSeen || !categoryOnboardingSeen || !onlineEstimateOnboardingSeen ||
+        !targetOnboardingSeen || !gatesOnboardingSeen || permissionStepPending
+    LaunchedEffect(onboardingPending, welcomeSeen) {
+        if (onboardingPending) {
+            // Race "Home оживає між popBackStack()/navigate()": після кроку Home на мить композиться й бачить уже
+            // оновлений прапорець — затримка (її скасовує вихід Home із композиції) не дає перескочити крок.
+            // Найперший крок (Welcome) показуємо без затримки, інакше Home блимав би секунду перед ним.
+            if (welcomeSeen) delay(1000)
+            onShowOnboardingStep()
+        }
+    }
+
+    // Пропозиція віджета — тепер звичайна картка Home (колишній крок онбордингу), лише коли онбординг пройдено.
+    val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
+    val widgetSuggestionReady = !onboardingPending && !widgetSuggestionSeen
+    val widgetScope = androidx.compose.runtime.rememberCoroutineScope()
     // T-13: перерахунок видимої множини карток щоразу, коли готовність БУДЬ-ЯКОЇ з них
     // змінюється (не лише при відкритті Home — напр. "Гаразд"/"×" на картці одразу звільняє
     // місце для наступної в черзі, без очікування наступного LifecycleResumeEffect).
     LaunchedEffect(
         onlineEstimateRevealState, pauseState, weeklyReflectionState, unlockEstimateState,
-        lastPhoneUseEstimateState, gateEventsSummaryState, welcomeBackState
+        lastPhoneUseEstimateState, gateEventsSummaryState, welcomeBackState, widgetSuggestionReady
     ) {
         cardStackViewModel.evaluate(
             listOf(
@@ -367,90 +391,10 @@ fun HomeScreen(
                 CardSource(CardType.WEEKLY_REFLECTION, priority = 2, minIntervalDays = 7, dataReady = weeklyReflectionState.isDue),
                 CardSource(CardType.UNLOCK_ESTIMATE, priority = 3, minIntervalDays = 14, dataReady = unlockEstimateState.isDue),
                 CardSource(CardType.LAST_PHONE_USE_ESTIMATE, priority = 4, minIntervalDays = 14, dataReady = lastPhoneUseEstimateState.isDue),
-                CardSource(CardType.GATE_EVENTS_SUMMARY, priority = 7, minIntervalDays = 30, dataReady = gateEventsSummaryState.isDue)
+                CardSource(CardType.GATE_EVENTS_SUMMARY, priority = 7, minIntervalDays = 30, dataReady = gateEventsSummaryState.isDue),
+                CardSource(CardType.WIDGET_SUGGESTION, priority = 8, minIntervalDays = null, dataReady = widgetSuggestionReady)
             )
         )
-    }
-
-    // T-8 (tepera-dev-spec.md), крок 2 "Порядку першого запуску": першим кроком онбордингу, перед
-    // онбординг-оцінкою Online-часу — вибір "що саме відмічатимеш"
-    // (документ: попередні 5 категорій самі по собі норма, FR-P.5).
-    val categoryOnboardingSeen by settingsStore.categoryOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(categoryOnboardingSeen) {
-        if (!categoryOnboardingSeen) {
-            onShowCategoryOnboarding()
-        }
-    }
-
-    // T-3, крок 3 "Порядку першого запуску": одразу після вибору категорій (T-8), ще до
-    // пояснення дозволу нижче — не залежить від стану доступу до статистики, той самий принцип.
-    val onlineEstimateOnboardingSeen by settingsStore.onlineEstimateOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
-        if (categoryOnboardingSeen && !onlineEstimateOnboardingSeen) {
-            onShowOnlineEstimateOnboarding()
-        }
-    }
-
-    // FR-7.1: онбординг доступу до статистики — лише ПІСЛЯ того, як вибір
-    // категорій (T-8) і онбординг-оцінка Online-часу (T-3) вже показані, інакше кілька ефектів
-    // могли б спробувати навігувати одночасно на першому запуску.
-    val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen) {
-        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && balanceState.hasUsageAccess == false && !onboardingSeen) {
-            onShowOnboarding()
-        }
-    }
-
-    // Figma user-flow (k6s4prQ9oK9x2uUvzHRghR, node 14:791): "Пропозиція віджета" — останній
-    // крок онбордингу, ОБИДВІ гілки "доступ надано? так/ні" сходяться сюди. "Крок дозволу
-    // розв'язаний" — доступ уже надано (permissionScreen вище й не показувався) АБО сам
-    // permission-екран уже показувався (onboardingSeen), незалежно від того, чим скінчилось.
-    // CC-1: крок "Орієнтир на день" — ПІСЛЯ кроку дозволу й лише коли доступ до статистики реально є
-    // (потрібна історія для власного середнього). Той самий race "Home оживає між popBackStack()/navigate()",
-    // що й нижче, тож перед переходом невелика затримка.
-    val targetOnboardingSeen by settingsStore.targetOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, categoryOnboardingSeen, onlineEstimateOnboardingSeen, targetOnboardingSeen) {
-        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen &&
-            balanceState.hasUsageAccess == true && !targetOnboardingSeen
-        ) {
-            delay(1000)
-            onShowTargetOnboarding()
-        }
-    }
-    // Пропозиція віджета чекає на цей крок, поки він реально належить до ланцюжка (є доступ і крок ще не пройдено).
-    val targetStepDone = targetOnboardingSeen || balanceState.hasUsageAccess == false
-
-    val widgetSuggestionSeen by settingsStore.widgetSuggestionSeen.collectAsState(initial = true)
-    LaunchedEffect(balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen, onlineEstimateOnboardingSeen, widgetSuggestionSeen, targetStepDone) {
-        val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
-        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved && targetStepDone && !widgetSuggestionSeen) {
-            // Race "Home оживає між popBackStack()/navigate()": OnboardingScreen
-            // (пояснення дозволу) виставляє onboardingSeen=true у своєму LaunchedEffect(Unit)
-            // ОДРАЗУ при монтуванні, не чекаючи дії користувача — і Home встигає прочитати це
-            // на тому самому короткому "оживанні" між popBackStack()/navigate(), перш ніж
-            // OnboardingScreen встигає реально лишитись на екрані. Без затримки цей ефект
-            // стрибав одразу на WidgetSuggestionScreen, повністю пропускаючи екран пояснення
-            // дозволу (знайдено живим тестом на Samsung S23, T-3 переставав показуватись).
-            delay(1000)
-            onShowWidgetSuggestion()
-        }
-    }
-
-    // Останній крок онбордингу (за прямим запитом користувача) — коротка згадка про ворота
-    // ("Застосунки з затримкою"), ПІСЛЯ пропозиції віджета. Та сама затримка й та сама причина
-    // (race "Home оживає між popBackStack()/navigate()"), що й крок вище.
-    val gatesOnboardingSeen by settingsStore.gatesOnboardingSeen.collectAsState(initial = true)
-    LaunchedEffect(
-        balanceState.hasUsageAccess, onboardingSeen, categoryOnboardingSeen,
-        onlineEstimateOnboardingSeen, widgetSuggestionSeen, targetStepDone, gatesOnboardingSeen
-    ) {
-        val permissionStepResolved = balanceState.hasUsageAccess == true || onboardingSeen
-        if (categoryOnboardingSeen && onlineEstimateOnboardingSeen && permissionStepResolved &&
-            targetStepDone && widgetSuggestionSeen && !gatesOnboardingSeen
-        ) {
-            delay(1000)
-            onShowGatesOnboarding()
-        }
     }
 
     val context = LocalContext.current
@@ -561,7 +505,9 @@ fun HomeScreen(
                 gateEventsSummaryState = gateEventsSummaryState,
                 onDismissGateEventsSummary = gateEventsSummaryViewModel::dismiss,
                 welcomeBackState = welcomeBackState,
-                onDismissWelcomeBack = welcomeBackViewModel::dismiss
+                onDismissWelcomeBack = welcomeBackViewModel::dismiss,
+                onWidgetAdded = { widgetScope.launch { settingsStore.setWidgetSuggestionSeen() } },
+                onDismissWidgetSuggestion = { widgetScope.launch { settingsStore.setWidgetSuggestionSeen() } }
             )
 
             // Те саме, що Налаштування → Категорії → "Додати свою категорію" (FR-2.2, ліміт 2).

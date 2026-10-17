@@ -35,7 +35,7 @@ import com.serkodesign.tepera.ui.category.CategoryIconBadge
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
-import com.serkodesign.tepera.ui.theme.OnboardingSkipAllButton
+import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
@@ -94,6 +94,14 @@ fun CategoryOnboardingScreen(
         }
     }
 
+    // «Пропустити»: категорії лишаються дефолтними (усі 6 увімкнені), перемикачі не застосовуються.
+    fun skip() {
+        scope.launch {
+            settingsStore.setCategoryOnboardingSeen()
+            onDone()
+        }
+    }
+
     Scaffold(containerColor = Color.Transparent) { padding ->
         Box(
             modifier = Modifier
@@ -103,7 +111,7 @@ fun CategoryOnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(top = 48.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TeperaOnboardingTitle(text = stringResource(R.string.category_onboarding_title))
@@ -149,10 +157,17 @@ fun CategoryOnboardingScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 type = TeperaButtonType.Primary
             )
+            TeperaButton(
+                text = stringResource(R.string.onboarding_skip),
+                onClick = { skip() },
+                modifier = Modifier.padding(top = 4.dp),
+                type = TeperaButtonType.Tertiary
+            )
         }
-        OnboardingSkipAllButton(
-            onClick = onSkipAll,
-            modifier = Modifier.align(Alignment.TopEnd)
+        OnboardingTopBar(
+            step = 2,
+            onSkipAll = onSkipAll,
+            modifier = Modifier.align(Alignment.TopCenter)
         )
         }
     }

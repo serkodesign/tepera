@@ -89,6 +89,10 @@ object TeperaSymbols {
         )
     }
 
+    val Check: ImageVector by lazy {
+        symbol("Check", "M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z")
+    }
+
     val Warning: ImageVector by lazy {
         symbol(
             "Warning",

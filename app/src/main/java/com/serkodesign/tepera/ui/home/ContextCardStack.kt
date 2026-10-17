@@ -95,7 +95,9 @@ fun ContextCardStack(
     gateEventsSummaryState: GateEventsSummaryUiState,
     onDismissGateEventsSummary: () -> Unit,
     welcomeBackState: WelcomeBackUiState,
-    onDismissWelcomeBack: () -> Unit
+    onDismissWelcomeBack: () -> Unit,
+    onWidgetAdded: () -> Unit,
+    onDismissWidgetSuggestion: () -> Unit
 ) {
     ContextCardSlot(visible = CardType.WELCOME_BACK in visibleCards) {
         WelcomeBackCard(state = welcomeBackState, onDismiss = onDismissWelcomeBack)
@@ -120,6 +122,9 @@ fun ContextCardStack(
     }
     ContextCardSlot(visible = CardType.LAST_PHONE_USE_ESTIMATE in visibleCards) {
         LastPhoneUseEstimateCard(state = lastPhoneUseEstimateState, onSelectGuess = onSelectLastPhoneUseGuess, onDismiss = onDismissLastPhoneUseEstimate)
+    }
+    ContextCardSlot(visible = CardType.WIDGET_SUGGESTION in visibleCards) {
+        WidgetSuggestionCard(onAdded = onWidgetAdded, onDismiss = onDismissWidgetSuggestion)
     }
     ContextCardSlot(visible = CardType.GATE_EVENTS_SUMMARY in visibleCards) {
         GateEventsSummaryCard(state = gateEventsSummaryState, onDismiss = onDismissGateEventsSummary)

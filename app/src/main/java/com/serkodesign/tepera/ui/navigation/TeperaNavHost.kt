@@ -102,7 +102,7 @@ import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
-import com.serkodesign.tepera.ui.onboarding.WidgetSuggestionScreen
+import com.serkodesign.tepera.ui.onboarding.WelcomeOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.GatesOnboardingScreen
 import androidx.compose.ui.platform.LocalContext
 import com.serkodesign.tepera.TeperaApp
@@ -139,7 +139,7 @@ private object Routes {
     const val CATEGORY_ONBOARDING = "category_onboarding"
     const val ONLINE_ESTIMATE_ONBOARDING = "online_estimate_onboarding"
     const val TARGET_ONBOARDING = "target_onboarding"
-    const val WIDGET_SUGGESTION_ONBOARDING = "widget_suggestion_onboarding"
+    const val WELCOME_ONBOARDING = "welcome_onboarding"
     const val GATES_ONBOARDING = "gates_onboarding"
     const val SETTINGS = "settings"
     const val TRACKING_SETTINGS = "tracking_settings"
@@ -177,7 +177,7 @@ private object Routes {
         SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
-        WIDGET_SUGGESTION_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
+        WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -452,12 +452,11 @@ fun TeperaNavHost(
                     },
                     onAddEntryForCategory = { categoryId -> navController.navigate(Routes.addEntry(categoryId)) },
                     onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
-                    onShowOnboarding = { navController.navigate(Routes.ONBOARDING) },
-                    onShowCategoryOnboarding = { navController.navigate(Routes.CATEGORY_ONBOARDING) },
-                    onShowOnlineEstimateOnboarding = { navController.navigate(Routes.ONLINE_ESTIMATE_ONBOARDING) },
-                    onShowTargetOnboarding = { navController.navigate(Routes.TARGET_ONBOARDING) },
-                    onShowWidgetSuggestion = { navController.navigate(Routes.WIDGET_SUGGESTION_ONBOARDING) },
-                    onShowGatesOnboarding = { navController.navigate(Routes.GATES_ONBOARDING) },
+                    onShowOnboardingStep = {
+                        onboardingScope.launch {
+                            nextOnboardingRoute(settingsStore, balanceRepository)?.let { navController.navigate(it) }
+                        }
+                    },
                     scrollToTopSignal = homeScrollToTopSignal,
                     weeklySummaryNonce = pendingWeeklySummaryNonce
                 )
@@ -578,15 +577,14 @@ fun TeperaNavHost(
             composable(Routes.TARGET_ONBOARDING) {
                 TargetOnboardingScreen(
                     settingsStore = settingsStore,
-                    balanceRepository = balanceRepository,
                     onDone = { advanceOnboarding(Routes.TARGET_ONBOARDING) },
                     onSkipAll = ::skipAllOnboarding
                 )
             }
-            composable(Routes.WIDGET_SUGGESTION_ONBOARDING) {
-                WidgetSuggestionScreen(
+            composable(Routes.WELCOME_ONBOARDING) {
+                WelcomeOnboardingScreen(
                     settingsStore = settingsStore,
-                    onDone = { advanceOnboarding(Routes.WIDGET_SUGGESTION_ONBOARDING) },
+                    onDone = { advanceOnboarding(Routes.WELCOME_ONBOARDING) },
                     onSkipAll = ::skipAllOnboarding
                 )
             }
@@ -725,17 +723,17 @@ fun TeperaNavHost(
 }
 
 /**
- * Наступний непройдений крок онбордингу або null, коли всі пройдені: категорії → оцінка Online →
- * дозвіл (лише без доступу) → орієнтир (лише з доступом) → пропозиція віджета.
+ * Наступний непройдений крок онбордингу або null, коли всі пройдені: Welcome → категорії → оцінка Online →
+ * орієнтир → ворота → дозвіл (останній, лише без доступу). Пропозиція віджета — тепер картка Home, не крок.
  */
 private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository): String? {
+    if (!settingsStore.welcomeOnboardingSeen.first()) return Routes.WELCOME_ONBOARDING
     if (!settingsStore.categoryOnboardingSeen.first()) return Routes.CATEGORY_ONBOARDING
     if (!settingsStore.onlineEstimateOnboardingSeen.first()) return Routes.ONLINE_ESTIMATE_ONBOARDING
-    val hasAccess = balanceRepository.hasUsageAccess()
-    if (!hasAccess && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING
-    if (hasAccess && !settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
-    if (!settingsStore.widgetSuggestionSeen.first()) return Routes.WIDGET_SUGGESTION_ONBOARDING
+    if (!settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
     if (!settingsStore.gatesOnboardingSeen.first()) return Routes.GATES_ONBOARDING
+    // Дозвіл — останній крок, і лише якщо доступу ще нема.
+    if (!balanceRepository.hasUsageAccess() && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING
     return null
 }
 
