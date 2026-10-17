@@ -165,7 +165,7 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">After 01:00</string>
-    <string name="stats_last_phone_use_week_label">Median last use</string>
+    <string name="stats_last_phone_use_week_label">Usually last on phone</string>
 
     <!-- Weekly "guess vs reality" reflection (FR-P.1) -->
     <string name="weekly_reflection_question">On average, how much do you think you were online per day this week?</string>
@@ -175,7 +175,7 @@
     <string name="weekly_reflection_range_over_5">5h+</string>
     <string name="weekly_reflection_skip">Skip this</string>
     <string name="weekly_reflection_your_guess_label">Your guess</string>
-    <string name="weekly_reflection_actual_label">Actual</string>
+    <string name="weekly_reflection_actual_label">From your phone\'s data</string>
     <string name="weekly_reflection_done">Got it</string>
 
     <!-- Detected pauses card (FR-D.1–D.5, SRS v2.6) -->
@@ -186,8 +186,12 @@
     <string name="pause_pick_category_cancel">Cancel</string>
 
     <!-- Daily time pattern (FR-D.8/D.9, SRS v2.6) -->
-    <string name="pattern_card_title">Yesterday\'s screen pattern</string>
-    <string name="pattern_card_title_average">Daily usage pattern</string>
+    <string name="pattern_card_title">When you\'re on your phone</string>
+    <string name="pattern_card_title_average">When you\'re on your phone</string>
+    <string name="pattern_card_subtitle_yesterday">yesterday</string>
+    <string name="stats_online_differs_note">Online may differ from the system screen time: we don\'t count excluded apps, the launcher and the keyboard.</string>
+    <string name="stats_day_start_note">Start is the first unlock after 05:00.</string>
+    <string name="target_onboarding_later_hint">Without a reference the scale simply has no tick. You can add one in Settings.</string>
     <string name="pattern_empty_state">Your pattern will show up here once a bit more data builds up</string>
 
     <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
@@ -232,7 +236,7 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
-    <string name="settings_target_info">Roughly how many screen hours fit your day. A quiet tick on the scale, no judgment.</string>
+    <string name="settings_target_info">Roughly how many Online hours fit your day. A quiet tick on the scale, no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_target_decrease">Decrease target</string>
     <string name="settings_target_increase">Increase target</string>
@@ -292,7 +296,7 @@
     <string name="gates_pause_none">Not paused</string>
     <string name="gates_pause_until_format">until %1$s</string>
     <string name="gates_pause_from_until_format">%1$s – %2$s</string>
-    <string name="gates_pause_dialog_title">Pause the gates</string>
+    <string name="gates_pause_dialog_title">Pause the delay</string>
     <string name="gates_pause_dialog_confirm">Pause</string>
     <string name="gates_pause_choice_today">Today</string>
     <string name="gates_pause_choice_weekend">For the weekend</string>
@@ -301,11 +305,11 @@
     <string name="gates_schedule_label">Schedule</string>
     <string name="gates_schedule_always">Always</string>
     <string name="gates_schedule_custom">On a schedule</string>
-    <string name="gate_schedule_title">Gate schedule</string>
+    <string name="gate_schedule_title">Delay schedule</string>
     <string name="gate_schedule_always">Always active</string>
     <string name="gate_schedule_always_hint">Active at all times, except while paused.</string>
     <string name="gate_schedule_custom_hint">Active only in the chosen periods — outside them the shortcut opens the app right away.</string>
-    <string name="gate_schedule_day_off">The gates are off on this day</string>
+    <string name="gate_schedule_day_off">The delay is off on this day</string>
     <string name="gate_schedule_add_interval">Add a period</string>
     <string name="gate_schedule_copy_all">To all days</string>
     <string name="gate_schedule_remove_interval">Remove period</string>
@@ -314,13 +318,13 @@
     <string name="gate_schedule_note_whole_day">All day</string>
     <string name="gate_schedule_note_next_day">Ends the next day</string>
     <string name="gates_hint">Selected apps open through a new shortcut, with a pause before launch</string>
-    <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — gates aren\'t available on this device</string>
+    <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — the delay isn\'t available on this device</string>
     <string name="gates_section_active">Apps with a delay</string>
     <string name="gates_section_add">Add an app</string>
-    <string name="gates_empty">No gates yet</string>
+    <string name="gates_empty">No apps with a delay yet</string>
     <string name="gates_delay_format">%ds</string>
     <string name="gates_icon_not_handled">The original icon is still on your screen — tap once you\'ve hidden it</string>
-    <string name="gates_remove_action">Remove gate</string>
+    <string name="gates_remove_action">Remove delay</string>
     <string name="gates_delay_picker_title">Pause length</string>
     <string name="gates_delay_picker_confirm">Create</string>
     <string name="gates_delay_picker_cancel">Cancel</string>
@@ -456,8 +460,8 @@
     <string name="knowledge_base_intro">A short explanation of how Tepera counts time and why it\'s built this way.</string>
     <string name="knowledge_base_section_1_title">Where the data comes from</string>
     <string name="knowledge_base_section_1_body">Online time and the day structure are counted through Android\'s system "Usage access" permission (Settings → Special access, not a pop-up dialog). The permission only grants access to app names and the moments they move to the foreground or background. Without it, manual activity logging keeps working fully — Tepera just won\'t have automatic Online time.\n\nTepera does not see screen content: not message text, not what you\'re actually reading or watching, not scrolling inside an app — a minute of reading looks the same as a minute of scrolling a feed. All data stays on the phone; the only network request is the "Suggest a feature" button, which opens the browser, not Tepera itself.</string>
-    <string name="knowledge_base_section_2_title">Pauses and gates</string>
-    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a pause you leave unlabeled is never recorded as a metric.\n\nGates (Settings → Apps with a delay) are a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so gates work through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning gates off for the day is one tap, no explanation needed.</string>
+    <string name="knowledge_base_section_2_title">Pauses and delays</string>
+    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a pause you leave unlabeled is never recorded as a metric.\n\nThe delay (Settings → Apps with a delay) is a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so the delay works through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning the delay off for the day is one tap, no explanation needed.</string>
     <string name="knowledge_base_section_3_title">Sleep window</string>
     <string name="knowledge_base_section_3_body">The sleep window (Settings → Time and day boundaries) doesn\'t show sleep as an activity and says nothing about how much or how well you slept. It\'s only a time range excluded from the calculation: minutes inside the sleep window don\'t count toward the day structure, don\'t become pauses, and don\'t count toward the unlock counter.</string>
     <string name="knowledge_base_section_4_title">Why there are no notifications, streaks, or scores</string>

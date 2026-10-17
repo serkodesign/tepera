@@ -123,6 +123,12 @@ fun TargetOnboardingScreen(
                         type = TeperaButtonType.Primary
                     )
                 }
+                Text(
+                    text = stringResource(R.string.target_onboarding_later_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 12.dp)
+                )
             }
             OnboardingTopBar(
                 step = 4,

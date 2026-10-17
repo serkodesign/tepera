@@ -238,8 +238,8 @@ internal fun PatternCard(state: PatternUiState, period: StatsPeriod) {
 
     TeperaCard(
         title = stringResource(if (period == StatsPeriod.DAY) R.string.pattern_card_title else R.string.pattern_card_title_average),
-        // Для "Вчора" підпис дублював би заголовок ("Патерн екрану вчора") — лише для тижня.
-        subtitle = if (period == StatsPeriod.DAY) null else stringResource(periodLabelRes(period))
+        // Заголовок однаковий для обох періодів; для дня уточнюємо, що це вчорашня доба.
+        subtitle = if (period == StatsPeriod.DAY) stringResource(R.string.pattern_card_subtitle_yesterday) else stringResource(periodLabelRes(period))
     ) {
         if (!state.hasEnoughData) {
             Text(stringResource(R.string.pattern_empty_state), style = MaterialTheme.typography.bodyMedium)
@@ -377,6 +377,16 @@ private fun CategoryBreakdownCard(
                             )
                         }
                     }
+                }
+                // Online ≠ екранний час у системі: пояснюємо різницю там, де число видно (лише коли рядок Online є).
+                if (rows.any { it.label == onlineLabel }) {
+                    Text(
+                        text = stringResource(R.string.stats_online_differs_note),
+                        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
+                        fontFamily = TeperaPalette.headlineFont,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
+                    )
                 }
             }
         }

@@ -178,7 +178,7 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">Після 01:00</string>
-    <string name="stats_last_phone_use_week_label">Медіана останнього дотику</string>
+    <string name="stats_last_phone_use_week_label">Зазвичай востаннє брав телефон</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
     <string name="weekly_reflection_question">Скільки, по-твоєму, ти в середньому був онлайн на день цього тижня?</string>
@@ -188,7 +188,7 @@
     <string name="weekly_reflection_range_over_5">5+ год</string>
     <string name="weekly_reflection_skip">Можна пропустити</string>
     <string name="weekly_reflection_your_guess_label">Твоя оцінка</string>
-    <string name="weekly_reflection_actual_label">Насправді</string>
+    <string name="weekly_reflection_actual_label">За даними телефону</string>
     <string name="weekly_reflection_done">Гаразд</string>
 
     <!-- Картка виявлених пауз (FR-D.1–D.5, SRS v2.6) -->
@@ -199,8 +199,12 @@
     <string name="pause_pick_category_cancel">Скасувати</string>
 
     <!-- Тепловий патерн доби (FR-D.8/D.9, SRS v2.6) -->
-    <string name="pattern_card_title">Патерн екрану вчора</string>
-    <string name="pattern_card_title_average">Добовий патерн використання</string>
+    <string name="pattern_card_title">Коли ти з телефоном</string>
+    <string name="pattern_card_title_average">Коли ти з телефоном</string>
+    <string name="pattern_card_subtitle_yesterday">вчора</string>
+    <string name="stats_online_differs_note">Online може відрізнятись від екранного часу в системі: ми не рахуємо виключені застосунки, лаунчер і клавіатуру.</string>
+    <string name="stats_day_start_note">Початок — перше розблокування після 05:00.</string>
+    <string name="target_onboarding_later_hint">Без орієнтира шкала просто без позначки. Додати можна в Налаштуваннях.</string>
     <string name="pattern_empty_state">Тут з\'явиться патерн, коли назбирається трохи більше даних</string>
 
     <!-- Картка "Цей тиждень" — досліджено з Figma-макета (node 2062:2862), не в SRS буквально -->
@@ -247,7 +251,7 @@
     <string name="settings_theme_system">Системна</string>
     <string name="settings_theme_light">Світла</string>
     <string name="settings_theme_dark">Темна</string>
-    <string name="settings_target_info">Скільки годин екранного часу орієнтовно вписується в твій день. Тиха риска на шкалі, без оцінки.</string>
+    <string name="settings_target_info">Скільки годин Online орієнтовно вписується в твій день. Тиха риска на шкалі, без оцінки.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_target_decrease">Зменшити орієнтир</string>
     <string name="settings_target_increase">Збільшити орієнтир</string>
@@ -307,7 +311,7 @@
     <string name="gates_pause_none">Не на паузі</string>
     <string name="gates_pause_until_format">до %1$s</string>
     <string name="gates_pause_from_until_format">%1$s – %2$s</string>
-    <string name="gates_pause_dialog_title">Призупинити ворота</string>
+    <string name="gates_pause_dialog_title">Призупинити затримку</string>
     <string name="gates_pause_dialog_confirm">Призупинити</string>
     <string name="gates_pause_choice_today">Сьогодні</string>
     <string name="gates_pause_choice_weekend">На вихідні</string>
@@ -316,11 +320,11 @@
     <string name="gates_schedule_label">Розклад</string>
     <string name="gates_schedule_always">Завжди</string>
     <string name="gates_schedule_custom">За розкладом</string>
-    <string name="gate_schedule_title">Розклад воріт</string>
+    <string name="gate_schedule_title">Розклад затримки</string>
     <string name="gate_schedule_always">Завжди активні</string>
     <string name="gate_schedule_always_hint">Діють завжди, крім часу на паузі.</string>
     <string name="gate_schedule_custom_hint">Діють лише в обраних проміжках — поза ними ярлик одразу відкриває застосунок.</string>
-    <string name="gate_schedule_day_off">Цього дня ворота не діють</string>
+    <string name="gate_schedule_day_off">Цього дня затримка не діє</string>
     <string name="gate_schedule_add_interval">Додати проміжок</string>
     <string name="gate_schedule_copy_all">На всі дні</string>
     <string name="gate_schedule_remove_interval">Прибрати проміжок</string>
@@ -329,13 +333,13 @@
     <string name="gate_schedule_note_whole_day">Весь день</string>
     <string name="gate_schedule_note_next_day">Закінчується наступного дня</string>
     <string name="gates_hint">Обрані застосунки відкриваються через новий ярлик — із паузою перед запуском</string>
-    <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — ворота недоступні на цьому пристрої</string>
+    <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — затримка недоступна на цьому пристрої</string>
     <string name="gates_section_active">Застосунки з затримкою</string>
     <string name="gates_section_add">Додати застосунок</string>
-    <string name="gates_empty">Ще немає жодних воріт</string>
+    <string name="gates_empty">Ще немає застосунків із затримкою</string>
     <string name="gates_delay_format">%d с</string>
     <string name="gates_icon_not_handled">Оригінальна іконка ще на екрані — тапни, коли приховаєш</string>
-    <string name="gates_remove_action">Прибрати ворота</string>
+    <string name="gates_remove_action">Прибрати затримку</string>
     <string name="gates_delay_picker_title">Тривалість паузи</string>
     <string name="gates_delay_picker_confirm">Створити</string>
     <string name="gates_delay_picker_cancel">Скасувати</string>
@@ -473,8 +477,8 @@
     <string name="knowledge_base_intro">Коротко про те, як Tepera рахує час і чому влаштована саме так.</string>
     <string name="knowledge_base_section_1_title">Звідки беруться дані</string>
     <string name="knowledge_base_section_1_body">Online-час і структура дня рахуються через системний дозвіл Android «Доступ до статистики використання» (Налаштування → Спеціальний доступ, не спливаюче вікно). Дозвіл дає доступ лише до назв застосунків і моментів, коли вони виходять на передній план чи йдуть у фон. Без нього ручне логування активностей лишається повністю робочим — просто без автоматичного Online-часу.\n\nTepera не бачить зміст екрана: не текст повідомлень, не те, що саме ти читаєш чи дивишся, не скролінг усередині застосунку — хвилина читання виглядає так само, як хвилина гортання стрічки. Усі дані лишаються на телефоні; єдиний вихід у мережу — кнопка «Запропонувати функцію», яка відкриває браузер, не сам застосунок.</string>
-    <string name="knowledge_base_section_2_title">Паузи та ворота</string>
-    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: якщо паузу не позначити, це нікуди не записується як показник.\n\nВорота (Налаштування → Застосунки із затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож ворота працюють через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути ворота на сьогодні можна одним тапом, без пояснень.</string>
+    <string name="knowledge_base_section_2_title">Паузи та затримка</string>
+    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: якщо паузу не позначити, це нікуди не записується як показник.\n\nЗатримка (Налаштування → Застосунки з затримкою) — ручна функція: ти сам обираєш застосунок і час очікування. Android не дає застосункам справді блокувати запуск інших застосунків, тож затримка працює через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ти собі поставив, не технічний бар\'єр — вимкнути затримку на сьогодні можна одним тапом, без пояснень.</string>
     <string name="knowledge_base_section_3_title">Вікно сну</string>
     <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ти спав. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань.</string>
     <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>

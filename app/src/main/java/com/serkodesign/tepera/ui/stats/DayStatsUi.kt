@@ -100,6 +100,17 @@ fun DayDetailsSection(
         details.unlockCount?.let { add(stringResource(R.string.diary_unlock_yesterday_label) to it.toString()) }
     }
     if (boundaryStats.isNotEmpty()) TeperaStatsBar(stats = boundaryStats)
+    // Як визначено початок дня: від нього залежать усі підсумки, а при нетиповому ранку він може здивувати.
+    if (details.firstUseMillis != null) {
+        Text(
+            text = stringResource(R.string.stats_day_start_note),
+            color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f),
+            fontFamily = TeperaPalette.headlineFont,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+    }
 
     // За прямим запитом користувача: тепловий патерн переїхав одразу під картки меж дня — вище
     // хронології/пауз/порівняння, які раніше йшли одразу за чипами.
