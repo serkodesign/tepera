@@ -46,6 +46,9 @@
     <string name="summary_yesterday">Yesterday</string>
     <string name="summary_week">Week</string>
     <string name="summary_month">Month</string>
+    <string name="summary_yesterday_online">Yesterday · online</string>
+    <string name="summary_week_online">Week · online</string>
+    <string name="summary_month_online">Month · online</string>
     <string name="summary_per_day_unit">h/day</string>
     <string name="summary_start_format">start %1$s</string>
     <string name="summary_chart_subtitle">phone-free hours by day</string>

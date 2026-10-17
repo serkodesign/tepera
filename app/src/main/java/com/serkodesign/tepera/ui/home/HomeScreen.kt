@@ -433,14 +433,15 @@ fun HomeScreen(
             val heroState = rememberHeroState(balanceState)
             val today = remember(heroState) { java.time.LocalDate.now() }
             val todayOffline = (heroState as? HeroUiState.Data)?.offlineMinutes
+            val todayOnlineMinutes = (heroState as? HeroUiState.Data)?.onlineMinutes
             // Запасний варіант слота (HANDOFF, п. 5.9): шрифт ≥ 130% або ширина < 340dp — одна широка плитка.
             val configuration = LocalConfiguration.current
             val forceWideTeaser = configuration.fontScale >= 1.3f || configuration.screenWidthDp < 340
-            val teaserSlot = remember(summaryDays, todayOffline, forceWideTeaser, today) {
+            val teaserSlot = remember(summaryDays, todayOffline, todayOnlineMinutes, forceWideTeaser, today) {
                 buildTeaserSlot(
                     yesterday = summaryDays[today.minusDays(1)],
-                    week = buildPeriod(today, SUMMARY_WEEK_DAYS, summaryDays, todayOffline),
-                    month = buildPeriod(today, SUMMARY_MONTH_DAYS, summaryDays, todayOffline),
+                    week = buildPeriod(today, SUMMARY_WEEK_DAYS, summaryDays, todayOffline, todayOnlineMinutes),
+                    month = buildPeriod(today, SUMMARY_MONTH_DAYS, summaryDays, todayOffline, todayOnlineMinutes),
                     today = today,
                     forceWide = forceWideTeaser
                 )

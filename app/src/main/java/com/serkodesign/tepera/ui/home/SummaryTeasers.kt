@@ -54,9 +54,9 @@ fun SummaryTeaserSlot(
             val left = slot.left
             when (left) {
                 is TeaserTile.Yesterday -> SummaryTile(
-                    title = stringResource(R.string.summary_yesterday),
-                    value = heroDuration(left.offlineMinutes),
-                    bars = offlineBars(left.offlineByHour),
+                    title = stringResource(R.string.summary_yesterday_online),
+                    value = heroDuration(left.onlineMinutes),
+                    bars = onlineBars(left.onlineByHour),
                     onClick = { onOpen(SummaryTab.YESTERDAY) },
                     modifier = Modifier.weight(1f)
                 )
@@ -71,7 +71,7 @@ fun SummaryTeaserSlot(
             }
             val right = slot.right
             SummaryTile(
-                title = stringResource(if (right.tab == SummaryTab.MONTH) R.string.summary_month else R.string.summary_week),
+                title = stringResource(if (right.tab == SummaryTab.MONTH) R.string.summary_month_online else R.string.summary_week_online),
                 value = formatHoursPerDay(right.averageMinutesPerDay, LocalConfiguration.current.locales[0]),
                 valueUnit = stringResource(R.string.summary_per_day_unit),
                 bars = periodBars(right.bars),
@@ -102,15 +102,6 @@ data class MiniBar(val fraction: Float, val color: Color)
 private val MIN_BAR_FRACTION = 3f / 18f
 
 @Composable
-private fun offlineBars(offlineByHour: List<Int>): List<MiniBar> {
-    val base = TeperaPalette.restOfDayCard
-    return offlineByHour.map {
-        val f = (it / 60f).coerceIn(0f, 1f)
-        MiniBar(maxOf(MIN_BAR_FRACTION, f), base.copy(alpha = 0.45f + 0.45f * f))
-    }
-}
-
-@Composable
 private fun onlineBars(onlineByHour: List<Int>): List<MiniBar> {
     val base = TeperaPalette.onlineCard
     return onlineByHour.map {
@@ -122,10 +113,10 @@ private fun onlineBars(onlineByHour: List<Int>): List<MiniBar> {
 /** Тиждень / Місяць: висота відносно найвищого дня вікна, сьогодні — виділений (повна непрозорість). */
 @Composable
 private fun periodBars(bars: List<DayBar>): List<MiniBar> {
-    val base = TeperaPalette.restOfDayCard
-    val max = maxOf(60, bars.maxOfOrNull { it.offlineMinutes ?: 0 } ?: 0).toFloat()
+    val base = TeperaPalette.onlineCard
+    val max = maxOf(60, bars.maxOfOrNull { it.onlineMinutes ?: 0 } ?: 0).toFloat()
     return bars.map {
-        val value = it.offlineMinutes
+        val value = it.onlineMinutes
         when {
             value == null -> MiniBar(MIN_BAR_FRACTION, base.copy(alpha = 0.25f))
             it.isToday -> MiniBar(maxOf(MIN_BAR_FRACTION, value / max), base)

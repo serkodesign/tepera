@@ -51,6 +51,9 @@
     <string name="summary_yesterday">Вчора</string>
     <string name="summary_week">Тиждень</string>
     <string name="summary_month">Місяць</string>
+    <string name="summary_yesterday_online">Вчора · online</string>
+    <string name="summary_week_online">Тиждень · online</string>
+    <string name="summary_month_online">Місяць · online</string>
     <string name="summary_per_day_unit">год/день</string>
     <string name="summary_start_format">старт %1$s</string>
     <string name="summary_chart_subtitle">години без телефону по днях</string>

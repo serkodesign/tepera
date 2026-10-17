@@ -57,11 +57,13 @@ fun dayStatFromSummary(summary: DaySummaryEntity): DayStat? {
 }
 
 /** Стовпчик/клітинка дня: [offlineMinutes] = null — даних немає. */
-data class DayBar(val date: LocalDate, val offlineMinutes: Int?, val isToday: Boolean)
+data class DayBar(val date: LocalDate, val offlineMinutes: Int?, val isToday: Boolean, val onlineMinutes: Int? = null)
 
 /** Підсумок вікна: середнє "без телефону" на день за завершені доби (null, якщо таких немає) і самі дні. */
 data class PeriodSummary(
     val averageOfflineMinutesPerDay: Int?,
+    /** Середнє Online на день за ті самі завершені доби (для тізерів). */
+    val averageOnlineMinutesPerDay: Int? = null,
     val completedDays: Int,
     val bars: List<DayBar>
 )
@@ -70,14 +72,17 @@ data class PeriodSummary(
  * Останні [days] діб, що закінчуються сьогодні. Середнє — лише за завершені доби з даними; сьогодні
  * ([todayOffline], якщо відомо) додається останнім стовпчиком.
  */
-fun buildPeriod(today: LocalDate, days: Int, completed: Map<LocalDate, DayStat>, todayOffline: Int?): PeriodSummary {
+fun buildPeriod(today: LocalDate, days: Int, completed: Map<LocalDate, DayStat>, todayOffline: Int?, todayOnline: Int? = null): PeriodSummary {
     val bars = (days - 1 downTo 0).map { back ->
         val date = today.minusDays(back.toLong())
-        if (back == 0) DayBar(date, todayOffline, isToday = true) else DayBar(date, completed[date]?.offlineMinutes, isToday = false)
+        if (back == 0) DayBar(date, todayOffline, isToday = true, onlineMinutes = todayOnline)
+        else DayBar(date, completed[date]?.offlineMinutes, isToday = false, onlineMinutes = completed[date]?.onlineMinutes)
     }
     val values = bars.filter { !it.isToday }.mapNotNull { it.offlineMinutes }
+    val onlineValues = bars.filter { !it.isToday }.mapNotNull { it.onlineMinutes }
     return PeriodSummary(
         averageOfflineMinutesPerDay = if (values.isEmpty()) null else values.sum() / values.size,
+        averageOnlineMinutesPerDay = if (onlineValues.isEmpty()) null else onlineValues.sum() / onlineValues.size,
         completedDays = values.size,
         bars = bars
     )
@@ -121,8 +126,8 @@ fun formatHoursPerDay(minutes: Int, locale: java.util.Locale): String {
 enum class SummaryTab { YESTERDAY, WEEK, MONTH }
 
 sealed interface TeaserTile {
-    /** Вчора: сума "без телефону" + 24 стовпчики по годинах. */
-    data class Yesterday(val offlineMinutes: Int, val offlineByHour: List<Int>) : TeaserTile
+    /** Вчора: сума Online + 24 стовпчики по годинах. */
+    data class Yesterday(val onlineMinutes: Int, val onlineByHour: List<Int>) : TeaserTile
 
     /** Вчора без даних: "Вчора — —", без графіка, не натискається. */
     data object YesterdayEmpty : TeaserTile
@@ -154,18 +159,18 @@ fun buildTeaserSlot(
     today: LocalDate,
     forceWide: Boolean
 ): TeaserSlot {
-    val rightSource = if (today.dayOfMonth == 1 && month.averageOfflineMinutesPerDay != null) {
+    val rightSource = if (today.dayOfMonth == 1 && month.averageOnlineMinutesPerDay != null) {
         SummaryTab.MONTH to month
     } else {
         SummaryTab.WEEK to week
     }
-    val average = rightSource.second.averageOfflineMinutesPerDay
+    val average = rightSource.second.averageOnlineMinutesPerDay
     val right = average?.let { TeaserTile.Period(rightSource.first, it, rightSource.second.bars) }
 
     if (forceWide || right == null) {
         return if (yesterday != null) TeaserSlot.WideYesterday(yesterday.startMinute, yesterday.onlineByHour) else TeaserSlot.WideEmpty
     }
-    val left = if (yesterday != null) TeaserTile.Yesterday(yesterday.offlineMinutes, yesterday.offlineByHour) else TeaserTile.YesterdayEmpty
+    val left = if (yesterday != null) TeaserTile.Yesterday(yesterday.onlineMinutes, yesterday.onlineByHour) else TeaserTile.YesterdayEmpty
     return TeaserSlot.Pair(left, right)
 }
 
