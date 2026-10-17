@@ -140,12 +140,11 @@ private fun SummaryTile(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                TeaserText(title, 11, FontWeight.Normal, alpha = 0.8f)
-                Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom) {
-                    TeaserText(value, 14, FontWeight.Medium)
-                    if (valueUnit != null) TeaserText(valueUnit, 11, FontWeight.Normal, alpha = 0.8f)
-                }
+            // Підпис («Вчора · online») і значення в двох рядках: в одному рядку довгий підпис налазив на число.
+            TeaserText(title, 11, FontWeight.Normal, alpha = 0.8f)
+            Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom) {
+                TeaserText(value, 14, FontWeight.Medium)
+                if (valueUnit != null) TeaserText(valueUnit, 11, FontWeight.Normal, alpha = 0.8f)
             }
             MiniChart(bars, Modifier.fillMaxWidth().height(18.dp))
         }

@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -186,12 +187,12 @@ fun HomeHero(
             HeroUiState.NoAccess -> HeroNoAccess(onGrantAccess)
             is HeroUiState.Empty -> {
                 HeroEmpty(state)
-                DayStructureBar(state.structure)
+                DayStructureRow(state.structure)
                 teaser?.invoke()
             }
             is HeroUiState.Data -> {
                 HeroData(state, expanded = expanded, onToggleExpanded = { expanded = !expanded })
-                DayStructureBar(state.structure)
+                DayStructureRow(state.structure)
                 teaser?.invoke()
             }
         }
@@ -654,6 +655,36 @@ private fun HeroOrb(
         ) {
             content()
         }
+    }
+}
+
+/**
+ * Смуга структури доби + ⓘ праворуч: тап відкриває пояснення, що показують сегменти, штрихи й тиха риска орієнтира
+ * (сама риска лишається без підпису — FR-3.10). Без орієнтира пояснення не згадує риску.
+ */
+@Composable
+private fun DayStructureRow(structure: DayStructure) {
+    var showInfo by remember { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.weight(1f)) { DayStructureBar(structure) }
+        Spacer(Modifier.width(8.dp))
+        IconButton(onClick = { showInfo = true }, modifier = Modifier.size(20.dp)) {
+            Icon(
+                TeperaSymbols.Info,
+                contentDescription = stringResource(R.string.hero_structure_info_action),
+                tint = TeperaPalette.textOnDark.copy(alpha = 0.7f),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+    if (showInfo) {
+        HomeInfoDialog(
+            title = stringResource(R.string.hero_structure_info_title),
+            body = stringResource(
+                if (structure.targetFraction != null) R.string.hero_structure_info_body_target else R.string.hero_structure_info_body
+            ),
+            onDismiss = { showInfo = false }
+        )
     }
 }
 

@@ -467,6 +467,10 @@
     <string name="knowledge_base_section_4_title">Why there are no notifications, streaks, or scores</string>
     <string name="knowledge_base_section_4_body">Tepera doesn\'t send notifications trying to pull you back, doesn\'t count day streaks, and doesn\'t award points or badges for usage. The numbers on screen are facts about time that has already passed, not a goal to reach — that\'s why the app never says "goal," only "reference," and colors never turn "alarming" no matter how much time has passed. Comparisons are only ever against your own history, never against other people\'s averages.</string>
     <string name="home_card_first_unlock_label">First unlock</string>
+    <string name="hero_structure_info_action">About the day bar</string>
+    <string name="hero_structure_info_title">Day bar</string>
+    <string name="hero_structure_info_body">The bar shows what your day is made of since it started: Online, the activities you logged, and the rest of the day. The hatched end is time still ahead.</string>
+    <string name="hero_structure_info_body_target">The bar shows what your day is made of since it started: Online, the activities you logged, and the rest of the day. The hatched end is time still ahead.\n\nThe quiet tick is your Online reference (change it in Settings → Tracking). It doesn\'t change colour if Online passes it: it\'s a point of reference, not a limit.</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
     <string name="day_usage_info_body">Each square is one hour of yesterday; color shows minutes online. No judgment.</string>
