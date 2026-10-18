@@ -556,8 +556,8 @@ private fun HeroOrb(
         var lastShake = 0L
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                gravX += (event.values[0] - gravX) * 0.08f
-                gravY += (event.values[1] - gravY) * 0.08f
+                gravX += (event.values[0] - gravX) * 0.104f
+                gravY += (event.values[1] - gravY) * 0.104f
                 val x = event.values[0]; val y = event.values[1]; val z = event.values[2]
                 val now = System.currentTimeMillis()
                 if (abs(sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH) > 7f && now - lastShake > 1500L) {
@@ -585,7 +585,8 @@ private fun HeroOrb(
             val inPlane = sqrt(gravX * gravX + gravY * gravY)
             val target = if (inPlane < 3f) 0f else (atan2(gravX, gravY) * 0.5f).coerceIn(-limit, limit)
             // В'язка рідина: пружина з легким перетисканням демпфування (ζ≈1.04) — повільно й без хитання «тягнеться» до рівня.
-            velocity += (7f * (target - tiltAngle) - 5.5f * velocity) * dt
+            // Швидкість відгуку +30% (ω ×1.3: жорсткість ×1.69, демпфування ×1.3 — ζ незмінне).
+            velocity += (11.83f * (target - tiltAngle) - 7.15f * velocity) * dt
             tiltAngle += velocity * dt
         }
     }

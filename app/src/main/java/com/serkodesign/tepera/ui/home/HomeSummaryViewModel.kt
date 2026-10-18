@@ -24,7 +24,7 @@ class HomeSummaryViewModel(private val repository: DaySummaryRepository) : ViewM
     fun refresh() {
         viewModelScope.launch {
             runCatching { repository.backfillCompletedDays() }
-            val today = LocalDate.now()
+            val today = com.serkodesign.tepera.util.logicalToday()
             val rows = runCatching { repository.getRange(today.minusDays(HISTORY_DAYS), today.minusDays(1)) }.getOrDefault(emptyList())
             _days.value = rows.mapNotNull(::dayStatFromSummary).associateBy { it.date }
         }

@@ -108,6 +108,10 @@ fun startOfLogicalDayMillis(nowMillis: Long = System.currentTimeMillis()): Long 
     return cal.timeInMillis
 }
 
+/** Дата поточної логічної доби (до 01:00 — ще вчорашня): узгоджена з [startOfLogicalDayMillis], на відміну від LocalDate.now(). */
+fun logicalToday(nowMillis: Long = System.currentTimeMillis()): java.time.LocalDate =
+    java.time.Instant.ofEpochMilli(nowMillis).atZone(java.time.ZoneId.systemDefault()).minusHours(DAY_ROLLOVER_HOUR.toLong()).toLocalDate()
+
 /** Найближчі 01:00 після [nowMillis] — момент, коли Home і віджет перемикаються на нову добу. */
 fun nextDayRolloverMillis(nowMillis: Long = System.currentTimeMillis()): Long {
     val cal = Calendar.getInstance().apply { timeInMillis = nowMillis }

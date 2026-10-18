@@ -431,7 +431,7 @@ fun HomeScreen(
             // Home FINAL (docs/HANDOFF.md): hero-картка замінила шапку з датою й слайдер "Мій день / Патерн /
             // Цей тиждень". Орб, смуга дня й слот тізерів (етап 4). Контекстні картки — під списком активностей.
             val heroState = rememberHeroState(balanceState)
-            val today = remember(heroState) { java.time.LocalDate.now() }
+            val today = remember(heroState) { com.serkodesign.tepera.util.logicalToday() }
             val todayOffline = (heroState as? HeroUiState.Data)?.offlineMinutes
             val todayOnlineMinutes = (heroState as? HeroUiState.Data)?.onlineMinutes
             // Запасний варіант слота (HANDOFF, п. 5.9): шрифт ≥ 130% або ширина < 340dp — одна широка плитка.

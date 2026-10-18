@@ -298,26 +298,13 @@ class BalanceRepository(
             val buckets = IntArray(slotCount)
             try {
                 val events = usm.queryEventsOrNull(fromMillis, toMillis) ?: return@withContext buckets
-                val event = UsageEvents.Event()
-                val foregroundSince = HashMap<String, Long>()
-                while (events.hasNextEvent()) {
-                    events.getNextEvent(event)
-                    val packageName = event.packageName ?: continue
-                    if (packageName in excluded) continue
-                    when (event.eventType) {
-                        UsageEvents.Event.MOVE_TO_FOREGROUND -> foregroundSince[packageName] = event.timeStamp
-                        UsageEvents.Event.MOVE_TO_BACKGROUND -> {
-                            val start = foregroundSince.remove(packageName)
-                            if (start != null) addToSlotBuckets(buckets, start, event.timeStamp, fromMillis, slotMillis)
-                        }
-                    }
-                }
-                // Застосунок, що й досі на передньому плані на момент запиту — обрізаємо по
-                // "зараз", не по [toMillis] (для сьогоднішньої доби toMillis — завтрашня північ,
-                // тобто в майбутньому; без цього довелось би зарахувати неіснуючі "майбутні" хвилини).
+                // Ті самі сесії й злиття паралельних застосунків, що в getOnlineMinutes/getOnlineIntervals, — інакше
+                // сума по слотах розходилась би з Online на Home (попередній підрахунок "останній MOVE_TO_FOREGROUND
+                // виграє" губив багатоактивні застосунки, ігнорував вимкнення екрана й не зливав PiP/split-screen).
+                // Відкриті сесії обрізаємо по "зараз": для сьогодні [toMillis] — завтрашня північ, тобто майбутнє.
                 val nowCap = minOf(System.currentTimeMillis(), toMillis)
-                for (start in foregroundSince.values) {
-                    addToSlotBuckets(buckets, start, nowCap, fromMillis, slotMillis)
+                mergeTimeSpans(foregroundSessions(events, excluded, nowCap)).forEach {
+                    addToSlotBuckets(buckets, it.start, it.end, fromMillis, slotMillis)
                 }
             } catch (e: SecurityException) {
                 // buckets лишаються нульовими — викликач (TeperaWidget) трактує це як "нема Online".
