@@ -1,50 +1,48 @@
 # Store listing — English
 
-## Short description (≤80 chars)
-Your day's structure: online time, logged activities, the rest — no judgment.
+## App name (≤30 chars)
+Tepera: Screen Time & Offline
 
-*(77 characters)*
+## Short description (≤80 chars)
+Calm screen time tracker: online hours, offline activities, no guilt or pressure
+
+## Category and tags (Play Console)
+- Category: **Health & Fitness** (alternative: Productivity). Type: App.
+- Tags (pick up to 5 from the list): Digital wellbeing / Self-improvement / Habit tracker / Time management / Lifestyle — use the ones Play Console offers that are closest to these.
 
 ## Full description (≤4000 chars)
 
-**Tepera isn't a screen blocker, and it isn't a guilt counter.**
+**Tepera is a calm screen time tracker and offline activity log — not a screen blocker and not a guilt counter.**
 
-The app calmly shows your day's structure — how much time was online, what you logged offline,
-and how much is left for everything else — and lets you log what your offline life is actually
-made of in 1-2 taps.
+It shows your day's structure — how much of it was online, what you logged offline, and how much is left for everything else — and lets you log what your offline life is made of in 1-2 taps.
 
 **What the app shows:**
 
-📊 **A structure, not an opposition** — one scale, three neutral parts: Online (counted
-automatically), what you've logged by category (Nature, Reading, Hobbies, Movement, Time with
-people, Errands — plus up to two of your own), and the rest of the day. The rest of the day is
-never shown as a gap or lost time.
+📊 **A structure, not an opposition** — one scale, three neutral parts: Online (counted automatically from your phone usage), what you've logged by category (Nature, Reading, Hobbies, Movement, Time with people, Errands — plus up to two of your own), and the rest of the day. The rest of the day is never shown as a gap or lost time.
 
-⚡ **1-2 taps, then back to life** — no distracting screens. Log the activity, get back to the
-moment.
+⚡ **1-2 taps, then back to life** — a quick activity timer or a manual entry, no distracting screens. Log it and get back to the moment.
 
-🧭 **A reference point, not a goal** — a quiet mark on the scale that you set yourself. It never
-changes color and never "fails," no matter how much time has passed. Comparisons are only ever
-against your own history, never against someone else's average.
+📱 **Phone usage, honestly** — daily online time, a pattern of when you use your phone, unlock count and when you last picked it up. You see these numbers when you look for them, not as pushy alerts.
 
-☕ **Your phone notices pauses for you** — when enough time passes between uses, the app offers to
-label that gap with a category, instead of relying on you to remember to log it manually.
+🧭 **A reference point, not a goal** — a quiet mark on the scale that you set yourself. It never changes color and never "fails". Comparisons are only ever against your own history, never against an average.
 
-⏳ **Apps with a delay (optional)** — add a short pause of your own choosing before opening
-specific apps. This is a deliberate delay you set for yourself, not a technical barrier, and you
-can turn it off for the day with one tap.
+☕ **Phone-free pauses** — when enough time passes between uses, the app offers to label that gap with a category, instead of relying on you to remember to log it.
 
-🧩 **Home-screen widget** — day structure and quick category buttons, adaptive size, no extra
-numbers.
+⏳ **Apps with a delay (optional)** — add a short pause of your own choosing before opening specific apps, such as social media. It is a deliberate delay you set for yourself, not a technical barrier, and you can turn it off for the day with one tap.
+
+🧩 **Home-screen widgets** — 1x1, 2x1, 4x1 and 4x2: start a timer for an activity right from the home screen and see the day at a glance.
+
+📈 **Statistics** — a day, week or month view of your time by category and your online trend.
 
 🚫 **Exclusion list** — maps, e-books, banking apps don't count toward Online time.
 
-🔒 **Everything stays on the device** — usage statistics are processed locally only, never
-transmitted. No accounts, no social feed. The in-app "Knowledge base" explains exactly what data
-is used and why.
+🌗 **Light and dark theme, English and Ukrainian.**
 
-Built in a "monastic" style — no badges, no streaks, no points for usage. Just a calm look at
-your day.
+🔒 **Private by design** — usage statistics are processed on your device only and are never sent anywhere. No accounts, no social feed, no ads. Optional crash reports can be switched off in Settings → Data and privacy. The in-app Knowledge base explains exactly what data is used and why.
+
+Built in a "monastic" style — no badges, no streaks, no points for usage. Just a calm look at your day, for people tired of endless scrolling who want a healthier balance between phone time and real life.
+
+**Permissions:** Tepera asks for usage access (Settings → Special access) to count Online time, and optionally for notifications. Without usage access, offline logging still works fully.
 
 ---
 
