@@ -33,8 +33,8 @@ android {
         applicationId = "com.serkodesign.tepera"
         minSdk = 26        // Android 8.0 — нижня межа сумісності (SRS 5.6)
         targetSdk = 36      // Android 16 — обов'язково для Google Play з 31.08.2026 (SRS PUB-4)
-        versionCode = 15
-        versionName = "1.0.0"
+        versionCode = 16
+        versionName = "1.0.1"
     }
 
     signingConfigs {
@@ -50,6 +50,13 @@ android {
 
     buildTypes {
         release {
+            // R8: мінімізація й обфускація DEX (вимога Play Console "DEX code optimization")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             if (hasSigningConfig) {
                 signingConfig = signingConfigs.getByName("release")
             }
