@@ -1110,6 +1110,8 @@ fun TeperaDialog(
     content: (@Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit)? = null
 ) {
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismissRequest) {
+        // Вікно діалогу скидає LocalContext на Activity — повертаємо вибрану мову застосунку.
+        com.serkodesign.tepera.util.ProvideAppLocale {
         Column(
             modifier = modifier
                 .fillMaxWidth()
@@ -1160,6 +1162,7 @@ fun TeperaDialog(
                     modifier = Modifier.weight(1f)
                 )
             }
+        }
         }
     }
 }

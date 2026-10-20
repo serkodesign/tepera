@@ -80,6 +80,7 @@ fun SummarySheet(
             )
         }
     ) {
+        com.serkodesign.tepera.util.ProvideAppLocale {
         Column(
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -128,6 +129,7 @@ fun SummarySheet(
                 onClick = onOpenStats,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
         }
     }
 }

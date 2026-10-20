@@ -134,14 +134,20 @@ fun TeperaDatePickerDialog(
         shape = RoundedCornerShape(28.dp),
         colors = pickerColors,
         confirmButton = {
-            TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
-                pickerState.selectedDateMillis?.let { onSelected(utcMidnightToLocalStartOfDay(it)) } ?: onDismiss()
-            })
+            com.serkodesign.tepera.util.ProvideAppLocale {
+                TeperaButton(text = stringResource(R.string.dialog_save), onClick = {
+                    pickerState.selectedDateMillis?.let { onSelected(utcMidnightToLocalStartOfDay(it)) } ?: onDismiss()
+                })
+            }
         },
         dismissButton = {
-            TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = onDismiss, type = TeperaButtonType.Secondary)
+            com.serkodesign.tepera.util.ProvideAppLocale {
+                TeperaButton(text = stringResource(R.string.dialog_cancel), onClick = onDismiss, type = TeperaButtonType.Secondary)
+            }
         }
     ) {
-        DatePicker(state = pickerState, colors = pickerColors)
+        com.serkodesign.tepera.util.ProvideAppLocale {
+            DatePicker(state = pickerState, colors = pickerColors)
+        }
     }
 }
