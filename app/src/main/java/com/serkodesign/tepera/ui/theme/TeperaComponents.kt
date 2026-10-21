@@ -62,6 +62,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -701,15 +702,22 @@ fun TeperaSearchField(
     onFocusChange: (Boolean) -> Unit = {}
 ) {
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
-    val closeSearch = {
+    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focusSink = remember { androidx.compose.ui.focus.FocusRequester() }
+    val closeSearch: () -> Unit = {
         onQueryChange("")
-        focusManager.clearFocus()
+        keyboardController?.hide()
+        // clearFocus() одразу повертав фокус у єдине текстове поле (на P9/Android 8: focus=false, через ~30 мс знову
+        // true) — пошук лишався активним і з'являлась клавіатура. Явно віддаємо фокус нейтральному контейнеру.
+        focusSink.requestFocus()
     }
     androidx.activity.compose.BackHandler(enabled = active) { closeSearch() }
     Row(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
+            .focusRequester(focusSink)
+            .focusable()
             .clip(RoundedCornerShape(28.dp))
             // Білий, як картки (cardActive): у світлій темі — білий, у темній — колір карток, а не сірий inputSurface.
             .background(TeperaPalette.cardActive)
