@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- * Тестова збірка (flavor a11y): ворота без ярликів. Подія `TYPE_WINDOW_STATE_CHANGED` дає лише назву пакета вікна, що
+ * Тестова збірка (flavor beta): ворота без ярликів. Подія `TYPE_WINDOW_STATE_CHANGED` дає лише назву пакета вікна, що
  * з'явилось (вміст екрана не читається — `canRetrieveWindowContent = false`).
  *
  * **Паузу показуємо лише на ПЕРЕХОДІ в застосунок, а не поки він уже відкритий** (раніше з цим були проблеми):

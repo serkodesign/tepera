@@ -34,7 +34,7 @@ android {
         minSdk = 26        // Android 8.0 — нижня межа сумісності (SRS 5.6)
         targetSdk = 36      // Android 16 — обов'язково для Google Play з 31.08.2026 (SRS PUB-4)
         versionCode = 19
-        versionName = "1.0.4-test"
+        versionName = "1.0.4"
     }
 
     // Тестова збірка з воротами через Accessibility: окремий flavor, щоб основний реліз не мав ані сервісу, ані дозволу
@@ -46,9 +46,9 @@ android {
             dimension = "distribution"
             buildConfigField("boolean", "GATE_ACCESSIBILITY", "false")
         }
-        create("a11y") {
+        create("beta") {
             dimension = "distribution"
-            versionNameSuffix = "-a11y"
+            versionNameSuffix = "-beta"
             versionCode = 20
             buildConfigField("boolean", "GATE_ACCESSIBILITY", "true")
         }

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
-        <!-- Лише тестова збірка (flavor a11y): сервіс бачить ТІЛЬКИ назву пакета застосунку, що вийшов на передній план
+        <!-- Лише тестова збірка (flavor beta): сервіс бачить ТІЛЬКИ назву пакета застосунку, що вийшов на передній план
              (canRetrieveWindowContent = false), і показує екран паузи перед обраними застосунками. -->
         <service
             android:name=".gates.GateAccessibilityService"
