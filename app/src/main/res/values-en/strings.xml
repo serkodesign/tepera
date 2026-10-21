@@ -53,6 +53,9 @@
     <string name="summary_start_format">start %1$s</string>
     <string name="summary_chart_subtitle">phone-free hours by day</string>
     <string name="summary_stat_online">online</string>
+    <string name="summary_stat_avg_online">daily average</string>
+    <string name="summary_chart_subtitle_online">online hours by day</string>
+    <string name="summary_axis_hour_suffix">h</string>
     <string name="summary_open_stats">Open in statistics</string>
     <string name="hero_since_format">%1$s since waking</string>
     <string name="hero_orb_label">phone-free</string>

@@ -58,6 +58,9 @@
     <string name="summary_start_format">старт %1$s</string>
     <string name="summary_chart_subtitle">години без телефону по днях</string>
     <string name="summary_stat_online">online</string>
+    <string name="summary_stat_avg_online">середнє на день</string>
+    <string name="summary_chart_subtitle_online">online-години по днях</string>
+    <string name="summary_axis_hour_suffix">год</string>
     <string name="summary_open_stats">Відкрити в статистиці</string>
     <string name="hero_since_format">з %1$s минуло</string>
     <string name="hero_orb_label">без телефону</string>

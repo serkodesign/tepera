@@ -24,6 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -39,7 +42,6 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import java.time.LocalDate
 import java.time.Month
-import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -105,22 +107,20 @@ fun SummarySheet(
                     StatsRow(offline = yesterday?.offlineMinutes, online = yesterday?.onlineMinutes)
                 }
                 SummaryTab.WEEK -> {
-                    val bars = remember(today, completed, todayOffline) { buildCalendarWeek(today, completed, todayOffline) }
+                    val bars = remember(today, completed, todayOffline, todayOnline) { buildCalendarWeek(today, completed, todayOffline, todayOnline) }
                     GlassCard(cornerRadius = 24.dp) {
-                        ChartTitle(stringResource(R.string.summary_week))
-                        WeekChart(bars, locale)
+                        ChartTitle(stringResource(R.string.summary_week_online))
+                        OnlineChart(bars, locale, weekdayLabels = true)
                     }
-                    val totals = remember(bars, completed, todayOnline) { sumTotals(bars, completed, todayOnline) }
-                    StatsRow(offline = totals.offlineMinutes.takeIf { bars.any { it.offlineMinutes != null } }, online = totals.onlineMinutes.takeIf { bars.any { it.offlineMinutes != null } })
+                    PeriodStatsRow(bars)
                 }
                 SummaryTab.MONTH -> {
-                    val bars = remember(today, completed, todayOffline) { buildCalendarMonth(today, completed, todayOffline) }
+                    val bars = remember(today, completed, todayOffline, todayOnline) { buildCalendarMonth(today, completed, todayOffline, todayOnline) }
                     GlassCard(cornerRadius = 24.dp) {
                         ChartTitle(monthName(today, locale))
-                        MonthGrid(today, bars, locale)
+                        OnlineChart(bars, locale, weekdayLabels = false)
                     }
-                    val totals = remember(bars, completed, todayOnline) { sumTotals(bars, completed, todayOnline) }
-                    StatsRow(offline = totals.offlineMinutes.takeIf { bars.any { it.offlineMinutes != null } }, online = totals.onlineMinutes.takeIf { bars.any { it.offlineMinutes != null } })
+                    PeriodStatsRow(bars)
                 }
             }
 
@@ -204,12 +204,31 @@ private fun ChartTitle(title: String) {
             lineHeight = 19.8.sp
         )
         Text(
-            text = stringResource(R.string.summary_chart_subtitle),
+            text = stringResource(R.string.summary_chart_subtitle_online),
             color = TeperaPalette.textSecondary,
             fontFamily = TeperaPalette.headlineFont,
             fontSize = 12.sp, // ≥ 12sp для змістовного тексту (CH-10); у Figma 11
             lineHeight = 13.2.sp
         )
+    }
+}
+
+/** Тиждень / місяць: Online за період і в середньому на день (за завершені доби). */
+@Composable
+private fun PeriodStatsRow(bars: List<DayBar>) {
+    val total = bars.mapNotNull { it.onlineMinutes }.takeIf { it.isNotEmpty() }?.sum()
+    val average = averageOnline(bars)
+    val totalText = if (total != null) heroDuration(total) else "—"
+    val averageText = if (average != null) heroDuration(average) else "—"
+    val longest = maxOf(totalText.length, averageText.length)
+    val size = when {
+        longest >= 12 -> 17
+        longest >= 10 -> 20
+        else -> 22
+    }
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        StatCard(stringResource(R.string.summary_stat_online), totalText, size, Modifier.weight(1f))
+        StatCard(stringResource(R.string.summary_stat_avg_online), averageText, size, Modifier.weight(1f))
     }
 }
 
@@ -266,64 +285,29 @@ private fun dayLabel(date: LocalDate, locale: Locale): String =
 private fun monthName(today: LocalDate, locale: Locale): String =
     Month.of(today.monthValue).getDisplayName(TextStyle.FULL_STANDALONE, locale).replaceFirstChar { it.titlecase(locale) }
 
-/** Тиждень: 7 стовпчиків пн–нд (радіус 10, ширина 32), сьогодні — `card/active`, решта — `data/offline-life` @80%. */
+/**
+ * Стовпчики Online по днях зі шкалою годин зліва (і для тижня, і для місяця). Сьогодні — `card/active`, решта —
+ * Online-колір; дні без даних — ледь помітна смужка. Тиждень підписує всі дні, місяць — кожен 7-й.
+ */
 @Composable
-private fun WeekChart(bars: List<DayBar>, locale: Locale) {
-    val base = TeperaPalette.restOfDayCard
-    val today = TeperaPalette.activityCardActive
-    val max = maxOf(60, bars.maxOfOrNull { it.offlineMinutes ?: 0 } ?: 0).toFloat()
-    Row(
-        modifier = Modifier.fillMaxWidth().height(140.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        bars.forEach { bar ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
-                Box(Modifier.height(112.dp).width(32.dp), contentAlignment = Alignment.BottomCenter) {
-                    val value = bar.offlineMinutes
-                    val barHeight = if (value == null) 4.dp else maxOf(4f, 112f * value / max).dp
-                    Box(
-                        Modifier
-                            .width(32.dp)
-                            .height(barHeight)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                when {
-                                    value == null -> base.copy(alpha = 0.25f)
-                                    bar.isToday -> today
-                                    else -> base.copy(alpha = 0.8f)
-                                }
-                            )
-                    )
-                }
-                Text(
-                    text = dayLabel(bar.date, locale),
-                    modifier = Modifier.padding(top = 8.dp),
-                    color = TeperaPalette.textSecondary,
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontSize = 12.sp,
-                    lineHeight = 13.2.sp,
-                    maxLines = 1
-                )
-            }
-        }
-    }
-}
-
-/** Місяць: календарна сітка (пн–нд), клітинка — інтенсивність "без телефону" (`data/offline-life`), сьогодні — `card/active`. */
-@Composable
-private fun MonthGrid(today: LocalDate, bars: List<DayBar>, locale: Locale) {
-    val base = TeperaPalette.restOfDayCard
+private fun OnlineChart(bars: List<DayBar>, locale: Locale, weekdayLabels: Boolean) {
+    val online = TeperaPalette.onlineCard
     val todayColor = TeperaPalette.activityCardActive
-    val empty = TeperaPalette.textPrimary.copy(alpha = 0.06f)
-    val max = maxOf(60, bars.maxOfOrNull { it.offlineMinutes ?: 0 } ?: 0).toFloat()
-    val offset = YearMonth.from(today).atDay(1).dayOfWeek.value - 1
-    val cells: List<DayBar?> = List(offset) { null } + bars
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            (0 until 7).forEach { i ->
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+    val grid = TeperaPalette.textSecondary.copy(alpha = 0.25f)
+    val (top, step) = onlineAxis(bars.maxOfOrNull { it.onlineMinutes ?: 0 } ?: 0)
+    val ticks = (0..top step step).toList()
+    val plotHeight = 112.dp
+    val labelHeight = 14.dp
+    val hourSuffix = stringResource(R.string.summary_axis_hour_suffix)
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.height(plotHeight + labelHeight).width(40.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            ticks.reversed().forEach { tick ->
+                Box(Modifier.height(labelHeight), contentAlignment = Alignment.CenterStart) {
                     Text(
-                        text = dayLabel(LocalDate.of(2026, 10, 12).plusDays(i.toLong()), locale), // будь-який понеділок + i
+                        text = if (tick == 0) "0" else "$tick $hourSuffix",
                         color = TeperaPalette.textSecondary,
                         fontFamily = TeperaPalette.headlineFont,
                         fontSize = 12.sp,
@@ -333,25 +317,65 @@ private fun MonthGrid(today: LocalDate, bars: List<DayBar>, locale: Locale) {
                 }
             }
         }
-        cells.chunked(7).forEach { week ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                (0 until 7).forEach { i ->
-                    val bar = week.getOrNull(i)
-                    val value = bar?.offlineMinutes
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .height(36.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                when {
-                                    bar == null -> Color.Transparent
-                                    bar.isToday -> todayColor
-                                    value == null -> empty
-                                    else -> base.copy(alpha = 0.35f + 0.55f * (value / max).coerceIn(0f, 1f))
-                                }
+        Column(Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(plotHeight + labelHeight)
+                    .drawBehind {
+                        val inset = labelHeight.toPx() / 2
+                        val span = plotHeight.toPx()
+                        ticks.forEach { tick ->
+                            val y = inset + span * (1f - tick.toFloat() / top)
+                            drawLine(grid, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
+                        }
+                    }
+                    .padding(vertical = labelHeight / 2),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                val gap = if (weekdayLabels) 6.dp else 1.5.dp
+                bars.forEach { bar ->
+                    val value = bar.onlineMinutes
+                    val barHeight = if (value == null) 3.dp else maxOf(3f, plotHeight.value * value / (top * 60f)).dp
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.BottomCenter) {
+                        Box(
+                            Modifier
+                                .padding(horizontal = gap)
+                                .fillMaxWidth()
+                                .height(barHeight)
+                                .clip(RoundedCornerShape(if (weekdayLabels) 8.dp else 3.dp))
+                                .background(
+                                    when {
+                                        value == null -> online.copy(alpha = 0.2f)
+                                        bar.isToday -> todayColor
+                                        else -> online
+                                    }
+                                )
+                        )
+                    }
+                }
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                bars.forEachIndexed { index, bar ->
+                    val label = when {
+                        weekdayLabels -> dayLabel(bar.date, locale)
+                        index % 7 == 0 -> bar.date.dayOfMonth.toString()
+                        else -> null
+                    }
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                        if (label != null) {
+                            Text(
+                                text = label,
+                                modifier = Modifier.wrapContentWidth(unbounded = true),
+                                color = TeperaPalette.textSecondary,
+                                fontFamily = TeperaPalette.headlineFont,
+                                fontSize = 12.sp,
+                                lineHeight = 13.2.sp,
+                                maxLines = 1,
+                                softWrap = false
                             )
-                    )
+                        }
+                    }
                 }
             }
         }

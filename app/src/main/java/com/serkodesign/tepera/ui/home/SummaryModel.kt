@@ -89,29 +89,44 @@ fun buildPeriod(today: LocalDate, days: Int, completed: Map<LocalDate, DayStat>,
 }
 
 /** Календарний тиждень (пн–нд), що містить [today]: для шторки. Майбутні дні лишаються без даних. */
-fun buildCalendarWeek(today: LocalDate, completed: Map<LocalDate, DayStat>, todayOffline: Int?): List<DayBar> {
+fun buildCalendarWeek(today: LocalDate, completed: Map<LocalDate, DayStat>, todayOffline: Int?, todayOnline: Int? = null): List<DayBar> {
     val monday = today.minusDays((today.dayOfWeek.value - 1).toLong())
-    return (0 until 7).map { i ->
-        val date = monday.plusDays(i.toLong())
-        when {
-            date == today -> DayBar(date, todayOffline, true)
-            date.isAfter(today) -> DayBar(date, null, false)
-            else -> DayBar(date, completed[date]?.offlineMinutes, false)
-        }
-    }
+    return (0 until 7).map { i -> calendarBar(monday.plusDays(i.toLong()), today, completed, todayOffline, todayOnline) }
 }
 
 /** Календарний місяць, що містить [today], дні 1..N: для шторки. */
-fun buildCalendarMonth(today: LocalDate, completed: Map<LocalDate, DayStat>, todayOffline: Int?): List<DayBar> {
+fun buildCalendarMonth(today: LocalDate, completed: Map<LocalDate, DayStat>, todayOffline: Int?, todayOnline: Int? = null): List<DayBar> {
     val month = YearMonth.from(today)
-    return (1..month.lengthOfMonth()).map { day ->
-        val date = month.atDay(day)
-        when {
-            date == today -> DayBar(date, todayOffline, true)
-            date.isAfter(today) -> DayBar(date, null, false)
-            else -> DayBar(date, completed[date]?.offlineMinutes, false)
-        }
+    return (1..month.lengthOfMonth()).map { day -> calendarBar(month.atDay(day), today, completed, todayOffline, todayOnline) }
+}
+
+private fun calendarBar(date: LocalDate, today: LocalDate, completed: Map<LocalDate, DayStat>, todayOffline: Int?, todayOnline: Int?): DayBar =
+    when {
+        date == today -> DayBar(date, todayOffline, true, todayOnline)
+        date.isAfter(today) -> DayBar(date, null, false)
+        else -> DayBar(date, completed[date]?.offlineMinutes, false, completed[date]?.onlineMinutes)
     }
+
+/** Середнє Online на день за завершені доби з даними (сьогодні не входить); null, якщо таких немає. */
+fun averageOnline(bars: List<DayBar>): Int? {
+    val values = bars.filter { !it.isToday }.mapNotNull { it.onlineMinutes }
+    return if (values.isEmpty()) null else values.sum() / values.size
+}
+
+/**
+ * Вісь Y для стовпчиків Online: верхня межа в годинах і крок позначок. Крок підбирається так, щоб було 2–5 позначок
+ * (1, 2, 3 або 6 год), верх — найближче кратне кроку не менше за максимум.
+ */
+fun onlineAxis(maxMinutes: Int): Pair<Int, Int> {
+    val maxHours = maxOf(1, Math.ceil(maxMinutes / 60.0).toInt())
+    val step = when {
+        maxHours <= 4 -> 1
+        maxHours <= 8 -> 2
+        maxHours <= 15 -> 3
+        else -> 6
+    }
+    val top = ((maxHours + step - 1) / step) * step
+    return top to step
 }
 
 /** Середнє на день у годинах для тізера: "4" або "3,7" (одна цифра після коми, лише якщо не ціле). */
