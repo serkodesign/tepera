@@ -561,4 +561,7 @@
     <string name="free_opens_count_format">%d per day</string>
     <string name="free_opens_decrease">Fewer</string>
     <string name="free_opens_increase">More</string>
+
+    <string name="gates_mode_shortcut">Shortcut</string>
+    <string name="gates_mode_accessibility">Accessibility</string>
 </resources>

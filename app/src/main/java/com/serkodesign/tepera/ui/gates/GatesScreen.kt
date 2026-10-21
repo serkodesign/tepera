@@ -113,6 +113,9 @@ fun GatesScreen(
     // Тестова збірка a11y: чи ввімкнена служба доступності (змінюється в системних налаштуваннях — перечитуємо при поверненні).
     var a11yEnabled by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
     var showA11yDisclosure by remember { mutableStateOf(false) }
+    // Спосіб воріт: ярлик або доступність (таб). Лише в збірці a11y; у standard завжди ярлик.
+    var viaA11y by rememberSaveable { mutableStateOf(GateAccessibility.isAvailable) }
+    val tabGates = if (GateAccessibility.isAvailable) state.gates.filter { (it.gate.shortcutId.isEmpty()) == viaA11y } else state.gates
     val freeOpensPerDay by viewModel.freeOpensPerDay.collectAsState()
     val freeOpensUsed by viewModel.freeOpensUsed.collectAsState()
 
@@ -143,7 +146,7 @@ fun GatesScreen(
 
             // Пошук закріплений угорі: інакше при вводі клавіатура закривала б список під полем. Діє на обидва
             // списки — уже додані й доступні для додавання.
-            if (!state.loading && (state.pinShortcutSupported || a11yEnabled)) {
+            if (!state.loading && (state.pinShortcutSupported || viaA11y)) {
                 TeperaSearchField(
                     query = query,
                     onQueryChange = { query = it },
@@ -164,14 +167,18 @@ fun GatesScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    if (!searchActive && !a11yEnabled) item {
-                        TeperaHint(
-                            text = stringResource(R.string.gates_hint),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-                        )
-                    }
                     if (!searchActive && GateAccessibility.isAvailable) {
                         item {
+                            PillSegmentedControl(
+                                options = listOf(
+                                    false to stringResource(R.string.gates_mode_shortcut),
+                                    true to stringResource(R.string.gates_mode_accessibility)
+                                ),
+                                selected = viaA11y,
+                                onSelect = { viaA11y = it }
+                            )
+                        }
+                        if (viaA11y) item {
                             AccessibilityGateCard(enabled = a11yEnabled, onOpen = { showA11yDisclosure = true })
                         }
                         item {
@@ -181,6 +188,12 @@ fun GatesScreen(
                                 onChange = { viewModel.setFreeOpensPerDay(it) }
                             )
                         }
+                    }
+                    if (!searchActive && !viaA11y) item {
+                        TeperaHint(
+                            text = stringResource(R.string.gates_hint),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                        )
                     }
                     if (!searchActive) item {
                         // CC-5: ворота активні = зараз вікно розкладу І немає паузи.
@@ -231,7 +244,7 @@ fun GatesScreen(
                         }
                     }
 
-                    if (!state.pinShortcutSupported && !a11yEnabled) {
+                    if (!state.pinShortcutSupported && !viaA11y) {
                         item {
                             Text(
                                 text = stringResource(R.string.gates_unsupported),
@@ -243,7 +256,7 @@ fun GatesScreen(
                     }
 
                     val needle = query.trim()
-                    val visibleGates = state.gates.filter { needle.isEmpty() || it.app.label.contains(needle, ignoreCase = true) }
+                    val visibleGates = tabGates.filter { needle.isEmpty() || it.app.label.contains(needle, ignoreCase = true) }
                     val visibleApps = state.availableApps.filter { needle.isEmpty() || it.label.contains(needle, ignoreCase = true) }
                     if (needle.isNotEmpty() && visibleGates.isEmpty() && visibleApps.isEmpty()) {
                         item {
@@ -260,7 +273,7 @@ fun GatesScreen(
                     if (!searchActive || visibleGates.isNotEmpty()) {
                         item { GlassSectionHeader(stringResource(R.string.gates_section_active)) }
                     }
-                    if (!searchActive && state.gates.isEmpty()) {
+                    if (!searchActive && tabGates.isEmpty()) {
                         item {
                             Text(
                                 text = stringResource(R.string.gates_empty),
@@ -347,8 +360,8 @@ fun GatesScreen(
             onConfirm = { delaySeconds ->
                 pendingApp = null
                 scope.launch {
-                    val created = viewModel.createGate(app, delaySeconds, viaAccessibility = a11yEnabled)
-                    if (created) { if (!a11yEnabled) instructionApp = app } else pinFailed = true
+                    val created = viewModel.createGate(app, delaySeconds, viaAccessibility = viaA11y)
+                    if (created) { if (!viaA11y) instructionApp = app } else pinFailed = true
                 }
             }
         )

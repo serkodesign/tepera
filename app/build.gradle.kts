@@ -49,6 +49,7 @@ android {
         create("a11y") {
             dimension = "distribution"
             versionNameSuffix = "-a11y"
+            versionCode = 19
             buildConfigField("boolean", "GATE_ACCESSIBILITY", "true")
         }
     }

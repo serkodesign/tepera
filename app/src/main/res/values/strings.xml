@@ -578,4 +578,7 @@
     <string name="free_opens_count_format">%d на день</string>
     <string name="free_opens_decrease">Менше</string>
     <string name="free_opens_increase">Більше</string>
+
+    <string name="gates_mode_shortcut">Ярлик</string>
+    <string name="gates_mode_accessibility">Доступність</string>
 </resources>
