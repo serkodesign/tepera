@@ -36,14 +36,15 @@ fun TeperaTimePickerDialog(
     title: String,
     minuteOfDay: Int,
     onSelected: (Int) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    startInKeyboard: Boolean = false
 ) {
     val pickerState = rememberTimePickerState(
         initialHour = minuteOfDay / 60,
         initialMinute = minuteOfDay % 60,
         is24Hour = true
     )
-    var keyboardMode by remember { mutableStateOf(false) }
+    var keyboardMode by remember { mutableStateOf(startInKeyboard) }
     val pickerColors = TimePickerDefaults.colors(
         clockDialColor = TeperaPalette.colors.card, // відрізняється від тла діалогу (surfaceBrandLight) в обох темах
         clockDialSelectedContentColor = TeperaPalette.onPrimary,

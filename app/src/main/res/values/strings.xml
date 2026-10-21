@@ -279,15 +279,15 @@
     <string name="settings_suggest_feature_no_browser">Не вдалося знайти браузер, щоб відкрити форму</string>
 
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
-    <string name="backup_export_action">Експортувати дані (JSON)</string>
-    <string name="backup_import_action">Імпортувати дані (JSON)</string>
-    <string name="backup_not_included_note">У файл потрапляють категорії, записи, виключені застосунки й орієнтир. Решту налаштувань (вікно сну, віджет, мову тощо) задайте заново.</string>
+    <string name="backup_export_action">Експортувати статистику</string>
+    <string name="backup_import_action">Імпортувати статистику</string>
+    <string name="backup_not_included_note">У файл потрапляють: категорії (назва, іконка, колір, порядок, архівація), усі записи активностей (початок, тривалість, нотатка), виключені застосунки, орієнтир Online-часу та щоденна історія Online (хвилини Online, розблокування, початок і кінець дня, Online по годинах). Решту налаштувань (вікно сну, ворота, віджет, мову, тему) задайте заново.</string>
     <string name="backup_export_success">Дані експортовано</string>
     <string name="backup_export_failure">Не вдалося експортувати дані</string>
     <string name="backup_import_success">Дані імпортовано</string>
     <string name="backup_import_failure">Не вдалося імпортувати дані — перевірте файл</string>
     <string name="backup_import_confirm_title">Замінити всі дані?</string>
-    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи, виключені застосунки й орієнтир даними з файлу. Це не можна скасувати. Решта налаштувань не відновлюється.</string>
+    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи, виключені застосунки, орієнтир і щоденну історію Online даними з файлу. Це не можна скасувати. Решта налаштувань не відновлюється.</string>
     <string name="backup_import_confirm_action">Імпортувати</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -516,7 +516,7 @@
     <string name="backup_delete_section">Видалення даних</string>
     <string name="backup_delete_action">Видалити всі дані</string>
     <string name="backup_delete_title">Видалити всі дані?</string>
-    <string name="backup_delete_body">Буде видалено записи, категорії, налаштування й усе, що Tepera зберігає на цьому телефоні. Це не можна скасувати.\n\nЯкщо сумніваєтеся, спершу збережіть копію: «Експортувати дані».\n\nКопію Android Auto Backup (якщо ввімкнена) це не чіпає.</string>
+    <string name="backup_delete_body">Буде видалено записи, категорії, налаштування й усе, що Tepera зберігає на цьому телефоні. Це не можна скасувати.\n\nЯкщо сумніваєтеся, спершу збережіть копію: «Експортувати статистику».\n\nКопію Android Auto Backup (якщо ввімкнена) це не чіпає.</string>
     <string name="backup_delete_next">Далі</string>
     <string name="backup_delete_final_title">Останнє підтвердження</string>
     <string name="backup_delete_final_body">Щоб видалити все назавжди, напишіть слово «%1$s».</string>
