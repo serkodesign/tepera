@@ -250,7 +250,10 @@ private const val DAILY_GRID_COLUMNS = 12
 private const val DAILY_GRID_ROWS = 4
 private val CARD_PADDING = 12.dp
 private val DAILY_GRID_GAP = 3.dp
-private val DAILY_GRID_MAX_CELL = 16.dp // макет: висота пігулки 16
+private val DAILY_GRID_MAX_CELL = 24.dp // макет: 16; до 24 клітинки ростуть разом із висотою віджета
+private val EXTENDED_MAX_HEIGHT = 212.dp // 4x2 на сітці 4x4: підкладка не вища за макетні ~211dp, а не на весь розмір
+private val WIDGET_GRID_OUTLINE = Color(0x29000000) // обвідка білих клітинок на світлій підкладці
+private val WIDGET_GRID_FUTURE_DASH = Color(0x80003926)
 private val DAILY_GRID_MIN_CELL = 8.dp // нижче — на тісних лаунчерах (висота 140dp) клітинки ще читаються
 private val ROW_TO_CARD_GAP = 8.dp
 
@@ -268,7 +271,7 @@ private val HOUR_ROW_LABELS = listOf(0, 6, 12, 18) // початок кожно�
 private val HOUR_LABEL_WIDTH = 18.dp
 private val HOUR_LABEL_GAP = 6.dp
 private val HOUR_LABEL_TEXT_SIZE = 11.sp
-private val HOUR_LABEL_COLOR = Color.White
+private val HOUR_LABEL_COLOR = Color(0xFF003926) // підкладка щільна біла (70%) — текст темно-зелений
 private val LEGEND_ROW_GAP = 8.dp
 private val LEGEND_ROW_HEIGHT = 16.dp
 private val LEGEND_DOT_SIZE = 12.dp // +50% до 8dp за запитом користувача
@@ -498,7 +501,7 @@ private fun DailyGridCard(
                             style = TextStyle(
                                 fontSize = LEGEND_TEXT_SIZE,
                                 fontWeight = FontWeight.Medium,
-                                color = ColorProvider(day = Color.White, night = Color.White)
+                                color = ColorProvider(day = HOUR_LABEL_COLOR, night = HOUR_LABEL_COLOR)
                             )
                         )
                     }
@@ -535,9 +538,14 @@ private fun renderDailyGridBitmap(
     val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     val dashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        color = android.graphics.Color.WHITE
+        color = WIDGET_GRID_FUTURE_DASH.toArgb()
         strokeWidth = density
         pathEffect = DashPathEffect(floatArrayOf(3 * density, 2 * density), 0f)
+    }
+    val outlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        color = WIDGET_GRID_OUTLINE.toArgb()
+        strokeWidth = density
     }
     val cellWidthPx = (widthPx - gapPx * (DAILY_GRID_COLUMNS - 1)) / DAILY_GRID_COLUMNS
     val radiusPx = cellHeightPx / 2
@@ -549,6 +557,12 @@ private fun renderDailyGridBitmap(
             val left = col * (cellWidthPx + gapPx)
             val top = row * (cellHeightPx + gapPx)
             canvas.drawRoundRect(RectF(left, top, left + cellWidthPx, top + cellHeightPx), radiusPx, radiusPx, fillPaint)
+            if (colorForGridSlot(slot) == WIDGET_GRID_BLANK_PAST) {
+                canvas.drawRoundRect(
+                    RectF(left + inset, top + inset, left + cellWidthPx - inset, top + cellHeightPx - inset),
+                    radiusPx, radiusPx, outlinePaint
+                )
+            }
             if (slot is DailyGridSlot.Blank && slot.isFuture) {
                 canvas.drawRoundRect(
                     RectF(left + inset, top + inset, left + cellWidthPx - inset, top + cellHeightPx - inset),
@@ -716,17 +730,27 @@ private fun WidgetContent(
         // RemoteViews іноді не знімає раніше встановлений фон.
         // Вміст прив'язаний до верху: відступ зверху = 12, а зайве місце по висоті віддає картка сітки
         // (defaultWeight у DailyGridCard), тож відступ знизу теж 12 — як зліва й справа.
+        // Кореневий фон прозорий, підкладку несе внутрішня колонка. На сітці 4x4 лаунчер дає 4x2 набагато більше
+        // висоти, ніж макет, — тоді підкладка лишається ~212dp і центрується. LocalSize.height у Responsive —
+        // найближчий МЕНШИЙ розмір зі списку (макс. 205), тож 205 означає "205 і більше".
+        val capHeight = isExtended && LocalSize.current.height >= 205.dp
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(ImageProvider(if (isExtended) R.drawable.widget_root_translucent else R.drawable.widget_root_none))
-                .padding(if (isExtended) CARD_PADDING else 0.dp),
-            verticalAlignment = Alignment.Top
+                .background(ImageProvider(R.drawable.widget_root_none)),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            CategoryButtonsRow(categories.take(maxButtons), activeTimers, context, capsule = !isExtended)
-            if (isExtended) {
-                Spacer(modifier = GlanceModifier.height(ROW_TO_CARD_GAP))
-                DailyGridCard(hasUsageAccess, gridSlots, context, modifier = GlanceModifier.defaultWeight())
+            Column(
+                modifier = (if (capHeight) GlanceModifier.fillMaxWidth().height(EXTENDED_MAX_HEIGHT) else GlanceModifier.fillMaxSize())
+                    .background(ImageProvider(if (isExtended) R.drawable.widget_root_translucent else R.drawable.widget_root_none))
+                    .padding(if (isExtended) CARD_PADDING else 0.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                CategoryButtonsRow(categories.take(maxButtons), activeTimers, context, capsule = !isExtended)
+                if (isExtended) {
+                    Spacer(modifier = GlanceModifier.height(ROW_TO_CARD_GAP))
+                    DailyGridCard(hasUsageAccess, gridSlots, context, modifier = GlanceModifier.defaultWeight())
+                }
             }
         }
     }
