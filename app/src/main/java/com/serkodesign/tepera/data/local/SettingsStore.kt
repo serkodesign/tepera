@@ -36,6 +36,9 @@ private const val GATE_PAUSE_HISTORY_LIMIT = 40
 private val LAST_OPEN_KEY = longPreferencesKey("last_open_millis")
 private val GATE_TEXT_BAG_KEY = stringPreferencesKey("gate_text_bag")
 private val GATE_GROWING_DELAY_KEY = booleanPreferencesKey("gate_growing_delay")
+private val GATE_FREE_OPENS_PER_DAY_KEY = intPreferencesKey("gate_free_opens_per_day")
+private val GATE_FREE_OPENS_DAY_KEY = longPreferencesKey("gate_free_opens_day")
+private val GATE_FREE_OPENS_USED_KEY = intPreferencesKey("gate_free_opens_used")
 private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
@@ -383,6 +386,35 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setGateGrowingDelay(enabled: Boolean) {
         context.settingsDataStore.edit { it[GATE_GROWING_DELAY_KEY] = enabled }
+    }
+
+    /** Тестова збірка (a11y): скільки відкриттів воріт на день проходять БЕЗ затримки. 0 = вимкнено. */
+    val gateFreeOpensPerDay: Flow<Int> = context.settingsDataStore.data.map { it[GATE_FREE_OPENS_PER_DAY_KEY] ?: 0 }
+
+    suspend fun setGateFreeOpensPerDay(count: Int) {
+        context.settingsDataStore.edit { it[GATE_FREE_OPENS_PER_DAY_KEY] = count.coerceAtLeast(0) }
+    }
+
+    /** Скільки вільних відкриттів використано в логічній добі [dayStartMillis]; в іншу добу лічильник вважається нульовим. */
+    fun gateFreeOpensUsed(dayStartMillis: Long): Flow<Int> = context.settingsDataStore.data.map {
+        if (it[GATE_FREE_OPENS_DAY_KEY] == dayStartMillis) it[GATE_FREE_OPENS_USED_KEY] ?: 0 else 0
+    }
+
+    /**
+     * Атомарно: якщо в добі [dayStartMillis] ще лишились вільні відкриття з [limit] — витрачає одне й повертає true.
+     * Зміна доби скидає лічильник.
+     */
+    suspend fun tryConsumeGateFreeOpen(dayStartMillis: Long, limit: Int): Boolean {
+        var consumed = false
+        context.settingsDataStore.edit { prefs ->
+            val used = if (prefs[GATE_FREE_OPENS_DAY_KEY] == dayStartMillis) prefs[GATE_FREE_OPENS_USED_KEY] ?: 0 else 0
+            if (used < limit) {
+                prefs[GATE_FREE_OPENS_DAY_KEY] = dayStartMillis
+                prefs[GATE_FREE_OPENS_USED_KEY] = used + 1
+                consumed = true
+            }
+        }
+        return consumed
     }
 
     /** CC-4: момент попереднього справжнього відкриття Tepera (0 — ще ніколи). */

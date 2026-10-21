@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.gates.AccessibilityDisclosureDialog
+import com.serkodesign.tepera.util.GateAccessibility
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
@@ -94,10 +96,14 @@ fun OnboardingScreen(
     }
 
     var usageGranted by remember { mutableStateOf(false) }
+    // Тестова збірка (a11y): другий, НЕобов'язковий рядок — доступність для воріт; «Продовжити» від нього не залежить.
+    var a11yGranted by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
+    var showA11yDisclosure by remember { mutableStateOf(false) }
 
     // Дозволи змінюються поза застосунком (системні налаштування) — перечитуємо при поверненні.
     LifecycleResumeEffect(Unit) {
         scope.launch { usageGranted = balanceRepository.hasUsageAccess() }
+        a11yGranted = GateAccessibility.isEnabled(context)
         onPauseOrDispose { }
     }
 
@@ -171,6 +177,13 @@ fun OnboardingScreen(
                         context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                     }
                 )
+                if (GateAccessibility.isAvailable) {
+                    PermissionRow(
+                        label = stringResource(R.string.a11y_perm_label),
+                        granted = a11yGranted,
+                        onClick = { showA11yDisclosure = true }
+                    )
+                }
             }
             Spacer(Modifier.height(23.dp))
 
@@ -188,6 +201,15 @@ fun OnboardingScreen(
             )
         }
     }
+        if (showA11yDisclosure) {
+            AccessibilityDisclosureDialog(
+                onDismiss = { showA11yDisclosure = false },
+                onContinue = {
+                    showA11yDisclosure = false
+                    GateAccessibility.openSettings(context)
+                }
+            )
+        }
         OnboardingTopBar(
             step = 6,
             onSkipAll = onSkipAll,

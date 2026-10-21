@@ -16,6 +16,7 @@ import com.serkodesign.tepera.util.GatePausePresets
 import com.serkodesign.tepera.util.GateSchedule
 import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.util.buildGateShortcutIcon
+import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -71,7 +72,22 @@ class GateRepository(
      * непередбачувану затримку, через яку деякі лаунчери мовчки відмовлялись показати діалог.
      * Лише вставка в Room явно йде на IO — єдина частина, що справді потребує фонового потоку.
      */
-    suspend fun createGate(packageName: String, label: String, delaySeconds: Int): Boolean {
+    suspend fun createGate(packageName: String, label: String, delaySeconds: Int, viaAccessibility: Boolean = false): Boolean {
+        if (viaAccessibility) {
+            // Тестова збірка a11y: сервіс доступності сам ловить відкриття, ярлик не потрібен (shortcutId порожній),
+            // оригінальну іконку ховати не треба.
+            withContext(Dispatchers.IO) {
+                dao.insert(
+                    AppGateEntity(
+                        packageName = packageName,
+                        delaySeconds = delaySeconds,
+                        originalIconHandled = true,
+                        shortcutId = ""
+                    )
+                )
+            }
+            return true
+        }
         if (!isPinShortcutSupported()) return false
 
         val id = "gate_${packageName}_${System.currentTimeMillis()}"
@@ -112,7 +128,7 @@ class GateRepository(
      */
     suspend fun removeGate(packageName: String) = withContext(Dispatchers.IO) {
         val shortcutId = dao.getByPackageName(packageName)?.shortcutId
-        if (shortcutId != null) {
+        if (!shortcutId.isNullOrEmpty()) {
             context.getSystemService(ShortcutManager::class.java)?.disableShortcuts(listOf(shortcutId))
         }
         dao.deleteByPackageName(packageName)
@@ -135,7 +151,8 @@ class GateRepository(
         val shortcutManager = context.getSystemService(ShortcutManager::class.java) ?: return@withContext
         val pinnedIds = shortcutManager.pinnedShortcuts.map { it.id }.toSet()
         dao.getAllOnce().forEach { gate ->
-            if (gate.shortcutId !in pinnedIds) {
+            // Ворота без ярлика (shortcutId порожній — створені через Accessibility) не мають що звіряти.
+            if (gate.shortcutId.isNotEmpty() && gate.shortcutId !in pinnedIds) {
                 dao.deleteByPackageName(gate.packageName)
             }
         }
@@ -153,8 +170,42 @@ class GateRepository(
         val now = System.currentTimeMillis()
         if (!isGateActiveNow(now)) return@withContext true
         val gate = dao.getByPackageName(packageName) ?: return@withContext true
-        now - gate.lastProceedAtMillis <= PROCEED_DEBOUNCE_MILLIS
+        if (now - gate.lastProceedAtMillis <= PROCEED_DEBOUNCE_MILLIS) return@withContext true
+        // Остання перевірка: денний ліміт «вільних» відкриттів. Витрачається лише тут — коли пауза інакше була б показана.
+        val limit = settingsStore.gateFreeOpensPerDay.first()
+        limit > 0 && settingsStore.tryConsumeGateFreeOpen(startOfLogicalDayMillis(now), limit)
     }
+
+    // --- Тестова збірка a11y: вільні відкриття й передача "вже перевірено" від сервісу до екрана паузи ------------
+
+    val freeOpensPerDay: Flow<Int> = settingsStore.gateFreeOpensPerDay
+
+    /** Скільки вільних відкриттів уже використано в поточній логічній добі. */
+    fun freeOpensUsedToday(): Flow<Int> = settingsStore.gateFreeOpensUsed(startOfLogicalDayMillis())
+
+    suspend fun setFreeOpensPerDay(count: Int) = settingsStore.setGateFreeOpensPerDay(count)
+
+    @Volatile private var precheckedPackage: String? = null
+    @Volatile private var precheckedAtMillis: Long = 0L
+
+    /**
+     * Сервіс доступності вже викликав [shouldSkipPause] (і міг витратити вільне відкриття) та вирішив показати паузу —
+     * екран паузи не повинен перевіряти вдруге, інакше вільне відкриття списалось би двічі.
+     */
+    fun markPrechecked(packageName: String, nowMillis: Long = System.currentTimeMillis()) {
+        precheckedPackage = packageName
+        precheckedAtMillis = nowMillis
+    }
+
+    /** true один раз для пакета, позначеного [markPrechecked] щойно (до 10 с тому). */
+    fun consumePrechecked(packageName: String, nowMillis: Long = System.currentTimeMillis()): Boolean {
+        val match = precheckedPackage == packageName && nowMillis - precheckedAtMillis <= PRECHECKED_TTL_MILLIS
+        precheckedPackage = null
+        return match
+    }
+
+    /** Пакети з воротами — для сервісу доступності. */
+    suspend fun gatedPackages(): Set<String> = withContext(Dispatchers.IO) { dao.getAllOnce().map { it.packageName }.toSet() }
 
     // --- CC-5: пауза воріт і розклад ---------------------------------------------------------
 
@@ -276,5 +327,6 @@ class GateRepository(
     companion object {
         const val GATE_TARGET_PACKAGE_EXTRA = "gate_target_package"
         private const val PROCEED_DEBOUNCE_MILLIS = 30_000L
+        private const val PRECHECKED_TTL_MILLIS = 10_000L
     }
 }

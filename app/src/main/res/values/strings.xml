@@ -558,4 +558,24 @@
     <!-- Ярлики застосунку (довгий тап по іконці): динамічні, бо назва паузи змінюється зі станом -->
     <string name="shortcut_pause_gates">Пауза затримки</string>
     <string name="shortcut_resume_gates">Відновити затримку</string>
+
+
+    <!-- Тестова збірка (flavor a11y): ворота через сервіс доступності -->
+    <string name="a11y_gate_card_title">Затримка при будь-якому відкритті</string>
+    <string name="a11y_gate_card_off">Щоб пауза з\'являлась, коли ви відкриваєте обраний застосунок будь-яким способом (іконка, сповіщення, нещодавні), увімкніть Tepera у Спеціальних можливостях.</string>
+    <string name="a11y_gate_card_on">Увімкнено. Пауза з\'являється, коли ви відкриваєте обраний застосунок. Якщо ви вже в ньому, повторно вона не показується.</string>
+    <string name="a11y_gate_enable_action">Увімкнути</string>
+    <string name="a11y_gate_manage_action">Налаштування</string>
+    <string name="a11y_disclosure_title">Доступ до Спеціальних можливостей</string>
+    <string name="a11y_disclosure_body">Tepera використовує службу Спеціальних можливостей лише для того, щоб побачити, який застосунок щойно відкрився, і показати паузу перед тими, що ви самі обрали.\n\nСлужба не читає вміст екрана, не бачить текст, паролі чи повідомлення і нічого не надсилає з пристрою. Вимкнути її можна будь-коли в налаштуваннях Android.</string>
+    <string name="a11y_disclosure_continue">Відкрити</string>
+    <string name="a11y_disclosure_cancel">Не зараз</string>
+    <string name="a11y_perm_label">Затримка перед застосунками</string>
+    <string name="free_opens_title">Відкриття без затримки</string>
+    <string name="free_opens_hint">Скільки разів на день обрані застосунки відкриваються одразу, без паузи. 0 — вимкнено.</string>
+    <string name="free_opens_used_format">Сьогодні використано %1$d з %2$d</string>
+    <string name="free_opens_off">Вимкнено</string>
+    <string name="free_opens_count_format">%d на день</string>
+    <string name="free_opens_decrease">Менше</string>
+    <string name="free_opens_increase">Більше</string>
 </resources>

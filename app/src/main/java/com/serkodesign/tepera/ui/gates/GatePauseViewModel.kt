@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.gates
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -66,13 +67,16 @@ class GatePauseViewModel(
 
     private var waitJob: Job? = null
     private var screenShown = false
+    private var fromAccessibility = false
 
     init {
         viewModelScope.launch { initialize() }
     }
 
     private suspend fun initialize() {
-        if (gateRepository.shouldSkipPause(packageName)) {
+        // Від сервісу доступності: перевірку (і можливе списання вільного відкриття) вже зроблено — не повторюємо.
+        fromAccessibility = gateRepository.consumePrechecked(packageName)
+        if (!fromAccessibility && gateRepository.shouldSkipPause(packageName)) {
             launchTarget()
             return
         }
@@ -123,6 +127,13 @@ class GatePauseViewModel(
             viewModelScope.launch {
                 gateEventRepository.record(packageName, GateEventResult.CANCELLED)
             }
+        }
+        // Пауза відкрита сервісом доступності ПОВЕРХ уже запущеного застосунку — moveTaskToBack() повернув би людину
+        // просто в нього, тож «Вийти» веде на робочий стіл.
+        if (fromAccessibility) {
+            context.startActivity(
+                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
         }
         _uiState.value = _uiState.value.copy(finished = true)
     }

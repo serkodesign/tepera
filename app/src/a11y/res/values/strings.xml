@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_service_label">Tepera: затримка перед застосунками</string>
+    <string name="a11y_service_description">Помічає, який застосунок відкрився, і показує коротку паузу перед тими, що ви обрали в Tepera. Вміст екрана не читається і ніде не зберігається.</string>
+</resources>

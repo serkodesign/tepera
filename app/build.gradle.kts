@@ -37,6 +37,22 @@ android {
         versionName = "1.0.3"
     }
 
+    // Тестова збірка з воротами через Accessibility: окремий flavor, щоб основний реліз не мав ані сервісу, ані дозволу
+    // (Play жорстко перевіряє AccessibilityService). applicationId однаковий — той самий google-services.json.
+    // УВАГА: з flavor-ами `bundleRelease` збирає обидва; для Play — `bundleStandardRelease`.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("standard") {
+            dimension = "distribution"
+            buildConfigField("boolean", "GATE_ACCESSIBILITY", "false")
+        }
+        create("a11y") {
+            dimension = "distribution"
+            versionNameSuffix = "-a11y"
+            buildConfigField("boolean", "GATE_ACCESSIBILITY", "true")
+        }
+    }
+
     signingConfigs {
         if (hasSigningConfig) {
             create("release") {

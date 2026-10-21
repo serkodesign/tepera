@@ -67,6 +67,8 @@ import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import com.serkodesign.tepera.ui.theme.TeperaDatePickerDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaHint
+import androidx.compose.ui.platform.LocalContext
+import com.serkodesign.tepera.util.GateAccessibility
 import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.util.startOfTodayMillis
 import java.text.SimpleDateFormat
@@ -107,11 +109,18 @@ fun GatesScreen(
     val state by viewModel.uiState.collectAsState()
     val growingDelay by viewModel.growingDelay.collectAsState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    // Тестова збірка a11y: чи ввімкнена служба доступності (змінюється в системних налаштуваннях — перечитуємо при поверненні).
+    var a11yEnabled by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
+    var showA11yDisclosure by remember { mutableStateOf(false) }
+    val freeOpensPerDay by viewModel.freeOpensPerDay.collectAsState()
+    val freeOpensUsed by viewModel.freeOpensUsed.collectAsState()
 
     // Видалення ярлика воріт відбувається поза застосунком (long-press на робочому столі) — без
     // цього ефекту список лишався б "активним" до наступного повного перестворення ViewModel.
     LifecycleResumeEffect(Unit) {
         viewModel.refresh()
+        a11yEnabled = GateAccessibility.isEnabled(context)
         onPauseOrDispose { }
     }
 
@@ -134,7 +143,7 @@ fun GatesScreen(
 
             // Пошук закріплений угорі: інакше при вводі клавіатура закривала б список під полем. Діє на обидва
             // списки — уже додані й доступні для додавання.
-            if (!state.loading && state.pinShortcutSupported) {
+            if (!state.loading && (state.pinShortcutSupported || a11yEnabled)) {
                 TeperaSearchField(
                     query = query,
                     onQueryChange = { query = it },
@@ -155,11 +164,23 @@ fun GatesScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    if (!searchActive) item {
+                    if (!searchActive && !a11yEnabled) item {
                         TeperaHint(
                             text = stringResource(R.string.gates_hint),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                         )
+                    }
+                    if (!searchActive && GateAccessibility.isAvailable) {
+                        item {
+                            AccessibilityGateCard(enabled = a11yEnabled, onOpen = { showA11yDisclosure = true })
+                        }
+                        item {
+                            FreeOpensCard(
+                                perDay = freeOpensPerDay,
+                                usedToday = freeOpensUsed,
+                                onChange = { viewModel.setFreeOpensPerDay(it) }
+                            )
+                        }
                     }
                     if (!searchActive) item {
                         // CC-5: ворота активні = зараз вікно розкладу І немає паузи.
@@ -210,7 +231,7 @@ fun GatesScreen(
                         }
                     }
 
-                    if (!state.pinShortcutSupported) {
+                    if (!state.pinShortcutSupported && !a11yEnabled) {
                         item {
                             Text(
                                 text = stringResource(R.string.gates_unsupported),
@@ -276,6 +297,16 @@ fun GatesScreen(
         }
     }
 
+    if (showA11yDisclosure) {
+        AccessibilityDisclosureDialog(
+            onDismiss = { showA11yDisclosure = false },
+            onContinue = {
+                showA11yDisclosure = false
+                GateAccessibility.openSettings(context)
+            }
+        )
+    }
+
     if (showPauseDialog) {
         PauseDialog(
             isPaused = state.pause != null,
@@ -316,8 +347,8 @@ fun GatesScreen(
             onConfirm = { delaySeconds ->
                 pendingApp = null
                 scope.launch {
-                    val created = viewModel.createGate(app, delaySeconds)
-                    if (created) instructionApp = app else pinFailed = true
+                    val created = viewModel.createGate(app, delaySeconds, viaAccessibility = a11yEnabled)
+                    if (created) { if (!a11yEnabled) instructionApp = app } else pinFailed = true
                 }
             }
         )

@@ -541,4 +541,24 @@
     <!-- App shortcuts (long-press the app icon): dynamic, the pause label changes with state -->
     <string name="shortcut_pause_gates">Pause gates</string>
     <string name="shortcut_resume_gates">Resume gates</string>
+
+
+    <!-- Test build (a11y flavor): gates through the accessibility service -->
+    <string name="a11y_gate_card_title">Delay on any app launch</string>
+    <string name="a11y_gate_card_off">To show the pause when you open a chosen app in any way (icon, notification, recents), turn on Tepera in Accessibility settings.</string>
+    <string name="a11y_gate_card_on">On. The pause appears when you open a chosen app. If you are already inside it, it is not shown again.</string>
+    <string name="a11y_gate_enable_action">Turn on</string>
+    <string name="a11y_gate_manage_action">Settings</string>
+    <string name="a11y_disclosure_title">Accessibility access</string>
+    <string name="a11y_disclosure_body">Tepera uses an Accessibility service only to see which app has just opened and show a pause before the ones you chose yourself.\n\nThe service does not read screen content, text, passwords or messages and sends nothing off the device. You can turn it off any time in Android settings.</string>
+    <string name="a11y_disclosure_continue">Open</string>
+    <string name="a11y_disclosure_cancel">Not now</string>
+    <string name="a11y_perm_label">Delay before apps</string>
+    <string name="free_opens_title">Opens without delay</string>
+    <string name="free_opens_hint">How many times a day the chosen apps open right away, without a pause. 0 means off.</string>
+    <string name="free_opens_used_format">Used today: %1$d of %2$d</string>
+    <string name="free_opens_off">Off</string>
+    <string name="free_opens_count_format">%d per day</string>
+    <string name="free_opens_decrease">Fewer</string>
+    <string name="free_opens_increase">More</string>
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_service_label">Tepera: delay before apps</string>
+    <string name="a11y_service_description">Notices which app was opened and shows a short pause before the ones you picked in Tepera. Screen content is not read or stored.</string>
+</resources>

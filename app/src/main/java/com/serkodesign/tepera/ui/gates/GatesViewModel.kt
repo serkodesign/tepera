@@ -76,6 +76,16 @@ class GatesViewModel(
     val growingDelay: StateFlow<Boolean> = gateRepository.growingDelay
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    /** Тестова збірка a11y: денний ліміт відкриттів без затримки й скільки вже використано сьогодні. */
+    val freeOpensPerDay: StateFlow<Int> = gateRepository.freeOpensPerDay
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+    val freeOpensUsed: StateFlow<Int> = gateRepository.freeOpensUsedToday()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+    fun setFreeOpensPerDay(count: Int) {
+        viewModelScope.launch { gateRepository.setFreeOpensPerDay(count) }
+    }
+
     fun setGrowingDelay(enabled: Boolean) {
         viewModelScope.launch { gateRepository.setGrowingDelay(enabled) }
     }
@@ -106,8 +116,8 @@ class GatesViewModel(
         }
     }
 
-    suspend fun createGate(app: InstalledAppInfo, delaySeconds: Int = DEFAULT_DELAY_SECONDS): Boolean =
-        gateRepository.createGate(app.packageName, app.label, delaySeconds)
+    suspend fun createGate(app: InstalledAppInfo, delaySeconds: Int = DEFAULT_DELAY_SECONDS, viaAccessibility: Boolean = false): Boolean =
+        gateRepository.createGate(app.packageName, app.label, delaySeconds, viaAccessibility)
 
     fun removeGate(packageName: String) {
         viewModelScope.launch { gateRepository.removeGate(packageName) }
