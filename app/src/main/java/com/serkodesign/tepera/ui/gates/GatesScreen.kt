@@ -178,7 +178,7 @@ fun GatesScreen(
                                 onSelect = { viaA11y = it }
                             )
                         }
-                        if (viaA11y) item {
+                        if (viaA11y && !a11yEnabled) item {
                             AccessibilityGateCard(enabled = a11yEnabled, onOpen = { showA11yDisclosure = true })
                         }
                         item {
