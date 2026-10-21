@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -110,7 +111,7 @@ fun GatePauseScreen(
     // (Exhale), кадр 375x784, 1px = 1dp: поля 20, "Instagram" по центру 18sp, бейдж 215dp,
     // підпис дихання 27sp, кнопки Big (TeperaButton) з проміжком 8.
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 120.dp, bottom = 30.dp),
+        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(horizontal = 20.dp).padding(top = 120.dp, bottom = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Системне "прибрати анімації" (шкала 0) — анімація стоїть: при нульовій шкалі вона ще й мигала б стрибками

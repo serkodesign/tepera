@@ -713,6 +713,7 @@ private fun IntervalField(
         TeperaTimePickerDialog(
             title = label,
             minuteOfDay = minuteOfDay,
+            startInKeyboard = true,
             onSelected = { onMinuteSelected(it); showTimePicker = false },
             onDismiss = { showTimePicker = false }
         )

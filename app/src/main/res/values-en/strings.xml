@@ -264,15 +264,15 @@
     <string name="settings_suggest_feature_no_browser">Couldn\'t find a browser to open the form</string>
 
     <!-- Backup (FR-6.1, FR-6.2) -->
-    <string name="backup_export_action">Export data (JSON)</string>
-    <string name="backup_import_action">Import data (JSON)</string>
-    <string name="backup_not_included_note">The file includes categories, entries, excluded apps and the reference. Other settings (sleep window, widget, language, etc.) need to be set up again.</string>
+    <string name="backup_export_action">Export statistics</string>
+    <string name="backup_import_action">Import statistics</string>
+    <string name="backup_not_included_note">The file includes: categories (name, icon, colour, order, archived state), all activity entries (start, duration, note), excluded apps, the Online-time reference and the daily Online history (Online minutes, unlocks, day start and end, Online by hour). Other settings (sleep window, gates, widget, language, theme) need to be set up again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
     <string name="backup_import_failure">Couldn\'t import the data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
-    <string name="backup_import_confirm_body">Importing replaces categories, entries, excluded apps and the reference with the data from the file. This cannot be undone. Other settings are not restored.</string>
+    <string name="backup_import_confirm_body">Importing replaces categories, entries, excluded apps, the reference and the daily Online history with the data from the file. This cannot be undone. Other settings are not restored.</string>
     <string name="backup_import_confirm_action">Import</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -499,7 +499,7 @@
     <string name="backup_delete_section">Data deletion</string>
     <string name="backup_delete_action">Delete all data</string>
     <string name="backup_delete_title">Delete all data?</string>
-    <string name="backup_delete_body">This deletes entries, categories, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nNot sure? Save a copy first: \"Export data\".\n\nAn Android Auto Backup copy (if enabled) is not affected.</string>
+    <string name="backup_delete_body">This deletes entries, categories, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nNot sure? Save a copy first: \"Export statistics\".\n\nAn Android Auto Backup copy (if enabled) is not affected.</string>
     <string name="backup_delete_next">Continue</string>
     <string name="backup_delete_final_title">One last confirmation</string>
     <string name="backup_delete_final_body">To delete everything for good, type the word \"%1$s\".</string>
