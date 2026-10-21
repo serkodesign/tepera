@@ -71,11 +71,20 @@ class CategoryViewModel(
     }
 
     /** За прямим запитом користувача: редагування назви/іконки/кольору — лише для кастомних категорій. */
-    fun updateCustomCategory(categoryId: String, name: String, iconName: String, colorHex: String) {
+    /**
+     * Редагування будь-якої категорії. Для дефолтної назва береться з `nameKey` (strings.xml), тож змінена назва
+     * ([nameChanged]) записується в `name` і `nameKey` скидається — далі це буквальний текст користувача (не
+     * перекладається разом із мовою застосунку). Без зміни назви `nameKey` лишається й переклад працює.
+     */
+    fun updateCategory(categoryId: String, name: String, iconName: String, colorHex: String, nameChanged: Boolean) {
         viewModelScope.launch {
             val existing = repository.getById(categoryId) ?: return@launch
-            if (!existing.isCustom) return@launch
-            repository.update(existing.copy(name = name, iconName = iconName, colorHex = colorHex))
+            val updated = when {
+                existing.isCustom -> existing.copy(name = name, iconName = iconName, colorHex = colorHex)
+                nameChanged -> existing.copy(name = name, nameKey = null, iconName = iconName, colorHex = colorHex)
+                else -> existing.copy(iconName = iconName, colorHex = colorHex)
+            }
+            repository.update(updated)
         }
     }
 

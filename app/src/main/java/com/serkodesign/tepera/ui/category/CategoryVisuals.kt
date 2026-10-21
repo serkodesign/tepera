@@ -54,13 +54,43 @@ private val iconCatalog: Map<String, ImageVector> = mapOf(
     "flight" to TeperaSymbols.Luggage,
     "fitness" to TeperaSymbols.Spa,
     "celebration" to TeperaSymbols.Celebration,
-    "home" to TeperaSymbols.HomeGlyph
+    "home" to TeperaSymbols.HomeGlyph,
+    // Розширений набір (Material Symbols Rounded wght300, ті самі правила, що вище): побут, навчання й творчість,
+    // тіло й спокій, люди й дозвілля.
+    "cleaning" to TeperaSymbols.CleaningServices,
+    "laundry" to TeperaSymbols.LocalLaundry,
+    "shopping" to TeperaSymbols.ShoppingBasket,
+    "garden" to TeperaSymbols.PottedPlant,
+    "repair" to TeperaSymbols.Build,
+    "car" to TeperaSymbols.DirectionsCar,
+    "school" to TeperaSymbols.School,
+    "language_study" to TeperaSymbols.Translate,
+    "writing" to TeperaSymbols.EditNote,
+    "photo" to TeperaSymbols.PhotoCamera,
+    "games" to TeperaSymbols.SportsEsports,
+    "code" to TeperaSymbols.Code,
+    "meditation" to TeperaSymbols.SelfImprovement,
+    "swimming" to TeperaSymbols.Pool,
+    "hiking" to TeperaSymbols.Hiking,
+    "cycling" to TeperaSymbols.DirectionsBike,
+    "football" to TeperaSymbols.SportsSoccer,
+    "sauna" to TeperaSymbols.Sauna,
+    "kids" to TeperaSymbols.ChildCare,
+    "call" to TeperaSymbols.Call,
+    "volunteer" to TeperaSymbols.VolunteerActivism,
+    "beach" to TeperaSymbols.BeachAccess,
+    "theater" to TeperaSymbols.TheaterComedy,
+    "flowers" to TeperaSymbols.LocalFlorist
 )
 
 /** Іконки, доступні користувачу при створенні кастомної категорії (FR-2.2, "іконка з набору"). */
 val customCategoryIconChoices: List<String> = listOf(
     "star", "favorite", "coffee", "music", "brush", "pets",
-    "work", "restaurant", "flight", "fitness", "celebration", "home"
+    "work", "restaurant", "flight", "fitness", "celebration", "home",
+    "cleaning", "laundry", "shopping", "garden", "repair", "car",
+    "school", "language_study", "writing", "photo", "games", "code",
+    "meditation", "swimming", "hiking", "cycling", "football", "sauna",
+    "kids", "call", "volunteer", "beach", "theater", "flowers"
 )
 
 /**
@@ -69,8 +99,9 @@ val customCategoryIconChoices: List<String> = listOf(
  * розділ "Кольори" CLAUDE.md), щоб кастомна категорія не зливалась із дефолтною за кольором.
  */
 val customCategoryColorChoices: List<String> = listOf(
-    "#4E7A51", "#4A6FA5", "#B08968", "#C9704F", "#5C6B73", "#7A5C7A", "#8A8F5C",
-    "#7D9D8C", "#C17C74", "#8E7CC3", "#4D8FAC", "#D4A373", "#6B8E6B", "#A65D7C", "#5B7B9A"
+    "#4E7A51", "#4A6FA5", "#B08968", "#C9704F", "#5C6B73", "#7A5C7A",
+    "#8A8F5C", "#7D9D8C", "#C17C74", "#8E7CC3", "#4D8FAC", "#D4A373",
+    "#A65D7C", "#3E8E8A", "#B5A642", "#B58AA5", "#8C6D4F", "#6670B5"
 )
 
 fun categoryIcon(iconName: String): ImageVector = iconCatalog[iconName] ?: TeperaSymbols.Star

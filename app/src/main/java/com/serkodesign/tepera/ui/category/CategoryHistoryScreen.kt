@@ -130,7 +130,7 @@ fun CategoryHistoryScreen(
                     ?: stringResource(R.string.category_history_screen_title_fallback),
                 onBack = onBack,
                 trailing = {
-                    if (category?.isCustom == true) {
+                    if (category != null) {
                         // Figma 336:594: дві кнопки 44dp, біла заливка 80%, проміжок 4dp, асиметричні радіуси
                         // (ліва — 22 зліва/8 справа, права — навпаки).
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -138,10 +138,10 @@ fun CategoryHistoryScreen(
                                 icon = TeperaIcons.Edit,
                                 contentDescription = stringResource(R.string.category_edit_action),
                                 onClick = { showEditDialog = true },
-                                shape = RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                                shape = if (category.isCustom) RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp, topEnd = 8.dp, bottomEnd = 8.dp) else RoundedCornerShape(22.dp),
                                 containerColor = TeperaPalette.headerButtonFill
                             )
-                            TeperaIconButton(
+                            if (category.isCustom) TeperaIconButton(
                                 icon = TeperaSymbols.Delete,
                                 contentDescription = stringResource(R.string.category_delete_action),
                                 onClick = { showDeleteConfirm = true },
@@ -205,11 +205,12 @@ fun CategoryHistoryScreen(
     }
 
     if (showEditDialog && category != null) {
+        val originalName = categoryDisplayName(category)
         EditCategoryDialog(
             category = category,
             onDismiss = { showEditDialog = false },
             onSave = { name, icon, color ->
-                categoryViewModel.updateCustomCategory(category.id, name, icon, color)
+                categoryViewModel.updateCategory(category.id, name, icon, color, nameChanged = name != originalName)
                 showEditDialog = false
             }
         )
