@@ -55,6 +55,8 @@ private val FIRST_SEEN_AT_KEY = longPreferencesKey("first_seen_at")
 // CC-9: м'яка пропозиція оновитись (UpdateChecker/UpdateViewModel) — versionCode, для якого
 // людина вже закрила діалог; показується знову лише коли Remote Config назве НОВІШУ версію.
 private val UPDATE_DISMISSED_VERSION_CODE_KEY = longPreferencesKey("update_dismissed_version_code")
+// Запит оцінки (Play In-App Review, util/ReviewPrompt) — момент, коли вікно запитали; 0 — ще ні. Один раз.
+private val REVIEW_PROMPT_SHOWN_AT_KEY = longPreferencesKey("review_prompt_shown_at")
 
 
 /**
@@ -430,6 +432,13 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setUpdateDismissedVersionCode(versionCode: Long) {
         context.settingsDataStore.edit { it[UPDATE_DISMISSED_VERSION_CODE_KEY] = versionCode }
+    }
+
+    val reviewPromptShownAt: Flow<Long> =
+        context.settingsDataStore.data.map { it[REVIEW_PROMPT_SHOWN_AT_KEY] ?: 0L }
+
+    suspend fun setReviewPromptShownAt(millis: Long) {
+        context.settingsDataStore.edit { it[REVIEW_PROMPT_SHOWN_AT_KEY] = millis }
     }
 
     /** CC-4: початок перерви (момент попереднього відкриття), для якої ще чекає підсумок; 0 — нема. */

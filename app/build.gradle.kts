@@ -147,6 +147,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
     // Google Play In-App Updates (гнучкий режим): Play сам повідомляє, що вийшла нова версія.
     implementation("com.google.android.play:app-update:2.1.0")
+    // Google Play In-App Review: системне вікно оцінки (один раз, util/ReviewPrompt).
+    implementation("com.google.android.play:review:2.0.2")
 
     // T-13 (tepera-dev-spec.md): перший юніт-тест у проєкті — "рушій карток" навмисно спроєктований
     // як чиста Kotlin-логіка без Android-залежностей (CardEngine + CardHistorySource), тому досить

@@ -102,6 +102,7 @@ import java.util.Date
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
+import com.serkodesign.tepera.util.ReviewPrompt
 import com.serkodesign.tepera.util.findActivity
 
 /**
@@ -246,6 +247,16 @@ fun HomeScreen(
             dismissText = stringResource(R.string.update_ready_dismiss),
             onDismiss = updateViewModel::postponeRestart
         )
+    }
+
+    // Запит оцінки (Play In-App Review): лише коли на Home спокійно — немає діалогу оновлення, пауза 5 с
+    // (якщо Home покинули під час онбординг-ланцюжка, корутина скасовується й запит не відбувається).
+    val reviewSettingsStore = settingsStore
+    LaunchedEffect(updateState.visible, updateState.restartReady) {
+        if (updateState.visible || updateState.restartReady) return@LaunchedEffect
+        val activity = updateActivity ?: return@LaunchedEffect
+        delay(5000)
+        ReviewPrompt.maybeRequest(activity, reviewSettingsStore)
     }
 
     val balanceViewModel: BalanceViewModel = viewModel(
