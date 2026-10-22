@@ -33,7 +33,7 @@ android {
         applicationId = "com.serkodesign.tepera"
         minSdk = 26        // Android 8.0 — нижня межа сумісності (SRS 5.6)
         targetSdk = 36      // Android 16 — обов'язково для Google Play з 31.08.2026 (SRS PUB-4)
-        versionCode = 21
+        versionCode = 22
         versionName = "1.0.4"
     }
 
@@ -49,7 +49,7 @@ android {
         create("beta") {
             dimension = "distribution"
             versionNameSuffix = "-beta"
-            versionCode = 22
+            versionCode = 23
             buildConfigField("boolean", "GATE_ACCESSIBILITY", "true")
         }
     }
