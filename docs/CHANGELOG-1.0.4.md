@@ -1,7 +1,7 @@
-# Tepera 1.0.4 (versionCode 20) — release for Play Store (flavor `standard`, without Accessibility)
+# Tepera 1.0.4 (versionCode 21) — release for Play Store (flavor `standard`, without Accessibility)
 
 Build: `./gradlew.bat :app:bundleStandardRelease` → `app/build/outputs/bundle/standardRelease/app-standard-release.aab`.
-Test build (flavor `beta`, `1.0.4-beta`, versionCode 21): `./gradlew.bat :app:assembleBetaRelease` → `app/build/outputs/apk/beta/release/`.
+Test build (flavor `beta`, `1.0.4-beta`, versionCode 22): `./gradlew.bat :app:assembleBetaRelease` → `app/build/outputs/apk/beta/release/`.
 
 ## What's new (EN) — Play "Release notes", ≤ 500 characters
 - 7 new info widgets: Online ring, Online day bar, active now, day start, time without phone, last activity, top activities of the week
@@ -29,13 +29,14 @@ Test build (flavor `beta`, `1.0.4-beta`, versionCode 21): `./gradlew.bat :app:as
   excluded apps, Online target, daily Online history).
 - **Text pass from the owner's spreadsheet** (`docs/app-texts.csv`): 15 UA strings reworded, plus matching EN strings
   (gate-events card in plural forms 1 / 2–4 / 5+; "Put the phone down at" labels; shorter hints; "Without judgment" wording).
+- **Update prompt:** now uses Google Play In-App Updates (flexible mode); Firebase Remote Config only supplies optional `whats_new_uk`/`whats_new_en` text. Shown only for Play-installed builds.
 - **Flavor `a11y` renamed to `beta`** (`c5f6238`): source set `app/src/beta`, version suffix `-beta`.
 - **Bottom dock frosted glass:** stronger blur (24 → 40 dp), noise and a thin light edge; on Android < 12 (no blur in Haze) a dense
   theme-aware fallback tint, so content no longer shows through the dock. Verified on Huawei P9 (dark theme); light theme and real
   blur (Android 12+) not verified on a device.
 
 ## For the developer (not for Play)
-- Version: `1.0.3 (18)` → `1.0.4 (20)` (was `1.0.4 (19)` in the first cut); `beta` flavor: `1.0.4-beta (21)`. Room schema unchanged, no migration.
+- Version: `1.0.3 (18)` → `1.0.4 (21)` (20 and 19 were earlier cuts); `beta` flavor: `1.0.4-beta (22)`. Room schema unchanged, no migration.
 - Changes vs `v1.0.3` that reach `standard`: widget styling (`9e707e5`), search field focus fix (`a7dc0ba`), plus everything above.
 - The Accessibility work (`12522f9`, `3b3bb8a`, `388d725`) is gated by `BuildConfig.GATE_ACCESSIBILITY = false` in `standard`: no service,
   no permission, no UI. Shared-code additions are inert there.
