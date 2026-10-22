@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.navigation.NavBackStackEntry
@@ -125,6 +126,7 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.teperaGradientBackground
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 
@@ -812,9 +814,25 @@ private fun TeperaBottomNavBar(
             .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp + navigationBarInset)
             .height(62.dp)
             .clip(RoundedCornerShape(32.dp))
-            // Розмиття фону за навбаром (матове скло), поверх нього — напівпрозорий navPillCard (білий 30%).
-            .hazeEffect(state = hazeState, style = HazeStyle(tint = null, blurRadius = 24.dp))
+            // Матове скло: сильніше розмиття (прибирає деталі контенту під навбаром, тож вкладки читаються
+            // чіткіше) + легкий шум, поверх — напівпрозорий navPillCard (білий 30%) і тонка світла кромка скла.
+            // До Android 12 (API < 31) розмиття недоступне — Haze тоді малює лише fallbackTint; без нього контент
+            // проглядає крізь скло (підтверджено на Huawei P9, Android 8), тож там фон щільніший.
+            .hazeEffect(
+                state = hazeState,
+                style = HazeStyle(
+                    tint = null,
+                    blurRadius = 40.dp,
+                    noiseFactor = 0.12f,
+                    // Темна тема: темне скло (іконки невибраних вкладок світлі), світла — біле.
+                    fallbackTint = HazeTint(
+                        if (com.serkodesign.tepera.ui.theme.LocalTeperaColors.current.isDark) Color(0xFF16231F).copy(alpha = 0.9f)
+                        else Color.White.copy(alpha = 0.9f)
+                    )
+                )
+            )
             .background(TeperaPalette.navPillCard)
+            .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(32.dp))
             .padding(6.dp),
         // Відступ між таблетками = внутрішній відступ контуру (6dp), як у макеті (gap-[6px]).
         horizontalArrangement = Arrangement.spacedBy(6.dp),
