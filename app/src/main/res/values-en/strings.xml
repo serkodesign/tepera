@@ -116,6 +116,10 @@
     <string name="update_dialog_fallback_text">The new version has improvements.</string>
     <string name="update_dialog_confirm">Update</string>
     <string name="update_dialog_dismiss">Not now</string>
+    <string name="update_ready_title">Update downloaded</string>
+    <string name="update_ready_text">Restart the app to finish updating.</string>
+    <string name="update_ready_confirm">Restart</string>
+    <string name="update_ready_dismiss">Later</string>
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — in development</string>

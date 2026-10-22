@@ -102,6 +102,7 @@ import java.util.Date
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.DayPeriod
 import com.serkodesign.tepera.util.currentDayPeriod
+import com.serkodesign.tepera.util.findActivity
 
 /**
  * Стиль Home перенесений з Figma-фрейму "Everyday_Designs" (сторінка "Tepera", node 1951:4017,
@@ -223,15 +224,27 @@ fun HomeScreen(
         factory = UpdateViewModel.Factory(LocalContext.current.applicationContext, settingsStore)
     )
     val updateState by updateViewModel.uiState.collectAsState()
+    val updateActivity = LocalContext.current.findActivity()
     if (updateState.visible) {
         TeperaDialog(
             onDismissRequest = updateViewModel::dismiss,
             title = stringResource(R.string.update_dialog_title),
             text = updateState.whatsNew.ifBlank { stringResource(R.string.update_dialog_fallback_text) },
             confirmText = stringResource(R.string.update_dialog_confirm),
-            onConfirm = updateViewModel::openStoreListing,
+            onConfirm = { updateActivity?.let(updateViewModel::startUpdate) ?: updateViewModel.dismiss() },
             dismissText = stringResource(R.string.update_dialog_dismiss),
             onDismiss = updateViewModel::dismiss
+        )
+    }
+    if (updateState.restartReady) {
+        TeperaDialog(
+            onDismissRequest = updateViewModel::postponeRestart,
+            title = stringResource(R.string.update_ready_title),
+            text = stringResource(R.string.update_ready_text),
+            confirmText = stringResource(R.string.update_ready_confirm),
+            onConfirm = updateViewModel::completeUpdate,
+            dismissText = stringResource(R.string.update_ready_dismiss),
+            onDismiss = updateViewModel::postponeRestart
         )
     }
 

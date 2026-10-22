@@ -1,52 +1,59 @@
 package com.serkodesign.tepera.data
 
-import android.content.Context
+import android.util.Log
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.install.model.AppUpdateType
 import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.serkodesign.tepera.BuildConfig
 import kotlinx.coroutines.tasks.await
 
-/** CC-9: дані для м'якої пропозиції оновитись — версія з Play Store і текст "що нового" (UA/EN). */
-data class UpdateInfo(val versionCode: Long, val whatsNewUk: String, val whatsNewEn: String)
+/** Текст "що нового" (UA/EN) для діалогу оновлення; порожній рядок — використати стандартний. */
+data class WhatsNew(val uk: String, val en: String)
 
 /**
- * CC-9: Firebase Remote Config (той самий проєкт, що Crashlytics) — єдиний спосіб повідомити вже
- * встановлений застосунок про ВМІСТ оновлення без власного бекенду. Google Play In-App Update API
- * уміє визначити лише сам ФАКТ наявності новішої версії, без довільного тексту; тут текст важливий
- * ("повідомлення про те, що додалось"), тож джерело — Remote Config, ключі оновлюються вручну при
- * кожному релізі (той самий крок, що вже існує для docs/CHANGELOG-*.md).
+ * CC-9: м'яка пропозиція оновитись.
  *
- * Дефолт `latest_version_code` = поточний [BuildConfig.VERSION_CODE] застосунку, тож доки ніхто не
- * підняв значення в консолі Firebase, діалог НІКОЛИ не з'являється — безпечно за замовчуванням.
+ * ФАКТ наявності нової версії визначає Google Play In-App Updates API (гнучкий режим) — вручну
+ * нічого оновлювати не треба. Працює лише для збірок, встановлених із Google Play: на APK, поставленому
+ * напряму (beta, debug), Play повертає "оновлення нема", діалог не з'являється.
+ *
+ * Текст "що нового" Play не вміє, тому він необов'язково береться з Firebase Remote Config
+ * (`whats_new_uk`/`whats_new_en`, той самий проєкт, що Crashlytics). Нема тексту в консолі — діалог
+ * показує стандартний рядок.
  */
 object UpdateChecker {
-    private const val KEY_LATEST_VERSION_CODE = "latest_version_code"
+    private const val TAG = "UpdateChecker"
     private const val KEY_WHATS_NEW_UK = "whats_new_uk"
     private const val KEY_WHATS_NEW_EN = "whats_new_en"
 
-    /** `null` — немає новішої версії (або запит не вдався; мовчимо, не нав'язуємось). */
-    suspend fun fetchLatest(context: Context): UpdateInfo? = runCatching {
+    /** `null` — запит до Play не вдався (мовчимо, не нав'язуємось). */
+    suspend fun checkPlay(manager: AppUpdateManager): AppUpdateInfo? = runCatching {
+        val info = manager.appUpdateInfo.await()
+        Log.d(
+            TAG,
+            "Play: updateAvailability=${info.updateAvailability()} (1=нема,2=є,3=триває), " +
+                "installStatus=${info.installStatus()}, availableVersionCode=${info.availableVersionCode()}, " +
+                "flexibleAllowed=${info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)}, current=${BuildConfig.VERSION_CODE}"
+        )
+        info
+    }.onFailure { Log.w(TAG, "Play In-App Updates check failed", it) }.getOrNull()
+
+    /** Порожні рядки, якщо в Remote Config нічого нема або запит не вдався. */
+    suspend fun fetchWhatsNew(): WhatsNew = runCatching {
         val remoteConfig = Firebase.remoteConfig
         remoteConfig.setConfigSettingsAsync(
             remoteConfigSettings {
                 minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0L else 3600L
             }
         ).await()
-        remoteConfig.setDefaultsAsync(
-            mapOf(
-                KEY_LATEST_VERSION_CODE to BuildConfig.VERSION_CODE.toLong(),
-                KEY_WHATS_NEW_UK to "",
-                KEY_WHATS_NEW_EN to ""
-            )
-        ).await()
+        remoteConfig.setDefaultsAsync(mapOf(KEY_WHATS_NEW_UK to "", KEY_WHATS_NEW_EN to "")).await()
         remoteConfig.fetchAndActivate().await()
-        val latest = remoteConfig.getLong(KEY_LATEST_VERSION_CODE)
-        if (latest <= BuildConfig.VERSION_CODE) return null
-        UpdateInfo(
-            versionCode = latest,
-            whatsNewUk = remoteConfig.getString(KEY_WHATS_NEW_UK),
-            whatsNewEn = remoteConfig.getString(KEY_WHATS_NEW_EN)
+        WhatsNew(
+            uk = remoteConfig.getString(KEY_WHATS_NEW_UK),
+            en = remoteConfig.getString(KEY_WHATS_NEW_EN)
         )
-    }.getOrNull()
+    }.onFailure { Log.w(TAG, "Remote Config fetch failed", it) }.getOrDefault(WhatsNew("", ""))
 }
