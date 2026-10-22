@@ -1,7 +1,7 @@
-# Tepera 1.0.4 (versionCode 19) — release for Play Store (flavor `standard`, without Accessibility)
+# Tepera 1.0.4 (versionCode 20) — release for Play Store (flavor `standard`, without Accessibility)
 
 Build: `./gradlew.bat :app:bundleStandardRelease` → `app/build/outputs/bundle/standardRelease/app-standard-release.aab`.
-Test build (flavor `beta`, `1.0.4-beta`, versionCode 20): `./gradlew.bat :app:assembleBetaRelease` → `app/build/outputs/apk/beta/release/`.
+Test build (flavor `beta`, `1.0.4-beta`, versionCode 21): `./gradlew.bat :app:assembleBetaRelease` → `app/build/outputs/apk/beta/release/`.
 
 ## What's new (EN) — Play "Release notes", ≤ 500 characters
 - 7 new info widgets: Online ring, Online day bar, active now, day start, time without phone, last activity, top activities of the week
@@ -35,7 +35,7 @@ Test build (flavor `beta`, `1.0.4-beta`, versionCode 20): `./gradlew.bat :app:as
   blur (Android 12+) not verified on a device.
 
 ## For the developer (not for Play)
-- Version: `1.0.3 (18)` → `1.0.4 (19)`; `beta` flavor: `1.0.4-beta (20)`. Room schema unchanged, no migration.
+- Version: `1.0.3 (18)` → `1.0.4 (20)` (was `1.0.4 (19)` in the first cut); `beta` flavor: `1.0.4-beta (21)`. Room schema unchanged, no migration.
 - Changes vs `v1.0.3` that reach `standard`: widget styling (`9e707e5`), search field focus fix (`a7dc0ba`), plus everything above.
 - The Accessibility work (`12522f9`, `3b3bb8a`, `388d725`) is gated by `BuildConfig.GATE_ACCESSIBILITY = false` in `standard`: no service,
   no permission, no UI. Shared-code additions are inert there.
