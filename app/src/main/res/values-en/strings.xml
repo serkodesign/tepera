@@ -108,7 +108,7 @@
     <string name="welcome_back_logged_format">Noted: %1$s</string>
     <string name="welcome_back_online_format">Online on average: %1$s per day</string>
     <string name="weekly_summary_label">Weekly summary</string>
-    <string name="weekly_summary_hint">Once a week, Sunday evening — one quiet summary notification. No others.</string>
+    <string name="weekly_summary_hint">Once a week, Sunday evening — one quiet summary notification. No other notifications.</string>
     <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
@@ -122,7 +122,7 @@
     <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments — just a question. Tell us what would help.</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="extra_animations_label">Extra animations</string>
-    <string name="extra_animations_explanation">Liquid in the “without phone” circle (moves with tilt and shake), smoothly counting numbers and soft button transitions. Turn off to save battery or remove motion.</string>
+    <string name="extra_animations_explanation">Liquid motion in the “without phone” circle, smoothly counting numbers and soft button transitions. Turn off to save battery or remove animation.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, activities or app time. Turn it off anytime.</string>
 
@@ -168,7 +168,7 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">After 01:00</string>
-    <string name="stats_last_phone_use_week_label">Usually last on phone</string>
+    <string name="stats_last_phone_use_week_label">Usually put the phone down at</string>
 
     <!-- Weekly "guess vs reality" reflection (FR-P.1) -->
     <string name="weekly_reflection_question">On average, how much do you think you were online per day this week?</string>
@@ -206,8 +206,8 @@
     <!-- T-6 (tepera-dev-spec.md), FR-P.3: "evidence of capability" — a quiet fact about gates -->
     <string name="gate_events_summary_card_title">This month</string>
     <plurals name="gate_events_summary_text">
-        <item quantity="one">This month you chose not now %d time</item>
-        <item quantity="other">This month you chose not now %d times</item>
+        <item quantity="one">This month you changed your mind about opening an app %d time</item>
+        <item quantity="other">This month you changed your mind about opening an app %d times</item>
     </plurals>
 
     <!-- Dismissing context cards once read (user-requested, not in the SRS) -->
@@ -239,7 +239,7 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
-    <string name="settings_target_info">Roughly how many Online hours fit your day. A quiet tick on the scale, no judgment.</string>
+    <string name="settings_target_info">Roughly how many Online hours fit your day. Just a marker on the scale, no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_target_decrease">Decrease target</string>
     <string name="settings_target_increase">Increase target</string>
@@ -277,7 +277,7 @@
 
     <!-- Exclusion List (FR-3.5) -->
     <string name="exclusion_list_screen_title">Excluded apps</string>
-    <string name="exclusion_list_hint">Selected apps don\'t count toward Online time (maps, e-readers, banking, etc.)</string>
+    <string name="exclusion_list_hint">Selected apps aren\'t included in Online time (maps, e-readers, banking, etc.)</string>
     <string name="exclusion_list_empty">No apps with usage history in the last 30 days</string>
     <string name="exclusion_list_section_excluded">Excluded</string>
     <string name="exclusion_list_section_all">All</string>
@@ -326,7 +326,7 @@
     <string name="gates_section_add">Add an app</string>
     <string name="gates_empty">No apps with a delay yet</string>
     <string name="gates_delay_format">%ds</string>
-    <string name="gates_icon_not_handled">The original icon is still on your screen — tap once you\'ve hidden it</string>
+    <string name="gates_icon_not_handled">The original icon is still on your screen</string>
     <string name="gates_remove_action">Remove delay</string>
     <string name="gates_delay_picker_title">Pause length</string>
     <string name="gates_delay_picker_confirm">Create</string>
@@ -434,7 +434,7 @@
     <string name="diary_unlock_today_label">Unlocks today</string>
     <string name="diary_unlock_yesterday_label">Unlocks yesterday</string>
     <string name="diary_unlock_label">Unlocks</string>
-    <string name="diary_last_phone_use_yesterday_label">Last picked up phone yesterday</string>
+    <string name="diary_last_phone_use_yesterday_label">Put the phone down yesterday at</string>
     <string name="stats_history_today">Today</string>
     <string name="stats_history_yesterday">Yesterday</string>
     <string name="stats_day_timeline_title">Yesterday</string>
@@ -460,7 +460,7 @@
          absent here. -->
     <string name="settings_knowledge_base_action">Knowledge base</string>
     <string name="knowledge_base_screen_title">Knowledge base</string>
-    <string name="knowledge_base_intro">A short explanation of how Tepera counts time and why it\'s built this way.</string>
+    <string name="knowledge_base_intro">How Tepera counts time and why it\'s built this way.</string>
     <string name="knowledge_base_section_1_title">Where the data comes from</string>
     <string name="knowledge_base_section_1_body">Online time and the day structure are counted through Android\'s system "Usage access" permission (Settings → Special access, not a pop-up dialog). The permission only grants access to app names and the moments they move to the foreground or background. Without it, manual activity logging keeps working fully — Tepera just won\'t have automatic Online time.\n\nTepera does not see screen content: not message text, not what you\'re actually reading or watching, not scrolling inside an app — a minute of reading looks the same as a minute of scrolling a feed. All data stays on the phone; the only network request is the "Suggest a feature" button, which opens the browser, not Tepera itself.</string>
     <string name="knowledge_base_section_2_title">Pauses and delays</string>
@@ -490,7 +490,7 @@
     <string name="settings_about_action">About</string>
     <string name="about_screen_title">About</string>
     <string name="about_version_format">Version %1$s</string>
-    <string name="about_tagline">Tepera works without an account. Your entries stay on this phone.</string>
+    <string name="about_tagline">For now, Tepera works without an account. Your entries stay on this phone.</string>
     <string name="about_privacy_policy">Privacy Policy</string>
     <string name="about_contact">Write to the developer</string>
     <string name="about_no_app">Couldn\'t find an app that can open this</string>

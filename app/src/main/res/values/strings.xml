@@ -117,7 +117,7 @@
     <string name="welcome_back_logged_format">Відмічено: %1$s</string>
     <string name="welcome_back_online_format">Online в середньому: %1$s на день</string>
     <string name="weekly_summary_label">Тижневий підсумок</string>
-    <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері, — одне тихе сповіщення з підсумком. Інших сповіщень немає.</string>
+    <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері, — одне тихе сповіщення з підсумком. Без інших сповіщень.</string>
     <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не прийде. Дозволити можна в налаштуваннях системи.</string>
     <string name="weekly_summary_channel_name">Тижневий підсумок</string>
     <string name="weekly_summary_notification_text">Підсумок вашого тижня готовий.</string>
@@ -131,7 +131,7 @@
     <string name="pro_interest_body">Думаємо, чи потрібна розширена версія Tepera. Без цін і оплат — просто питання до вас. Розкажіть, що було б корисним.</string>
     <string name="pro_interest_action">Хочу дізнатись</string>
     <string name="extra_animations_label">Додаткові анімації</string>
-    <string name="extra_animations_explanation">Рідина в колі «без телефону» (рух від нахилу й струсу), числа, що плавно докручуються, і м’які переходи кнопок. Вимкніть, щоб заощадити заряд або прибрати рух.</string>
+    <string name="extra_animations_explanation">Рух рідини в колі «без телефону», числа, що плавно докручуються, і м’які переходи кнопок. Вимкніть, щоб заощадити заряд або прибрати анімацію.</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, активностей і часу в застосунках. Можна вимкнути будь-коли.</string>
 
@@ -181,7 +181,7 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">Після 01:00</string>
-    <string name="stats_last_phone_use_week_label">Зазвичай востаннє брали телефон</string>
+    <string name="stats_last_phone_use_week_label">Зазвичай відкладали телефон о</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
     <string name="weekly_reflection_question">Скільки, на вашу думку, ви в середньому були онлайн на день цього тижня?</string>
@@ -219,10 +219,10 @@
     <!-- T-6 (tepera-dev-spec.md), FR-P.3: "свідчення спроможності" — тихий факт про ворота -->
     <string name="gate_events_summary_card_title">Цей місяць</string>
     <plurals name="gate_events_summary_text">
-        <item quantity="one">Цього місяця %d раз ви вирішили не зараз</item>
-        <item quantity="few">Цього місяця %d рази ви вирішили не зараз</item>
-        <item quantity="many">Цього місяця %d разів ви вирішили не зараз</item>
-        <item quantity="other">Цього місяця %d раза ви вирішили не зараз</item>
+        <item quantity="one">Цього місяця ви %d раз передумали відкривати застосунок</item>
+        <item quantity="few">Цього місяця ви %d рази передумали відкривати застосунок</item>
+        <item quantity="many">Цього місяця ви %d разів передумали відкривати застосунок</item>
+        <item quantity="other">Цього місяця ви %d раза передумали відкривати застосунок</item>
     </plurals>
 
     <!-- Закриття контекстних карток, якщо прочитав (за запитом користувача, не в SRS) -->
@@ -254,7 +254,7 @@
     <string name="settings_theme_system">Системна</string>
     <string name="settings_theme_light">Світла</string>
     <string name="settings_theme_dark">Темна</string>
-    <string name="settings_target_info">Скільки годин Online орієнтовно вписується у ваш день. Тиха риска на шкалі, без оцінки.</string>
+    <string name="settings_target_info">Скільки годин Online орієнтовно вписується у ваш день. Просто позначка на шкалі, без оцінювання.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_target_decrease">Зменшити орієнтир</string>
     <string name="settings_target_increase">Збільшити орієнтир</string>
@@ -292,7 +292,7 @@
 
     <!-- Exclusion List (FR-3.5) -->
     <string name="exclusion_list_screen_title">Виключені застосунки</string>
-    <string name="exclusion_list_hint">Обрані застосунки не рахуються в Online-часі (карти, е-читалки, банкінг тощо)</string>
+    <string name="exclusion_list_hint">Обрані застосунки не враховуються в Online-часі (карти, е-читалки, банкінг тощо)</string>
     <string name="exclusion_list_empty">Немає застосунків з історією використання за останні 30 днів</string>
     <string name="exclusion_list_section_excluded">Виключені</string>
     <string name="exclusion_list_section_all">Усі</string>
@@ -341,7 +341,7 @@
     <string name="gates_section_add">Додати застосунок</string>
     <string name="gates_empty">Ще немає застосунків із затримкою</string>
     <string name="gates_delay_format">%d с</string>
-    <string name="gates_icon_not_handled">Оригінальна іконка ще на екрані — торкніться, коли приховаєте</string>
+    <string name="gates_icon_not_handled">Оригінальна іконка ще на екрані</string>
     <string name="gates_remove_action">Прибрати затримку</string>
     <string name="gates_delay_picker_title">Тривалість паузи</string>
     <string name="gates_delay_picker_confirm">Створити</string>
@@ -451,7 +451,7 @@
     <string name="diary_unlock_today_label">Розблокувань сьогодні</string>
     <string name="diary_unlock_yesterday_label">Розблокувань учора</string>
     <string name="diary_unlock_label">Розблокувань</string>
-    <string name="diary_last_phone_use_yesterday_label">Востаннє брали телефон учора</string>
+    <string name="diary_last_phone_use_yesterday_label">Відклали телефон вчора о</string>
     <string name="stats_history_today">Сьогодні</string>
     <string name="stats_history_yesterday">Вчора</string>
     <string name="stats_day_timeline_title">Вчорашня доба</string>
@@ -477,7 +477,7 @@
          відсутня тут. -->
     <string name="settings_knowledge_base_action">База знань</string>
     <string name="knowledge_base_screen_title">База знань</string>
-    <string name="knowledge_base_intro">Коротко про те, як Tepera рахує час і чому влаштована саме так.</string>
+    <string name="knowledge_base_intro">Як Tepera рахує час і чому влаштована саме так.</string>
     <string name="knowledge_base_section_1_title">Звідки беруться дані</string>
     <string name="knowledge_base_section_1_body">Online-час і структура дня рахуються через системний дозвіл Android «Доступ до статистики використання» (Налаштування → Спеціальний доступ, не спливаюче вікно). Дозвіл дає доступ лише до назв застосунків і моментів, коли вони виходять на передній план чи йдуть у фон. Без нього ручне логування активностей лишається повністю робочим — просто без автоматичного Online-часу.\n\nTepera не бачить зміст екрана: не текст повідомлень, не те, що саме ви читаєте чи дивитеся, не скролінг усередині застосунку — хвилина читання виглядає так само, як хвилина гортання стрічки. Усі дані лишаються на телефоні; єдиний вихід у мережу — кнопка «Запропонувати функцію», яка відкриває браузер, не сам застосунок.</string>
     <string name="knowledge_base_section_2_title">Паузи та затримка</string>
@@ -493,7 +493,7 @@
     <string name="hero_structure_info_body_target">Смуга показує, з чого складається ваш день від початку: Online, відмічені активності й решта дня. Штрихи в кінці — час, що ще попереду.\n\nТиха риска — ваш орієнтир Online-часу (змінити можна в Налаштуваннях → Відстеження). Вона не змінює колір, якщо Online його перейшов: це лише точка відліку, не межа.</string>
     <string name="home_card_info_action">Про цю картку</string>
     <string name="home_card_info_close">Зрозуміло</string>
-    <string name="day_usage_info_body">Кожен квадрат — година вчорашньої доби; колір — скільки хвилин телефон був у Online. Без оцінки.</string>
+    <string name="day_usage_info_body">Кожен квадрат — година вчорашньої доби; колір — скільки хвилин телефон був у Online. Без оцінювання.</string>
     <string name="weekly_digest_info_body">Підсумок останніх 7 днів: скільки разів ви відмічали активності, чому віддали найбільше часу, коли зазвичай починається день (медіана). Плитки без даних не показуються.</string>
     <string name="weekly_digest_hobby_between">з</string>
     <string name="weekly_digest_hobby_suffix">днів</string>
@@ -507,7 +507,7 @@
     <string name="settings_about_action">Про застосунок</string>
     <string name="about_screen_title">Про застосунок</string>
     <string name="about_version_format">Версія %1$s</string>
-    <string name="about_tagline">Tepera працює без облікового запису. Ваші записи лишаються на цьому телефоні.</string>
+    <string name="about_tagline">Наразі Tepera працює без облікового запису. Ваші записи лишаються на цьому телефоні.</string>
     <string name="about_privacy_policy">Політика конфіденційності</string>
     <string name="about_contact">Написати розробнику</string>
     <string name="about_no_app">Застосунок, який може це відкрити, не знайдено</string>
