@@ -27,6 +27,7 @@ class WidgetUpdateWorker(context: Context, params: WorkerParameters) : Coroutine
         TeperaWidget4x2().updateAll(applicationContext)
         TeperaWidget1x1().updateAll(applicationContext)
         TeperaWidget2x1().updateAll(applicationContext)
+        updateAllInfoWidgets(applicationContext)
         // P-2/D-39 (варіант B+): дозаписує day_summaries з уже існуючого періодичного Worker-а
         // (~30 хв), не лише при відкритті застосунку — щоб розрив для довгих перерв без
         // відкриття застосунку був мінімальним. Нічого не читає з Free-UI.
@@ -62,6 +63,7 @@ class WidgetRolloverWorker(context: Context, params: WorkerParameters) : Corouti
         TeperaWidget4x2().updateAll(applicationContext)
         TeperaWidget1x1().updateAll(applicationContext)
         TeperaWidget2x1().updateAll(applicationContext)
+        updateAllInfoWidgets(applicationContext)
         // P-2/D-39: саме тут день щойно "завершився" (перехід о 01:00) — природний другий
         // момент для дозапису, на додачу до регулярного WidgetUpdateWorker.
         (applicationContext as TeperaApp).daySummaryRepository.backfillCompletedDays()

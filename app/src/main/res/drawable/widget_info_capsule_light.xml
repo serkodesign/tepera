@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Капсула інформаційних віджетів (Figma "Widgets v2", світла): білий 88%, повне заокруглення. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#E0FFFFFF" />
+    <corners android:radius="100dp" />
+</shape>

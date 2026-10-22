@@ -119,6 +119,85 @@
         </receiver>
 
 
+        <!-- Інформаційні віджети (Figma "Widgets v2") — widget/InfoWidgets.kt -->
+        <receiver
+            android:name=".widget.InfoOnlineRing2x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_online_ring_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_online_ring" />
+        </receiver>
+        <receiver
+            android:name=".widget.InfoOnlineBar4x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_online_bar_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_online_bar" />
+        </receiver>
+        <receiver
+            android:name=".widget.InfoActive2x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_active_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_active" />
+        </receiver>
+        <receiver
+            android:name=".widget.InfoStart2x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_start_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_start" />
+        </receiver>
+        <receiver
+            android:name=".widget.InfoOrb1x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_orb_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_orb" />
+        </receiver>
+        <receiver
+            android:name=".widget.InfoLast4x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_last_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_last" />
+        </receiver>
+        <receiver
+            android:name=".widget.InfoWeek4x1Receiver"
+            android:exported="false"
+            android:label="@string/widget_info_week_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_week" />
+        </receiver>
+
         <!-- Quick Settings Tile (FR-4.4) -->
         <service
             android:name=".widget.QuickLogTileService"

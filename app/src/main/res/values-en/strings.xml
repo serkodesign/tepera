@@ -124,7 +124,7 @@
     <string name="extra_animations_label">Extra animations</string>
     <string name="extra_animations_explanation">Liquid in the “without phone” circle (moves with tilt and shake), smoothly counting numbers and soft button transitions. Turn off to save battery or remove motion.</string>
     <string name="crash_reports_label">Crash reports</string>
-    <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, categories or app time. Turn it off anytime.</string>
+    <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, activities or app time. Turn it off anytime.</string>
 
     <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), shown on both branches of "access granted? yes/no". -->
@@ -217,7 +217,7 @@
     <string name="settings_screen_title">Settings</string>
     <string name="settings_target_label">Online-time reference</string>
     <string name="settings_exclusion_list_action">Excluded apps</string>
-    <string name="settings_categories_action">Categories</string>
+    <string name="settings_categories_action">Activities</string>
     <string name="settings_language_label">App language</string>
     <string name="settings_language_system">System</string>
     <string name="settings_language_uk">Українська</string>
@@ -266,13 +266,13 @@
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export statistics</string>
     <string name="backup_import_action">Import statistics</string>
-    <string name="backup_not_included_note">The file includes: categories (name, icon, colour, order, archived state), all activity entries (start, duration, note), excluded apps, the Online-time reference and the daily Online history (Online minutes, unlocks, day start and end, Online by hour). Other settings (sleep window, gates, widget, language, theme) need to be set up again.</string>
+    <string name="backup_not_included_note">The file includes: activities (name, icon, colour, order, archived state), all activity entries (start, duration, note), excluded apps, the Online-time reference and the daily Online history (Online minutes, unlocks, day start and end, Online by hour). Other settings (sleep window, gates, widget, language, theme) need to be set up again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
     <string name="backup_import_failure">Couldn\'t import the data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
-    <string name="backup_import_confirm_body">Importing replaces categories, entries, excluded apps, the reference and the daily Online history with the data from the file. This cannot be undone. Other settings are not restored.</string>
+    <string name="backup_import_confirm_body">Importing replaces activities, entries, excluded apps, the reference and the daily Online history with the data from the file. This cannot be undone. Other settings are not restored.</string>
     <string name="backup_import_confirm_action">Import</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -373,17 +373,17 @@
     <string name="gates_growing_delay_hint">The delay grows a little with each repeat open — up to 20s — and resets after half an hour of quiet.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
-    <string name="categories_screen_title">Categories</string>
+    <string name="categories_screen_title">Activities</string>
     <string name="categories_section_active">Active</string>
     <string name="categories_section_archived">Archived</string>
-    <string name="category_add_custom">Add your own category</string>
-    <string name="category_custom_limit_reached">You can have up to five custom categories</string>
+    <string name="category_add_custom">Add your own activity</string>
+    <string name="category_custom_limit_reached">You can have up to five custom activities</string>
     <string name="category_delete_action">Delete</string>
-    <string name="category_delete_confirm_title">Delete this category?</string>
-    <string name="category_delete_confirm_body">"%1$s" and all activity entries in it will be deleted permanently. This can\'t be undone.</string>
-    <string name="category_dialog_title">New category</string>
-    <string name="category_edit_title">Edit category</string>
-    <string name="category_edit_action">Edit category</string>
+    <string name="category_delete_confirm_title">Delete this activity?</string>
+    <string name="category_delete_confirm_body">"%1$s" and all time entries in it will be deleted permanently. This can\'t be undone.</string>
+    <string name="category_dialog_title">New activity</string>
+    <string name="category_edit_title">Edit activity</string>
+    <string name="category_edit_action">Edit activity</string>
     <string name="category_name_label">Name</string>
     <string name="category_name_required">Enter a name</string>
     <string name="category_icon_label">Icon</string>
@@ -393,13 +393,13 @@
     <string name="dialog_ok">OK</string>
 
     <!-- Add entry (FR-1.1–1.4) -->
-    <string name="add_entry_screen_title">New activity</string>
+    <string name="add_entry_screen_title">Add time</string>
     <string name="edit_entry_screen_title">Edit entry</string>
     <string name="edit_entry_delete_action">Delete</string>
     <string name="edit_entry_delete_confirm_title">Delete this entry?</string>
     <string name="edit_entry_delete_confirm_body">This can\'t be undone.</string>
-    <string name="add_entry_category_label">Category</string>
-    <string name="add_entry_category_empty">No active categories</string>
+    <string name="add_entry_category_label">Activity</string>
+    <string name="add_entry_category_empty">No activities available</string>
     <string name="add_entry_duration_word">Duration</string>
     <string name="add_entry_start_time_label">Start</string>
     <string name="add_entry_end_time_label">End</string>
@@ -408,13 +408,13 @@
     <string name="add_entry_time_mode_dial">Pick time on the clock</string>
     <string name="add_entry_note_label">Note (optional)</string>
     <string name="add_entry_save">Save</string>
-    <string name="add_entry_select_category_first">Choose a category first</string>
+    <string name="add_entry_select_category_first">Choose an activity first</string>
     <string name="add_entry_interval_invalid">End time must be after start time</string>
     <string name="add_entry_interval_too_long">One entry can be at most %1$d days long</string>
     <string name="add_entry_end_next_day_action">Next day</string>
     <string name="entry_series_caption">One activity: %1$s — %2$s</string>
     <string name="add_entry_overlap_title">Overlapping time</string>
-    <string name="add_entry_overlap_body">There is already an overlapping entry in this category. Save anyway?</string>
+    <string name="add_entry_overlap_body">There is already an overlapping entry for this activity. Save anyway?</string>
     <string name="add_entry_overlap_confirm">Save anyway</string>
 
     <!-- Stats (FR-5.2, FR-5.3) -->
@@ -422,7 +422,7 @@
     <string name="stats_screen_title">Stats</string>
     <string name="stats_period_day">Yesterday</string>
     <string name="stats_period_week">Week</string>
-    <string name="stats_category_breakdown_title">Time by category</string>
+    <string name="stats_category_breakdown_title">Time by activity</string>
     <string name="stats_weekly_trend_title">Online-time trend</string>
     <string name="stats_no_data">Nothing here yet</string>
     <string name="stats_day_first_day_empty">Nothing here yet. Yesterday will show up here once there is one.</string>
@@ -450,7 +450,7 @@
     <!-- Tapping the body of a category card on Home (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791) — full history of entries for that category, not limited to today/yesterday. -->
     <string name="category_history_screen_title_fallback">History</string>
-    <string name="category_history_empty">No entries for this category yet</string>
+    <string name="category_history_empty">No entries for this activity yet</string>
     <string name="add_entry_change_category">Change</string>
     <string name="add_entry_overlap_change_time">Change time</string>
     <string name="add_entry_saved_snackbar">Saved</string>
@@ -464,7 +464,7 @@
     <string name="knowledge_base_section_1_title">Where the data comes from</string>
     <string name="knowledge_base_section_1_body">Online time and the day structure are counted through Android\'s system "Usage access" permission (Settings → Special access, not a pop-up dialog). The permission only grants access to app names and the moments they move to the foreground or background. Without it, manual activity logging keeps working fully — Tepera just won\'t have automatic Online time.\n\nTepera does not see screen content: not message text, not what you\'re actually reading or watching, not scrolling inside an app — a minute of reading looks the same as a minute of scrolling a feed. All data stays on the phone; the only network request is the "Suggest a feature" button, which opens the browser, not Tepera itself.</string>
     <string name="knowledge_base_section_2_title">Pauses and delays</string>
-    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with a category — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a pause you leave unlabeled is never recorded as a metric.\n\nThe delay (Settings → Apps with a delay) is a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so the delay works through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning the delay off for the day is one tap, no explanation needed.</string>
+    <string name="knowledge_base_section_2_body">When enough time passes between uses of the phone, Tepera offers to label that gap with an activity — that\'s the pause card on Home. The threshold is set by three levels (Less often / Normal / More often) in Settings, with no need to understand the algorithm\'s numbers. Labeling is a suggestion, not a tracking log — a pause you leave unlabeled is never recorded as a metric.\n\nThe delay (Settings → Apps with a delay) is a manual feature: you choose the app and the wait time yourself. Android doesn\'t let apps actually block another app from launching, so the delay works through a pinned shortcut with a pause before launch — the original app icon stays in place and still opens it instantly. This is a deliberate delay you set for yourself, not a technical barrier — turning the delay off for the day is one tap, no explanation needed.</string>
     <string name="knowledge_base_section_3_title">Sleep window</string>
     <string name="knowledge_base_section_3_body">The sleep window (Settings → Time and day boundaries) doesn\'t show sleep as an activity and says nothing about how much or how well you slept. It\'s only a time range excluded from the calculation: minutes inside the sleep window don\'t count toward the day structure, don\'t become pauses, and don\'t count toward the unlock counter.</string>
     <string name="knowledge_base_section_4_title">Why there are no notifications, streaks, or scores</string>
@@ -481,10 +481,10 @@
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
     <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): widget-picker description — now "Today" (day shape), not category buttons. -->
-    <string name="widget_4x1_description">Quick category buttons</string>
+    <string name="widget_4x1_description">Quick activity buttons</string>
     <string name="widget_1x1_description">One activity button</string>
     <string name="widget_2x1_description">Two activity buttons</string>
-    <string name="widget_4x2_description">Category buttons and the day grid</string>
+    <string name="widget_4x2_description">Activity buttons and the day grid</string>
 
     <!-- About (GAP-8) -->
     <string name="settings_about_action">About</string>
@@ -499,7 +499,7 @@
     <string name="backup_delete_section">Data deletion</string>
     <string name="backup_delete_action">Delete all data</string>
     <string name="backup_delete_title">Delete all data?</string>
-    <string name="backup_delete_body">This deletes entries, categories, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nNot sure? Save a copy first: \"Export statistics\".\n\nAn Android Auto Backup copy (if enabled) is not affected.</string>
+    <string name="backup_delete_body">This deletes entries, activities, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nNot sure? Save a copy first: \"Export statistics\".\n\nAn Android Auto Backup copy (if enabled) is not affected.</string>
     <string name="backup_delete_next">Continue</string>
     <string name="backup_delete_final_title">One last confirmation</string>
     <string name="backup_delete_final_body">To delete everything for good, type the word \"%1$s\".</string>
@@ -564,4 +564,29 @@
 
     <string name="gates_mode_shortcut">Shortcut</string>
     <string name="gates_mode_accessibility">Accessibility</string>
+
+    <!-- Info widgets (Figma "Widgets v2"): names in the widget picker, descriptions and in-widget labels -->
+    <string name="widget_info_online_ring_label">Online: day ring</string>
+    <string name="widget_info_online_ring_description">How long you were online today and how much of the day that is</string>
+    <string name="widget_info_online_bar_label">Online: day structure</string>
+    <string name="widget_info_online_bar_description">Online today and the day-structure bar</string>
+    <string name="widget_info_active_label">Running now</string>
+    <string name="widget_info_active_description">What is running now, stop with one tap</string>
+    <string name="widget_info_start_label">Start of day</string>
+    <string name="widget_info_start_description">When your day started today</string>
+    <string name="widget_info_orb_label">Phone-free</string>
+    <string name="widget_info_orb_description">Phone-free time today in an orb</string>
+    <string name="widget_info_last_label">Last activity</string>
+    <string name="widget_info_last_description">Your last activity today and a repeat button</string>
+    <string name="widget_info_week_label">Most time this week</string>
+    <string name="widget_info_week_description">The two activities that took the most time this week</string>
+    <string name="widget_info_no_access">Access needed</string>
+    <string name="widget_info_idle">Not running</string>
+    <string name="widget_info_running">Running</string>
+    <string name="widget_info_start_title">Start</string>
+    <string name="widget_info_orb_short">no phone</string>
+    <string name="widget_info_week_title">Most time this week</string>
+    <string name="widget_info_hours_value_format">%1$d:%2$02d h</string>
+    <string name="widget_info_last_format">%1$s · today at %2$s</string>
+    <string name="widget_info_chip_format">%1$s %2$s</string>
 </resources>

@@ -133,7 +133,7 @@
     <string name="extra_animations_label">Додаткові анімації</string>
     <string name="extra_animations_explanation">Рідина в колі «без телефону» (рух від нахилу й струсу), числа, що плавно докручуються, і м’які переходи кнопок. Вимкніть, щоб заощадити заряд або прибрати рух.</string>
     <string name="crash_reports_label">Звіти про збої</string>
-    <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, категорій і часу в застосунках. Можна вимкнути будь-коли.</string>
+    <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, активностей і часу в застосунках. Можна вимкнути будь-коли.</string>
 
     <!-- "Пропозиція віджета" — останній крок онбордингу (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), показується обома гілками "доступ надано? так/ні". -->
@@ -232,7 +232,7 @@
     <string name="settings_screen_title">Налаштування</string>
     <string name="settings_target_label">Орієнтир Online-часу</string>
     <string name="settings_exclusion_list_action">Виключені застосунки</string>
-    <string name="settings_categories_action">Категорії</string>
+    <string name="settings_categories_action">Активності</string>
     <string name="settings_language_label">Мова застосунку</string>
     <string name="settings_language_system">Системна</string>
     <string name="settings_language_uk">Українська</string>
@@ -281,13 +281,13 @@
     <!-- Резервне копіювання (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Експортувати статистику</string>
     <string name="backup_import_action">Імпортувати статистику</string>
-    <string name="backup_not_included_note">У файл потрапляють: категорії (назва, іконка, колір, порядок, архівація), усі записи активностей (початок, тривалість, нотатка), виключені застосунки, орієнтир Online-часу та щоденна історія Online (хвилини Online, розблокування, початок і кінець дня, Online по годинах). Решту налаштувань (вікно сну, ворота, віджет, мову, тему) задайте заново.</string>
+    <string name="backup_not_included_note">У файл потрапляють: активності (назва, іконка, колір, порядок, архівація), усі записи часу (початок, тривалість, нотатка), виключені застосунки, орієнтир Online-часу та щоденна історія Online (хвилини Online, розблокування, початок і кінець дня, Online по годинах). Решту налаштувань (вікно сну, ворота, віджет, мову, тему) задайте заново.</string>
     <string name="backup_export_success">Дані експортовано</string>
     <string name="backup_export_failure">Не вдалося експортувати дані</string>
     <string name="backup_import_success">Дані імпортовано</string>
     <string name="backup_import_failure">Не вдалося імпортувати дані — перевірте файл</string>
     <string name="backup_import_confirm_title">Замінити всі дані?</string>
-    <string name="backup_import_confirm_body">Імпорт повністю замінить категорії, записи, виключені застосунки, орієнтир і щоденну історію Online даними з файлу. Це не можна скасувати. Решта налаштувань не відновлюється.</string>
+    <string name="backup_import_confirm_body">Імпорт повністю замінить активності, записи, виключені застосунки, орієнтир і щоденну історію Online даними з файлу. Це не можна скасувати. Решта налаштувань не відновлюється.</string>
     <string name="backup_import_confirm_action">Імпортувати</string>
 
     <!-- Exclusion List (FR-3.5) -->
@@ -388,17 +388,17 @@
     <string name="gates_growing_delay_hint">Затримка трохи росте з кожним відкриттям — до 20 с — і скидається за пів години тиші.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
-    <string name="categories_screen_title">Категорії</string>
+    <string name="categories_screen_title">Активності</string>
     <string name="categories_section_active">Активні</string>
     <string name="categories_section_archived">Архівовано</string>
-    <string name="category_add_custom">Додати свою категорію</string>
-    <string name="category_custom_limit_reached">Можна мати не більше п\'яти власних категорій</string>
+    <string name="category_add_custom">Додати свою активність</string>
+    <string name="category_custom_limit_reached">Можна мати не більше п\'яти власних активностей</string>
     <string name="category_delete_action">Видалити</string>
-    <string name="category_delete_confirm_title">Видалити категорію?</string>
-    <string name="category_delete_confirm_body">"%1$s" і всі записи активностей у ній буде видалено назавжди. Цю дію не можна скасувати.</string>
-    <string name="category_dialog_title">Нова категорія</string>
-    <string name="category_edit_title">Редагувати категорію</string>
-    <string name="category_edit_action">Редагувати категорію</string>
+    <string name="category_delete_confirm_title">Видалити активність?</string>
+    <string name="category_delete_confirm_body">"%1$s" і всі записи часу в ній буде видалено назавжди. Цю дію не можна скасувати.</string>
+    <string name="category_dialog_title">Нова активність</string>
+    <string name="category_edit_title">Редагувати активність</string>
+    <string name="category_edit_action">Редагувати активність</string>
     <string name="category_name_label">Назва</string>
     <string name="category_name_required">Введіть назву</string>
     <string name="category_icon_label">Іконка</string>
@@ -408,13 +408,13 @@
     <string name="dialog_ok">Гаразд</string>
 
     <!-- Add entry (FR-1.1–1.4) -->
-    <string name="add_entry_screen_title">Нова активність</string>
+    <string name="add_entry_screen_title">Додати час</string>
     <string name="edit_entry_screen_title">Редагувати запис</string>
     <string name="edit_entry_delete_action">Видалити</string>
     <string name="edit_entry_delete_confirm_title">Видалити запис?</string>
     <string name="edit_entry_delete_confirm_body">Цю дію не можна скасувати.</string>
-    <string name="add_entry_category_label">Категорія</string>
-    <string name="add_entry_category_empty">Немає активних категорій</string>
+    <string name="add_entry_category_label">Активність</string>
+    <string name="add_entry_category_empty">Немає доступних активностей</string>
     <string name="add_entry_duration_word">Тривалість</string>
     <string name="add_entry_start_time_label">Початок</string>
     <string name="add_entry_end_time_label">Кінець</string>
@@ -423,13 +423,13 @@
     <string name="add_entry_time_mode_dial">Обрати час на циферблаті</string>
     <string name="add_entry_note_label">Нотатка (необов\'язково)</string>
     <string name="add_entry_save">Зберегти</string>
-    <string name="add_entry_select_category_first">Спершу оберіть категорію</string>
+    <string name="add_entry_select_category_first">Спершу оберіть активність</string>
     <string name="add_entry_interval_invalid">Час завершення має бути пізніше початку</string>
     <string name="add_entry_interval_too_long">Один запис — не довше %1$d діб</string>
     <string name="add_entry_end_next_day_action">Наступного дня</string>
     <string name="entry_series_caption">Одна активність: %1$s — %2$s</string>
     <string name="add_entry_overlap_title">Перекриття часу</string>
-    <string name="add_entry_overlap_body">У цій категорії вже є запис, що перекривається за часом. Зберегти все одно?</string>
+    <string name="add_entry_overlap_body">У цій активності вже є запис, що перекривається за часом. Зберегти все одно?</string>
     <string name="add_entry_overlap_confirm">Зберегти все одно</string>
 
     <!-- Статистика (FR-5.2, FR-5.3) -->
@@ -439,7 +439,7 @@
     <string name="stats_screen_title">Статистика</string>
     <string name="stats_period_day">Вчора</string>
     <string name="stats_period_week">Тиждень</string>
-    <string name="stats_category_breakdown_title">Розподіл часу по категоріях</string>
+    <string name="stats_category_breakdown_title">Розподіл часу по активностях</string>
     <string name="stats_weekly_trend_title">Тренд Online-часу</string>
     <string name="stats_no_data">Поки порожньо</string>
     <string name="stats_day_first_day_empty">Поки порожньо. Тут з\'явиться вчорашня доба, щойно вона буде.</string>
@@ -467,7 +467,7 @@
     <!-- Тап по тілу картки категорії на Home (Figma user-flow k6s4prQ9oK9x2uUvzHRghR, node
          14:791) — повна історія записів цієї категорії, без обмеження "сьогодні+вчора". -->
     <string name="category_history_screen_title_fallback">Історія</string>
-    <string name="category_history_empty">Ще немає записів цієї категорії</string>
+    <string name="category_history_empty">Ще немає записів цієї активності</string>
     <string name="add_entry_change_category">Змінити</string>
     <string name="add_entry_overlap_change_time">Змінити час</string>
     <string name="add_entry_saved_snackbar">Записано</string>
@@ -481,7 +481,7 @@
     <string name="knowledge_base_section_1_title">Звідки беруться дані</string>
     <string name="knowledge_base_section_1_body">Online-час і структура дня рахуються через системний дозвіл Android «Доступ до статистики використання» (Налаштування → Спеціальний доступ, не спливаюче вікно). Дозвіл дає доступ лише до назв застосунків і моментів, коли вони виходять на передній план чи йдуть у фон. Без нього ручне логування активностей лишається повністю робочим — просто без автоматичного Online-часу.\n\nTepera не бачить зміст екрана: не текст повідомлень, не те, що саме ви читаєте чи дивитеся, не скролінг усередині застосунку — хвилина читання виглядає так само, як хвилина гортання стрічки. Усі дані лишаються на телефоні; єдиний вихід у мережу — кнопка «Запропонувати функцію», яка відкриває браузер, не сам застосунок.</string>
     <string name="knowledge_base_section_2_title">Паузи та затримка</string>
-    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок категорією — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: якщо паузу не позначити, це нікуди не записується як показник.\n\nЗатримка (Налаштування → Застосунки з затримкою) — ручна функція: застосунок і час очікування ви самі обираєте. Android не дає застосункам справді блокувати запуск інших застосунків, тож затримка працює через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ви собі поставили, не технічний бар\'єр — вимкнути затримку на сьогодні можна одним тапом, без пояснень.</string>
+    <string name="knowledge_base_section_2_body">Коли між використаннями телефону минає достатньо часу, Tepera пропонує позначити цей проміжок активністю — так з\'являється картка пауз на Home. Поріг налаштовується трьома рівнями (Рідше / Звичайно / Частіше) у Налаштуваннях, без потреби розуміти цифри алгоритму. Позначення — підказка, не журнал стеження: якщо паузу не позначити, це нікуди не записується як показник.\n\nЗатримка (Налаштування → Застосунки з затримкою) — ручна функція: застосунок і час очікування ви самі обираєте. Android не дає застосункам справді блокувати запуск інших застосунків, тож затримка працює через закріплений ярлик із паузою перед запуском — оригінальна іконка застосунку лишається на місці й далі відкриває його одразу. Це свідома затримка, яку ви собі поставили, не технічний бар\'єр — вимкнути затримку на сьогодні можна одним тапом, без пояснень.</string>
     <string name="knowledge_base_section_3_title">Вікно сну</string>
     <string name="knowledge_base_section_3_body">Вікно сну (Налаштування → Час і межі дня) не показує сон як активність і нічого не каже про те, скільки чи як добре ви спали. Це лише межі часу, які виключаються з розрахунку: хвилини у вікні сну не входять у структуру дня, не стають паузами й не рахуються в лічильнику розблокувань.</string>
     <string name="knowledge_base_section_4_title">Чому немає сповіщень, стріків і оцінок</string>
@@ -498,10 +498,10 @@
     <string name="weekly_digest_hobby_between">з</string>
     <string name="weekly_digest_hobby_suffix">днів</string>
     <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): опис у пікері віджетів — тепер "Сьогодні" (форма дня), не кнопки категорій. -->
-    <string name="widget_4x1_description">Швидкі кнопки категорій</string>
+    <string name="widget_4x1_description">Швидкі кнопки активностей</string>
     <string name="widget_1x1_description">Одна кнопка активності</string>
     <string name="widget_2x1_description">Дві кнопки активностей</string>
-    <string name="widget_4x2_description">Кнопки категорій і сітка доби</string>
+    <string name="widget_4x2_description">Кнопки активностей і сітка доби</string>
 
     <!-- Про застосунок (GAP-8) -->
     <string name="settings_about_action">Про застосунок</string>
@@ -516,7 +516,7 @@
     <string name="backup_delete_section">Видалення даних</string>
     <string name="backup_delete_action">Видалити всі дані</string>
     <string name="backup_delete_title">Видалити всі дані?</string>
-    <string name="backup_delete_body">Буде видалено записи, категорії, налаштування й усе, що Tepera зберігає на цьому телефоні. Це не можна скасувати.\n\nЯкщо сумніваєтеся, спершу збережіть копію: «Експортувати статистику».\n\nКопію Android Auto Backup (якщо ввімкнена) це не чіпає.</string>
+    <string name="backup_delete_body">Буде видалено записи, активності, налаштування й усе, що Tepera зберігає на цьому телефоні. Це не можна скасувати.\n\nЯкщо сумніваєтеся, спершу збережіть копію: «Експортувати статистику».\n\nКопію Android Auto Backup (якщо ввімкнена) це не чіпає.</string>
     <string name="backup_delete_next">Далі</string>
     <string name="backup_delete_final_title">Останнє підтвердження</string>
     <string name="backup_delete_final_body">Щоб видалити все назавжди, напишіть слово «%1$s».</string>
@@ -581,4 +581,29 @@
 
     <string name="gates_mode_shortcut">Ярлик</string>
     <string name="gates_mode_accessibility">Доступність</string>
+
+    <!-- Інформаційні віджети (Figma "Widgets v2"): назви в меню віджетів, описи й підписи всередині -->
+    <string name="widget_info_online_ring_label">Online: кільце доби</string>
+    <string name="widget_info_online_ring_description">Скільки ви сьогодні онлайн і яку частину доби це займає</string>
+    <string name="widget_info_online_bar_label">Online: структура доби</string>
+    <string name="widget_info_online_bar_description">Online сьогодні та смуга структури доби</string>
+    <string name="widget_info_active_label">Активна зараз</string>
+    <string name="widget_info_active_description">Що триває зараз, зупинити одним тапом</string>
+    <string name="widget_info_start_label">Початок дня</string>
+    <string name="widget_info_start_description">Коли сьогодні почався ваш день</string>
+    <string name="widget_info_orb_label">Без телефону</string>
+    <string name="widget_info_orb_description">Час без телефону сьогодні в орбі</string>
+    <string name="widget_info_last_label">Остання активність</string>
+    <string name="widget_info_last_description">Остання активність сьогодні та кнопка повторити</string>
+    <string name="widget_info_week_label">Найбільше часу за тиждень</string>
+    <string name="widget_info_week_description">Дві активності, що забрали найбільше часу за тиждень</string>
+    <string name="widget_info_no_access">Потрібен доступ</string>
+    <string name="widget_info_idle">Не запущено</string>
+    <string name="widget_info_running">Триває</string>
+    <string name="widget_info_start_title">Початок</string>
+    <string name="widget_info_orb_short">без тел.</string>
+    <string name="widget_info_week_title">Цього тижня найбільше часу</string>
+    <string name="widget_info_hours_value_format">%1$d:%2$02d год</string>
+    <string name="widget_info_last_format">%1$s · сьогодні о %2$s</string>
+    <string name="widget_info_chip_format">%1$s %2$s</string>
 </resources>

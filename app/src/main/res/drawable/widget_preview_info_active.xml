@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Статичне превью інформаційного віджета (active) для меню віджетів на Android < 15. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape android:shape="rectangle"><gradient android:angle="270" android:startColor="#A9C9B6" android:endColor="#7DA28F" /><corners android:radius="22dp" /></shape></item>
+    <item android:width="100dp" android:height="50dp" android:gravity="center"><shape android:shape="rectangle"><solid android:color="#E0FFFFFF" /><corners android:radius="100dp" /></shape></item>
+    <item android:width="34dp" android:height="8dp" android:gravity="center_vertical|start" android:start="22dp" android:top="0dp"><shape android:shape="rectangle"><solid android:color="#FF003926" /><corners android:radius="4dp" /></shape></item>
+    <item android:width="30dp" android:height="30dp" android:gravity="center_vertical|end" android:end="22dp"><shape android:shape="oval"><solid android:color="#FF006944" /></shape></item>
+</layer-list>

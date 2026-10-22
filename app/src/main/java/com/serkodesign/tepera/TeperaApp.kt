@@ -5,6 +5,13 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import com.serkodesign.tepera.widget.InfoActive2x1Receiver
+import com.serkodesign.tepera.widget.InfoLast4x1Receiver
+import com.serkodesign.tepera.widget.InfoOnlineBar4x1Receiver
+import com.serkodesign.tepera.widget.InfoOnlineRing2x1Receiver
+import com.serkodesign.tepera.widget.InfoOrb1x1Receiver
+import com.serkodesign.tepera.widget.InfoStart2x1Receiver
+import com.serkodesign.tepera.widget.InfoWeek4x1Receiver
 import com.serkodesign.tepera.widget.TeperaWidget1x1Receiver
 import com.serkodesign.tepera.widget.TeperaWidget2x1Receiver
 import com.serkodesign.tepera.widget.TeperaWidget4x2Receiver
@@ -269,7 +276,14 @@ class TeperaApp : Application() {
                 "preview_key_4x1" to TeperaWidgetReceiver::class,
                 "preview_key_4x2" to TeperaWidget4x2Receiver::class,
                 "preview_key_1x1" to TeperaWidget1x1Receiver::class,
-                "preview_key_2x1" to TeperaWidget2x1Receiver::class
+                "preview_key_2x1" to TeperaWidget2x1Receiver::class,
+                "preview_key_info_online_ring" to InfoOnlineRing2x1Receiver::class,
+                "preview_key_info_online_bar" to InfoOnlineBar4x1Receiver::class,
+                "preview_key_info_active" to InfoActive2x1Receiver::class,
+                "preview_key_info_start" to InfoStart2x1Receiver::class,
+                "preview_key_info_orb" to InfoOrb1x1Receiver::class,
+                "preview_key_info_last" to InfoLast4x1Receiver::class,
+                "preview_key_info_week" to InfoWeek4x1Receiver::class
             )
             for ((prefKey, receiver) in receivers) {
                 if (prefs.getString(prefKey, null) == key) continue
@@ -286,6 +300,6 @@ class TeperaApp : Application() {
     }
 
     private companion object {
-        const val WIDGET_PREVIEW_VERSION = 4
+        const val WIDGET_PREVIEW_VERSION = 5
     }
 }

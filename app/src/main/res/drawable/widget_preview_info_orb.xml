@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Статичне превью інформаційного віджета (orb) для меню віджетів на Android < 15. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape android:shape="rectangle"><gradient android:angle="270" android:startColor="#A9C9B6" android:endColor="#7DA28F" /><corners android:radius="22dp" /></shape></item>
+    <item android:width="56dp" android:height="56dp" android:gravity="center"><shape android:shape="oval"><solid android:color="#FF0F4A38" /></shape></item>
+    <item android:width="56dp" android:height="34dp" android:gravity="center|bottom" android:bottom="6dp"><shape android:shape="rectangle"><solid android:color="#F26FD3A8" /><corners android:bottomLeftRadius="28dp" android:bottomRightRadius="28dp" /></shape></item>
+</layer-list>

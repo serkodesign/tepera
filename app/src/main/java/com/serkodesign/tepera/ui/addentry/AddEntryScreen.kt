@@ -168,17 +168,12 @@ fun AddEntryScreen(
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             GlassScreenHeader(
-                // Додавання з конкретної категорії (меню категорії або "додати час" на картці) — назва категорії;
-                // "Нова активність" лишається лише для додавання зі Щоденника.
-                title = if (!viewModel.isEditing && initialCategoryId != null) {
-                    categories.firstOrNull { it.id == initialCategoryId }?.let { categoryDisplayName(it) }
-                        ?: stringResource(R.string.add_entry_screen_title)
-                } else {
-                    stringResource(
-                        if (viewModel.isEditing) R.string.edit_entry_screen_title
-                        else R.string.add_entry_screen_title
-                    )
-                },
+                // Загальний заголовок за будь-якого входу: назва категорії в заголовку не змінювалась би,
+                // коли в формі обирають іншу активність ("Змінити").
+                title = stringResource(
+                    if (viewModel.isEditing) R.string.edit_entry_screen_title
+                    else R.string.add_entry_screen_title
+                ),
                 onBack = onBack,
                 trailing = {
                     if (viewModel.isEditing) {

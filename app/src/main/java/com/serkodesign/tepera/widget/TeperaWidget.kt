@@ -323,7 +323,7 @@ private fun CategoryButtonsRow(
     }
 }
 
-private val CATEGORY_ID_KEY = ActionParameters.Key<String>("category_id")
+internal val CATEGORY_ID_KEY = ActionParameters.Key<String>("category_id")
 
 /**
  * Кнопка-коло: шар кола (тонується) під шаром гліфа (тонується). Не `cornerRadius`/`background` —
