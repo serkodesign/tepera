@@ -571,8 +571,8 @@
     <string name="a11y_gate_enable_action">Увімкнути</string>
     <string name="a11y_gate_manage_action">Налаштування</string>
     <string name="a11y_disclosure_title">Доступ до Спеціальних можливостей</string>
-    <string name="a11y_disclosure_body">Tepera використовує службу Спеціальних можливостей лише для того, щоб побачити, який застосунок щойно відкрився, і показати паузу перед тими, що ви самі обрали.\n\nСлужба не читає вміст екрана, не бачить текст, паролі чи повідомлення і нічого не надсилає з пристрою. Вимкнути її можна будь-коли в налаштуваннях Android.</string>
-    <string name="a11y_disclosure_continue">Відкрити</string>
+    <string name="a11y_disclosure_body">Tepera використовує службу Спеціальних можливостей лише для того, щоб побачити назву застосунку, який щойно відкрився, і показати коротку паузу перед тими, що ви самі обрали.\n\nСлужба не читає вміст екрана, текст, паролі чи повідомлення. Дані про відкриті застосунки лишаються на вашому пристрої і нікому не передаються. Вимкнути службу можна будь-коли в налаштуваннях Android.</string>
+    <string name="a11y_disclosure_continue">Погоджуюсь</string>
     <string name="a11y_disclosure_cancel">Не зараз</string>
     <string name="a11y_perm_label">Затримка перед застосунками</string>
     <string name="free_opens_title">Відкриття без затримки</string>

@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 28.09.2026*
+*Останнє оновлення / Last updated: 23.10.2026*
 
 ---
 
@@ -24,6 +24,13 @@ title: Privacy Policy — Tepera
   ніколи не передаються на сервер і не включаються в crash-звіти. Ви можете виключити окремі
   застосунки зі списку врахованих (Exclusion List) або взагалі не надавати цей доступ — офлайн-
   логування активностей залишиться повністю робочим.
+- **Лише у тестовій (beta) збірці — служба Спеціальних можливостей (Accessibility) для «Застосунків
+  з затримкою».** Якщо ви самі її вмикаєте, служба бачить **тільки назву пакета** застосунку, що
+  вийшов на передній план, і показує коротку паузу перед тими застосунками, які ви обрали в Tepera.
+  Вона **не читає** вміст екрана, текст, паролі, повідомлення чи введення. Рішення на екрані паузи
+  («Продовжити» / «Не зараз») зберігаються **лише локально** на пристрої, нічого не передається на
+  сервер і нікому не надається. Службу можна вимкнути будь-коли в Налаштуваннях Android →
+  Спеціальні можливості. Без неї застосунок працює повністю; у звичайній (не beta) збірці цієї служби немає.
 - Ми **не** запитуємо дозвіл на геолокацію (в жодній формі, включно з фоновою).
 - Ми **не** створюємо облікових записів і не вимагаємо реєстрації.
 
@@ -58,6 +65,13 @@ with third parties.
   Settings). This data is processed **entirely on-device**, never transmitted to a server, and never
   included in crash reports. You can exclude specific apps from being counted (Exclusion List), or
   choose not to grant this access at all — offline activity logging remains fully functional either way.
+- **Test (beta) build only — an Accessibility service for "Delayed apps".** If you turn it on
+  yourself, the service sees **only the package name** of the app that came to the foreground and
+  shows a short pause before the apps you picked in Tepera. It does **not** read screen content,
+  text, passwords, messages or anything you type. Your choices on the pause screen ("Continue" /
+  "Not now") are stored **only locally** on the device; nothing is sent to a server or shared with
+  anyone. You can turn the service off at any time in Android Settings → Accessibility. The app
+  works fully without it; the regular (non-beta) build contains no such service.
 - We do **not** request location permissions, in any form, including background location.
 - We do **not** create user accounts or require registration.
 
