@@ -27,8 +27,8 @@
 **How the API is used**
 > The service listens only to TYPE_WINDOW_STATE_CHANGED and reads only the package name of the window. It has
 > canRetrieveWindowContent=false, so it cannot read text, views, passwords or messages, and it does not perform gestures or
-> change any settings. If the package is on the user's own list, Tepera opens its own pause screen with "Continue" and
-> "Not now" buttons. The user can always continue to the app.
+> change any settings. If the package is on the user's own list, Tepera opens its own pause screen with "Not now" and
+> "Open <app>" buttons (the open button becomes active after a short countdown). The user can always continue to the app.
 
 **Why other APIs are not enough**
 > UsageStatsManager reports usage only after the fact (with a delay) and cannot trigger a pause at the moment of opening.
@@ -71,8 +71,8 @@
 | 6 | **Згода:** тап «I agree» → системні «Accessibility» → «Tepera: delay before apps» → показати опис служби → перемикач → системне підтвердження | «User gives consent and grants access in system settings» | 15 с |
 | 7 | Повернення в Tepera → рядок із галкою → «Skip»/далі на Home | «Access granted by the user» | 4 с |
 | 8 | Налаштування → «Delayed apps» → таб «Accessibility» (картка вже не показується, бо увімкнено) → додати Firefox (або будь-який безпечний застосунок) | «The user chooses which apps get a pause» | 10 с |
-| 9 | Робочий стіл → відкрити цей застосунок → пауза Tepera. Тап «Exit» → робочий стіл | «Core feature: a short pause before a chosen app» | 10 с |
-| 10 | Відкрити його знову → пауза → дочекатись → «Continue» → застосунок відкрився | «The user can always continue» | 12 с |
+| 9 | Робочий стіл → відкрити цей застосунок → пауза Tepera. Тап «Not now» → робочий стіл | «Core feature: a short pause before a chosen app» | 10 с |
+| 10 | Відкрити його знову → пауза → дочекатись кінця відліку → «Open Firefox» → застосунок відкрився | «The user can always continue» | 12 с |
 | 11 | Відкрити **інший** застосунок, якого нема в списку → пауза не з'являється | «Other apps are not affected» | 6 с |
 | 12 | Налаштування Android → Accessibility → Tepera → вимкнути | «The user can turn it off at any time» | 8 с |
 
