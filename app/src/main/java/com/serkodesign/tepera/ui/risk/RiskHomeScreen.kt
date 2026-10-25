@@ -21,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +45,16 @@ import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
+import com.serkodesign.tepera.domain.risk.NextWindow
+import com.serkodesign.tepera.domain.risk.PartOfDay
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.TextStyle
+import java.util.Locale
 import java.util.Date
 
 /**
@@ -69,12 +80,25 @@ fun RiskHomeScreen(
     }
 
     val observing = state.hasAccess && state.feedCount > 0 && state.windows.isEmpty() && !state.enoughData
-    val label = stringResource(if (observing) R.string.v3_home_label_observing else R.string.v3_home_label_today)
-    val title = if (observing) {
-        stringResource(R.string.v3_home_day_format, state.observedDays.coerceIn(1, 7))
-    } else {
-        val locale = LocalConfiguration.current.locales[0]
-        remember(locale) { SimpleDateFormat("d MMMM", locale).format(Date()) }
+    val planned = state.hasAccess && state.feedCount > 0 && state.windows.any { it.plan != null }
+    val locale = LocalConfiguration.current.locales[0]
+    val nowMillis by rememberNowMillis()
+    val now = remember(nowMillis) { LocalDateTime.ofInstant(Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault()) }
+    val occurrences = remember(state.windows, now.withSecond(0).withNano(0)) {
+        NextWindow.occurrences(state.windows.map { NextWindow.Spec(it.id, it.startMinute, it.endMinute, it.dayType) }, now)
+    }
+    val first = occurrences.firstOrNull()
+    val dateText = remember(locale) { SimpleDateFormat("d MMMM", locale).format(Date()) }
+    val label = when {
+        observing -> stringResource(R.string.v3_home_label_observing)
+        planned -> stringResource(R.string.v3_home_today_weekday, now.dayOfWeek.getDisplayName(TextStyle.FULL, locale).lowercase(locale))
+        else -> stringResource(R.string.v3_home_label_today)
+    }
+    val title = when {
+        observing -> stringResource(R.string.v3_home_day_format, state.observedDays.coerceIn(1, 7))
+        planned && first != null && first.isInside(now) -> stringResource(R.string.v3_next_title_inside, clock(first.endAt))
+        planned && first != null -> stringResource(R.string.v3_next_title_upcoming, clock(first.startAt))
+        else -> dateText
     }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
@@ -94,6 +118,7 @@ fun RiskHomeScreen(
                         R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                     )
                     observing -> ObservingContent(state)
+                    planned -> PlannedContent(state, occurrences, now, onOpenPlan)
                     else -> FoundContent(state, onOpenPlan)
                 }
             }
@@ -108,7 +133,7 @@ private fun RiskHeader(label: String, title: String, onOpenKnowledgeBase: () -> 
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(Modifier.weight(1f).padding(end = 8.dp)) {
             Text(label, color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
             Text(
                 title, color = TeperaPalette.textPrimary, fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium,
@@ -199,4 +224,79 @@ private fun FoundContent(state: RiskHomeState, onOpenPlan: (String) -> Unit) {
     }
     HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
     windows.forEach { w -> RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }) }
+}
+
+/** Поточний час, що оновлюється раз на 30 с: відлік до наступної години на L6 не застигає. */
+@Composable
+private fun rememberNowMillis(): State<Long> = produceState(System.currentTimeMillis()) {
+    while (true) {
+        delay(30_000)
+        value = System.currentTimeMillis()
+    }
+}
+
+private fun clock(dt: LocalDateTime): String = String.format(Locale.ROOT, "%02d:%02d", dt.hour, dt.minute)
+
+/** L6 (Figma 911:1192): «До твоєї години» і картки вікон з планами, найближче — першим. Без теплової карти (вона — в «Чому це вікно?»). */
+@Composable
+private fun PlannedContent(
+    state: RiskHomeState,
+    occurrences: List<NextWindow.Occurrence>,
+    now: LocalDateTime,
+    onOpenPlan: (String) -> Unit
+) {
+    val byId = state.windows.associateBy { it.id }
+    val ordered = occurrences.mapNotNull { o -> byId[o.id]?.let { it to o } }
+    val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
+    ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now) }
+    (ordered.map { it.first } + rest).forEach { w -> RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }) }
+}
+
+/** `next`: темна картка з відліком до години або «до кінця» для години, що триває; значки й підписи — токени hero. */
+@Composable
+private fun NextCard(window: RiskWindowUi, occurrence: NextWindow.Occurrence, now: LocalDateTime) {
+    val inside = occurrence.isInside(now)
+    val onDark = TeperaPalette.textOnDark
+    val big = if (inside) {
+        stringResource(R.string.v3_next_until_format, clock(occurrence.endAt))
+    } else {
+        durationText(Duration.between(now, occurrence.startAt).toMinutes().coerceAtLeast(1))
+    }
+    val sub = when {
+        !inside -> stringResource(R.string.v3_next_sub_starts, clock(occurrence.startAt))
+        window.plan != null -> stringResource(R.string.v3_plan_format, window.plan.first, window.plan.second)
+        else -> stringResource(R.string.v3_card_no_plan)
+    }
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(TeperaPalette.heroSurface).padding(16.dp)
+            .semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(if (inside) R.string.v3_next_label_inside else R.string.v3_next_label_upcoming),
+                color = onDark.copy(alpha = 0.7f), fontSize = 12.sp, lineHeight = 16.sp
+            )
+            Text(big, color = onDark, fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium)
+            Text(sub, color = onDark.copy(alpha = 0.7f), fontSize = 12.sp, lineHeight = 16.sp)
+        }
+        Icon(
+            imageVector = if (window.partOfDay == PartOfDay.EVENING || window.partOfDay == PartOfDay.NIGHT) TeperaSymbols.Bedtime else TeperaSymbols.Schedule,
+            contentDescription = null, tint = TeperaPalette.restOfDayCard, modifier = Modifier.size(32.dp)
+        )
+    }
+}
+
+@Composable
+private fun durationText(totalMinutes: Long): String {
+    val days = totalMinutes / (24 * 60)
+    val hours = (totalMinutes / 60) % 24
+    val minutes = totalMinutes % 60
+    return when {
+        days > 0 -> stringResource(R.string.v3_dur_days_hours, days.toInt(), hours.toInt())
+        hours > 0 && minutes > 0 -> stringResource(R.string.v3_dur_hours_minutes, hours.toInt(), minutes.toInt())
+        hours > 0 -> stringResource(R.string.v3_dur_hours, hours.toInt())
+        else -> stringResource(R.string.v3_dur_minutes, minutes.toInt())
+    }
 }

@@ -722,4 +722,17 @@
     <string name="v3_plan_then_walk5">виходжу пройтися 5 хв</string>
     <string name="v3_plan_then_water">п’ю склянку води</string>
     <string name="v3_plan_then_breathe">роблю три глибокі вдихи</string>
+
+    <!-- v3.0 MVP, Етап 3: L6 «Головна з планами» (Figma 911:1192). -->
+    <string name="v3_home_today_weekday">Сьогодні · %1$s</string>
+    <string name="v3_next_title_upcoming">Наступна — о %1$s</string>
+    <string name="v3_next_title_inside">Зараз — до %1$s</string>
+    <string name="v3_next_label_upcoming">До твоєї години</string>
+    <string name="v3_next_label_inside">Зараз твоя година</string>
+    <string name="v3_next_until_format">до %1$s</string>
+    <string name="v3_next_sub_starts">Починається о %1$s</string>
+    <string name="v3_dur_minutes">%1$d хв</string>
+    <string name="v3_dur_hours">%1$d год</string>
+    <string name="v3_dur_hours_minutes">%1$d год %2$d хв</string>
+    <string name="v3_dur_days_hours">%1$d дн %2$d год</string>
 </resources>

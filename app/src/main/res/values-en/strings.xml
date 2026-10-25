@@ -705,4 +705,17 @@
     <string name="v3_plan_then_walk5">go for a 5-minute walk</string>
     <string name="v3_plan_then_water">drink a glass of water</string>
     <string name="v3_plan_then_breathe">take three deep breaths</string>
+
+    <!-- v3.0 MVP, stage 3: L6 home with plans (Figma 911:1192). -->
+    <string name="v3_home_today_weekday">Today · %1$s</string>
+    <string name="v3_next_title_upcoming">Next — at %1$s</string>
+    <string name="v3_next_title_inside">Now — until %1$s</string>
+    <string name="v3_next_label_upcoming">Until your hour</string>
+    <string name="v3_next_label_inside">Your hour is on now</string>
+    <string name="v3_next_until_format">until %1$s</string>
+    <string name="v3_next_sub_starts">Starts at %1$s</string>
+    <string name="v3_dur_minutes">%1$d min</string>
+    <string name="v3_dur_hours">%1$d h</string>
+    <string name="v3_dur_hours_minutes">%1$d h %2$d min</string>
+    <string name="v3_dur_days_hours">%1$d d %2$d h</string>
 </resources>
