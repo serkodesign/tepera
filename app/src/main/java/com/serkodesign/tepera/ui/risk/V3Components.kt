@@ -194,6 +194,11 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -
         if (window.dayType == DayType.WEEKDAYS) R.string.v3_card_recurrence_weekdays else R.string.v3_card_recurrence_days,
         window.recurrenceDays, window.observedDays
     )
+    val chip = when {
+        window.isManual && window.observedDays == 0 -> stringResource(R.string.v3_card_manual)
+        window.isManual -> stringResource(R.string.v3_card_manual_format, recurrence)
+        else -> recurrence
+    }
     val part = stringResource(partOfDayRes(window.partOfDay))
     val meta = if (window.appLabels.isEmpty()) {
         stringResource(R.string.v3_card_meta_no_apps, part, window.avgMinutes)
@@ -217,7 +222,7 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -
                 Modifier.clip(RoundedCornerShape(100.dp)).background(TeperaPalette.heatmapAmber.copy(alpha = 0.16f))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text(recurrence, color = primary, fontSize = 12.sp, lineHeight = 16.sp)
+                Text(chip, color = primary, fontSize = 12.sp, lineHeight = 16.sp)
             }
         }
         Text(meta, color = secondary, fontSize = 12.sp, lineHeight = 16.sp)

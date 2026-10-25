@@ -758,4 +758,22 @@
         <item>суботу</item>
         <item>неділю</item>
     </string-array>
+
+    <!-- v3.0 MVP (beta): ручне вікно. Макета в Figma нема — екран зібрано з компонентів v3. -->
+    <string name="v3_add_window">Додати своє вікно</string>
+    <string name="v3_card_manual">Власне</string>
+    <string name="v3_card_manual_format">Власне · %1$s</string>
+    <string name="v3_editor_title_new">Нове вікно</string>
+    <string name="v3_editor_title_edit">Своє вікно</string>
+    <string name="v3_editor_intro">Задай години, у які ти зазвичай застрягаєш у стрічках. Tepera покаже, як часто це збігається з реальним використанням.</string>
+    <string name="v3_editor_start">Початок</string>
+    <string name="v3_editor_end">Кінець</string>
+    <string name="v3_editor_days">Дні</string>
+    <string name="v3_editor_days_all">Щодня</string>
+    <string name="v3_editor_days_weekdays">Лише будні</string>
+    <string name="v3_editor_summary_format">%1$s · %2$s</string>
+    <string name="v3_editor_invalid">Кінець має відрізнятись від початку; найкоротше вікно — 15 хв.</string>
+    <string name="v3_editor_save">Зберегти</string>
+    <string name="v3_editor_delete">Видалити вікно</string>
+    <string name="v3_editor_edit_action">Змінити вікно</string>
 </resources>

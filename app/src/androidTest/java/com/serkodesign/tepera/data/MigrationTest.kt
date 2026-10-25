@@ -10,6 +10,7 @@ import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.MIGRATION_17_18
 import com.serkodesign.tepera.data.local.MIGRATION_18_19
 import com.serkodesign.tepera.data.local.MIGRATION_19_20
+import com.serkodesign.tepera.data.local.MIGRATION_20_21
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -64,7 +65,7 @@ class MigrationTest {
 
     private fun openMigrated(): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+            .addMigrations(MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
             .build()
 
     @Test
@@ -119,6 +120,23 @@ class MigrationTest {
             assertEquals(1320, it.getInt(0))
             assertTrue(it.isNull(1))
             assertTrue(it.isNull(2))
+        }
+        room.close()
+    }
+
+    @Test
+    fun migrate20to21_existingWindowsAreNotManual() {
+        createOldDatabase(20).apply {
+            execSQL(
+                "INSERT INTO risk_windows (id, startMinute, endMinute, dayType, recurrenceDays, observedDays, avgMinutes, " +
+                    "topApps, createdAt, updatedAt, isUserDisabled) VALUES ('w1', 1320, 1410, 'ALL', 6, 7, 36, '', 1, 1, 0)"
+            )
+            close()
+        }
+        val room = openMigrated()
+        room.openHelper.writableDatabase.query("SELECT isManual FROM risk_windows WHERE id = 'w1'").use {
+            it.moveToFirst()
+            assertEquals(0, it.getInt(0))
         }
         room.close()
     }

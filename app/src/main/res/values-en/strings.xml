@@ -741,4 +741,22 @@
         <item>Saturday</item>
         <item>Sunday</item>
     </string-array>
+
+    <!-- v3.0 MVP (beta): manual window. No Figma design - the screen is built from v3 components. -->
+    <string name="v3_add_window">Add my own window</string>
+    <string name="v3_card_manual">Own</string>
+    <string name="v3_card_manual_format">Own · %1$s</string>
+    <string name="v3_editor_title_new">New window</string>
+    <string name="v3_editor_title_edit">Own window</string>
+    <string name="v3_editor_intro">Set the hours when you usually get stuck in feeds. Tepera will show how often this matches your real usage.</string>
+    <string name="v3_editor_start">Start</string>
+    <string name="v3_editor_end">End</string>
+    <string name="v3_editor_days">Days</string>
+    <string name="v3_editor_days_all">Every day</string>
+    <string name="v3_editor_days_weekdays">Weekdays only</string>
+    <string name="v3_editor_summary_format">%1$s · %2$s</string>
+    <string name="v3_editor_invalid">The end must differ from the start; the shortest window is 15 min.</string>
+    <string name="v3_editor_save">Save</string>
+    <string name="v3_editor_delete">Delete window</string>
+    <string name="v3_editor_edit_action">Edit window</string>
 </resources>

@@ -27,5 +27,7 @@ data class RiskWindowEntity(
     val isUserDisabled: Boolean,
     /** Пропозиція нових меж після зсуву два тижні поспіль; `null` — зсуву нема. Межі міняє лише людина ([RiskWindowRepository.applyShift]). */
     val suggestedStartMinute: Int? = null,
-    val suggestedEndMinute: Int? = null
+    val suggestedEndMinute: Int? = null,
+    /** Вікно, яке людина задала сама (не знайдене алгоритмом): скан його не оновлює й не дублює. */
+    val isManual: Boolean = false
 )

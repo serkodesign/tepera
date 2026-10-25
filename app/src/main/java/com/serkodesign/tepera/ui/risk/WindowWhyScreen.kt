@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -37,6 +38,8 @@ import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
@@ -47,7 +50,7 @@ import com.serkodesign.tepera.ui.theme.teperaSwitchColors
  * вікно (вимкнене лишається в списку приглушеним, нагадувань про нього не буде).
  */
 @Composable
-fun WindowWhyScreen(windowId: String, onBack: () -> Unit) {
+fun WindowWhyScreen(windowId: String, onBack: () -> Unit, onEdit: (String) -> Unit = {}) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: WindowWhyViewModel = viewModel(key = "why_$windowId", factory = WindowWhyViewModel.Factory(app, windowId))
     val ui by vm.ui.collectAsState()
@@ -77,6 +80,14 @@ fun WindowWhyScreen(windowId: String, onBack: () -> Unit) {
                         fontSize = 12.sp, lineHeight = 16.sp
                     )
                     EnabledRow(data, onChange = vm::setEnabled)
+                    if (data.isManual) {
+                        TeperaButton(
+                            text = stringResource(R.string.v3_editor_edit_action),
+                            onClick = { onEdit(data.windowId) },
+                            type = TeperaButtonType.Secondary,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         }

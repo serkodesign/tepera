@@ -109,4 +109,39 @@ class RiskWindowRepositoryTest {
         assertNull(repo.getPlan(window.id))
         assertNotNull(p2)
     }
+
+    @Test
+    fun manualWindowIsCreatedEditedAndDeletedWithItsPlan() = runBlocking {
+        val w = repo.createManual(22 * 60, 23 * 60, DayType.ALL)
+        assertTrue(w.isManual)
+        repo.savePlan(w.id, "a", "b")
+
+        repo.updateManual(w.id, 21 * 60, 22 * 60, DayType.WEEKDAYS)
+        val edited = repo.getWindow(w.id)!!
+        assertEquals(21 * 60, edited.startMinute)
+        assertEquals(DayType.WEEKDAYS, edited.dayType)
+        assertEquals("a", repo.getPlan(w.id)?.ifText) // план лишається
+
+        repo.deleteManual(w.id)
+        assertNull(repo.getWindow(w.id))
+        assertNull(repo.getPlan(w.id)) // каскад
+    }
+
+    @Test
+    fun scanNeverTouchesOrDuplicatesManualWindows() = runBlocking {
+        val manual = repo.createManual(22 * 60, 23 * 60 + 30, DayType.ALL)
+        val saved = repo.saveDetected(result(candidate(avg = 99)))
+        assertEquals(1, saved.size) // автоматичне вікно на тому ж місці не додається
+        assertEquals(0, saved.single { it.id == manual.id }.avgMinutes)
+
+        val other = repo.saveDetected(result(candidate(start = 13 * 60, end = 13 * 60 + 30)))
+        assertEquals(2, other.size)
+    }
+
+    @Test
+    fun automaticWindowsCannotBeDeletedThroughManualApi() = runBlocking {
+        val auto = repo.saveDetected(result(candidate())).single()
+        repo.deleteManual(auto.id)
+        assertNotNull(repo.getWindow(auto.id))
+    }
 }

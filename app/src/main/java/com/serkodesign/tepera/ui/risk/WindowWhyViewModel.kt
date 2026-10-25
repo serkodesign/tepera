@@ -39,7 +39,8 @@ data class WhyUi(
     val missedWeekdays: List<DayOfWeek>,
     val dates: List<LocalDate>,
     val grid: Array<IntArray>,
-    val enabled: Boolean
+    val enabled: Boolean,
+    val isManual: Boolean
 )
 
 class WindowWhyViewModel(private val app: TeperaApp, private val windowId: String) : ViewModel() {
@@ -79,7 +80,8 @@ class WindowWhyViewModel(private val app: TeperaApp, private val windowId: Strin
                     .take(2).map { (pkg, minutes) -> (labels[pkg] ?: pkg) to minutes },
                 missedWeekdays = WindowExplain.missedWeekdays(coveredLogical, hits, window.dayType),
                 dates = dates, grid = HeatGrid.minutesByHour(records, dates),
-                enabled = !window.isUserDisabled
+                enabled = !window.isUserDisabled,
+                isManual = window.isManual
             )
         }
     }

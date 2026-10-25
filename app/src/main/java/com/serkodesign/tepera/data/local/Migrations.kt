@@ -317,3 +317,10 @@ val MIGRATION_19_20 = object : Migration(19, 20) {
         db.execSQL("ALTER TABLE risk_windows ADD COLUMN suggestedEndMinute INTEGER DEFAULT NULL")
     }
 }
+
+/** Версія 21 (v3.0 MVP, Етап 3): `risk_windows.isManual` — вікно, яке людина задала вручну. */
+val MIGRATION_20_21 = object : Migration(20, 21) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE risk_windows ADD COLUMN isManual INTEGER NOT NULL DEFAULT 0")
+    }
+}

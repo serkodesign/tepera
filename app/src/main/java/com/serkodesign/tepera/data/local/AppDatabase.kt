@@ -93,6 +93,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * `MIGRATION_17_18`.
  * v3.0 MVP, Етап 1: додано feed_apps, risk_windows, plans, nudge_events, observation_periods — версія 19, `MIGRATION_18_19`.
  * v3.0 MVP, Етап 2: `risk_windows.suggestedStartMinute/suggestedEndMinute` (пропозиція зсуву вікна) — версія 20, `MIGRATION_19_20`.
+ * v3.0 MVP, Етап 3: `risk_windows.isManual` (вікно, задане вручну) — версія 21, `MIGRATION_20_21`.
  */
 @Database(
     entities = [
@@ -113,7 +114,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         NudgeEventEntity::class,
         ObservationPeriodEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

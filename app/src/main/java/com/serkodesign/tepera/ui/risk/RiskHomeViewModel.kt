@@ -9,7 +9,11 @@ import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.domain.risk.RiskConfig
+import com.serkodesign.tepera.domain.risk.PackageSlotUsage
 import com.serkodesign.tepera.domain.risk.RiskWindowFinder
+import com.serkodesign.tepera.domain.risk.WindowExplain
+import com.serkodesign.tepera.domain.risk.WindowMinutes
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,7 +41,8 @@ data class RiskWindowUi(
     /** Збережений план («якщо» і «то» дослівно) або `null`. */
     val plan: Pair<String, String>? = null,
     /** Людина вимкнула вікно («Вважати це вікно годиною ризику» у M6): показується приглушеним у кінці списку. */
-    val isDisabled: Boolean = false
+    val isDisabled: Boolean = false,
+    val isManual: Boolean = false
 )
 
 /** Підказка на екрані спостереження, коли вже видно щось схоже (≥ 3 дні даних). */
@@ -88,13 +93,27 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             val records = app.usageSlotRepository.readRecords(minOf(dates.first(), logicalDays.first()), today.plusDays(1), feed)
             val labels = feedLabels()
 
-            val allWindows = app.riskWindowRepository.getAll().map { w ->
+            val entities = app.riskWindowRepository.getAll()
+            // Для ручних вікон повторюваність, середнє й застосунки рахуються зі слотів (збереженої статистики в них нема).
+            val manualRows = if (entities.any { it.isManual }) {
+                app.database.usageSlotDao().getRange(minOf(dates.first(), logicalDays.first()).toEpochDay(), today.plusDays(1).toEpochDay())
+                    .filter { it.packageName in feed }
+                    .map { PackageSlotUsage(LocalDate.ofEpochDay(it.date), it.slot, it.packageName, it.seconds) }
+            } else emptyList()
+            val allWindows = entities.map { w ->
                 val hits = RiskWindowFinder.hitDays(records, covered, lastLogicalDay, w.startMinute, w.endMinute, w.dayType, cfg).toSet()
+                val hitList = hits.toList()
+                val manualApps = if (w.isManual) {
+                    WindowExplain.minutesPerApp(manualRows, hitList, w.startMinute, w.endMinute, cfg).take(2).map { labels[it.first] ?: it.first }
+                } else emptyList()
                 RiskWindowUi(
                     id = w.id, startMinute = w.startMinute, endMinute = w.endMinute, dayType = w.dayType,
-                    recurrenceDays = w.recurrenceDays, observedDays = w.observedDays, avgMinutes = w.avgMinutes,
+                    recurrenceDays = if (w.isManual) hits.size else w.recurrenceDays,
+                    observedDays = if (w.isManual) logicalDays.count { it in covered && it.plusDays(1) in covered && (w.dayType == DayType.ALL || it.dayOfWeek.value <= 5) } else w.observedDays,
+                    avgMinutes = if (w.isManual) (WindowMinutes.averagePerDay(records, hitList, w.startMinute, w.endMinute, w.dayType, cfg)?.roundToInt() ?: 0) else w.avgMinutes,
+                    isManual = w.isManual,
                     partOfDay = HeatGrid.partOfDay(w.startMinute),
-                    appLabels = w.topApps.split(',').filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
+                    appLabels = if (w.isManual) manualApps else w.topApps.split(",").filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
                     plan = app.riskWindowRepository.getPlan(w.id)?.let { it.ifText to it.thenText },
                     isDisabled = w.isUserDisabled,
                     dots = logicalDays.map { day ->
@@ -114,7 +133,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
                     grid = HeatGrid.minutesByHour(records, dates), windows = windows,
                     disabledWindows = allWindows.filter { w -> w.isDisabled },
-                    teaser = if (windows.isEmpty() && observed in TEASER_MIN_DAYS until cfg.minObservedDays) {
+                    teaser = if (windows.none { !it.isManual } && observed in TEASER_MIN_DAYS until cfg.minObservedDays) {
                         teaser(records, covered, lastLogicalDay, observed, cfg)
                     } else null
                 )

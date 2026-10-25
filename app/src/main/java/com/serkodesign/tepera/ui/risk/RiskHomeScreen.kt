@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -69,7 +70,8 @@ fun RiskHomeScreen(
     onOpenFeedPicker: () -> Unit,
     onOpenAccess: () -> Unit,
     onOpenPlan: (String) -> Unit,
-    onOpenWhy: (String) -> Unit
+    onOpenWhy: (String) -> Unit,
+    onAddWindow: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: RiskHomeViewModel = viewModel(factory = RiskHomeViewModel.Factory(app))
@@ -80,7 +82,7 @@ fun RiskHomeScreen(
         onPauseOrDispose {}
     }
 
-    val observing = state.hasAccess && state.feedCount > 0 && state.windows.isEmpty() && !state.enoughData
+    val observing = state.hasAccess && state.feedCount > 0 && state.windows.none { !it.isManual } && !state.enoughData
     val planned = state.hasAccess && state.feedCount > 0 && state.windows.any { it.plan != null }
     val locale = LocalConfiguration.current.locales[0]
     val nowMillis by rememberNowMillis()
@@ -118,9 +120,23 @@ fun RiskHomeScreen(
                     state.feedCount == 0 -> NoticeCard(
                         R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                     )
-                    observing -> ObservingContent(state)
+                    observing -> {
+                        ObservingContent(state)
+                        // Ручні вікна видно одразу, не чекаючи тиждень даних.
+                        (state.windows + state.disabledWindows).forEach { w ->
+                            RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }, onOpenWhy = { onOpenWhy(w.id) })
+                        }
+                    }
                     planned -> PlannedContent(state, occurrences, now, onOpenPlan, onOpenWhy)
                     else -> FoundContent(state, onOpenPlan, onOpenWhy)
+                }
+                if (!state.loading && state.hasAccess && state.feedCount > 0) {
+                    TeperaButton(
+                        text = stringResource(R.string.v3_add_window),
+                        onClick = onAddWindow,
+                        type = TeperaButtonType.Secondary,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }

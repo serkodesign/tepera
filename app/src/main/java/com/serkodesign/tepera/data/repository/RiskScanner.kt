@@ -67,7 +67,7 @@ class RiskScanner(
         val consecutive = history.size >= 2 && history.last().key - history[history.size - 2].key <= MAX_WEEK_GAP_DAYS
         val lastTwo = history.takeLast(2).map { it.candidates }
         var suggestions = 0
-        for (w in saved.filter { !it.isUserDisabled }) {
+        for (w in saved.filter { !it.isUserDisabled && !it.isManual }) {
             val s = if (consecutive) RiskWindowFinder.suggestShift(w.toCandidate(), lastTwo, cfg) else null
             windows.setShiftSuggestion(w.id, s?.startMinute, s?.endMinute)
             if (s != null) suggestions++

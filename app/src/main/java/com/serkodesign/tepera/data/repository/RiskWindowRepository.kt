@@ -5,6 +5,7 @@ import com.serkodesign.tepera.data.local.dao.RiskWindowDao
 import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.entity.PlanEntity
 import com.serkodesign.tepera.data.local.entity.RiskWindowEntity
+import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.RiskCandidate
 import com.serkodesign.tepera.domain.risk.RiskConfig
 import com.serkodesign.tepera.domain.risk.RiskResult
@@ -68,6 +69,32 @@ class RiskWindowRepository(
         plan
     }
 
+    /** Нове вікно, яке людина задала сама. Статистику (повторюваність, середнє) показують із слотів, не зі збереженого. */
+    suspend fun createManual(startMinute: Int, endMinute: Int, dayType: DayType): RiskWindowEntity = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        RiskWindowEntity(
+            id = UUID.randomUUID().toString(), startMinute = startMinute, endMinute = endMinute, dayType = dayType,
+            recurrenceDays = 0, observedDays = 0, avgMinutes = 0, topApps = "",
+            createdAt = now, updatedAt = now, isUserDisabled = false, isManual = true
+        ).also { windowDao.insert(it) }
+    }
+
+    /** Змінює межі й тип днів ручного вікна; пропозицію зсуву скидає. План лишається. */
+    suspend fun updateManual(windowId: String, startMinute: Int, endMinute: Int, dayType: DayType) = withContext(Dispatchers.IO) {
+        val w = windowDao.getById(windowId)?.takeIf { it.isManual } ?: return@withContext
+        windowDao.update(
+            w.copy(
+                startMinute = startMinute, endMinute = endMinute, dayType = dayType,
+                suggestedStartMinute = null, suggestedEndMinute = null, updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    /** Видаляє ручне вікно разом із його планом і нагадуваннями (каскад). Автоматичні вікна видаляти не можна — лише вимикати. */
+    suspend fun deleteManual(windowId: String) = withContext(Dispatchers.IO) {
+        if (windowDao.getById(windowId)?.isManual == true) windowDao.delete(windowId)
+    }
+
     /** Зберігає результат пошуку вікон; повертає актуальний стан усіх вікон. */
     suspend fun saveDetected(
         result: RiskResult,
@@ -75,9 +102,13 @@ class RiskWindowRepository(
         nowMillis: Long = System.currentTimeMillis()
     ): List<RiskWindowEntity> = withContext(Dispatchers.IO) {
         if (!result.enoughData) return@withContext windowDao.getAll()
-        val existing = windowDao.getAll()
+        val all = windowDao.getAll()
+        val manual = all.filter { it.isManual }
+        val existing = all.filter { !it.isManual }
         val used = HashSet<String>()
         for (c in result.candidates) {
+            // Людина вже сама задала вікно в цей час — автоматичне його не дублює.
+            if (manual.any { RiskWindowFinder.sameWindow(it.startMinute, it.endMinute, c.startMinute, c.endMinute, cfg) }) continue
             val topApps = topAppsIn(c, result, cfg)
             val match = existing.firstOrNull {
                 it.id !in used && RiskWindowFinder.sameWindow(it.startMinute, it.endMinute, c.startMinute, c.endMinute, cfg)

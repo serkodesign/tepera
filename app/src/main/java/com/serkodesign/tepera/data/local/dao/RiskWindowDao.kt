@@ -22,6 +22,9 @@ interface RiskWindowDao {
     @Query("SELECT * FROM risk_windows ORDER BY avgMinutes DESC")
     fun observeAll(): Flow<List<RiskWindowEntity>>
 
+    @Query("DELETE FROM risk_windows WHERE id = :id")
+    suspend fun delete(id: String)
+
     @Query("SELECT * FROM risk_windows WHERE id = :id")
     suspend fun getById(id: String): RiskWindowEntity?
 
