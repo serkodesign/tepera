@@ -98,41 +98,69 @@ class TesterStatsRepository(
             )
         }
 
+
     companion object {
         private fun hm(minute: Int) = String.format(Locale.ROOT, "%02d:%02d", minute / 60 % 24, minute % 60)
 
-        private fun minutes(value: Double?) = value?.let { String.format(Locale.ROOT, "%.0f хв", it) } ?: "—"
+        private const val DASH = "—"
 
-        /** Текст для вставки у форму. Мова фіксована (українська): це службовий звіт тестувальника. */
-        fun format(s: TesterStats): String = buildString {
-            appendLine("Tepera v3 · статистика тестувальника")
-            appendLine("Перші дані: ${s.firstDataDate ?: "—"}; днів покрито: ${s.coveredDays}; стрічок обрано: ${s.feedAppCount}")
+        /**
+         * Текст для вставки у форму. Мова — та, якою відкрито застосунок: шаблони приходять із ресурсів ([ReportText]),
+         * цифри й дати форматуються тут, без залежності від локалі.
+         */
+        fun format(s: TesterStats, t: ReportText): String = buildString {
+            fun minutes(value: Double?) = value?.let { t.minutes.format(String.format(Locale.ROOT, "%.0f", it)) } ?: DASH
+
+            appendLine(t.title)
+            appendLine(t.firstData.format(s.firstDataDate?.toString() ?: DASH, s.coveredDays, s.feedAppCount))
             appendLine(
-                "Тиждень спостереження: ${s.baselineRange?.let { "${it.first} — ${it.second}" } ?: "ще не заданий"}; " +
-                    "поточний тиждень: ${s.currentRange.first} — ${s.currentRange.second}"
+                t.periods.format(
+                    s.baselineRange?.let { t.range.format(it.first.toString(), it.second.toString()) } ?: t.periodNotSet,
+                    t.range.format(s.currentRange.first.toString(), s.currentRange.second.toString())
+                )
             )
             if (s.windows.isEmpty()) {
-                appendLine("Вікон нема")
+                appendLine(t.noWindows)
             } else {
                 s.windows.forEach { w ->
                     val tags = listOfNotNull(
-                        if (w.dayType == DayType.WEEKDAYS) "будні" else null,
-                        if (w.isUserDisabled) "вимкнене" else null,
-                        if (w.hasPlan) "є план" else "без плану",
-                        if (w.shiftSuggested) "запропоновано зсув" else null
+                        if (w.dayType == DayType.WEEKDAYS) t.tagWeekdays else null,
+                        if (w.isUserDisabled) t.tagDisabled else null,
+                        if (w.hasPlan) t.tagPlan else t.tagNoPlan,
+                        if (w.shiftSuggested) t.tagShift else null
                     ).joinToString(", ")
                     appendLine(
-                        "Вікно ${hm(w.startMinute)}–${hm(w.endMinute)} ($tags): повторюваність ${w.recurrenceDays}/${w.observedDays}, " +
-                            "≈${w.avgMinutes} хв; хвилини у вікні за добу: спостереження ${minutes(w.baselineMinutes)} → " +
-                            "поточний тиждень ${minutes(w.currentMinutes)}"
+                        t.window.format(
+                            hm(w.startMinute), hm(w.endMinute), tags, w.recurrenceDays, w.observedDays, w.avgMinutes,
+                            minutes(w.baselineMinutes), minutes(w.currentMinutes)
+                        )
                     )
                 }
             }
-            appendLine(
-                "Нагадування: заплановано ${s.nudgesScheduled}, показано ${s.nudgesShown}, " +
-                    "«Добре» ${s.nudgesOk}, «Не сьогодні» ${s.nudgesNotToday}"
-            )
-            appendLine("Примітка: вікна підбирались за тижнем спостереження, тож його хвилини у вікнах завищені відносно звичайного тижня — порівняння орієнтовне.")
+            appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk, s.nudgesNotToday))
+            appendLine(t.note)
         }
     }
 }
+
+/**
+ * Шаблони тексту звіту (з рядкових ресурсів, `v3_report_*`). Шаблони з `%N$s`/`%N$d` підставляє [format]; окремий
+ * клас потрібен, щоб формат звіту тестувався на JVM без Android-ресурсів.
+ */
+data class ReportText(
+    val title: String,
+    val firstData: String,
+    val periods: String,
+    val periodNotSet: String,
+    val range: String,
+    val noWindows: String,
+    val window: String,
+    val tagWeekdays: String,
+    val tagDisabled: String,
+    val tagPlan: String,
+    val tagNoPlan: String,
+    val tagShift: String,
+    val minutes: String,
+    val nudges: String,
+    val note: String
+)

@@ -633,4 +633,19 @@
     <string name="v3_tester_copied">Скопійовано</string>
     <string name="v3_tester_tools">Службові інструменти</string>
     <string name="v3_tester_loading">Рахую…</string>
+    <string name="v3_report_title">Tepera v3 · статистика тестувальника</string>
+    <string name="v3_report_first_data">Перші дані: %1$s; днів покрито: %2$d; стрічок обрано: %3$d</string>
+    <string name="v3_report_periods">Тиждень спостереження: %1$s; поточний тиждень: %2$s</string>
+    <string name="v3_report_period_not_set">ще не заданий</string>
+    <string name="v3_report_range">%1$s — %2$s</string>
+    <string name="v3_report_no_windows">Вікон нема</string>
+    <string name="v3_report_window">Вікно %1$s–%2$s (%3$s): повторюваність %4$d/%5$d, ≈%6$d хв; хвилини у вікні за добу: спостереження %7$s → поточний тиждень %8$s</string>
+    <string name="v3_report_tag_weekdays">будні</string>
+    <string name="v3_report_tag_disabled">вимкнене</string>
+    <string name="v3_report_tag_plan">є план</string>
+    <string name="v3_report_tag_no_plan">без плану</string>
+    <string name="v3_report_tag_shift">запропоновано зсув</string>
+    <string name="v3_report_minutes">%1$s хв</string>
+    <string name="v3_report_nudges">Нагадування: заплановано %1$d, показано %2$d, «Добре» %3$d, «Не сьогодні» %4$d</string>
+    <string name="v3_report_note">Примітка: вікна підбирались за тижнем спостереження, тож його хвилини у вікнах завищені відносно звичайного тижня — порівняння орієнтовне.</string>
 </resources>

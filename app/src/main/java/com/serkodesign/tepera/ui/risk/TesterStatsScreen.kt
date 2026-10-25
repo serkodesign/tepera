@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.repository.TesterStats
+import com.serkodesign.tepera.data.repository.ReportText
 import com.serkodesign.tepera.data.repository.TesterStatsRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -56,7 +57,24 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit) {
                 if (s == null) {
                     Text(stringResource(R.string.v3_tester_loading), style = MaterialTheme.typography.bodyMedium)
                 } else {
-                    val text = TesterStatsRepository.format(s)
+                    val reportText = ReportText(
+                        title = stringResource(R.string.v3_report_title),
+                        firstData = stringResource(R.string.v3_report_first_data),
+                        periods = stringResource(R.string.v3_report_periods),
+                        periodNotSet = stringResource(R.string.v3_report_period_not_set),
+                        range = stringResource(R.string.v3_report_range),
+                        noWindows = stringResource(R.string.v3_report_no_windows),
+                        window = stringResource(R.string.v3_report_window),
+                        tagWeekdays = stringResource(R.string.v3_report_tag_weekdays),
+                        tagDisabled = stringResource(R.string.v3_report_tag_disabled),
+                        tagPlan = stringResource(R.string.v3_report_tag_plan),
+                        tagNoPlan = stringResource(R.string.v3_report_tag_no_plan),
+                        tagShift = stringResource(R.string.v3_report_tag_shift),
+                        minutes = stringResource(R.string.v3_report_minutes),
+                        nudges = stringResource(R.string.v3_report_nudges),
+                        note = stringResource(R.string.v3_report_note)
+                    )
+                    val text = TesterStatsRepository.format(s, reportText)
                     TeperaCard {
                         Text(text, style = MaterialTheme.typography.bodyMedium)
                     }

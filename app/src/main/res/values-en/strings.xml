@@ -616,4 +616,19 @@
     <string name="v3_tester_copied">Copied</string>
     <string name="v3_tester_tools">Developer tools</string>
     <string name="v3_tester_loading">Counting…</string>
+    <string name="v3_report_title">Tepera v3 · tester statistics</string>
+    <string name="v3_report_first_data">First data: %1$s; days covered: %2$d; feed apps chosen: %3$d</string>
+    <string name="v3_report_periods">Observation week: %1$s; current week: %2$s</string>
+    <string name="v3_report_period_not_set">not set yet</string>
+    <string name="v3_report_range">%1$s — %2$s</string>
+    <string name="v3_report_no_windows">No windows</string>
+    <string name="v3_report_window">Window %1$s–%2$s (%3$s): recurrence %4$d/%5$d, ≈%6$d min; minutes in the window per day: observation %7$s → current week %8$s</string>
+    <string name="v3_report_tag_weekdays">weekdays</string>
+    <string name="v3_report_tag_disabled">turned off</string>
+    <string name="v3_report_tag_plan">has a plan</string>
+    <string name="v3_report_tag_no_plan">no plan</string>
+    <string name="v3_report_tag_shift">shift suggested</string>
+    <string name="v3_report_minutes">%1$s min</string>
+    <string name="v3_report_nudges">Reminders: scheduled %1$d, shown %2$d, \"OK\" %3$d, \"Not today\" %4$d</string>
+    <string name="v3_report_note">Note: the windows were picked from the observation week, so its minutes in the windows are higher than in a usual week — the comparison is approximate.</string>
 </resources>
