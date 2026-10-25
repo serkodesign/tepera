@@ -181,6 +181,36 @@ object RiskWindowFinder {
         return if (sameDirection) matched.last() else null
     }
 
+    /**
+     * Які з останніх [RiskConfig.observationDays] логічних діб «влучили» у вікно [startMinute]–[endMinute] за тим самим
+     * правилом, що й пошук (склеєні активні слоти покривають ≥ [RiskConfig.overlapShare] вікна). Для вікна «лише будні»
+     * вихідні не перевіряються й до результату не входять. Дні без покритих даних пропускаються.
+     */
+    fun hitDays(
+        records: List<SlotUsage>,
+        coveredDays: Set<LocalDate>,
+        lastLogicalDay: LocalDate,
+        startMinute: Int,
+        endMinute: Int,
+        dayType: DayType,
+        cfg: RiskConfig = RiskConfig()
+    ): List<LocalDate> {
+        val days = (cfg.observationDays - 1 downTo 0).map { lastLogicalDay.minusDays(it.toLong()) }
+        val covered = days.filter { it in coveredDays && it.plusDays(1) in coveredDays }
+            .filter { dayType == DayType.ALL || it.dayOfWeek.value <= 5 }
+        if (covered.isEmpty()) return emptyList()
+        val grid = covered.associateWith { IntArray(SLOTS_PER_DAY) }
+        for (r in records) grid[logicalDate(r.date, r.slot, cfg)]?.let { it[position(r.slot, cfg)] += r.seconds }
+        grid.values.forEach { row -> for (i in row.indices) row[i] = minOf(row[i], SLOT_MINUTES * 60) }
+        val maxGapSlots = cfg.mergeGapMinutes / SLOT_MINUTES
+        val first = startPosition(startMinute, cfg) / SLOT_MINUTES
+        val count = (lengthMinutes(startMinute, endMinute) + SLOT_MINUTES - 1) / SLOT_MINUTES
+        return covered.filter { day ->
+            val mask = mergedMask(grid.getValue(day), cfg, maxGapSlots)
+            (first until minOf(first + count, SLOTS_PER_DAY)).count { mask[it] } >= count * cfg.overlapShare
+        }
+    }
+
     /** Хвилини в стрічках по годинах логічної доби (колонка 0 = година межі доби), для теплової карти. */
     fun hourlyMinutes(records: List<SlotUsage>, days: List<LocalDate>, cfg: RiskConfig = RiskConfig()): Array<IntArray> {
         val rows = days.associateWith { IntArray(24) }

@@ -34,6 +34,7 @@ import com.serkodesign.tepera.ui.settings.AppIcon
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
+import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaHint
 import com.serkodesign.tepera.ui.theme.TeperaLoadingIndicator
 import com.serkodesign.tepera.ui.theme.TeperaSearchField
@@ -44,7 +45,7 @@ import com.serkodesign.tepera.ui.theme.teperaSwitchColors
  * застосунки) лише піднімають рядки вгору й нічого не вмикають.
  */
 @Composable
-fun FeedPickerScreen(onBack: () -> Unit) {
+fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val viewModel: FeedPickerViewModel = viewModel(factory = FeedPickerViewModel.Factory(app))
     val state by viewModel.state.collectAsState()
@@ -66,8 +67,8 @@ fun FeedPickerScreen(onBack: () -> Unit) {
                 )
             }
             when {
-                state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { TeperaLoadingIndicator() }
-                state.apps.isEmpty() -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                state.loading -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { TeperaLoadingIndicator() }
+                state.apps.isEmpty() -> Box(Modifier.weight(1f).fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
                     Text(stringResource(R.string.v3_feed_empty), style = MaterialTheme.typography.bodyMedium)
                 }
                 else -> {
@@ -75,7 +76,7 @@ fun FeedPickerScreen(onBack: () -> Unit) {
                     val visible = state.apps.filter { needle.isEmpty() || it.label.contains(needle, ignoreCase = true) }
                     val (suggested, others) = visible.partition { it.packageName in state.suggested }
                     LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
@@ -92,6 +93,13 @@ fun FeedPickerScreen(onBack: () -> Unit) {
                         }
                     }
                 }
+            }
+            if (onDone != null) {
+                TeperaButton(
+                    text = stringResource(R.string.v3_feeds_continue),
+                    onClick = onDone,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)
+                )
             }
         }
     }

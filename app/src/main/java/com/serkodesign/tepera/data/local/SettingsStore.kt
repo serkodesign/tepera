@@ -42,6 +42,8 @@ private val GATE_FREE_OPENS_DAY_KEY = longPreferencesKey("gate_free_opens_day")
 private val GATE_FREE_OPENS_USED_KEY = intPreferencesKey("gate_free_opens_used")
 private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
 private val FEED_PACKAGES_KEY = stringSetPreferencesKey("v3_feed_packages")
+private val V3_MODE_KEY = booleanPreferencesKey("v3_mode_enabled")
+private val V3_ONBOARDING_SEEN_KEY = booleanPreferencesKey("v3_onboarding_seen")
 private val RISK_SCAN_SNAPSHOTS_KEY = stringPreferencesKey("v3_risk_scan_snapshots")
 private val USAGE_SLOT_COVERED_DAYS_KEY = stringSetPreferencesKey("v3_usage_slot_covered_days")
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
@@ -385,6 +387,20 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[WEEKLY_SUMMARY_ENABLED_KEY] = enabled }
+    }
+
+    /** v3.0 MVP (beta): режим «Години ризику» замість звичайного Home. */
+    val v3ModeEnabled: Flow<Boolean> = context.settingsDataStore.data.map { it[V3_MODE_KEY] ?: false }
+
+    suspend fun setV3ModeEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { it[V3_MODE_KEY] = enabled }
+    }
+
+    /** v3.0 MVP: онбординг L1 → L2 → вибір стрічок пройдено. */
+    val v3OnboardingSeen: Flow<Boolean> = context.settingsDataStore.data.map { it[V3_ONBOARDING_SEEN_KEY] ?: false }
+
+    suspend fun setV3OnboardingSeen(seen: Boolean) {
+        context.settingsDataStore.edit { it[V3_ONBOARDING_SEEN_KEY] = seen }
     }
 
     /** v3.0 MVP: застосунки-стрічки, які людина підтвердила для підрахунку годин ризику (порожньо = ще не обрано). */

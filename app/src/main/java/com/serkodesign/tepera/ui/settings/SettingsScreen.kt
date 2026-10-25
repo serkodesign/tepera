@@ -66,6 +66,7 @@ fun SettingsScreen(
     onOpenProInterest: () -> Unit,
     onOpenFeedPicker: () -> Unit,
     onOpenNudgeInfo: () -> Unit,
+    settingsStore: com.serkodesign.tepera.data.local.SettingsStore,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -125,6 +126,7 @@ fun SettingsScreen(
                 // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): лише beta-збірка.
                 if (BuildConfig.V3_MVP) {
                     GlassSectionHeader(stringResource(R.string.v3_section_title), topPadding = 10.dp, bottomPadding = 2.dp)
+                    com.serkodesign.tepera.ui.risk.V3ModeToggle(settingsStore)
                     GlassRow(
                         label = stringResource(R.string.v3_feed_picker_action),
                         onClick = onOpenFeedPicker,

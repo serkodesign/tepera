@@ -38,7 +38,7 @@ import com.serkodesign.tepera.ui.theme.TeperaCard
  * Лише локальні дані; єдиний вихід — кнопка «Скопіювати як текст» (тестувальник сам вставляє в форму).
  */
 @Composable
-fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit) {
+fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnboarding: () -> Unit) {
     val context = LocalContext.current
     val app = context.applicationContext as TeperaApp
     val clipboard = LocalClipboardManager.current
@@ -87,6 +87,11 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit) {
                         }
                     )
                 }
+                TeperaButton(
+                    text = stringResource(R.string.v3_tester_restart),
+                    onClick = onRestartOnboarding,
+                    type = TeperaButtonType.Secondary
+                )
                 TeperaButton(
                     text = stringResource(R.string.v3_tester_tools),
                     onClick = onOpenTools,

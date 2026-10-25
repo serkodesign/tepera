@@ -69,6 +69,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.ActiveTimerStore
 import com.serkodesign.tepera.data.local.SettingsStore
@@ -115,6 +116,9 @@ import com.serkodesign.tepera.debug.RiskSpikeScreen
 import com.serkodesign.tepera.ui.risk.FeedPickerScreen
 import com.serkodesign.tepera.ui.risk.NudgeInfoScreen
 import com.serkodesign.tepera.ui.risk.TesterStatsScreen
+import com.serkodesign.tepera.ui.risk.RiskHomeScreen
+import com.serkodesign.tepera.ui.risk.V3AccessScreen
+import com.serkodesign.tepera.ui.risk.V3WelcomeScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
@@ -156,6 +160,9 @@ private object Routes {
     const val FEED_PICKER = "feed_picker"
     const val NUDGE_INFO = "nudge_info"
     const val TESTER_STATS = "tester_stats"
+    const val V3_WELCOME = "v3_welcome"
+    const val V3_ACCESS = "v3_access"
+    const val V3_FEEDS = "v3_feeds"
     const val PRO_INTEREST = "pro_interest"
     const val GATE_SCHEDULE = "gate_schedule"
     const val STATS = "stats"
@@ -184,7 +191,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, NUDGE_INFO, TESTER_STATS, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, NUDGE_INFO, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
@@ -437,6 +444,20 @@ fun TeperaNavHost(
                 )
             }
             composable(Routes.HOME) {
+                // v3.0 MVP (beta): режим «Години ризику» замінює Home; null = ще читається — порожній кадр, щоб не мигав старий Home.
+                val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = null)
+                if (BuildConfig.V3_MVP && v3Mode == null) {
+                    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize())
+                } else if (BuildConfig.V3_MVP && v3Mode == true) {
+                    val v3Seen by settingsStore.v3OnboardingSeen.collectAsState(initial = null)
+                    LaunchedEffect(v3Seen) { if (v3Seen == false) navController.navigate(Routes.V3_WELCOME) }
+                    RiskHomeScreen(
+                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                        onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
+                        onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
+                        onOpenAccess = { navController.navigate(Routes.V3_ACCESS) }
+                    )
+                } else
                 HomeScreen(
                     categoryRepository = categoryRepository,
                     activityRepository = activityRepository,
@@ -617,6 +638,7 @@ fun TeperaNavHost(
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
                     onOpenNudgeInfo = { navController.navigate(Routes.NUDGE_INFO) },
+                    settingsStore = settingsStore,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -675,12 +697,45 @@ fun TeperaNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(Routes.V3_WELCOME) {
+                // Системне «назад» на першому екрані онбордингу виходить із застосунку (інакше Home одразу повертає сюди).
+                val activity = androidx.compose.ui.platform.LocalContext.current.let { ctx ->
+                    generateSequence(ctx) { (it as? android.content.ContextWrapper)?.baseContext }.filterIsInstance<android.app.Activity>().firstOrNull()
+                }
+                androidx.activity.compose.BackHandler { activity?.finish() }
+                V3WelcomeScreen(onStart = { navController.navigate(Routes.V3_ACCESS) })
+            }
+            composable(Routes.V3_ACCESS) {
+                V3AccessScreen(
+                    onGranted = {
+                        navController.navigate(Routes.V3_FEEDS) { popUpTo(Routes.V3_WELCOME) { inclusive = true } }
+                    }
+                )
+            }
+            composable(Routes.V3_FEEDS) {
+                FeedPickerScreen(
+                    onBack = { navController.popBackStack() },
+                    onDone = {
+                        onboardingScope.launch {
+                            settingsStore.setV3OnboardingSeen(true)
+                            navController.popBackStack()
+                        }
+                    }
+                )
+            }
             composable(Routes.FEED_PICKER) { FeedPickerScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.NUDGE_INFO) { NudgeInfoScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.TESTER_STATS) {
                 TesterStatsScreen(
                     onBack = { navController.popBackStack() },
-                    onOpenTools = { navController.navigate(Routes.RISK_SPIKE) }
+                    onOpenTools = { navController.navigate(Routes.RISK_SPIKE) },
+                    onRestartOnboarding = {
+                        onboardingScope.launch {
+                            settingsStore.setV3OnboardingSeen(false)
+                            settingsStore.setV3ModeEnabled(true)
+                            navController.navigate(Routes.V3_WELCOME)
+                        }
+                    }
                 )
             }
             composable(Routes.RISK_SPIKE) {

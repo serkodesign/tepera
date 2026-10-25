@@ -127,7 +127,7 @@ fun WelcomeOnboardingScreen(
 
 /** Іконка застосунку (72dp, кут 20.6dp) — той самий візерунок, що на екрані дозволів, але менший. */
 @Composable
-private fun AppIconTile() {
+internal fun AppIconTile() {
     Box(
         modifier = Modifier
             .size(72.dp)
