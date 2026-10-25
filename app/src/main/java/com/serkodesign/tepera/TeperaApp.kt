@@ -162,6 +162,7 @@ class TeperaApp : Application() {
         )
     }
     val feedSuggestionProvider: FeedSuggestionProvider by lazy { FeedSuggestionProvider(this) }
+    val nudgeEventDao get() = database.nudgeEventDao()
 
     // P-4 (CLAUDE-CODE-PLAN-pro.md): єдина точка доступу до стану Pro — поки без платіжного
     // шару (Ж-1), жодного споживача ще немає. Майбутні Pro-екрани (P-11…) читають лише звідси.

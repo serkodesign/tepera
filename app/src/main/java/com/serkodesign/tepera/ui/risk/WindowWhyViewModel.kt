@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.NudgeScheduler
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PackageSlotUsage
@@ -89,6 +90,7 @@ class WindowWhyViewModel(private val app: TeperaApp, private val windowId: Strin
     fun setEnabled(enabled: Boolean) {
         viewModelScope.launch {
             app.riskWindowRepository.setUserDisabled(windowId, !enabled)
+            NudgeScheduler.reschedule(app)
             _ui.update { it?.copy(enabled = enabled) }
         }
     }

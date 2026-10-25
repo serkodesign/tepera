@@ -610,7 +610,11 @@
     <string name="v3_nudge_status_off">Notifications are off</string>
     <string name="v3_nudge_allow">Allow notifications</string>
     <string name="v3_nudge_open_settings">Open notification settings</string>
-    <string name="v3_nudge_later">The reminders themselves come later: for now this is only the permission and the notification channel.</string>
+    <string name="v3_nudge_rules">The reminder comes 10 minutes before the window, only for windows that have your plan, never more than once a day. The buttons \"OK\" and \"Not today\" commit you to nothing.</string>
+    <string name="v3_nudge_notification_title">Your hour is coming · %1$s</string>
+    <string name="v3_nudge_action_ok">OK</string>
+    <string name="v3_nudge_action_not_today">Not today</string>
+    <string name="v3_report_nudge_delay">Average reminder delay versus scheduled: %1$s min</string>
     <string name="v3_tester_title">Tester statistics</string>
     <string name="v3_tester_copy">Copy as text</string>
     <string name="v3_tester_copied">Copied</string>

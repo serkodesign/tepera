@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.NudgeScheduler
 import com.serkodesign.tepera.data.repository.ScanOutcome
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
@@ -83,6 +84,8 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                 val outcome = app.riskScanner.scan(cfg, now)
                 if (outcome !is ScanOutcome.Failed) lastScanMillis = now
             }
+            // Розклад нагадувань залежить від вікон, планів і дозволу: оновлюємо щоразу, як людина відкрила Home.
+            NudgeScheduler.reschedule(app, now)
 
             val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
             val dates = (6 downTo 0).map { today.minusDays(it.toLong()) }

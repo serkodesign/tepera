@@ -28,4 +28,15 @@ interface NudgeEventDao {
 
     @Query("SELECT COUNT(*) FROM nudge_events WHERE shownAt IS NOT NULL AND scheduledAt >= :fromMillis AND scheduledAt < :toMillis")
     suspend fun countShown(fromMillis: Long, toMillis: Long): Int
+
+    /** Показані нагадування від [fromMillis] — з них рахується, на які дні нагадування вже було (одне на добу). */
+    @Query("SELECT * FROM nudge_events WHERE shownAt IS NOT NULL AND scheduledAt >= :fromMillis")
+    suspend fun getShownSince(fromMillis: Long): List<NudgeEventEntity>
+
+    @Query("SELECT * FROM nudge_events WHERE id = :id")
+    suspend fun getById(id: String): NudgeEventEntity?
+
+    /** Середня похибка будильника в мілісекундах (фактичний показ мінус запланований); `null`, поки нічого не показано. */
+    @Query("SELECT AVG(shownAt - scheduledAt) FROM nudge_events WHERE shownAt IS NOT NULL")
+    suspend fun averageDelayMillis(): Double?
 }

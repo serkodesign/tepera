@@ -18,11 +18,14 @@ private const val UNIQUE_NAME = "v3_risk_scan"
  */
 class RiskScanWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result =
-        when ((applicationContext as TeperaApp).riskScanner.scan()) {
+    override suspend fun doWork(): Result {
+        val outcome = (applicationContext as TeperaApp).riskScanner.scan()
+        NudgeScheduler.reschedule(applicationContext)
+        return when (outcome) {
             ScanOutcome.Failed -> Result.retry()
             else -> Result.success()
         }
+    }
 
     companion object {
         fun schedule(context: Context) {

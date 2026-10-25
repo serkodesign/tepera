@@ -627,7 +627,11 @@
     <string name="v3_nudge_status_off">Сповіщення вимкнені</string>
     <string name="v3_nudge_allow">Дозволити сповіщення</string>
     <string name="v3_nudge_open_settings">Відкрити налаштування сповіщень</string>
-    <string name="v3_nudge_later">Самі нагадування будуть пізніше: зараз це лише дозвіл і канал сповіщень.</string>
+    <string name="v3_nudge_rules">Нагадування приходить за 10 хвилин до вікна, лише для вікон із вашим планом, не частіше разу на добу. Кнопки «Добре» і «Не сьогодні» ні до чого не зобов’язують.</string>
+    <string name="v3_nudge_notification_title">Скоро твоя година · %1$s</string>
+    <string name="v3_nudge_action_ok">Добре</string>
+    <string name="v3_nudge_action_not_today">Не сьогодні</string>
+    <string name="v3_report_nudge_delay">Середня затримка нагадування відносно запланованого: %1$s хв</string>
     <string name="v3_tester_title">Статистика для тестувальників</string>
     <string name="v3_tester_copy">Скопіювати як текст</string>
     <string name="v3_tester_copied">Скопійовано</string>

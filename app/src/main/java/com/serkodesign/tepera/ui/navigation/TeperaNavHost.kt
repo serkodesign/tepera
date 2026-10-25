@@ -742,7 +742,11 @@ fun TeperaNavHost(
             ) { entry ->
                 PlanEditorScreen(
                     windowId = entry.arguments?.getString("windowId").orEmpty(),
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onSaved = { ask ->
+                        if (ask) navController.navigate(Routes.NUDGE_INFO) { popUpTo(Routes.V3_PLAN) { inclusive = true } }
+                        else navController.popBackStack()
+                    }
                 )
             }
             composable(

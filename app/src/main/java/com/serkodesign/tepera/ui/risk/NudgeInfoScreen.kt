@@ -50,6 +50,11 @@ fun NudgeInfoScreen(onBack: () -> Unit) {
         onPauseOrDispose {}
     }
 
+    // Дозвіл з’явився (діалог чи системні налаштування) — нагадування плануються одразу.
+    androidx.compose.runtime.LaunchedEffect(allowed) {
+        if (allowed) com.serkodesign.tepera.data.NudgeScheduler.reschedule(context)
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         allowed = WeeklySummaryWorker.canNotify(context)
     }
@@ -92,7 +97,7 @@ fun NudgeInfoScreen(onBack: () -> Unit) {
                         }
                     }
                 }
-                TeperaHint(stringResource(R.string.v3_nudge_later), Modifier.padding(horizontal = 4.dp))
+                TeperaHint(stringResource(R.string.v3_nudge_rules), Modifier.padding(horizontal = 4.dp))
             }
         }
     }

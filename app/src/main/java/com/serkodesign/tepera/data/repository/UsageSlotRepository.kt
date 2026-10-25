@@ -130,6 +130,22 @@ class UsageSlotRepository(
     suspend fun coveredDays(): Set<LocalDate> =
         settingsStore.usageSlotCoveredDays.first().map(LocalDate::ofEpochDay).toSet()
 
+    /**
+     * Чи людина зараз у застосунку-стрічці: там сесія переднього плану, що триває або закінчилась не раніше ніж
+     * [graceSeconds] тому. Використовується, щоб не нагадувати тому, хто вже в стрічці (план v3.0, Етап 4).
+     */
+    suspend fun isInFeedNow(nowMillis: Long = System.currentTimeMillis(), graceSeconds: Int = 60): Boolean = withContext(Dispatchers.IO) {
+        val feed = feedApps.packages()
+        if (feed.isEmpty()) return@withContext false
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        try {
+            val events = usm.queryEventsOrNull(nowMillis - 10 * 60_000L, nowMillis) ?: return@withContext false
+            foregroundSessionsByPackage(events, feed, nowMillis).any { (_, span) -> span.end >= nowMillis - graceSeconds * 1000L }
+        } catch (e: SecurityException) {
+            false
+        }
+    }
+
     /** Шукає години ризику за збереженими слотами вибраних стрічок; остання завершена логічна доба — вчорашня за межею [RiskConfig.dayCutoffHour]. */
     override suspend fun findWindows(cfg: RiskConfig, nowMillis: Long): RiskResult {
         val feed = feedApps.packages()

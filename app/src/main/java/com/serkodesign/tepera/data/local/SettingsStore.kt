@@ -44,6 +44,7 @@ private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_e
 private val FEED_PACKAGES_KEY = stringSetPreferencesKey("v3_feed_packages")
 private val V3_MODE_KEY = booleanPreferencesKey("v3_mode_enabled")
 private val V3_ONBOARDING_SEEN_KEY = booleanPreferencesKey("v3_onboarding_seen")
+private val V3_NUDGE_PROMPT_SHOWN_KEY = booleanPreferencesKey("v3_nudge_prompt_shown")
 private val RISK_SCAN_SNAPSHOTS_KEY = stringPreferencesKey("v3_risk_scan_snapshots")
 private val USAGE_SLOT_COVERED_DAYS_KEY = stringSetPreferencesKey("v3_usage_slot_covered_days")
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
@@ -401,6 +402,13 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setV3OnboardingSeen(seen: Boolean) {
         context.settingsDataStore.edit { it[V3_ONBOARDING_SEEN_KEY] = seen }
+    }
+
+    /** v3.0 MVP: пропозицію дозволу на сповіщення після першого плану вже показували (один раз). */
+    suspend fun nudgePromptShown(): Boolean = context.settingsDataStore.data.first()[V3_NUDGE_PROMPT_SHOWN_KEY] ?: false
+
+    suspend fun setNudgePromptShown() {
+        context.settingsDataStore.edit { it[V3_NUDGE_PROMPT_SHOWN_KEY] = true }
     }
 
     /** v3.0 MVP: застосунки-стрічки, які людина підтвердила для підрахунку годин ризику (порожньо = ще не обрано). */

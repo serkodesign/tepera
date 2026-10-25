@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.NudgeScheduler
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
@@ -43,6 +44,7 @@ class PlanEditorViewModel(private val app: TeperaApp, private val windowId: Stri
 
     suspend fun save(ifText: String, thenText: String) {
         app.riskWindowRepository.savePlan(windowId, ifText, thenText)
+        NudgeScheduler.reschedule(app)
     }
 
     class Factory(private val app: TeperaApp, private val windowId: String) : ViewModelProvider.Factory {

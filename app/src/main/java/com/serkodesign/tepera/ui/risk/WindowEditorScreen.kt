@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.NudgeScheduler
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.RiskWindowFinder
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -116,6 +117,7 @@ fun WindowEditorScreen(windowId: String?, onBack: () -> Unit) {
                             scope.launch {
                                 if (windowId == null) app.riskWindowRepository.createManual(start, end, dayType)
                                 else app.riskWindowRepository.updateManual(windowId, start, end, dayType)
+                                NudgeScheduler.reschedule(app)
                                 onBack()
                             }
                         },
@@ -124,7 +126,7 @@ fun WindowEditorScreen(windowId: String?, onBack: () -> Unit) {
                     if (windowId != null) {
                         TeperaButton(
                             text = stringResource(R.string.v3_editor_delete),
-                            onClick = { scope.launch { app.riskWindowRepository.deleteManual(windowId); onBack() } },
+                            onClick = { scope.launch { app.riskWindowRepository.deleteManual(windowId); NudgeScheduler.reschedule(app); onBack() } },
                             type = TeperaButtonType.Secondary,
                             modifier = Modifier.fillMaxWidth()
                         )

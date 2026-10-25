@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.WeeklySummaryWorker
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
@@ -76,7 +77,7 @@ private fun presetsFor(part: PartOfDay): PlanPresets = when (part) {
  * свій варіант. Тексти зберігаються дослівно; підказки лише допомагають. Один план на вікно.
  */
 @Composable
-fun PlanEditorScreen(windowId: String, onBack: () -> Unit) {
+fun PlanEditorScreen(windowId: String, onBack: () -> Unit, onSaved: (askNotifications: Boolean) -> Unit = { onBack() }) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: PlanEditorViewModel = viewModel(key = windowId, factory = PlanEditorViewModel.Factory(app, windowId))
     val ui by vm.ui.collectAsState()
@@ -92,7 +93,15 @@ fun PlanEditorScreen(windowId: String, onBack: () -> Unit) {
             if (data != null) {
                 PlanEditorContent(
                     data = data,
-                    onSave = { ifText, thenText -> scope.launch { vm.save(ifText, thenText); onBack() } },
+                    onSave = { ifText, thenText ->
+                        scope.launch {
+                            vm.save(ifText, thenText)
+                            // Після першого плану один раз пропонуємо дозвіл на сповіщення — без нього нагадувань не буде.
+                            val ask = !WeeklySummaryWorker.canNotify(app) && !app.settingsStore.nudgePromptShown()
+                            if (ask) app.settingsStore.setNudgePromptShown()
+                            onSaved(ask)
+                        }
+                    },
                     onLater = onBack,
                     modifier = Modifier.weight(1f)
                 )

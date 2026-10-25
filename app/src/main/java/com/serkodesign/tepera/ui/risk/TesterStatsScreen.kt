@@ -72,6 +72,7 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         tagShift = stringResource(R.string.v3_report_tag_shift),
                         minutes = stringResource(R.string.v3_report_minutes),
                         nudges = stringResource(R.string.v3_report_nudges),
+                        nudgeDelay = stringResource(R.string.v3_report_nudge_delay),
                         note = stringResource(R.string.v3_report_note)
                     )
                     val text = TesterStatsRepository.format(s, reportText)

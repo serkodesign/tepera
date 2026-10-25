@@ -40,7 +40,9 @@ data class TesterStats(
     val nudgesScheduled: Int,
     val nudgesShown: Int,
     val nudgesOk: Int,
-    val nudgesNotToday: Int
+    val nudgesNotToday: Int,
+    /** Середня затримка показу відносно запланованого, хвилини; `null`, доки нічого не показано. */
+    val nudgeDelayMinutes: Double? = null
 )
 
 /**
@@ -94,7 +96,8 @@ class TesterStatsRepository(
                 nudgesScheduled = nudgeDao.countScheduled(all.first, all.second),
                 nudgesShown = nudgeDao.countShown(all.first, all.second),
                 nudgesOk = nudgeDao.countByAction(NudgeAction.OK, all.first, all.second),
-                nudgesNotToday = nudgeDao.countByAction(NudgeAction.NOT_TODAY, all.first, all.second)
+                nudgesNotToday = nudgeDao.countByAction(NudgeAction.NOT_TODAY, all.first, all.second),
+                nudgeDelayMinutes = nudgeDao.averageDelayMillis()?.let { it / 60_000.0 }
             )
         }
 
@@ -138,6 +141,7 @@ class TesterStatsRepository(
                 }
             }
             appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk, s.nudgesNotToday))
+            s.nudgeDelayMinutes?.let { appendLine(t.nudgeDelay.format(String.format(Locale.ROOT, "%.1f", it))) }
             appendLine(t.note)
         }
     }
@@ -162,5 +166,6 @@ data class ReportText(
     val tagShift: String,
     val minutes: String,
     val nudges: String,
+    val nudgeDelay: String,
     val note: String
 )
