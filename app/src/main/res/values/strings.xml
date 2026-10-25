@@ -780,4 +780,11 @@
     <string name="v3_editor_save">Зберегти</string>
     <string name="v3_editor_delete">Видалити вікно</string>
     <string name="v3_editor_edit_action">Змінити вікно</string>
+    <string name="v3_summary_title">Підсумок тижня</string>
+    <string name="v3_summary_intro">Лише те, що можна виміряти: хвилини у стрічках у вікні та твої «Добре». Без оцінок.</string>
+    <string name="v3_summary_minutes">Хвилини у вікні за добу: спостереження %1$s → цей тиждень %2$s</string>
+    <string name="v3_summary_ok">«Добре» на нагадуваннях: %1$d</string>
+    <string name="v3_summary_shift">Вікно зсунулося — тепер приблизно %1$s. Оновити?</string>
+    <string name="v3_summary_shift_apply">Оновити</string>
+    <string name="v3_summary_shift_keep">Залишити</string>
 </resources>

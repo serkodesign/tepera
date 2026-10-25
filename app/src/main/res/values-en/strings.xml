@@ -763,4 +763,11 @@
     <string name="v3_editor_save">Save</string>
     <string name="v3_editor_delete">Delete window</string>
     <string name="v3_editor_edit_action">Edit window</string>
+    <string name="v3_summary_title">Weekly summary</string>
+    <string name="v3_summary_intro">Only what can be measured: minutes in feeds during the window and your \"OK\" taps. No judgments.</string>
+    <string name="v3_summary_minutes">Minutes in the window per day: observation %1$s → this week %2$s</string>
+    <string name="v3_summary_ok">\"OK\" on reminders: %1$d</string>
+    <string name="v3_summary_shift">The window has shifted — now about %1$s. Update?</string>
+    <string name="v3_summary_shift_apply">Update</string>
+    <string name="v3_summary_shift_keep">Keep</string>
 </resources>

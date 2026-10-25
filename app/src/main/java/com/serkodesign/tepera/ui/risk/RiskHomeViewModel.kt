@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.NudgeScheduler
+import com.serkodesign.tepera.data.local.entity.NudgeAction
 import com.serkodesign.tepera.data.repository.ScanOutcome
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
@@ -43,7 +44,15 @@ data class RiskWindowUi(
     val plan: Pair<String, String>? = null,
     /** Людина вимкнула вікно («Вважати це вікно годиною ризику» у M6): показується приглушеним у кінці списку. */
     val isDisabled: Boolean = false,
-    val isManual: Boolean = false
+    val isManual: Boolean = false,
+    /** Середні хвилини у вікні за добу: тиждень спостереження / останні 7 завершених діб; `null` — нема з чого рахувати. */
+    val baselineMinutes: Double? = null,
+    val currentMinutes: Double? = null,
+    /** «Добре» на нагадуваннях цього вікна за останні 7 діб (самозвіт). */
+    val okThisWeek: Int = 0,
+    /** Запропонований зсув вікна (етап 2, п. 8) або `null`. */
+    val shiftStart: Int? = null,
+    val shiftEnd: Int? = null
 )
 
 /** Підказка на екрані спостереження, коли вже видно щось схоже (≥ 3 дні даних). */
@@ -97,6 +106,15 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             val labels = feedLabels()
 
             val entities = app.riskWindowRepository.getAll()
+            // Тижневий підсумок (M5): хвилини у вікні «спостереження → останні 7 діб» і «Добре» за ці 7 діб.
+            val period = app.database.observationPeriodDao().getLatest()
+            val baselineDays = period?.let { p ->
+                val end = p.endDate?.let(LocalDate::ofEpochDay) ?: lastLogicalDay
+                generateSequence(LocalDate.ofEpochDay(p.startDate)) { it.plusDays(1) }.takeWhile { !it.isAfter(end) }.toList()
+            }.orEmpty()
+            val baselineRecords = if (baselineDays.isEmpty()) emptyList() else
+                app.usageSlotRepository.readRecords(baselineDays.first(), lastLogicalDay.plusDays(1), feed)
+            val weekFromMillis = logicalDays.first().atStartOfDay(zone).toInstant().toEpochMilli()
             // Для ручних вікон повторюваність, середнє й застосунки рахуються зі слотів (збереженої статистики в них нема).
             val manualRows = if (entities.any { it.isManual }) {
                 app.database.usageSlotDao().getRange(minOf(dates.first(), logicalDays.first()).toEpochDay(), today.plusDays(1).toEpochDay())
@@ -119,6 +137,10 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     appLabels = if (w.isManual) manualApps else w.topApps.split(",").filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
                     plan = app.riskWindowRepository.getPlan(w.id)?.let { it.ifText to it.thenText },
                     isDisabled = w.isUserDisabled,
+                    baselineMinutes = WindowMinutes.averagePerDay(baselineRecords, baselineDays, w.startMinute, w.endMinute, w.dayType, cfg),
+                    currentMinutes = WindowMinutes.averagePerDay(records, logicalDays, w.startMinute, w.endMinute, w.dayType, cfg),
+                    okThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.OK, weekFromMillis, now + 1),
+                    shiftStart = w.suggestedStartMinute, shiftEnd = w.suggestedEndMinute,
                     dots = logicalDays.map { day ->
                         when {
                             w.dayType == DayType.WEEKDAYS && day.dayOfWeek.value > 5 -> DotState.NOT_APPLICABLE
@@ -141,6 +163,21 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     } else null
                 )
             }
+        }
+    }
+
+    fun applyShift(windowId: String) {
+        viewModelScope.launch {
+            app.riskWindowRepository.applyShift(windowId)
+            NudgeScheduler.reschedule(app)
+            refresh()
+        }
+    }
+
+    fun dismissShift(windowId: String) {
+        viewModelScope.launch {
+            app.riskWindowRepository.dismissShift(windowId)
+            refresh()
         }
     }
 

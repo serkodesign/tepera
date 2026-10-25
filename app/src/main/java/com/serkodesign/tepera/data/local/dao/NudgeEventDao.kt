@@ -36,6 +36,9 @@ interface NudgeEventDao {
     @Query("SELECT * FROM nudge_events WHERE id = :id")
     suspend fun getById(id: String): NudgeEventEntity?
 
+    @Query("SELECT COUNT(*) FROM nudge_events WHERE windowId = :windowId AND action = :action AND scheduledAt >= :fromMillis AND scheduledAt < :toMillis")
+    suspend fun countByActionForWindow(windowId: String, action: NudgeAction, fromMillis: Long, toMillis: Long): Int
+
     /** Середня похибка будильника в мілісекундах (фактичний показ мінус запланований); `null`, поки нічого не показано. */
     @Query("SELECT AVG(shownAt - scheduledAt) FROM nudge_events WHERE shownAt IS NOT NULL")
     suspend fun averageDelayMillis(): Double?

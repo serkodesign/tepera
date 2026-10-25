@@ -130,6 +130,9 @@ fun RiskHomeScreen(
                     planned -> PlannedContent(state, occurrences, now, onOpenPlan, onOpenWhy)
                     else -> FoundContent(state, onOpenPlan, onOpenWhy)
                 }
+                if (!state.loading && state.hasAccess && state.feedCount > 0 && !observing) {
+                    WeeklySummaryBlock(state.windows, vm::applyShift, vm::dismissShift)
+                }
                 if (!state.loading && state.hasAccess && state.feedCount > 0) {
                     TeperaButton(
                         text = stringResource(R.string.v3_add_window),
