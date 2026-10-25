@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.serkodesign.tepera.data.GapSensitivity
 import com.serkodesign.tepera.util.GateSchedule
@@ -40,6 +41,8 @@ private val GATE_FREE_OPENS_PER_DAY_KEY = intPreferencesKey("gate_free_opens_per
 private val GATE_FREE_OPENS_DAY_KEY = longPreferencesKey("gate_free_opens_day")
 private val GATE_FREE_OPENS_USED_KEY = intPreferencesKey("gate_free_opens_used")
 private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
+private val FEED_PACKAGES_KEY = stringSetPreferencesKey("v3_feed_packages")
+private val USAGE_SLOT_COVERED_DAYS_KEY = stringSetPreferencesKey("v3_usage_slot_covered_days")
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
@@ -381,6 +384,24 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[WEEKLY_SUMMARY_ENABLED_KEY] = enabled }
+    }
+
+    /** v3.0 MVP: застосунки-стрічки, які людина підтвердила для підрахунку годин ризику (порожньо = ще не обрано). */
+    val feedPackages: Flow<Set<String>> = context.settingsDataStore.data.map { it[FEED_PACKAGES_KEY] ?: emptySet() }
+
+    suspend fun setFeedPackages(packages: Set<String>) {
+        context.settingsDataStore.edit { it[FEED_PACKAGES_KEY] = packages }
+    }
+
+    /** v3.0 MVP: календарні дати (epoch-day), для яких слоти `usage_slots` реально пораховані (порожня доба ≠ немає даних). */
+    val usageSlotCoveredDays: Flow<Set<Long>> =
+        context.settingsDataStore.data.map { prefs -> prefs[USAGE_SLOT_COVERED_DAYS_KEY].orEmpty().mapNotNull { it.toLongOrNull() }.toSet() }
+
+    suspend fun addUsageSlotCoveredDays(epochDays: Collection<Long>, keepFromEpochDay: Long) {
+        context.settingsDataStore.edit { prefs ->
+            val merged = prefs[USAGE_SLOT_COVERED_DAYS_KEY].orEmpty().mapNotNull { it.toLongOrNull() } + epochDays
+            prefs[USAGE_SLOT_COVERED_DAYS_KEY] = merged.filter { it >= keepFromEpochDay }.map { it.toString() }.toSet()
+        }
     }
 
     /** CC-6: «зростаюча» затримка воріт; за замовчуванням вимкнена. */

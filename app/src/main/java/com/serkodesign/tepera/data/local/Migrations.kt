@@ -257,3 +257,17 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
         )
     }
 }
+
+/** Версія 18 (v3.0 MVP, Етап 0/1): `usage_slots` — секунди в застосунках-стрічках по 15-хвилинних слотах. */
+val MIGRATION_17_18 = object : Migration(17, 18) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `usage_slots` (" +
+                "`date` INTEGER NOT NULL, " +
+                "`slot` INTEGER NOT NULL, " +
+                "`packageName` TEXT NOT NULL, " +
+                "`seconds` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`date`, `slot`, `packageName`))"
+        )
+    }
+}

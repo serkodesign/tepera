@@ -12,6 +12,7 @@ import com.serkodesign.tepera.data.local.dao.DetectedGapDao
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
 import com.serkodesign.tepera.data.local.dao.GateEventDao
 import com.serkodesign.tepera.data.local.dao.SleepWindowDao
+import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.dao.UserEstimateDao
 import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.AppGateEntity
@@ -22,6 +23,7 @@ import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
 import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
 import com.serkodesign.tepera.data.local.entity.GateEventEntity
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
+import com.serkodesign.tepera.data.local.entity.UsageSlotEntity
 import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
 
 /**
@@ -77,6 +79,8 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * скасування називання паузи, 5 хв) — версія 16, `MIGRATION_15_16`.
  * P-2 (`CLAUDE-CODE-PLAN-pro.md`): додано DaySummaryEntity (щоденний Online-підсумок для
  * майбутньої Pro-статистики "Місяць"/"Рік", D-39) — версія 17, `MIGRATION_16_17`.
+ * v3.0 MVP, Етап 0/1: додано UsageSlotEntity (`usage_slots`, час у застосунках-стрічках по 15-хв слотах) — версія 18,
+ * `MIGRATION_17_18`.
  */
 @Database(
     entities = [
@@ -89,9 +93,10 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         AppGateEntity::class,
         CardShowEntity::class,
         GateEventEntity::class,
-        DaySummaryEntity::class
+        DaySummaryEntity::class,
+        UsageSlotEntity::class
     ],
-    version = 17,
+    version = 18,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -106,4 +111,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun cardShowDao(): CardShowDao
     abstract fun gateEventDao(): GateEventDao
     abstract fun daySummaryDao(): DaySummaryDao
+    abstract fun usageSlotDao(): UsageSlotDao
 }

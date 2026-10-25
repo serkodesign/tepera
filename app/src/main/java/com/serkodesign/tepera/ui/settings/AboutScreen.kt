@@ -4,6 +4,8 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.NavChevron
@@ -38,8 +41,10 @@ private const val CONTACT_EMAIL = "serkodesign@gmail.com"
  * потребують дозволу INTERNET; відсутність відповідного застосунку ловиться й показується спокійним повідомленням.
  * "База знань" звідси прибрана 13.10.2026 — тепер вона рядком у розділі "Про Tepera" головного екрана Налаштувань.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AboutScreen(
+    onOpenRiskSpike: () -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -66,6 +71,10 @@ fun AboutScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 TeperaCard(
+                    modifier = if (BuildConfig.V3_MVP) {
+                        // v3 Етап 0: службовий екран годин ризику — довге натискання на версію (лише beta).
+                        Modifier.combinedClickable(onClick = {}, onLongClick = onOpenRiskSpike)
+                    } else Modifier,
                     title = stringResource(R.string.app_name),
                     subtitle = stringResource(R.string.about_version_format, versionName)
                 ) {

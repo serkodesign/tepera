@@ -111,6 +111,7 @@ import com.serkodesign.tepera.ui.settings.AboutScreen
 import com.serkodesign.tepera.ui.settings.ProInterestScreen
 import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
+import com.serkodesign.tepera.debug.RiskSpikeScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
@@ -148,6 +149,7 @@ private object Routes {
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val ABOUT = "about"
+    const val RISK_SPIKE = "risk_spike"
     const val PRO_INTEREST = "pro_interest"
     const val GATE_SCHEDULE = "gate_schedule"
     const val STATS = "stats"
@@ -176,7 +178,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
@@ -661,8 +663,12 @@ fun TeperaNavHost(
             }
             composable(Routes.ABOUT) {
                 AboutScreen(
+                    onOpenRiskSpike = { navController.navigate(Routes.RISK_SPIKE) },
                     onBack = { navController.popBackStack() }
                 )
+            }
+            composable(Routes.RISK_SPIKE) {
+                RiskSpikeScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.BACKUP_RESTORE) {
                 BackupRestoreScreen(

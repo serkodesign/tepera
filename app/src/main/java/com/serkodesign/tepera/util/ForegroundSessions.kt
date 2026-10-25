@@ -18,8 +18,20 @@ import android.app.usage.UsageEvents
  * ACTIVITY_STOPPED (23) навмисно не закриває сесію: зупинка активності йде після її паузи, тож закриття на ній
  * давало б подвійний облік у бік занижень.
  */
-fun foregroundSessions(events: UsageEvents, excluded: Set<String>, to: Long): List<TimeSpan> {
-    val spans = mutableListOf<TimeSpan>()
+fun foregroundSessions(events: UsageEvents, excluded: Set<String>, to: Long): List<TimeSpan> =
+    collectSessions(events, excluded, null, to).map { it.second }
+
+/** Ті самі сесії, що [foregroundSessions], але лише для пакетів [only] і з назвою пакета (v3: час у застосунках-стрічках). */
+fun foregroundSessionsByPackage(events: UsageEvents, only: Set<String>, to: Long): List<Pair<String, TimeSpan>> =
+    collectSessions(events, emptySet(), only, to)
+
+private fun collectSessions(
+    events: UsageEvents,
+    excluded: Set<String>,
+    only: Set<String>?,
+    to: Long
+): List<Pair<String, TimeSpan>> {
+    val spans = mutableListOf<Pair<String, TimeSpan>>()
     val visibleCount = HashMap<String, Int>()
     val sessionStart = HashMap<String, Long>()
     val event = UsageEvents.Event()
@@ -28,14 +40,14 @@ fun foregroundSessions(events: UsageEvents, excluded: Set<String>, to: Long): Li
         when (event.eventType) {
             // 16 = SCREEN_NON_INTERACTIVE, 17 = KEYGUARD_SHOWN: відкриті сесії закінчуються тут.
             16, 17 -> {
-                sessionStart.forEach { (_, start) -> spans.add(TimeSpan(start, event.timeStamp)) }
+                sessionStart.forEach { (pkg, start) -> spans.add(pkg to TimeSpan(start, event.timeStamp)) }
                 sessionStart.clear()
                 visibleCount.clear()
                 continue
             }
         }
         val packageName = event.packageName ?: continue
-        if (packageName in excluded) continue
+        if (packageName in excluded || (only != null && packageName !in only)) continue
         when (event.eventType) {
             UsageEvents.Event.MOVE_TO_FOREGROUND -> { // = ACTIVITY_RESUMED
                 val count = visibleCount[packageName] ?: 0
@@ -47,12 +59,12 @@ fun foregroundSessions(events: UsageEvents, excluded: Set<String>, to: Long): Li
                 if (count <= 0) continue // PAUSED без відповідного RESUMED (вікно вибірки почалось всередині сесії)
                 visibleCount[packageName] = count - 1
                 if (count == 1) {
-                    sessionStart.remove(packageName)?.let { spans.add(TimeSpan(it, event.timeStamp)) }
+                    sessionStart.remove(packageName)?.let { spans.add(packageName to TimeSpan(it, event.timeStamp)) }
                 }
             }
         }
     }
     // Застосунок, що й досі на передньому плані на момент "to", рахуємо до "to".
-    sessionStart.forEach { (_, start) -> spans.add(TimeSpan(start, to)) }
+    sessionStart.forEach { (pkg, start) -> spans.add(pkg to TimeSpan(start, to)) }
     return spans
 }

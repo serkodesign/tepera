@@ -38,6 +38,9 @@ import com.serkodesign.tepera.data.local.MIGRATION_13_14
 import com.serkodesign.tepera.data.local.MIGRATION_14_15
 import com.serkodesign.tepera.data.local.MIGRATION_15_16
 import com.serkodesign.tepera.data.local.MIGRATION_16_17
+import com.serkodesign.tepera.data.local.MIGRATION_17_18
+import com.serkodesign.tepera.data.UsageSlotWorker
+import com.serkodesign.tepera.data.repository.UsageSlotRepository
 import com.serkodesign.tepera.data.repository.WelcomeBackRepository
 import com.serkodesign.tepera.widget.DaySnapshotRepository
 import com.serkodesign.tepera.widget.WeekSnapshotRepository
@@ -85,7 +88,7 @@ class TeperaApp : Application() {
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                 MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
                 MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
-                MIGRATION_15_16, MIGRATION_16_17
+                MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18
             )
             .build()
     }
@@ -123,6 +126,9 @@ class TeperaApp : Application() {
     }
 
     val unlockRepository: UnlockRepository by lazy { UnlockRepository(this) }
+
+    // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): 15-хвилинні слоти часу в застосунках-стрічках.
+    val usageSlotRepository: UsageSlotRepository by lazy { UsageSlotRepository(this, database.usageSlotDao(), settingsStore) }
 
     // P-4 (CLAUDE-CODE-PLAN-pro.md): єдина точка доступу до стану Pro — поки без платіжного
     // шару (Ж-1), жодного споживача ще немає. Майбутні Pro-екрани (P-11…) читають лише звідси.
@@ -192,6 +198,8 @@ class TeperaApp : Application() {
         }
         // D-25: щоденні фонові знімки скасовано; прибираємо роботу, яку могли запланувати ранні збірки.
         androidx.work.WorkManager.getInstance(this).cancelUniqueWork("daily_snapshot")
+        // v3.0 MVP: збір слотів лише в beta-збірці; без списку стрічок воркер нічого не робить.
+        if (BuildConfig.V3_MVP) UsageSlotWorker.schedule(this)
         registerWidgetPreviewIfNeeded()
     }
 
