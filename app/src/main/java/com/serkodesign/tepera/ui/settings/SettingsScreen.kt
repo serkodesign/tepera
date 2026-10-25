@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
@@ -63,6 +64,8 @@ fun SettingsScreen(
     onOpenKnowledgeBase: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenProInterest: () -> Unit,
+    onOpenFeedPicker: () -> Unit,
+    onOpenNudgeInfo: () -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -118,6 +121,23 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(TeperaSymbols.Category) },
                     trailing = { NavChevron() }
                 )
+
+                // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): лише beta-збірка.
+                if (BuildConfig.V3_MVP) {
+                    GlassSectionHeader(stringResource(R.string.v3_section_title), topPadding = 10.dp, bottomPadding = 2.dp)
+                    GlassRow(
+                        label = stringResource(R.string.v3_feed_picker_action),
+                        onClick = onOpenFeedPicker,
+                        leading = { TeperaIconCircle(TeperaSymbols.Apps) },
+                        trailing = { NavChevron() }
+                    )
+                    GlassRow(
+                        label = stringResource(R.string.v3_nudge_info_action),
+                        onClick = onOpenNudgeInfo,
+                        leading = { TeperaIconCircle(TeperaSymbols.Notifications) },
+                        trailing = { NavChevron() }
+                    )
+                }
 
                 GlassSectionHeader(stringResource(R.string.settings_habits_section), topPadding = 10.dp, bottomPadding = 2.dp)
                 GlassRow(

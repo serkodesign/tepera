@@ -166,7 +166,7 @@ private fun AppRow(app: InstalledAppInfo, isExcluded: Boolean, onToggle: () -> U
 }
 
 @Composable
-private fun AppIcon(app: InstalledAppInfo) {
+internal fun AppIcon(app: InstalledAppInfo) {
     val icon = app.resolvedIcon
     Box(
         modifier = Modifier.size(40.dp).clip(CircleShape).background(TeperaPalette.brandAccentSoft),

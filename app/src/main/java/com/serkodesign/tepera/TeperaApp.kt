@@ -45,6 +45,9 @@ import com.serkodesign.tepera.data.UsageSlotWorker
 import com.serkodesign.tepera.data.repository.FeedAppRepository
 import com.serkodesign.tepera.data.repository.RiskWindowRepository
 import com.serkodesign.tepera.data.repository.RiskScanner
+import com.serkodesign.tepera.data.repository.TesterStatsRepository
+import com.serkodesign.tepera.data.repository.FeedSuggestionProvider
+import com.serkodesign.tepera.data.NudgeChannel
 import com.serkodesign.tepera.data.repository.ScanSnapshotStore
 import com.serkodesign.tepera.data.RiskScanWorker
 import com.serkodesign.tepera.data.repository.UsageSlotRepository
@@ -146,10 +149,18 @@ class TeperaApp : Application() {
             object : ScanSnapshotStore {
                 override suspend fun load() = settingsStore.riskScanSnapshots()
                 override suspend fun save(raw: String) = settingsStore.setRiskScanSnapshots(raw)
-            }
+            },
+            database.observationPeriodDao()
         )
     }
     val usageSlotRepository: UsageSlotRepository by lazy { UsageSlotRepository(this, database.usageSlotDao(), feedAppRepository, settingsStore) }
+    val testerStatsRepository: TesterStatsRepository by lazy {
+        TesterStatsRepository(
+            usageSlotRepository, feedAppRepository, database.riskWindowDao(), database.planDao(),
+            database.nudgeEventDao(), database.observationPeriodDao()
+        )
+    }
+    val feedSuggestionProvider: FeedSuggestionProvider by lazy { FeedSuggestionProvider(this) }
 
     // P-4 (CLAUDE-CODE-PLAN-pro.md): єдина точка доступу до стану Pro — поки без платіжного
     // шару (Ж-1), жодного споживача ще немає. Майбутні Pro-екрани (P-11…) читають лише звідси.
@@ -223,6 +234,7 @@ class TeperaApp : Application() {
         if (BuildConfig.V3_MVP) {
             UsageSlotWorker.schedule(this)
             RiskScanWorker.schedule(this)
+            NudgeChannel.create(this)
         }
         registerWidgetPreviewIfNeeded()
     }

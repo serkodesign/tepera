@@ -22,4 +22,10 @@ interface NudgeEventDao {
 
     @Query("SELECT COUNT(*) FROM nudge_events WHERE action = :action AND scheduledAt >= :fromMillis AND scheduledAt < :toMillis")
     suspend fun countByAction(action: NudgeAction, fromMillis: Long, toMillis: Long): Int
+
+    @Query("SELECT COUNT(*) FROM nudge_events WHERE scheduledAt >= :fromMillis AND scheduledAt < :toMillis")
+    suspend fun countScheduled(fromMillis: Long, toMillis: Long): Int
+
+    @Query("SELECT COUNT(*) FROM nudge_events WHERE shownAt IS NOT NULL AND scheduledAt >= :fromMillis AND scheduledAt < :toMillis")
+    suspend fun countShown(fromMillis: Long, toMillis: Long): Int
 }

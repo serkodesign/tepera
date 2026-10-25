@@ -44,7 +44,7 @@ private const val CONTACT_EMAIL = "serkodesign@gmail.com"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AboutScreen(
-    onOpenRiskSpike: () -> Unit,
+    onOpenTesterStats: () -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -73,7 +73,7 @@ fun AboutScreen(
                 TeperaCard(
                     modifier = if (BuildConfig.V3_MVP) {
                         // v3 Етап 0: службовий екран годин ризику — довге натискання на версію (лише beta).
-                        Modifier.combinedClickable(onClick = {}, onLongClick = onOpenRiskSpike)
+                        Modifier.combinedClickable(onClick = {}, onLongClick = onOpenTesterStats)
                     } else Modifier,
                     title = stringResource(R.string.app_name),
                     subtitle = stringResource(R.string.about_version_format, versionName)

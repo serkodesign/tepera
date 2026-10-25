@@ -610,4 +610,27 @@
     <string name="widget_info_hours_value_format">%1$d:%2$02d год</string>
     <string name="widget_info_last_format">%1$s · сьогодні о %2$s</string>
     <string name="widget_info_chip_format">%1$s %2$s</string>
+
+    <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): години ризику. Поки лише в beta-збірці. -->
+    <string name="v3_nudge_channel_name">Нагадування про план</string>
+    <string name="v3_section_title">Години ризику (beta)</string>
+    <string name="v3_feed_picker_action">Застосунки-стрічки</string>
+    <string name="v3_nudge_info_action">Нагадування про план</string>
+    <string name="v3_feed_title">Застосунки-стрічки</string>
+    <string name="v3_feed_hint">Оберіть застосунки, у яких зазвичай «зависаєте». Tepera рахуватиме час лише в них. Месенджери не пропонуємо, але за бажанням їх можна додати.</string>
+    <string name="v3_feed_section_suggested">Часто відкриваєте ввечері</string>
+    <string name="v3_feed_section_all">Усі застосунки</string>
+    <string name="v3_feed_empty">Поки немає даних про користування застосунками. Надайте доступ до статистики використання.</string>
+    <string name="v3_nudge_title">Нагадування про план</string>
+    <string name="v3_nudge_explain">Tepera може раз на день, за 10 хвилин до вашої години ризику, тихо нагадати ваш власний план. Без звуку й вібрації, не частіше разу на добу. Без дозволу все інше працює, не працюють лише нагадування.</string>
+    <string name="v3_nudge_status_on">Сповіщення дозволені</string>
+    <string name="v3_nudge_status_off">Сповіщення вимкнені</string>
+    <string name="v3_nudge_allow">Дозволити сповіщення</string>
+    <string name="v3_nudge_open_settings">Відкрити налаштування сповіщень</string>
+    <string name="v3_nudge_later">Самі нагадування будуть пізніше: зараз це лише дозвіл і канал сповіщень.</string>
+    <string name="v3_tester_title">Статистика для тестувальників</string>
+    <string name="v3_tester_copy">Скопіювати як текст</string>
+    <string name="v3_tester_copied">Скопійовано</string>
+    <string name="v3_tester_tools">Службові інструменти</string>
+    <string name="v3_tester_loading">Рахую…</string>
 </resources>

@@ -593,4 +593,27 @@
     <string name="widget_info_hours_value_format">%1$d:%2$02d h</string>
     <string name="widget_info_last_format">%1$s · today at %2$s</string>
     <string name="widget_info_chip_format">%1$s %2$s</string>
+
+    <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): risk hours. Beta build only for now. -->
+    <string name="v3_nudge_channel_name">Plan reminders</string>
+    <string name="v3_section_title">Risk hours (beta)</string>
+    <string name="v3_feed_picker_action">Feed apps</string>
+    <string name="v3_nudge_info_action">Plan reminders</string>
+    <string name="v3_feed_title">Feed apps</string>
+    <string name="v3_feed_hint">Choose the apps where you usually get stuck scrolling. Tepera will only count time in them. We do not suggest messengers, but you can add them if you want.</string>
+    <string name="v3_feed_section_suggested">Often opened in the evening</string>
+    <string name="v3_feed_section_all">All apps</string>
+    <string name="v3_feed_empty">No app usage data yet. Grant usage access first.</string>
+    <string name="v3_nudge_title">Plan reminders</string>
+    <string name="v3_nudge_explain">Once a day, 10 minutes before your risk hour, Tepera can quietly remind you of your own plan. No sound or vibration, never more than once a day. Without permission everything else works; only the reminders do not.</string>
+    <string name="v3_nudge_status_on">Notifications are allowed</string>
+    <string name="v3_nudge_status_off">Notifications are off</string>
+    <string name="v3_nudge_allow">Allow notifications</string>
+    <string name="v3_nudge_open_settings">Open notification settings</string>
+    <string name="v3_nudge_later">The reminders themselves come later: for now this is only the permission and the notification channel.</string>
+    <string name="v3_tester_title">Tester statistics</string>
+    <string name="v3_tester_copy">Copy as text</string>
+    <string name="v3_tester_copied">Copied</string>
+    <string name="v3_tester_tools">Developer tools</string>
+    <string name="v3_tester_loading">Counting…</string>
 </resources>

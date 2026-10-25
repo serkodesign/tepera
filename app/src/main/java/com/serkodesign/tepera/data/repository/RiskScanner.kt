@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.data.repository
 
+import com.serkodesign.tepera.data.local.dao.ObservationPeriodDao
+import com.serkodesign.tepera.data.local.entity.ObservationPeriodEntity
 import com.serkodesign.tepera.data.local.entity.RiskWindowEntity
+import java.util.UUID
 import com.serkodesign.tepera.domain.risk.RiskCandidate
 import com.serkodesign.tepera.domain.risk.RiskConfig
 import com.serkodesign.tepera.domain.risk.RiskResult
@@ -37,7 +40,8 @@ sealed interface ScanOutcome {
 class RiskScanner(
     private val slots: SlotSource,
     private val windows: RiskWindowRepository,
-    private val store: ScanSnapshotStore
+    private val store: ScanSnapshotStore,
+    private val periods: ObservationPeriodDao
 ) {
     suspend fun scan(cfg: RiskConfig = RiskConfig(), nowMillis: Long = System.currentTimeMillis()): ScanOutcome {
         when (slots.refresh(nowMillis)) {
@@ -49,6 +53,10 @@ class RiskScanner(
         if (!result.enoughData) return ScanOutcome.NotEnoughData(result.observedDays)
 
         val saved = windows.saveDetected(result, cfg, nowMillis)
+        // Базова лінія: тиждень, за який вікна знайдено вперше (планів ще нема, тож це «тиждень без втручань»).
+        if (periods.getLatest() == null) {
+            periods.upsert(ObservationPeriodEntity(UUID.randomUUID().toString(), result.days.first().toEpochDay(), result.days.last().toEpochDay()))
+        }
         val history = RiskScanCodec.append(
             RiskScanCodec.decode(store.load()),
             ScanSnapshot(result.days.last().toEpochDay(), result.candidates)

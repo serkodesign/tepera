@@ -55,7 +55,7 @@ class RiskScannerTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
         windows = RiskWindowRepository(db.riskWindowDao(), db.planDao(), db.usageSlotDao())
-        scanner = RiskScanner(source, windows, store)
+        scanner = RiskScanner(source, windows, store, db.observationPeriodDao())
     }
 
     @After
@@ -125,5 +125,16 @@ class RiskScannerTest {
         assertEquals(ScanOutcome.NotEnoughData(7), outcome)
         assertEquals(0, windows.getAll().size)
         assertEquals("", snapshots)
+    }
+
+    @Test
+    fun firstSuccessfulScanFixesObservationWeekOnlyOnce() = runBlocking {
+        scanWeek(0, window(22 * 60, 23 * 60 + 30))
+        val first = db.observationPeriodDao().getLatest()!!
+        assertEquals(LocalDate.of(2026, 10, 14).toEpochDay(), first.startDate)
+        assertEquals(LocalDate.of(2026, 10, 20).toEpochDay(), first.endDate)
+
+        scanWeek(1, window(22 * 60, 23 * 60 + 30))
+        assertEquals(first.id, db.observationPeriodDao().getLatest()!!.id)
     }
 }
