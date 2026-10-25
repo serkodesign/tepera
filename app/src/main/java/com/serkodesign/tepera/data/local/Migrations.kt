@@ -271,3 +271,41 @@ val MIGRATION_17_18 = object : Migration(17, 18) {
         )
     }
 }
+
+/**
+ * Версія 19 (v3.0 MVP, Етап 1): feed_apps, risk_windows, plans, nudge_events, observation_periods.
+ * Старі таблиці не чіпаються. SQL збігається з app/schemas/.../19.json (перевіряє MigrationTest в androidTest).
+ */
+val MIGRATION_18_19 = object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `feed_apps` (`packageName` TEXT NOT NULL, `label` TEXT NOT NULL, " +
+                "`confirmedAt` INTEGER NOT NULL, PRIMARY KEY(`packageName`))"
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `risk_windows` (`id` TEXT NOT NULL, `startMinute` INTEGER NOT NULL, " +
+                "`endMinute` INTEGER NOT NULL, `dayType` TEXT NOT NULL, `recurrenceDays` INTEGER NOT NULL, " +
+                "`observedDays` INTEGER NOT NULL, `avgMinutes` INTEGER NOT NULL, `topApps` TEXT NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `isUserDisabled` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`))"
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `plans` (`id` TEXT NOT NULL, `windowId` TEXT NOT NULL, `ifText` TEXT NOT NULL, " +
+                "`thenText` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`), FOREIGN KEY(`windowId`) REFERENCES `risk_windows`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_plans_windowId` ON `plans` (`windowId`)")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `nudge_events` (`id` TEXT NOT NULL, `windowId` TEXT NOT NULL, " +
+                "`scheduledAt` INTEGER NOT NULL, `shownAt` INTEGER, `action` TEXT NOT NULL, PRIMARY KEY(`id`), " +
+                "FOREIGN KEY(`windowId`) REFERENCES `risk_windows`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_nudge_events_windowId` ON `nudge_events` (`windowId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_nudge_events_scheduledAt` ON `nudge_events` (`scheduledAt`)")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `observation_periods` (`id` TEXT NOT NULL, `startDate` INTEGER NOT NULL, " +
+                "`endDate` INTEGER, PRIMARY KEY(`id`))"
+        )
+    }
+}

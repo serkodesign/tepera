@@ -36,6 +36,7 @@ sealed interface SlotRecompute {
 class UsageSlotRepository(
     private val context: Context,
     private val dao: UsageSlotDao,
+    private val feedApps: FeedAppRepository,
     private val settingsStore: SettingsStore
 ) {
     private val zone: ZoneId get() = ZoneId.systemDefault()
@@ -45,7 +46,8 @@ class UsageSlotRepository(
         nowMillis: Long = System.currentTimeMillis(),
         lookbackDays: Int = 10
     ): SlotRecompute = withContext(Dispatchers.IO) {
-        val feed = settingsStore.feedPackages.first()
+        feedApps.importLegacyIfEmpty(settingsStore.feedPackages.first())
+        val feed = feedApps.packages()
         if (feed.isEmpty()) return@withContext SlotRecompute.Skipped
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val today = Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()

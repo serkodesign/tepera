@@ -43,6 +43,7 @@ class RiskSpikeViewModel(private val app: TeperaApp) : ViewModel() {
 
     init {
         viewModelScope.launch {
+            app.feedAppRepository.importLegacyIfEmpty(app.settingsStore.feedPackages.first())
             val apps = app.installedAppsProvider.listUsedApps()
             _state.update { it.copy(apps = apps) }
             reload()
@@ -51,8 +52,9 @@ class RiskSpikeViewModel(private val app: TeperaApp) : ViewModel() {
 
     fun toggleFeed(pkg: String) {
         viewModelScope.launch {
-            val feed = _state.value.feed.let { if (pkg in it) it - pkg else it + pkg }
-            app.settingsStore.setFeedPackages(feed)
+            val on = pkg !in _state.value.feed
+            val label = _state.value.apps.firstOrNull { it.packageName == pkg }?.label ?: pkg
+            app.feedAppRepository.setConfirmed(pkg, label, on)
             reload()
         }
     }
@@ -93,7 +95,7 @@ class RiskSpikeViewModel(private val app: TeperaApp) : ViewModel() {
 
     private suspend fun reload() {
         val repo = app.usageSlotRepository
-        val feed = app.settingsStore.feedPackages.first()
+        val feed = app.feedAppRepository.packages()
         val cfg = _state.value.config
         val covered = repo.coveredDays()
         val lastLogicalDay = LocalDateTime.now().minusHours(cfg.dayCutoffHour.toLong()).toLocalDate().minusDays(1)

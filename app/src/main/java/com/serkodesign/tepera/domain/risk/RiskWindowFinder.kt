@@ -148,23 +148,33 @@ object RiskWindowFinder {
         )
     }
 
+    /** Початок вікна у хвилинах від межі доби. */
+    fun startPosition(startMinute: Int, cfg: RiskConfig = RiskConfig()): Int = (startMinute - cfg.dayCutoffHour * 60 + 1440) % 1440
+
+    /** Тривалість вікна в хвилинах (вікно на всю добу = 1440). */
+    fun lengthMinutes(startMinute: Int, endMinute: Int): Int =
+        ((endMinute - startMinute + 1440) % 1440).let { if (it == 0) 1440 else it }
+
+    /** Два вікна — те саме, якщо перетинаються щонайменше на половину коротшого з двох. */
+    fun sameWindow(startA: Int, endA: Int, startB: Int, endB: Int, cfg: RiskConfig = RiskConfig()): Boolean {
+        val s1 = startPosition(startA, cfg)
+        val s2 = startPosition(startB, cfg)
+        val l1 = lengthMinutes(startA, endA)
+        val l2 = lengthMinutes(startB, endB)
+        val overlap = minOf(s1 + l1, s2 + l2) - maxOf(s1, s2)
+        return overlap > 0 && overlap >= minOf(l1, l2) / 2.0
+    }
+
     /**
      * Пропозиція оновити вікно [window], якщо його початок у кожному з двох останніх тижневих перерахунків
      * ([lastTwoWeeks], від старішого до новішого) зміщений на ≥ [RiskConfig.shiftMinutes] у той самий бік.
      * Вікно мовчки не міняється — повертається кандидат останнього тижня, який людина підтверджує сама.
-     * Тижневий кандидат відповідає вікну, якщо перетинається з ним щонайменше на половину коротшого з двох.
+     * Відповідність вікна — за [sameWindow].
      */
     fun suggestShift(window: RiskCandidate, lastTwoWeeks: List<List<RiskCandidate>>, cfg: RiskConfig = RiskConfig()): RiskCandidate? {
         if (lastTwoWeeks.size != 2) return null
-        val offset = cfg.dayCutoffHour * 60
-        fun startPos(c: RiskCandidate) = (c.startMinute - offset + 1440) % 1440
-        fun length(c: RiskCandidate) = ((c.endMinute - c.startMinute + 1440) % 1440).let { if (it == 0) 1440 else it }
-        fun matches(c: RiskCandidate): Boolean {
-            val s1 = startPos(window)
-            val s2 = startPos(c)
-            val overlap = minOf(s1 + length(window), s2 + length(c)) - maxOf(s1, s2)
-            return overlap >= minOf(length(window), length(c)) / 2.0 && overlap > 0
-        }
+        fun startPos(c: RiskCandidate) = startPosition(c.startMinute, cfg)
+        fun matches(c: RiskCandidate) = sameWindow(window.startMinute, window.endMinute, c.startMinute, c.endMinute, cfg)
         val matched = lastTwoWeeks.map { week -> week.filter(::matches).minByOrNull { Math.abs(startPos(it) - startPos(window)) } }
         val shifts = matched.map { c -> c?.let { startPos(it) - startPos(window) } ?: return null }
         val sameDirection = shifts.all { it >= cfg.shiftMinutes } || shifts.all { it <= -cfg.shiftMinutes }

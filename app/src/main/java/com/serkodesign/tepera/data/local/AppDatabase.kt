@@ -10,7 +10,12 @@ import com.serkodesign.tepera.data.local.dao.CategoryDao
 import com.serkodesign.tepera.data.local.dao.DaySummaryDao
 import com.serkodesign.tepera.data.local.dao.DetectedGapDao
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
+import com.serkodesign.tepera.data.local.dao.FeedAppDao
 import com.serkodesign.tepera.data.local.dao.GateEventDao
+import com.serkodesign.tepera.data.local.dao.NudgeEventDao
+import com.serkodesign.tepera.data.local.dao.ObservationPeriodDao
+import com.serkodesign.tepera.data.local.dao.PlanDao
+import com.serkodesign.tepera.data.local.dao.RiskWindowDao
 import com.serkodesign.tepera.data.local.dao.SleepWindowDao
 import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.dao.UserEstimateDao
@@ -21,7 +26,12 @@ import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.local.entity.DaySummaryEntity
 import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
 import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
+import com.serkodesign.tepera.data.local.entity.FeedAppEntity
 import com.serkodesign.tepera.data.local.entity.GateEventEntity
+import com.serkodesign.tepera.data.local.entity.NudgeEventEntity
+import com.serkodesign.tepera.data.local.entity.ObservationPeriodEntity
+import com.serkodesign.tepera.data.local.entity.PlanEntity
+import com.serkodesign.tepera.data.local.entity.RiskWindowEntity
 import com.serkodesign.tepera.data.local.entity.SleepWindowEntity
 import com.serkodesign.tepera.data.local.entity.UsageSlotEntity
 import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
@@ -81,6 +91,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
  * майбутньої Pro-статистики "Місяць"/"Рік", D-39) — версія 17, `MIGRATION_16_17`.
  * v3.0 MVP, Етап 0/1: додано UsageSlotEntity (`usage_slots`, час у застосунках-стрічках по 15-хв слотах) — версія 18,
  * `MIGRATION_17_18`.
+ * v3.0 MVP, Етап 1: додано feed_apps, risk_windows, plans, nudge_events, observation_periods — версія 19, `MIGRATION_18_19`.
  */
 @Database(
     entities = [
@@ -94,9 +105,14 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         CardShowEntity::class,
         GateEventEntity::class,
         DaySummaryEntity::class,
-        UsageSlotEntity::class
+        UsageSlotEntity::class,
+        FeedAppEntity::class,
+        RiskWindowEntity::class,
+        PlanEntity::class,
+        NudgeEventEntity::class,
+        ObservationPeriodEntity::class
     ],
-    version = 18,
+    version = 19,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -112,4 +128,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gateEventDao(): GateEventDao
     abstract fun daySummaryDao(): DaySummaryDao
     abstract fun usageSlotDao(): UsageSlotDao
+    abstract fun feedAppDao(): FeedAppDao
+    abstract fun riskWindowDao(): RiskWindowDao
+    abstract fun planDao(): PlanDao
+    abstract fun nudgeEventDao(): NudgeEventDao
+    abstract fun observationPeriodDao(): ObservationPeriodDao
 }

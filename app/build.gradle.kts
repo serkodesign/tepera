@@ -35,6 +35,7 @@ android {
         targetSdk = 36      // Android 16 — обов'язково для Google Play з 31.08.2026 (SRS PUB-4)
         versionCode = 22
         versionName = "1.0.4"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     // Тестова збірка з воротами через Accessibility: окремий flavor, щоб основний реліз не мав ані сервісу, ані дозволу
@@ -81,6 +82,11 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+    }
+
+    // Схеми Room для MigrationTest (androidTest).
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
 
     buildFeatures {
@@ -159,4 +165,9 @@ dependencies {
     // повне тест-покриття, лише smoke-тести" — цей тест саме такий: одна ціла підсистема, не все підряд).
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303") // JSON-фікстури алгоритму годин ризику (v3 MVP)
+
+    // Міграції Room перевіряє інструментальний тест на пристрої (androidTest), схеми беруться з app/schemas.
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
 }
+
