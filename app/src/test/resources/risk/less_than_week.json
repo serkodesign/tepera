@@ -1,0 +1,6 @@
+{
+  "lastLogicalDay": "2026-10-20",
+  "coveredFrom": "2026-10-17",
+  "rules": [{"days": "all", "startSlot": 88, "slots": 6, "seconds": 360}],
+  "expected": []
+}

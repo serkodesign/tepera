@@ -158,4 +158,5 @@ dependencies {
     // звичайного JUnit4 на JVM, без Robolectric/instrumented-тестів (CLAUDE.md: "поза обсягом MVP —
     // повне тест-покриття, лише smoke-тести" — цей тест саме такий: одна ціла підсистема, не все підряд).
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303") // JSON-фікстури алгоритму годин ризику (v3 MVP)
 }

@@ -1,0 +1,13 @@
+{
+  "lastLogicalDay": "2026-10-20",
+  "rules": [
+    {"days": "2026-10-14", "startSlot": 32, "slots": 1, "seconds": 900},
+    {"days": "2026-10-15", "startSlot": 40, "slots": 1, "seconds": 900},
+    {"days": "2026-10-16", "startSlot": 48, "slots": 1, "seconds": 900},
+    {"days": "2026-10-17", "startSlot": 56, "slots": 1, "seconds": 900},
+    {"days": "2026-10-18", "startSlot": 64, "slots": 1, "seconds": 900},
+    {"days": "2026-10-19", "startSlot": 72, "slots": 1, "seconds": 900},
+    {"days": "2026-10-20", "startSlot": 80, "slots": 1, "seconds": 900}
+  ],
+  "expected": []
+}

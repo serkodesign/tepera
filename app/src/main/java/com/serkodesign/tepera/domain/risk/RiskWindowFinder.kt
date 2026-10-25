@@ -28,8 +28,13 @@ data class RiskConfig(
     val maxWindows: Int = 3,
     val observationDays: Int = 7,
     /** Скільки з [observationDays] днів мають бути покриті даними, щоб будувати вікна взагалі. */
-    val minObservedDays: Int = 7
+    val minObservedDays: Int = 7,
+    /** Початок вікна, зміщений щонайменше настільки хвилин два тижні поспіль, — привід запропонувати оновлення. */
+    val shiftMinutes: Int = 20
 )
+
+/** Коли діє вікно: щодня чи лише в будні (вихідних у вікні не було). */
+enum class DayType { ALL, WEEKDAYS }
 
 /** Секунди в застосунках-стрічках за один 15-хвилинний слот локальної календарної дати (слот 0 = 00:00–00:15). */
 data class SlotUsage(val date: LocalDate, val slot: Int, val seconds: Int)
@@ -44,7 +49,8 @@ data class RiskCandidate(
     val recurrenceDays: Int,
     val observedDays: Int,
     val avgMinutes: Int,
-    val hitDays: List<LocalDate>
+    val hitDays: List<LocalDate>,
+    val dayType: DayType = DayType.ALL
 ) {
     val crossesMidnight: Boolean get() = endMinute <= startMinute
 }
@@ -69,7 +75,14 @@ object RiskWindowFinder {
     fun position(slot: Int, cfg: RiskConfig): Int =
         (slot - cfg.dayCutoffHour * 60 / SLOT_MINUTES + SLOTS_PER_DAY) % SLOTS_PER_DAY
 
-    private class Accepted(val startPos: Int, val endPos: Int, val hits: List<LocalDate>, val avg: Double)
+    private class Accepted(
+        val startPos: Int,
+        val endPos: Int,
+        val hits: List<LocalDate>,
+        val avg: Double,
+        val dayType: DayType,
+        val observed: Int
+    )
 
     /**
      * @param records ненульові слоти (відсутній слот = 0 с)
@@ -89,6 +102,8 @@ object RiskWindowFinder {
 
         val grid = covered.associateWith { IntArray(SLOTS_PER_DAY) }
         for (r in records) grid[logicalDate(r.date, r.slot, cfg)]?.let { it[position(r.slot, cfg)] += r.seconds }
+        // Доба зі зміною часу має повторений годинник: слот не може містити більше за свою тривалість.
+        grid.values.forEach { row -> for (i in row.indices) row[i] = minOf(row[i], SLOT_MINUTES * 60) }
 
         val maxGapSlots = cfg.mergeGapMinutes / SLOT_MINUTES
         val masks = covered.associateWith { mergedMask(grid.getValue(it), cfg, maxGapSlots) }
@@ -100,11 +115,23 @@ object RiskWindowFinder {
                 (a..b).count { masks.getValue(day)[it] } >= length * cfg.overlapShare
             }
             if (hits.size < cfg.minRecurrenceDays) return@mapNotNull null
-            val avg = hits.map { day -> (a..b).sumOf { grid.getValue(day)[it] } / 60.0 }.average()
+            // Будні/вихідні окремо: ≥4 із 5 буднів і жодного повтору у вихідних → вікно лише в будні.
+            val weekendDays = covered.filter { it.dayOfWeek.value > 5 }
+            val weekdayDays = covered.filter { it.dayOfWeek.value <= 5 }
+            val weekdayHits = hits.filter { it.dayOfWeek.value <= 5 }
+            val weekendHits = hits.size - weekdayHits.size
+            val weekdaysOnly = weekendDays.isNotEmpty() && weekdayHits.size >= cfg.minRecurrenceDays &&
+                weekendHits * 2 < weekendDays.size
+            val finalHits = if (weekdaysOnly) weekdayHits else hits
+            val avg = finalHits.map { day -> (a..b).sumOf { grid.getValue(day)[it] } / 60.0 }.average()
             if (avg < cfg.minAvgMinutes) return@mapNotNull null
             val startPos = a * SLOT_MINUTES / cfg.roundToMinutes * cfg.roundToMinutes
             val endPos = minOf(1440, ceilDiv((b + 1) * SLOT_MINUTES, cfg.roundToMinutes) * cfg.roundToMinutes)
-            Accepted(startPos, endPos, hits, avg)
+            Accepted(
+                startPos, endPos, finalHits, avg,
+                if (weekdaysOnly) DayType.WEEKDAYS else DayType.ALL,
+                if (weekdaysOnly) weekdayDays.size else covered.size
+            )
         }.sortedByDescending { it.avg }
 
         val chosen = mutableListOf<Accepted>()
@@ -116,9 +143,32 @@ object RiskWindowFinder {
         return RiskResult(
             days, covered.size, true,
             chosen.map {
-                RiskCandidate((offset + it.startPos) % 1440, (offset + it.endPos) % 1440, it.hits.size, covered.size, it.avg.toInt(), it.hits)
+                RiskCandidate((offset + it.startPos) % 1440, (offset + it.endPos) % 1440, it.hits.size, it.observed, it.avg.toInt(), it.hits, it.dayType)
             }
         )
+    }
+
+    /**
+     * Пропозиція оновити вікно [window], якщо його початок у кожному з двох останніх тижневих перерахунків
+     * ([lastTwoWeeks], від старішого до новішого) зміщений на ≥ [RiskConfig.shiftMinutes] у той самий бік.
+     * Вікно мовчки не міняється — повертається кандидат останнього тижня, який людина підтверджує сама.
+     * Тижневий кандидат відповідає вікну, якщо перетинається з ним щонайменше на половину коротшого з двох.
+     */
+    fun suggestShift(window: RiskCandidate, lastTwoWeeks: List<List<RiskCandidate>>, cfg: RiskConfig = RiskConfig()): RiskCandidate? {
+        if (lastTwoWeeks.size != 2) return null
+        val offset = cfg.dayCutoffHour * 60
+        fun startPos(c: RiskCandidate) = (c.startMinute - offset + 1440) % 1440
+        fun length(c: RiskCandidate) = ((c.endMinute - c.startMinute + 1440) % 1440).let { if (it == 0) 1440 else it }
+        fun matches(c: RiskCandidate): Boolean {
+            val s1 = startPos(window)
+            val s2 = startPos(c)
+            val overlap = minOf(s1 + length(window), s2 + length(c)) - maxOf(s1, s2)
+            return overlap >= minOf(length(window), length(c)) / 2.0 && overlap > 0
+        }
+        val matched = lastTwoWeeks.map { week -> week.filter(::matches).minByOrNull { Math.abs(startPos(it) - startPos(window)) } }
+        val shifts = matched.map { c -> c?.let { startPos(it) - startPos(window) } ?: return null }
+        val sameDirection = shifts.all { it >= cfg.shiftMinutes } || shifts.all { it <= -cfg.shiftMinutes }
+        return if (sameDirection) matched.last() else null
     }
 
     /** Хвилини в стрічках по годинах логічної доби (колонка 0 = година межі доби), для теплової карти. */

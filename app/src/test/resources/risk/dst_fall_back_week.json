@@ -1,0 +1,10 @@
+{
+  "lastLogicalDay": "2026-10-27",
+  "rules": [
+    {"days": "except:2026-10-25", "startSlot": 88, "slots": 6, "seconds": 360},
+    {"days": "2026-10-25", "startSlot": 88, "slots": 1, "seconds": 1800},
+    {"days": "2026-10-25", "startSlot": 89, "slots": 5, "seconds": 360},
+    {"days": "2026-10-25", "startSlot": 12, "slots": 1, "seconds": 1800}
+  ],
+  "expected": [{"start": "22:00", "end": "23:30", "recurrence": 7, "observed": 7, "dayType": "ALL", "avgMinutes": 37}]
+}

@@ -6,6 +6,7 @@ import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.entity.UsageSlotEntity
 import com.serkodesign.tepera.domain.risk.SlotUsage
+import com.serkodesign.tepera.domain.risk.SlotSplitter
 import com.serkodesign.tepera.util.foregroundSessionsByPackage
 import com.serkodesign.tepera.util.queryEventsOrNull
 import com.serkodesign.tepera.util.withReliableUsageEvents
@@ -15,7 +16,6 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 /** Результат [UsageSlotRepository.recompute]. */
 sealed interface SlotRecompute {
@@ -101,7 +101,7 @@ class UsageSlotRepository(
         val events = usm.queryEventsOrNull(dayStart, dayEnd) ?: return null
         val millisBySlot = HashMap<Pair<Int, String>, Long>()
         for ((pkg, span) in foregroundSessionsByPackage(events, feed, dayEnd)) {
-            splitIntoSlots(span.start, span.end) { slot, millis ->
+            SlotSplitter.split(span.start, span.end, zone) { _, slot, millis ->
                 millisBySlot.merge(slot to pkg, millis, Long::plus)
             }
         }
@@ -111,19 +111,6 @@ class UsageSlotRepository(
         }
     }
 
-    /** Ділить [startMillis, endMillis) по межах 15-хвилинних слотів за настінним годинником (DST-безпечно: кроки в хвилинах). */
-    private fun splitIntoSlots(startMillis: Long, endMillis: Long, add: (slot: Int, millis: Long) -> Unit) {
-        var cursor = startMillis
-        while (cursor < endMillis) {
-            val zdt = Instant.ofEpochMilli(cursor).atZone(zone)
-            val slot = (zdt.hour * 60 + zdt.minute) / SLOT_MINUTES
-            val slotStart: ZonedDateTime = zdt.withMinute(zdt.minute / SLOT_MINUTES * SLOT_MINUTES).withSecond(0).withNano(0)
-            val boundary = slotStart.plusMinutes(SLOT_MINUTES.toLong()).toInstant().toEpochMilli()
-            val segmentEnd = minOf(endMillis, boundary)
-            add(slot, segmentEnd - cursor)
-            cursor = segmentEnd
-        }
-    }
 
     /** Слоти за календарні дати [from]..[to]; якщо [feed] задано — лише ці застосунки. */
     suspend fun readRecords(from: LocalDate, to: LocalDate, feed: Set<String>? = null): List<SlotUsage> = withContext(Dispatchers.IO) {
@@ -137,7 +124,6 @@ class UsageSlotRepository(
         settingsStore.usageSlotCoveredDays.first().map(LocalDate::ofEpochDay).toSet()
 
     private companion object {
-        const val SLOT_MINUTES = 15
         const val KEEP_DAYS = 60L
     }
 }

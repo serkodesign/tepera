@@ -1,0 +1,5 @@
+{
+  "lastLogicalDay": "2026-10-20",
+  "rules": [{"days": "weekdays", "startSlot": 52, "slots": 2, "seconds": 900}],
+  "expected": [{"start": "13:00", "end": "13:30", "recurrence": 5, "observed": 5, "dayType": "WEEKDAYS", "avgMinutes": 30}]
+}

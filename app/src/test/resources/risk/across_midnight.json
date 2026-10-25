@@ -1,0 +1,8 @@
+{
+  "lastLogicalDay": "2026-10-20",
+  "rules": [
+    {"days": "all", "startSlot": 94, "slots": 2, "seconds": 600},
+    {"days": "all", "startSlot": 0, "slots": 2, "seconds": 600, "calendarOffset": 1}
+  ],
+  "expected": [{"start": "23:30", "end": "00:30", "recurrence": 7, "observed": 7, "dayType": "ALL", "avgMinutes": 40}]
+}
