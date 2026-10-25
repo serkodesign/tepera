@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.risk
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +44,10 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -179,7 +185,7 @@ private fun LegendItem(label: String, marker: @Composable () -> Unit) {
 
 /** `v3/RiskWindowCard`, стан «Без плану» (кнопка «Скласти план» з'явиться разом з конструктором плану, L5). */
 @Composable
-fun RiskWindowCard(window: RiskWindowUi, modifier: Modifier = Modifier) {
+fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, modifier: Modifier = Modifier) {
     val primary = TeperaPalette.textPrimary
     val secondary = TeperaPalette.textSecondary
     val recurrence = stringResource(
@@ -221,11 +227,43 @@ fun RiskWindowCard(window: RiskWindowUi, modifier: Modifier = Modifier) {
             }
         }
         HorizontalDivider(color = TeperaPalette.borderDefault)
-        Text(stringResource(R.string.v3_card_no_plan), color = secondary, fontSize = 14.sp, lineHeight = 18.sp)
+        val plan = window.plan
+        if (plan == null) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    stringResource(R.string.v3_card_no_plan), color = secondary, fontSize = 14.sp, lineHeight = 18.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                TeperaButton(
+                    text = stringResource(R.string.v3_card_make_plan),
+                    onClick = onOpenPlan,
+                    size = TeperaButtonSize.Small,
+                    modifier = Modifier.width(112.dp)
+                )
+            }
+        } else {
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(role = Role.Button, onClick = onOpenPlan),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    Modifier.size(32.dp).clip(CircleShape).background(TeperaPalette.surfaceBrandLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(TeperaSymbols.Checklist, contentDescription = null, tint = TeperaPalette.brandAccent, modifier = Modifier.size(18.dp))
+                }
+                Text(
+                    stringResource(R.string.v3_plan_format, plan.first, plan.second),
+                    color = primary, fontSize = 14.sp, lineHeight = 18.sp, modifier = Modifier.weight(1f)
+                )
+                Icon(TeperaSymbols.ChevronRight, contentDescription = null, tint = secondary, modifier = Modifier.size(24.dp))
+            }
+        }
     }
 }
 
-private fun partOfDayRes(part: PartOfDay): Int = when (part) {
+internal fun partOfDayRes(part: PartOfDay): Int = when (part) {
     PartOfDay.MORNING -> R.string.v3_part_morning
     PartOfDay.LUNCH -> R.string.v3_part_lunch
     PartOfDay.DAY -> R.string.v3_part_day

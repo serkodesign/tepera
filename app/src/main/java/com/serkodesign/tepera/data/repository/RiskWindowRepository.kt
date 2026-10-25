@@ -30,6 +30,8 @@ class RiskWindowRepository(
 
     suspend fun getPlan(windowId: String): PlanEntity? = withContext(Dispatchers.IO) { planDao.getForWindow(windowId) }
 
+    suspend fun getWindow(windowId: String): RiskWindowEntity? = withContext(Dispatchers.IO) { windowDao.getById(windowId) }
+
     suspend fun getAll(): List<RiskWindowEntity> = withContext(Dispatchers.IO) { windowDao.getAll() }
 
     suspend fun setShiftSuggestion(windowId: String, start: Int?, end: Int?) = withContext(Dispatchers.IO) {

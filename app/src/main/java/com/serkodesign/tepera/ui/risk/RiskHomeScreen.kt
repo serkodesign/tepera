@@ -56,7 +56,8 @@ fun RiskHomeScreen(
     onOpenSettings: () -> Unit,
     onOpenKnowledgeBase: () -> Unit,
     onOpenFeedPicker: () -> Unit,
-    onOpenAccess: () -> Unit
+    onOpenAccess: () -> Unit,
+    onOpenPlan: (String) -> Unit
 ) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: RiskHomeViewModel = viewModel(factory = RiskHomeViewModel.Factory(app))
@@ -93,7 +94,7 @@ fun RiskHomeScreen(
                         R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                     )
                     observing -> ObservingContent(state)
-                    else -> FoundContent(state)
+                    else -> FoundContent(state, onOpenPlan)
                 }
             }
         }
@@ -176,7 +177,7 @@ private fun ObservingContent(state: RiskHomeState) {
 
 /** L4: пояснення, теплова карта з пунктирними вікнами й картки вікон; без вікон — спокійне «і це теж добре». */
 @Composable
-private fun FoundContent(state: RiskHomeState) {
+private fun FoundContent(state: RiskHomeState, onOpenPlan: (String) -> Unit) {
     val windows = state.windows
     Text(
         text = if (windows.isEmpty()) {
@@ -197,5 +198,5 @@ private fun FoundContent(state: RiskHomeState) {
         )
     }
     HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
-    windows.forEach { RiskWindowCard(it) }
+    windows.forEach { w -> RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }) }
 }

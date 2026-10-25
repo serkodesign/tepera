@@ -676,4 +676,33 @@
     <string name="v3_mode_label">v3 mode (beta)</string>
     <string name="v3_mode_hint">Replaces the home screen with “Risk hours”. Old data and screens are not deleted: turn it off to get the usual look back.</string>
     <string name="v3_tester_restart">Redo v3 onboarding</string>
+
+    <!-- v3.0 MVP, stage 3: L5 "If - then" plan (Figma 911:1066). Evening/lunch suggestions come from the design, morning/day are neutral. -->
+    <string name="v3_card_make_plan">Make a plan</string>
+    <string name="v3_plan_title_format">Plan for %1$s</string>
+    <string name="v3_plan_intro_format">%1$s · %2$s. Describe what you do instead of the feed, the way you would say it to yourself.</string>
+    <string name="v3_plan_if_title">If…</string>
+    <string name="v3_plan_then_title">…then I</string>
+    <string name="v3_plan_own">my own</string>
+    <string name="v3_plan_own_hint">In your own words</string>
+    <string name="v3_plan_preview_label">Your plan</string>
+    <string name="v3_plan_preview_empty">Choose or write both parts</string>
+    <string name="v3_plan_format">If %1$s — then I %2$s</string>
+    <string name="v3_plan_save">Save plan</string>
+    <string name="v3_plan_later">Later</string>
+    <string name="v3_plan_if_bed">I get into bed</string>
+    <string name="v3_plan_if_sofa">I sit down on the sofa</string>
+    <string name="v3_plan_then_book">read the book from the nightstand</string>
+    <string name="v3_plan_then_charge">put the phone on the charger in the hallway</string>
+    <string name="v3_plan_then_podcast">listen to a podcast with the screen off</string>
+    <string name="v3_plan_then_todo">write down 3 things for tomorrow</string>
+    <string name="v3_plan_if_lunch">it is lunchtime</string>
+    <string name="v3_plan_if_eat">I sit down to eat</string>
+    <string name="v3_plan_then_walk15">go for a 15-minute walk without the phone</string>
+    <string name="v3_plan_then_eat_no_phone">eat without the phone</string>
+    <string name="v3_plan_if_break">a break starts</string>
+    <string name="v3_plan_if_urge">I reach for my phone</string>
+    <string name="v3_plan_then_walk5">go for a 5-minute walk</string>
+    <string name="v3_plan_then_water">drink a glass of water</string>
+    <string name="v3_plan_then_breathe">take three deep breaths</string>
 </resources>

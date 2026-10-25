@@ -33,7 +33,9 @@ data class RiskWindowUi(
     val avgMinutes: Int,
     val partOfDay: PartOfDay,
     val appLabels: List<String>,
-    val dots: List<DotState>
+    val dots: List<DotState>,
+    /** Збережений план («якщо» і «то» дослівно) або `null`. */
+    val plan: Pair<String, String>? = null
 )
 
 /** Підказка на екрані спостереження, коли вже видно щось схоже (≥ 3 дні даних). */
@@ -90,6 +92,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     recurrenceDays = w.recurrenceDays, observedDays = w.observedDays, avgMinutes = w.avgMinutes,
                     partOfDay = HeatGrid.partOfDay(w.startMinute),
                     appLabels = w.topApps.split(',').filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
+                    plan = app.riskWindowRepository.getPlan(w.id)?.let { it.ifText to it.thenText },
                     dots = logicalDays.map { day ->
                         when {
                             w.dayType == DayType.WEEKDAYS && day.dayOfWeek.value > 5 -> DotState.NOT_APPLICABLE

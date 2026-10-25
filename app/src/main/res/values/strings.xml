@@ -693,4 +693,33 @@
     <string name="v3_mode_label">Режим v3 (beta)</string>
     <string name="v3_mode_hint">Замінює головний екран на «Години ризику». Старі дані й екрани не видаляються: вимкніть, щоб повернути звичайний вигляд.</string>
     <string name="v3_tester_restart">Пройти онбординг v3 знову</string>
+
+    <!-- v3.0 MVP, Етап 3: L5 «План якщо — то» (Figma 911:1066). Підказки вечора/обіду — з макета, ранку/дня — нейтральні. -->
+    <string name="v3_card_make_plan">Скласти план</string>
+    <string name="v3_plan_title_format">План на %1$s</string>
+    <string name="v3_plan_intro_format">%1$s · %2$s. Опиши, що робиш замість стрічки — так, як сказав би собі.</string>
+    <string name="v3_plan_if_title">Якщо…</string>
+    <string name="v3_plan_then_title">…то я</string>
+    <string name="v3_plan_own">свій варіант</string>
+    <string name="v3_plan_own_hint">Своїми словами</string>
+    <string name="v3_plan_preview_label">Твій план</string>
+    <string name="v3_plan_preview_empty">Обери або напиши обидві частини</string>
+    <string name="v3_plan_format">Якщо %1$s — то %2$s</string>
+    <string name="v3_plan_save">Зберегти план</string>
+    <string name="v3_plan_later">Пізніше</string>
+    <string name="v3_plan_if_bed">лягаю в ліжко</string>
+    <string name="v3_plan_if_sofa">сідаю на диван</string>
+    <string name="v3_plan_then_book">читаю книгу з тумбочки</string>
+    <string name="v3_plan_then_charge">ставлю телефон на зарядку в коридорі</string>
+    <string name="v3_plan_then_podcast">слухаю подкаст з вимкненим екраном</string>
+    <string name="v3_plan_then_todo">пишу 3 справи на завтра</string>
+    <string name="v3_plan_if_lunch">обід</string>
+    <string name="v3_plan_if_eat">сідаю їсти</string>
+    <string name="v3_plan_then_walk15">виходжу пройтися 15 хв без телефона</string>
+    <string name="v3_plan_then_eat_no_phone">їм без телефона</string>
+    <string name="v3_plan_if_break">починається перерва</string>
+    <string name="v3_plan_if_urge">тягнуся до телефона</string>
+    <string name="v3_plan_then_walk5">виходжу пройтися 5 хв</string>
+    <string name="v3_plan_then_water">п’ю склянку води</string>
+    <string name="v3_plan_then_breathe">роблю три глибокі вдихи</string>
 </resources>
