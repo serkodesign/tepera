@@ -718,4 +718,27 @@
     <string name="v3_dur_hours">%1$d h</string>
     <string name="v3_dur_hours_minutes">%1$d h %2$d min</string>
     <string name="v3_dur_days_hours">%1$d d %2$d h</string>
+
+    <!-- v3.0 MVP, stage 3: M6 "Why this window?" (Figma 912:1089). -->
+    <string name="v3_why_action">Why this window</string>
+    <string name="v3_why_title_format">Why %1$s?</string>
+    <string name="v3_why_line1_days">On %1$d of %2$d days between %3$s and %4$s you spent on average %5$d min in feeds.</string>
+    <string name="v3_why_line1_weekdays">On %1$d of %2$d weekdays between %3$s and %4$s you spent on average %5$d min in feeds.</string>
+    <string name="v3_why_line2_format">Most often — %1$s.</string>
+    <string name="v3_why_app_format">%1$s (%2$d min)</string>
+    <string name="v3_why_and">" and "</string>
+    <string name="v3_why_line3_format">On %1$s there was no window — and that is fine too.</string>
+    <string name="v3_why_footer">This is not a grade, only how often it repeats. Tepera counts everything on the phone.</string>
+    <string name="v3_why_toggle">Treat this window as a risk hour</string>
+    <string name="v3_card_disabled">Turned off — this window is not counted</string>
+    <string name="v3_windows_all_off">All windows are turned off. You can turn one back on from its card.</string>
+    <string-array name="v3_weekdays_accusative">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
 </resources>

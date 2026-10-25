@@ -35,7 +35,9 @@ data class RiskWindowUi(
     val appLabels: List<String>,
     val dots: List<DotState>,
     /** Збережений план («якщо» і «то» дослівно) або `null`. */
-    val plan: Pair<String, String>? = null
+    val plan: Pair<String, String>? = null,
+    /** Людина вимкнула вікно («Вважати це вікно годиною ризику» у M6): показується приглушеним у кінці списку. */
+    val isDisabled: Boolean = false
 )
 
 /** Підказка на екрані спостереження, коли вже видно щось схоже (≥ 3 дні даних). */
@@ -52,6 +54,7 @@ data class RiskHomeState(
     val dates: List<LocalDate> = emptyList(),
     val grid: Array<IntArray> = emptyArray(),
     val windows: List<RiskWindowUi> = emptyList(),
+    val disabledWindows: List<RiskWindowUi> = emptyList(),
     val teaser: RiskTeaser? = null
 )
 
@@ -85,7 +88,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             val records = app.usageSlotRepository.readRecords(minOf(dates.first(), logicalDays.first()), today.plusDays(1), feed)
             val labels = feedLabels()
 
-            val windows = app.riskWindowRepository.getAll().filter { !it.isUserDisabled }.map { w ->
+            val allWindows = app.riskWindowRepository.getAll().map { w ->
                 val hits = RiskWindowFinder.hitDays(records, covered, lastLogicalDay, w.startMinute, w.endMinute, w.dayType, cfg).toSet()
                 RiskWindowUi(
                     id = w.id, startMinute = w.startMinute, endMinute = w.endMinute, dayType = w.dayType,
@@ -93,6 +96,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     partOfDay = HeatGrid.partOfDay(w.startMinute),
                     appLabels = w.topApps.split(',').filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
                     plan = app.riskWindowRepository.getPlan(w.id)?.let { it.ifText to it.thenText },
+                    isDisabled = w.isUserDisabled,
                     dots = logicalDays.map { day ->
                         when {
                             w.dayType == DayType.WEEKDAYS && day.dayOfWeek.value > 5 -> DotState.NOT_APPLICABLE
@@ -103,11 +107,13 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                 )
             }
 
+            val windows = allWindows.filter { !it.isDisabled }
             _state.update {
                 it.copy(
                     loading = false, hasAccess = hasAccess, feedCount = feed.size, observedDays = observed,
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
                     grid = HeatGrid.minutesByHour(records, dates), windows = windows,
+                    disabledWindows = allWindows.filter { w -> w.isDisabled },
                     teaser = if (windows.isEmpty() && observed in TEASER_MIN_DAYS until cfg.minObservedDays) {
                         teaser(records, covered, lastLogicalDay, observed, cfg)
                     } else null

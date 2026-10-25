@@ -119,15 +119,13 @@ class RiskWindowRepository(
     private suspend fun topAppsIn(c: RiskCandidate, result: RiskResult, cfg: RiskConfig): String {
         if (result.days.isEmpty()) return ""
         val days = result.days.toSet()
-        val firstSlot = RiskWindowFinder.startPosition(c.startMinute, cfg) / RiskWindowFinder.SLOT_MINUTES
-        val slotCount = (RiskWindowFinder.lengthMinutes(c.startMinute, c.endMinute) + RiskWindowFinder.SLOT_MINUTES - 1) /
-            RiskWindowFinder.SLOT_MINUTES
+        val slots = RiskWindowFinder.windowSlots(c.startMinute, c.endMinute, cfg)
         val rows = slotDao.getRange(result.days.first().toEpochDay(), result.days.last().plusDays(1).toEpochDay())
         return rows
             .filter { row ->
                 val date = java.time.LocalDate.ofEpochDay(row.date)
                 RiskWindowFinder.logicalDate(date, row.slot, cfg) in days &&
-                    RiskWindowFinder.position(row.slot, cfg) in firstSlot until firstSlot + slotCount
+                    RiskWindowFinder.position(row.slot, cfg) in slots
             }
             .groupBy { it.packageName }
             .mapValues { (_, v) -> v.sumOf { it.seconds } }

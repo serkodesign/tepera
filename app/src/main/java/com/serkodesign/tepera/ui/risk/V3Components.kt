@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -185,7 +187,7 @@ private fun LegendItem(label: String, marker: @Composable () -> Unit) {
 
 /** `v3/RiskWindowCard`, стан «Без плану» (кнопка «Скласти план» з'явиться разом з конструктором плану, L5). */
 @Composable
-fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, modifier: Modifier = Modifier) {
+fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -> Unit, modifier: Modifier = Modifier) {
     val primary = TeperaPalette.textPrimary
     val secondary = TeperaPalette.textSecondary
     val recurrence = stringResource(
@@ -198,7 +200,13 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, modifier: Modif
     } else {
         stringResource(R.string.v3_card_meta_format, part, window.appLabels.joinToString(", "), window.avgMinutes)
     }
-    V3Card(modifier = modifier.semantics(mergeDescendants = true) {}) {
+    V3Card(modifier = modifier.alpha(if (window.isDisabled) 0.55f else 1f)) {
+        // Верхня частина відкриває «Чому це вікно?» (M6), нижня — план (L5) або кнопку «Скласти план».
+        Column(
+            Modifier.fillMaxWidth()
+                .clickable(onClickLabel = stringResource(R.string.v3_why_action), role = Role.Button, onClick = onOpenWhy),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = formatWindowTime(window.startMinute, window.endMinute),
@@ -213,7 +221,7 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, modifier: Modif
             }
         }
         Text(meta, color = secondary, fontSize = 12.sp, lineHeight = 16.sp)
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             window.dots.forEach { dot ->
                 Box(
                     Modifier.size(8.dp).clip(CircleShape).background(
@@ -225,10 +233,15 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, modifier: Modif
                     )
                 )
             }
+            Spacer(Modifier.weight(1f))
+            Icon(TeperaSymbols.Info, contentDescription = null, tint = secondary, modifier = Modifier.size(16.dp))
+        }
         }
         HorizontalDivider(color = TeperaPalette.borderDefault)
         val plan = window.plan
-        if (plan == null) {
+        if (window.isDisabled) {
+            Text(stringResource(R.string.v3_card_disabled), color = secondary, fontSize = 14.sp, lineHeight = 18.sp)
+        } else if (plan == null) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     stringResource(R.string.v3_card_no_plan), color = secondary, fontSize = 14.sp, lineHeight = 18.sp,

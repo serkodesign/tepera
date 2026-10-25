@@ -68,7 +68,8 @@ fun RiskHomeScreen(
     onOpenKnowledgeBase: () -> Unit,
     onOpenFeedPicker: () -> Unit,
     onOpenAccess: () -> Unit,
-    onOpenPlan: (String) -> Unit
+    onOpenPlan: (String) -> Unit,
+    onOpenWhy: (String) -> Unit
 ) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: RiskHomeViewModel = viewModel(factory = RiskHomeViewModel.Factory(app))
@@ -118,8 +119,8 @@ fun RiskHomeScreen(
                         R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                     )
                     observing -> ObservingContent(state)
-                    planned -> PlannedContent(state, occurrences, now, onOpenPlan)
-                    else -> FoundContent(state, onOpenPlan)
+                    planned -> PlannedContent(state, occurrences, now, onOpenPlan, onOpenWhy)
+                    else -> FoundContent(state, onOpenPlan, onOpenWhy)
                 }
             }
         }
@@ -202,10 +203,12 @@ private fun ObservingContent(state: RiskHomeState) {
 
 /** L4: пояснення, теплова карта з пунктирними вікнами й картки вікон; без вікон — спокійне «і це теж добре». */
 @Composable
-private fun FoundContent(state: RiskHomeState, onOpenPlan: (String) -> Unit) {
+private fun FoundContent(state: RiskHomeState, onOpenPlan: (String) -> Unit, onOpenWhy: (String) -> Unit) {
     val windows = state.windows
     Text(
-        text = if (windows.isEmpty()) {
+        text = if (windows.isEmpty() && state.disabledWindows.isNotEmpty()) {
+            stringResource(R.string.v3_windows_all_off)
+        } else if (windows.isEmpty()) {
             stringResource(R.string.v3_windows_empty)
         } else {
             stringResource(R.string.v3_windows_intro_format, windows.size)
@@ -223,7 +226,9 @@ private fun FoundContent(state: RiskHomeState, onOpenPlan: (String) -> Unit) {
         )
     }
     HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
-    windows.forEach { w -> RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }) }
+    (windows + state.disabledWindows).forEach { w ->
+        RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }, onOpenWhy = { onOpenWhy(w.id) })
+    }
 }
 
 /** Поточний час, що оновлюється раз на 30 с: відлік до наступної години на L6 не застигає. */
@@ -243,13 +248,16 @@ private fun PlannedContent(
     state: RiskHomeState,
     occurrences: List<NextWindow.Occurrence>,
     now: LocalDateTime,
-    onOpenPlan: (String) -> Unit
+    onOpenPlan: (String) -> Unit,
+    onOpenWhy: (String) -> Unit
 ) {
     val byId = state.windows.associateBy { it.id }
     val ordered = occurrences.mapNotNull { o -> byId[o.id]?.let { it to o } }
     val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
     ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now) }
-    (ordered.map { it.first } + rest).forEach { w -> RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }) }
+    (ordered.map { it.first } + rest + state.disabledWindows).forEach { w ->
+        RiskWindowCard(w, onOpenPlan = { onOpenPlan(w.id) }, onOpenWhy = { onOpenWhy(w.id) })
+    }
 }
 
 /** `next`: темна картка з відліком до години або «до кінця» для години, що триває; значки й підписи — токени hero. */

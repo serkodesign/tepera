@@ -61,3 +61,28 @@ class HeatGridAndHitDaysTest {
         assertTrue(hits.all { it.dayOfWeek.value <= 5 })
     }
 }
+
+class WindowSlotsConsistencyTest {
+    private val last = LocalDate.of(2026, 10, 20)
+    private val week = (6 downTo 0).map { last.minusDays(it.toLong()) }
+    private val covered = (week + last.plusDays(1)).toSet()
+
+    @Test
+    fun `rounded window reproduces the slot series it grew from`() {
+        // 10:15–11:15 = слоти 41..44 → вікно 10:10–11:20 після округлення назовні; рахунок слотів має повернутись до 41..44.
+        val slots = RiskWindowFinder.windowSlots(10 * 60 + 10, 11 * 60 + 20)
+        assertEquals(25..28, slots) // позиції від межі доби 04:00: слоти 41..44
+        assertEquals(41..44, slots.first + 16..slots.last + 16)
+    }
+
+    @Test
+    fun `hit days of a rounded window equal the days the finder counted`() {
+        val records = week.take(5).flatMap { d -> (41..44).map { SlotUsage(d, it, 420) } }
+        val window = RiskWindowFinder.find(records, covered, last).candidates.single()
+        assertEquals(10 * 60 + 10, window.startMinute)
+        assertEquals(11 * 60 + 20, window.endMinute)
+        val hits = RiskWindowFinder.hitDays(records, covered, last, window.startMinute, window.endMinute, window.dayType)
+        assertEquals(window.hitDays, hits)
+        assertEquals(5, hits.size)
+    }
+}

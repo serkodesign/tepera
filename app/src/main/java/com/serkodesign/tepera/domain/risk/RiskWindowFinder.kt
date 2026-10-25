@@ -155,6 +155,18 @@ object RiskWindowFinder {
     fun lengthMinutes(startMinute: Int, endMinute: Int): Int =
         ((endMinute - startMinute + 1440) % 1440).let { if (it == 0) 1440 else it }
 
+    /**
+     * Позиції слотів (у логічній добі), що належать вікну: початок округлюється вгору, кінець вниз до межі 15-хв слота.
+     * Так відтворюється серія слотів, з якої вікно виросло після округлення меж до 10 хв назовні; з іншим округленням
+     * (як з довжиною вгору) вікно 10:10–11:20 мало б на слот більше за серію 10:15–11:15 і давало інші дні повторення.
+     */
+    fun windowSlots(startMinute: Int, endMinute: Int, cfg: RiskConfig = RiskConfig()): IntRange {
+        val startPos = startPosition(startMinute, cfg)
+        val first = ceilDiv(startPos, SLOT_MINUTES)
+        val endExclusive = (startPos + lengthMinutes(startMinute, endMinute)) / SLOT_MINUTES
+        return first..minOf(maxOf(endExclusive - 1, first), SLOTS_PER_DAY - 1)
+    }
+
     /** Два вікна — те саме, якщо перетинаються щонайменше на половину коротшого з двох. */
     fun sameWindow(startA: Int, endA: Int, startB: Int, endB: Int, cfg: RiskConfig = RiskConfig()): Boolean {
         val s1 = startPosition(startA, cfg)
@@ -203,11 +215,11 @@ object RiskWindowFinder {
         for (r in records) grid[logicalDate(r.date, r.slot, cfg)]?.let { it[position(r.slot, cfg)] += r.seconds }
         grid.values.forEach { row -> for (i in row.indices) row[i] = minOf(row[i], SLOT_MINUTES * 60) }
         val maxGapSlots = cfg.mergeGapMinutes / SLOT_MINUTES
-        val first = startPosition(startMinute, cfg) / SLOT_MINUTES
-        val count = (lengthMinutes(startMinute, endMinute) + SLOT_MINUTES - 1) / SLOT_MINUTES
+        val slots = windowSlots(startMinute, endMinute, cfg)
+        val count = slots.count()
         return covered.filter { day ->
             val mask = mergedMask(grid.getValue(day), cfg, maxGapSlots)
-            (first until minOf(first + count, SLOTS_PER_DAY)).count { mask[it] } >= count * cfg.overlapShare
+            slots.count { mask[it] } >= count * cfg.overlapShare
         }
     }
 

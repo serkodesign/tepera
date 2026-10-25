@@ -735,4 +735,27 @@
     <string name="v3_dur_hours">%1$d год</string>
     <string name="v3_dur_hours_minutes">%1$d год %2$d хв</string>
     <string name="v3_dur_days_hours">%1$d дн %2$d год</string>
+
+    <!-- v3.0 MVP, Етап 3: M6 «Чому саме це вікно?» (Figma 912:1089). -->
+    <string name="v3_why_action">Чому це вікно</string>
+    <string name="v3_why_title_format">Чому %1$s?</string>
+    <string name="v3_why_line1_days">%1$d з %2$d днів між %3$s і %4$s ти був у стрічках у середньому %5$d хв.</string>
+    <string name="v3_why_line1_weekdays">%1$d з %2$d буднів між %3$s і %4$s ти був у стрічках у середньому %5$d хв.</string>
+    <string name="v3_why_line2_format">Найчастіше — %1$s.</string>
+    <string name="v3_why_app_format">%1$s (%2$d хв)</string>
+    <string name="v3_why_and">" і "</string>
+    <string name="v3_why_line3_format">У %1$s вікна не було — і це теж нормально.</string>
+    <string name="v3_why_footer">Це не оцінка, а лише повторюваність. Tepera рахує все на телефоні.</string>
+    <string name="v3_why_toggle">Вважати це вікно годиною ризику</string>
+    <string name="v3_card_disabled">Вимкнено — вікно не враховується</string>
+    <string name="v3_windows_all_off">Усі вікна вимкнено. Увімкнути можна в картці вікна.</string>
+    <string-array name="v3_weekdays_accusative">
+        <item>понеділок</item>
+        <item>вівторок</item>
+        <item>середу</item>
+        <item>четвер</item>
+        <item>п’ятницю</item>
+        <item>суботу</item>
+        <item>неділю</item>
+    </string-array>
 </resources>

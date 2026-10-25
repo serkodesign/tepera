@@ -10,10 +10,7 @@ object WindowMinutes {
 
     /** Чи слот [slot] календарної дати лежить усередині вікна [startMinute]..[endMinute] (за логічною добою). */
     fun slotInWindow(slot: Int, startMinute: Int, endMinute: Int, cfg: RiskConfig = RiskConfig()): Boolean {
-        val first = RiskWindowFinder.startPosition(startMinute, cfg) / RiskWindowFinder.SLOT_MINUTES
-        val count = (RiskWindowFinder.lengthMinutes(startMinute, endMinute) + RiskWindowFinder.SLOT_MINUTES - 1) /
-            RiskWindowFinder.SLOT_MINUTES
-        return RiskWindowFinder.position(slot, cfg) in first until first + count
+        return RiskWindowFinder.position(slot, cfg) in RiskWindowFinder.windowSlots(startMinute, endMinute, cfg)
     }
 
     /**
