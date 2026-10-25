@@ -9,9 +9,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.serkodesign.tepera.data.local.AppDatabase
 import com.serkodesign.tepera.data.local.MIGRATION_17_18
 import com.serkodesign.tepera.data.local.MIGRATION_18_19
+import com.serkodesign.tepera.data.local.MIGRATION_19_20
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,7 +64,7 @@ class MigrationTest {
 
     private fun openMigrated(): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_17_18, MIGRATION_18_19)
+            .addMigrations(MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
             .build()
 
     @Test
@@ -99,6 +101,27 @@ class MigrationTest {
         room.close()
     }
 
+
+    @Test
+    fun migrate19to20_addsEmptyShiftSuggestionColumns() {
+        createOldDatabase(19).apply {
+            execSQL(
+                "INSERT INTO risk_windows (id, startMinute, endMinute, dayType, recurrenceDays, observedDays, avgMinutes, " +
+                    "topApps, createdAt, updatedAt, isUserDisabled) VALUES ('w1', 1320, 1410, 'ALL', 6, 7, 36, '', 1, 1, 0)"
+            )
+            close()
+        }
+        val room = openMigrated()
+        room.openHelper.writableDatabase.query(
+            "SELECT startMinute, suggestedStartMinute, suggestedEndMinute FROM risk_windows WHERE id = 'w1'"
+        ).use {
+            it.moveToFirst()
+            assertEquals(1320, it.getInt(0))
+            assertTrue(it.isNull(1))
+            assertTrue(it.isNull(2))
+        }
+        room.close()
+    }
     @Test
     fun migrateFrom17ThroughAllV3Steps() {
         createOldDatabase(17).close()

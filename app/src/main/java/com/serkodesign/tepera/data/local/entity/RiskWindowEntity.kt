@@ -24,5 +24,8 @@ data class RiskWindowEntity(
     val topApps: String,
     val createdAt: Long,
     val updatedAt: Long,
-    val isUserDisabled: Boolean
+    val isUserDisabled: Boolean,
+    /** Пропозиція нових меж після зсуву два тижні поспіль; `null` — зсуву нема. Межі міняє лише людина ([RiskWindowRepository.applyShift]). */
+    val suggestedStartMinute: Int? = null,
+    val suggestedEndMinute: Int? = null
 )

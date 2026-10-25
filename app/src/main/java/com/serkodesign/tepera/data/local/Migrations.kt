@@ -309,3 +309,11 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
         )
     }
 }
+
+/** Версія 20 (v3.0 MVP, Етап 2): пропозиція зсуву меж вікна — два nullable-поля в risk_windows. */
+val MIGRATION_19_20 = object : Migration(19, 20) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE risk_windows ADD COLUMN suggestedStartMinute INTEGER DEFAULT NULL")
+        db.execSQL("ALTER TABLE risk_windows ADD COLUMN suggestedEndMinute INTEGER DEFAULT NULL")
+    }
+}

@@ -30,6 +30,22 @@ class RiskWindowRepository(
 
     suspend fun getPlan(windowId: String): PlanEntity? = withContext(Dispatchers.IO) { planDao.getForWindow(windowId) }
 
+    suspend fun getAll(): List<RiskWindowEntity> = withContext(Dispatchers.IO) { windowDao.getAll() }
+
+    suspend fun setShiftSuggestion(windowId: String, start: Int?, end: Int?) = withContext(Dispatchers.IO) {
+        windowDao.setShiftSuggestion(windowId, start, end)
+    }
+
+    /** Людина підтвердила зсув: межі вікна стають запропонованими. */
+    suspend fun applyShift(windowId: String) = withContext(Dispatchers.IO) {
+        windowDao.applyShiftSuggestion(windowId, System.currentTimeMillis())
+    }
+
+    /** Людина відмовилась: пропозиція зникає (з'явиться знову, лише якщо зсув триватиме й надалі). */
+    suspend fun dismissShift(windowId: String) = withContext(Dispatchers.IO) {
+        windowDao.setShiftSuggestion(windowId, null, null)
+    }
+
     suspend fun setUserDisabled(windowId: String, disabled: Boolean) = withContext(Dispatchers.IO) {
         windowDao.setUserDisabled(windowId, disabled, System.currentTimeMillis())
     }

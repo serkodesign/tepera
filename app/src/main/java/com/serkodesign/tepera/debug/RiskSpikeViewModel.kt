@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.data.repository.SlotRecompute
+import com.serkodesign.tepera.data.repository.ScanOutcome
 import com.serkodesign.tepera.domain.risk.RiskConfig
 import com.serkodesign.tepera.domain.risk.RiskResult
 import com.serkodesign.tepera.domain.risk.RiskWindowFinder
@@ -72,6 +73,21 @@ class RiskSpikeViewModel(private val app: TeperaApp) : ViewModel() {
                 SlotRecompute.Skipped -> "Пропущено: оберіть застосунки-стрічки"
                 SlotRecompute.Failed -> "Не вдалось прочитати події (або подій нема). Спробуйте ще раз"
                 is SlotRecompute.Done -> "Пораховано днів: ${r.daysComputed}"
+            }
+            _state.update { it.copy(busy = false, status = status) }
+            reload()
+        }
+    }
+
+    /** Той самий тижневий перерахунок, що робить RiskScanWorker: слоти, вікна в БД, пропозиції зсуву. */
+    fun runWeeklyScan() {
+        viewModelScope.launch {
+            _state.update { it.copy(busy = true, status = "Тижневий скан…") }
+            val status = when (val r = app.riskScanner.scan()) {
+                ScanOutcome.Skipped -> "Пропущено: оберіть стрічки та надайте доступ до статистики"
+                ScanOutcome.Failed -> "Не вдалось прочитати події. Спробуйте ще раз"
+                is ScanOutcome.NotEnoughData -> "Замало днів даних: ${r.observedDays}"
+                is ScanOutcome.Done -> "Збережено вікон: ${r.windows.size}, пропозицій зсуву: ${r.shiftSuggestions}"
             }
             _state.update { it.copy(busy = false, status = status) }
             reload()

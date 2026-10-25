@@ -64,6 +64,9 @@ fun RiskSpikeScreen(onBack: () -> Unit) {
                             TeperaButton(text = "Перерахувати", onClick = vm::recompute, enabled = !s.busy, modifier = Modifier.weight(1f))
                             TeperaButton(text = "Глибина історії", onClick = vm::checkHistoryDepth, type = TeperaButtonType.Secondary, modifier = Modifier.weight(1f))
                         }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TeperaButton(text = "Тижневий скан", onClick = vm::runWeeklyScan, enabled = !s.busy, type = TeperaButtonType.Secondary, modifier = Modifier.weight(1f))
+                        }
                         if (s.status.isNotEmpty()) Text(s.status, style = MaterialTheme.typography.bodySmall)
                         if (s.historyLine.isNotEmpty()) Text(s.historyLine, style = MaterialTheme.typography.bodySmall)
                     }

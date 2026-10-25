@@ -42,6 +42,7 @@ private val GATE_FREE_OPENS_DAY_KEY = longPreferencesKey("gate_free_opens_day")
 private val GATE_FREE_OPENS_USED_KEY = intPreferencesKey("gate_free_opens_used")
 private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
 private val FEED_PACKAGES_KEY = stringSetPreferencesKey("v3_feed_packages")
+private val RISK_SCAN_SNAPSHOTS_KEY = stringPreferencesKey("v3_risk_scan_snapshots")
 private val USAGE_SLOT_COVERED_DAYS_KEY = stringSetPreferencesKey("v3_usage_slot_covered_days")
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
@@ -391,6 +392,13 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setFeedPackages(packages: Set<String>) {
         context.settingsDataStore.edit { it[FEED_PACKAGES_KEY] = packages }
+    }
+
+    /** v3.0 MVP: JSON тижневих знімків пошуку вікон ([com.serkodesign.tepera.data.repository.RiskScanCodec]). */
+    suspend fun riskScanSnapshots(): String = context.settingsDataStore.data.first()[RISK_SCAN_SNAPSHOTS_KEY].orEmpty()
+
+    suspend fun setRiskScanSnapshots(raw: String) {
+        context.settingsDataStore.edit { it[RISK_SCAN_SNAPSHOTS_KEY] = raw }
     }
 
     /** v3.0 MVP: календарні дати (epoch-day), для яких слоти `usage_slots` реально пораховані (порожня доба ≠ немає даних). */

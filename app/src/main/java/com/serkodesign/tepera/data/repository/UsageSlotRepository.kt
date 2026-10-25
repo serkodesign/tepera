@@ -5,6 +5,9 @@ import android.content.Context
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.entity.UsageSlotEntity
+import com.serkodesign.tepera.domain.risk.RiskConfig
+import com.serkodesign.tepera.domain.risk.RiskResult
+import com.serkodesign.tepera.domain.risk.RiskWindowFinder
 import com.serkodesign.tepera.domain.risk.SlotUsage
 import com.serkodesign.tepera.domain.risk.SlotSplitter
 import com.serkodesign.tepera.util.foregroundSessionsByPackage
@@ -38,7 +41,9 @@ class UsageSlotRepository(
     private val dao: UsageSlotDao,
     private val feedApps: FeedAppRepository,
     private val settingsStore: SettingsStore
-) {
+) : SlotSource {
+    override suspend fun refresh(nowMillis: Long): SlotRecompute = recompute(nowMillis)
+
     private val zone: ZoneId get() = ZoneId.systemDefault()
 
     /** Перераховує слоти за останні [lookbackDays] днів (разом із сьогоднішнім частковим), де системна історія повна. */
@@ -124,6 +129,14 @@ class UsageSlotRepository(
 
     suspend fun coveredDays(): Set<LocalDate> =
         settingsStore.usageSlotCoveredDays.first().map(LocalDate::ofEpochDay).toSet()
+
+    /** Шукає години ризику за збереженими слотами вибраних стрічок; остання завершена логічна доба — вчорашня за межею [RiskConfig.dayCutoffHour]. */
+    override suspend fun findWindows(cfg: RiskConfig, nowMillis: Long): RiskResult {
+        val feed = feedApps.packages()
+        val lastLogicalDay = Instant.ofEpochMilli(nowMillis).atZone(zone).minusHours(cfg.dayCutoffHour.toLong()).toLocalDate().minusDays(1)
+        val records = readRecords(lastLogicalDay.minusDays(cfg.observationDays.toLong()), lastLogicalDay.plusDays(1), feed)
+        return RiskWindowFinder.find(records, coveredDays(), lastLogicalDay, cfg)
+    }
 
     private companion object {
         const val KEEP_DAYS = 60L

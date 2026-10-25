@@ -27,4 +27,14 @@ interface RiskWindowDao {
 
     @Query("UPDATE risk_windows SET isUserDisabled = :disabled, updatedAt = :now WHERE id = :id")
     suspend fun setUserDisabled(id: String, disabled: Boolean, now: Long)
+
+    @Query("UPDATE risk_windows SET suggestedStartMinute = :start, suggestedEndMinute = :end WHERE id = :id")
+    suspend fun setShiftSuggestion(id: String, start: Int?, end: Int?)
+
+    @Query(
+        "UPDATE risk_windows SET startMinute = suggestedStartMinute, endMinute = suggestedEndMinute, " +
+            "suggestedStartMinute = NULL, suggestedEndMinute = NULL, updatedAt = :now " +
+            "WHERE id = :id AND suggestedStartMinute IS NOT NULL AND suggestedEndMinute IS NOT NULL"
+    )
+    suspend fun applyShiftSuggestion(id: String, now: Long)
 }
