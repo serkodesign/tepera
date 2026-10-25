@@ -351,6 +351,9 @@ fun TeperaNavHost(
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+    // Етап 6: у режимі v3 (beta) лишається лише Home і Налаштування — навбар і міні-плеєр таймера приховані.
+    val v3ModeNav by settingsStore.v3ModeEnabled.collectAsState(initial = false)
+    val v3Active = BuildConfig.V3_MVP && v3ModeNav
 
     // Повторний тап по вже вибраній вкладці навбару (за прямим запитом користувача) прокручує
     // той екран наверх замість нічого не робити — кожен лічильник передається у відповідний
@@ -806,7 +809,7 @@ fun TeperaNavHost(
         )
     }
     // Міні-плеєр сесії (HANDOFF, розділ 7): над навбаром на вкладках, крім Home (там — активний рядок списку).
-    if (currentRoute in Routes.BOTTOM_NAV_ROUTES && currentRoute != Routes.HOME) {
+    if (!v3Active && currentRoute in Routes.BOTTOM_NAV_ROUTES && currentRoute != Routes.HOME) {
         val activeTimers by activeTimerStore.activeTimers.collectAsState(initial = emptyMap())
         val allCategories by categoryRepository.observeAllCategories().collectAsState(initial = emptyList())
         // Одночасно йде лише один таймер; якщо їх кілька (застарілий стан) — показуємо найновіший.
@@ -829,7 +832,7 @@ fun TeperaNavHost(
             )
         }
     }
-    if (currentRoute in Routes.BOTTOM_NAV_ROUTES) {
+    if (!v3Active && currentRoute in Routes.BOTTOM_NAV_ROUTES) {
         TeperaBottomNavBar(
             currentRoute = currentRoute,
             navController = navController,

@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -70,6 +71,9 @@ fun SettingsScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    // Етап 6: у режимі v3 (beta) старі категорії й кнопки віджета приховані; дані в базі лишаються.
+    val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = false)
+    val v3Active = BuildConfig.V3_MVP && v3Mode
 
     // FR-6.4: чесне попередження перед відкриттям браузера — тап не веде туди одразу.
     var showSuggestFeatureConfirm by remember { mutableStateOf(false) }
@@ -116,7 +120,7 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(TeperaSymbols.TrackChanges) },
                     trailing = { NavChevron() }
                 )
-                GlassRow(
+                if (!v3Active) GlassRow(
                     label = stringResource(R.string.settings_categories_action),
                     onClick = onOpenCategories,
                     leading = { TeperaIconCircle(TeperaSymbols.Category) },
@@ -148,7 +152,7 @@ fun SettingsScreen(
                     leading = { TeperaIconCircle(TeperaSymbols.Timer) },
                     trailing = { NavChevron() }
                 )
-                GlassRow(
+                if (!v3Active) GlassRow(
                     label = stringResource(R.string.settings_widget_action),
                     onClick = onOpenWidgetSettings,
                     leading = { TeperaIconCircle(TeperaSymbols.Widgets) },
