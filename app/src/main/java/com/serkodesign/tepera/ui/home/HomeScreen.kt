@@ -70,6 +70,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.cards.CardSource
 import com.serkodesign.tepera.data.cards.CardType
@@ -381,7 +382,9 @@ fun HomeScreen(
     val categoryOnboardingSeen by settingsStore.categoryOnboardingSeen.collectAsState(initial = true)
     val onlineEstimateOnboardingSeen by settingsStore.onlineEstimateOnboardingSeen.collectAsState(initial = true)
     val targetOnboardingSeen by settingsStore.targetOnboardingSeen.collectAsState(initial = true)
-    val gatesOnboardingSeen by settingsStore.gatesOnboardingSeen.collectAsState(initial = true)
+    // Етап 6 (v3 MVP): у beta ворота не пропонуються в онбордингу — крок вважається пройденим.
+    val gatesSeenStored by settingsStore.gatesOnboardingSeen.collectAsState(initial = true)
+    val gatesOnboardingSeen = BuildConfig.V3_MVP || gatesSeenStored
     val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
     val permissionStepPending = balanceState.hasUsageAccess == false && !onboardingSeen
     val onboardingPending = !welcomeSeen || !categoryOnboardingSeen || !onlineEstimateOnboardingSeen ||

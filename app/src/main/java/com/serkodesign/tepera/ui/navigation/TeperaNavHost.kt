@@ -859,7 +859,7 @@ private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRep
     if (!settingsStore.categoryOnboardingSeen.first()) return Routes.CATEGORY_ONBOARDING
     if (!settingsStore.onlineEstimateOnboardingSeen.first()) return Routes.ONLINE_ESTIMATE_ONBOARDING
     if (!settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
-    if (!settingsStore.gatesOnboardingSeen.first()) return Routes.GATES_ONBOARDING
+    if (!BuildConfig.V3_MVP && !settingsStore.gatesOnboardingSeen.first()) return Routes.GATES_ONBOARDING
     // Дозвіл — останній крок, і лише якщо доступу ще нема.
     if (!balanceRepository.hasUsageAccess() && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING
     return null
