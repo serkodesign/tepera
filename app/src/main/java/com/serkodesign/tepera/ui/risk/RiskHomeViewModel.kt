@@ -3,7 +3,12 @@ package com.serkodesign.tepera.ui.risk
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import android.content.Context
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.FoundWindowsNotifier
+import com.serkodesign.tepera.data.local.entity.isPausedAt
+import com.serkodesign.tepera.data.WeeklySummaryWorker
+import com.serkodesign.tepera.util.PlanOverlayStore
 import com.serkodesign.tepera.data.NudgeScheduler
 import com.serkodesign.tepera.data.local.entity.NudgeAction
 import com.serkodesign.tepera.data.repository.ScanOutcome
@@ -44,6 +49,8 @@ data class RiskWindowUi(
     val plan: Pair<String, String>? = null,
     /** Людина вимкнула вікно («Вважати це вікно годиною ризику» у M6): показується приглушеним у кінці списку. */
     val isDisabled: Boolean = false,
+    /** Вікно на паузі (повторюваність впала, напр. відпустка): не нагадує, повернеться само. */
+    val isPaused: Boolean = false,
     val isManual: Boolean = false,
     /** Середні хвилини у вікні за добу: тиждень спостереження / останні 7 завершених діб; `null` — нема з чого рахувати. */
     val baselineMinutes: Double? = null,
@@ -70,7 +77,11 @@ data class RiskHomeState(
     val grid: Array<IntArray> = emptyArray(),
     val windows: List<RiskWindowUi> = emptyList(),
     val disabledWindows: List<RiskWindowUi> = emptyList(),
-    val teaser: RiskTeaser? = null
+    val teaser: RiskTeaser? = null,
+    /** М'який вихід за 7 діб (beta): сесій «на 5 хв» розпочато / завершено вчасно; `null`, поки сесій не було. */
+    val softExit: Pair<Int, Int>? = null,
+    /** Показати м'яку підказку, що без сповіщень нагадувань не буде (не частіше разу на тиждень). */
+    val showNotifyHint: Boolean = false
 )
 
 /**
@@ -92,6 +103,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             if (hasAccess && feed.isNotEmpty() && now - lastScanMillis > SCAN_INTERVAL_MILLIS) {
                 val outcome = app.riskScanner.scan(cfg, now)
                 if (outcome !is ScanOutcome.Failed) lastScanMillis = now
+                if (outcome is ScanOutcome.Done && outcome.windows.any { !it.isManual }) FoundWindowsNotifier.markSeen(app)
             }
             // Розклад нагадувань залежить від вікон, планів і дозволу: оновлюємо щоразу, як людина відкрила Home.
             NudgeScheduler.reschedule(app, now)
@@ -137,6 +149,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     appLabels = if (w.isManual) manualApps else w.topApps.split(",").filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
                     plan = app.riskWindowRepository.getPlan(w.id)?.let { it.ifText to it.thenText },
                     isDisabled = w.isUserDisabled,
+                    isPaused = w.isPausedAt(now),
                     baselineMinutes = WindowMinutes.averagePerDay(baselineRecords, baselineDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     currentMinutes = WindowMinutes.averagePerDay(records, logicalDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     okThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.OK, weekFromMillis, now + 1),
@@ -152,8 +165,12 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             }
 
             val windows = allWindows.filter { !it.isDisabled }
+            val (seStarted, seOnTime, _) = PlanOverlayStore.softExitCounts(app)
+            val notifyHintDue = now - app.getSharedPreferences(HINT_PREFS, Context.MODE_PRIVATE).getLong(HINT_KEY, 0L) > HINT_INTERVAL_MILLIS
             _state.update {
                 it.copy(
+                    softExit = if (seStarted > 0) seStarted to seOnTime else null,
+                    showNotifyHint = windows.isNotEmpty() && !WeeklySummaryWorker.canNotify(app) && notifyHintDue,
                     loading = false, hasAccess = hasAccess, feedCount = feed.size, observedDays = observed,
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
                     grid = HeatGrid.minutesByHour(records, dates), windows = windows,
@@ -164,6 +181,12 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                 )
             }
         }
+    }
+
+    /** «Пізніше» на підказці про сповіщення: наступна — не раніше ніж за тиждень. */
+    fun dismissNotifyHint() {
+        app.getSharedPreferences(HINT_PREFS, Context.MODE_PRIVATE).edit().putLong(HINT_KEY, System.currentTimeMillis()).apply()
+        _state.update { it.copy(showNotifyHint = false) }
     }
 
     fun applyShift(windowId: String) {
@@ -209,6 +232,9 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
     private companion object {
         const val SCAN_INTERVAL_MILLIS = 15 * 60 * 1000L
         const val TEASER_MIN_DAYS = 3
+        const val HINT_PREFS = "v3_notify_hint"
+        const val HINT_KEY = "dismissed_at"
+        const val HINT_INTERVAL_MILLIS = 7 * 24 * 3_600_000L
 
         /** Спільне на процес: щоб повторне відкриття Home не перераховувало все щоразу. */
         @Volatile var lastScanMillis = 0L

@@ -8,6 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.local.entity.isPausedAt
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PlanOverlayRule
@@ -49,9 +50,11 @@ class GateAccessibilityService : AccessibilityService() {
     private var lastPackage: String? = null
     private var ignoreOwnUntilMillis = 0L
     private val lastSeenMillis = HashMap<String, Long>()
+    private lateinit var softExit: SoftExitController
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        softExit = SoftExitController(this)
         gateRepository = (application as TeperaApp).gateRepository
         launcherPackages = resolveLauncherPackages()
         ignoredPackages = buildIgnoredPackages()
@@ -67,6 +70,7 @@ class GateAccessibilityService : AccessibilityService() {
 
         if (pkg in launcherPackages) {
             // Робочий стіл: сесія закінчилась.
+            softExit.onLeftToLauncher()
             lastPackage = pkg
             lastSeenMillis.clear()
             return
@@ -78,6 +82,7 @@ class GateAccessibilityService : AccessibilityService() {
             return
         }
         if (pkg in ignoredPackages || pkg in inputMethodPackages()) return
+        if (BuildConfig.V3_MVP) softExit.onForeground(pkg)
         if (pkg == lastPackage) {
             lastSeenMillis[pkg] = now
             return
@@ -101,13 +106,13 @@ class GateAccessibilityService : AccessibilityService() {
 
     /** Етап 8: стрічка відкрита всередині ввімкненого вікна з планом — показуємо план «якщо — то» поверх неї. */
     private suspend fun showPlanIfInsideWindow(pkg: String) {
-        if (!PlanOverlayStore.isEnabled(this)) return
+        if (!PlanOverlayStore.isEnabled(this) || PlanOverlayStore.isSuppressedToday(this)) return
         val app = application as TeperaApp
         if (pkg !in app.feedAppRepository.packages()) return
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(
                 NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
-                enabled = !w.isUserDisabled,
+                enabled = !w.isUserDisabled && !w.isPausedAt(System.currentTimeMillis()),
                 hasPlan = app.riskWindowRepository.getPlan(w.id) != null
             )
         }
@@ -132,6 +137,7 @@ class GateAccessibilityService : AccessibilityService() {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        if (::softExit.isInitialized) softExit.destroy()
         scope.cancel()
         super.onDestroy()
     }

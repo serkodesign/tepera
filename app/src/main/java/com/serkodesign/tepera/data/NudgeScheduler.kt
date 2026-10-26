@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.local.entity.isPausedAt
 import com.serkodesign.tepera.domain.risk.NudgePlanner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,7 +39,7 @@ object NudgeScheduler {
         val candidates = app.riskWindowRepository.getAll().map { w ->
             NudgePlanner.Candidate(
                 w.id, w.startMinute, w.endMinute, w.dayType,
-                enabled = !w.isUserDisabled, hasPlan = app.riskWindowRepository.getPlan(w.id) != null
+                enabled = !w.isUserDisabled && !w.isPausedAt(nowMillis), hasPlan = app.riskWindowRepository.getPlan(w.id) != null
             )
         }
         val blocked = app.nudgeEventDao.getShownSince(nowMillis - 2 * DAY_MILLIS)

@@ -5,6 +5,7 @@ import com.serkodesign.tepera.data.local.dao.RiskWindowDao
 import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.entity.PlanEntity
 import com.serkodesign.tepera.data.local.entity.RiskWindowEntity
+import com.serkodesign.tepera.data.local.entity.WINDOW_PAUSE_MILLIS
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.RiskCandidate
 import com.serkodesign.tepera.domain.risk.RiskConfig
@@ -122,7 +123,8 @@ class RiskWindowRepository(
                         observedDays = c.observedDays,
                         avgMinutes = c.avgMinutes,
                         topApps = topApps,
-                        updatedAt = nowMillis
+                        updatedAt = nowMillis,
+                        pausedUntil = null
                     )
                 )
             } else {
@@ -142,6 +144,11 @@ class RiskWindowRepository(
                     )
                 )
             }
+        }
+        // Відоме вікно перестало повторюватись (відпустка тощо): не видаляємо й не нагадуємо 14 днів. Після терміну вікно
+        // повертається само; якщо воно й далі не повторюється, нову паузу не ставимо — людина вже могла повернутись до звичного.
+        for (w in existing) {
+            if (w.id !in used && !w.isUserDisabled && w.pausedUntil == null) windowDao.setPausedUntil(w.id, nowMillis + WINDOW_PAUSE_MILLIS)
         }
         windowDao.getAll()
     }

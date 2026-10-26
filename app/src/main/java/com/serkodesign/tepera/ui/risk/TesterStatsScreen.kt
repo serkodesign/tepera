@@ -53,7 +53,8 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
         stats = app.testerStatsRepository.build().copy(
             overlay = if (BuildConfig.GATE_ACCESSIBILITY) {
                 Triple(PlanOverlayStore.shownCount(context), PlanOverlayStore.leftCount(context), PlanOverlayStore.continuedCount(context))
-            } else null
+            } else null,
+            softExit = if (BuildConfig.GATE_ACCESSIBILITY) PlanOverlayStore.softExitCounts(context) else null
         )
     }
     val scope = rememberCoroutineScope()
@@ -87,7 +88,8 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         nudges = stringResource(R.string.v3_report_nudges),
                         nudgeDelay = stringResource(R.string.v3_report_nudge_delay),
                         overlay = stringResource(R.string.v3_report_overlay),
-                        note = stringResource(R.string.v3_report_note)
+                        note = stringResource(R.string.v3_report_note),
+                        softExit = stringResource(R.string.v3_report_soft_exit)
                     )
                     val text = TesterStatsRepository.format(s, reportText)
                     TeperaCard {

@@ -31,6 +31,9 @@ interface RiskWindowDao {
     @Query("UPDATE risk_windows SET isUserDisabled = :disabled, updatedAt = :now WHERE id = :id")
     suspend fun setUserDisabled(id: String, disabled: Boolean, now: Long)
 
+    @Query("UPDATE risk_windows SET pausedUntil = :until WHERE id = :id")
+    suspend fun setPausedUntil(id: String, until: Long?)
+
     @Query("UPDATE risk_windows SET suggestedStartMinute = :start, suggestedEndMinute = :end WHERE id = :id")
     suspend fun setShiftSuggestion(id: String, start: Int?, end: Int?)
 

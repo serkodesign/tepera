@@ -46,7 +46,9 @@ data class TesterStats(
     /** Середня затримка показу відносно запланованого, хвилини; `null`, доки нічого не показано. */
     val nudgeDelayMinutes: Double? = null,
     /** Етап 8: скільки разів показано план поверх стрічки і що людина обрала; `null` — функція не використовується (не beta). */
-    val overlay: Triple<Int, Int, Int>? = null
+    val overlay: Triple<Int, Int, Int>? = null,
+    /** М'який вихід за 7 діб: сесій розпочато / вчасно / «Ще 5»; `null` — не beta. */
+    val softExit: Triple<Int, Int, Int>? = null
 )
 
 /**
@@ -149,6 +151,7 @@ class TesterStatsRepository(
             appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk, s.nudgesNotToday))
             s.nudgeDelayMinutes?.let { appendLine(t.nudgeDelay.format(String.format(Locale.ROOT, "%.1f", it))) }
             s.overlay?.let { (shown, left, opened) -> appendLine(t.overlay.format(shown, left, opened)) }
+            s.softExit?.let { (started, onTime, extended) -> appendLine(t.softExit.format(started, onTime, extended)) }
             appendLine(t.note)
         }
     }
@@ -176,5 +179,6 @@ data class ReportText(
     val nudges: String,
     val nudgeDelay: String,
     val overlay: String,
-    val note: String
+    val note: String,
+    val softExit: String = ""
 )

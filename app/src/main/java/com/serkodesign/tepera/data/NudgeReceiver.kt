@@ -9,6 +9,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.data.local.entity.isPausedAt
 import com.serkodesign.tepera.data.local.entity.NudgeAction
 import com.serkodesign.tepera.data.local.entity.NudgeEventEntity
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +49,7 @@ class NudgeReceiver : BroadcastReceiver() {
         val now = System.currentTimeMillis()
         val window = app.riskWindowRepository.getWindow(windowId) ?: return
         val plan = app.riskWindowRepository.getPlan(windowId)
-        if (window.isUserDisabled || plan == null) return
+        if (window.isUserDisabled || window.isPausedAt(now) || plan == null) return
 
         val zone = ZoneId.systemDefault()
         val startOfToday = Instant.ofEpochMilli(now).atZone(zone).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
@@ -75,7 +76,7 @@ class NudgeReceiver : BroadcastReceiver() {
             val app = context.applicationContext as TeperaApp
             if (!WeeklySummaryWorker.canNotify(context)) return false
             val now = System.currentTimeMillis()
-            val candidates = app.riskWindowRepository.getAll().filter { !it.isUserDisabled }
+            val candidates = app.riskWindowRepository.getAll().filter { !it.isUserDisabled && !it.isPausedAt(now) }
                 .mapNotNull { w -> app.riskWindowRepository.getPlan(w.id)?.let { w to it } }
             val (window, plan) = candidates.firstOrNull() ?: return false
             val event = NudgeEventEntity(

@@ -29,5 +29,13 @@ data class RiskWindowEntity(
     val suggestedStartMinute: Int? = null,
     val suggestedEndMinute: Int? = null,
     /** Вікно, яке людина задала сама (не знайдене алгоритмом): скан його не оновлює й не дублює. */
-    val isManual: Boolean = false
+    val isManual: Boolean = false,
+    /** Вікно на паузі (відпустка, змінився графік): повторюваність впала нижче порога. До цього часу воно не нагадує й не показує план; `null` — не на паузі. */
+    val pausedUntil: Long? = null
 )
+
+/** Пауза вікна триває стільки, потім вікно повертається (і перевіряється наступним тижневим скануванням). */
+const val WINDOW_PAUSE_MILLIS = 14 * 24 * 3_600_000L
+
+/** Вікно зараз на паузі (відпустка): не нагадує й не показує план поверх стрічки. */
+fun RiskWindowEntity.isPausedAt(nowMillis: Long): Boolean = pausedUntil?.let { it > nowMillis } == true

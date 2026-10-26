@@ -21,6 +21,7 @@ class RiskScanWorker(context: Context, params: WorkerParameters) : CoroutineWork
     override suspend fun doWork(): Result {
         val outcome = (applicationContext as TeperaApp).riskScanner.scan()
         NudgeScheduler.reschedule(applicationContext)
+        FoundWindowsNotifier.maybeNotify(applicationContext, outcome)
         return when (outcome) {
             ScanOutcome.Failed -> Result.retry()
             else -> Result.success()

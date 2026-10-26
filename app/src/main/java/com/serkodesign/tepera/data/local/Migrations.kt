@@ -324,3 +324,10 @@ val MIGRATION_20_21 = object : Migration(20, 21) {
         db.execSQL("ALTER TABLE risk_windows ADD COLUMN isManual INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/** Версія 22 (v3.0 MVP): `risk_windows.pausedUntil` — пауза вікна, поки повторюваність не відновиться (відпустка). */
+val MIGRATION_21_22 = object : Migration(21, 22) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE risk_windows ADD COLUMN pausedUntil INTEGER DEFAULT NULL")
+    }
+}

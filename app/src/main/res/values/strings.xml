@@ -796,4 +796,20 @@
     <string name="v3_summary_shift">Вікно зсунулося — тепер приблизно %1$s. Оновити?</string>
     <string name="v3_summary_shift_apply">Оновити</string>
     <string name="v3_summary_shift_keep">Залишити</string>
+    <string name="v3_overlay_sheet_title">Твій план на цей час</string>
+    <string name="v3_overlay_sheet_sub">Tepera · твоя година %1$s</string>
+    <string name="v3_overlay_written">Ти склав цей план %1$s.</string>
+    <string name="v3_overlay_ok_yesterday">Вчора ти відмітив «Добре».</string>
+    <string name="v3_overlay_take_plan">Роблю за планом</string>
+    <string name="v3_overlay_open_five">Відкрити на 5 хв</string>
+    <string name="v3_summary_soft_exit">Сесій «на 5 хв»: %1$d, завершено вчасно: %2$d</string>
+    <string name="v3_report_soft_exit">М\u0027який вихід за 7 днів: сесій %1$d, вчасно %2$d, «Ще 5» %3$d</string>
+    <string name="v3_found_title">Я знайшов твою годину</string>
+    <string name="v3_found_body">Подивись, коли стрічки повторюються, і склади план — це хвилина.</string>
+    <string name="v3_notify_hint_title">Без сповіщень Tepera лише рахує</string>
+    <string name="v3_notify_hint_body">План не нагадає про себе перед твоєю годиною: нагадування приходять тільки через сповіщення. Можна ввімкнути в будь-який момент.</string>
+    <string name="v3_notify_hint_action">Увімкнути</string>
+    <string name="v3_notify_hint_later">Пізніше</string>
+
+    <string name="v3_card_paused">На паузі — стрічки тут зараз не повторюються (відпустка?). Нагадувань не буде; вікно повернеться само за кілька тижнів.</string>
 </resources>

@@ -246,6 +246,8 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -
         val plan = window.plan
         if (window.isDisabled) {
             Text(stringResource(R.string.v3_card_disabled), color = secondary, fontSize = 14.sp, lineHeight = 18.sp)
+        } else if (window.isPaused) {
+            Text(stringResource(R.string.v3_card_paused), color = secondary, fontSize = 14.sp, lineHeight = 18.sp)
         } else if (plan == null) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(

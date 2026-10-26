@@ -480,7 +480,8 @@ fun TeperaNavHost(
                         onOpenAccess = { navController.navigate(Routes.V3_ACCESS) },
                         onOpenPlan = { windowId -> navController.navigate(Routes.v3Plan(windowId)) },
                         onOpenWhy = { windowId -> navController.navigate(Routes.v3Why(windowId)) },
-                        onAddWindow = { navController.navigate(Routes.V3_WINDOW_NEW) }
+                        onAddWindow = { navController.navigate(Routes.V3_WINDOW_NEW) },
+                        onOpenNudgeInfo = { navController.navigate(Routes.NUDGE_INFO) }
                     )
                 } else
                 HomeScreen(

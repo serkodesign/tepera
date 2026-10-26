@@ -25,6 +25,7 @@ import kotlin.math.roundToInt
 @Composable
 internal fun WeeklySummaryBlock(
     windows: List<RiskWindowUi>,
+    softExit: Pair<Int, Int>?,
     onApplyShift: (String) -> Unit,
     onDismissShift: (String) -> Unit
 ) {
@@ -32,6 +33,13 @@ internal fun WeeklySummaryBlock(
     V3Card {
         Text(stringResource(R.string.v3_summary_title), color = TeperaPalette.textPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
         Text(stringResource(R.string.v3_summary_intro), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+        // Третя цифра з макета «М'який вихід»: скільки сесій «на 5 хв» завершено вчасно (до +2 хв). Без оцінок.
+        softExit?.let { (started, onTime) ->
+            Text(
+                stringResource(R.string.v3_summary_soft_exit, started, onTime),
+                color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp
+            )
+        }
         windows.forEach { w ->
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(formatWindowTime(w.startMinute, w.endMinute), color = TeperaPalette.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)

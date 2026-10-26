@@ -71,7 +71,8 @@ fun RiskHomeScreen(
     onOpenAccess: () -> Unit,
     onOpenPlan: (String) -> Unit,
     onOpenWhy: (String) -> Unit,
-    onAddWindow: () -> Unit
+    onAddWindow: () -> Unit,
+    onOpenNudgeInfo: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: RiskHomeViewModel = viewModel(factory = RiskHomeViewModel.Factory(app))
@@ -130,8 +131,19 @@ fun RiskHomeScreen(
                     planned -> PlannedContent(state, occurrences, now, onOpenPlan, onOpenWhy)
                     else -> FoundContent(state, onOpenPlan, onOpenWhy)
                 }
+                if (!state.loading && state.hasAccess && state.feedCount > 0 && state.showNotifyHint) {
+                    // Сценарій 7: без сповіщень база майже нічого не дає — пояснюємо м'яко й не частіше разу на тиждень.
+                    V3Card(radius = 24.dp, padding = PaddingValues(16.dp), spacing = 12.dp) {
+                        Text(stringResource(R.string.v3_notify_hint_title), color = TeperaPalette.textPrimary, fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.v3_notify_hint_body), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 18.sp)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TeperaButton(text = stringResource(R.string.v3_notify_hint_action), onClick = onOpenNudgeInfo)
+                            TeperaButton(text = stringResource(R.string.v3_notify_hint_later), onClick = vm::dismissNotifyHint, type = TeperaButtonType.Secondary)
+                        }
+                    }
+                }
                 if (!state.loading && state.hasAccess && state.feedCount > 0 && !observing) {
-                    WeeklySummaryBlock(state.windows, vm::applyShift, vm::dismissShift)
+                    WeeklySummaryBlock(state.windows, state.softExit, vm::applyShift, vm::dismissShift)
                 }
                 if (!state.loading && state.hasAccess && state.feedCount > 0) {
                     TeperaButton(
