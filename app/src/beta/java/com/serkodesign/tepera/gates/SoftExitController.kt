@@ -17,6 +17,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.domain.risk.SoftExitTiming
 import com.serkodesign.tepera.util.PlanOverlayStore
 import kotlin.math.roundToInt
 
@@ -57,12 +58,12 @@ class SoftExitController(private val service: AccessibilityService) {
     private val hideToast = Runnable { removeView(toastView).also { toastView = null } }
 
     /** Застосунок [packageName] вийшов на передній план: починає сесію, якщо її щойно замовив лист плану, інакше — перевіряє вихід. */
-    fun onForeground(packageName: String) {
+    fun onForeground(packageName: String, countsAsLeaving: Boolean) {
         val current = session
         if (current == null) {
             val pending = PlanOverlayStore.takePendingSoftExit(service, packageName) ?: return
             start(pending)
-        } else if (current.packageName != packageName) {
+        } else if (current.packageName != packageName && countsAsLeaving) {
             finish(onTime = isOnTime(current))
         }
     }
@@ -90,7 +91,7 @@ class SoftExitController(private val service: AccessibilityService) {
         handler.postDelayed(onDeadline, (s.deadline - System.currentTimeMillis()).coerceAtLeast(0L))
     }
 
-    private fun isOnTime(s: Session) = System.currentTimeMillis() <= s.deadline + ON_TIME_GRACE_MILLIS
+    private fun isOnTime(s: Session) = SoftExitTiming.isOnTime(s.deadline, System.currentTimeMillis())
 
     private fun minutesSinceStart(s: Session) = ((System.currentTimeMillis() - s.startedAt) / 60_000.0).roundToInt().coerceAtLeast(1)
 
@@ -327,7 +328,7 @@ class SoftExitController(private val service: AccessibilityService) {
     private companion object {
         const val SESSION_MINUTES = 5
         const val SESSION_MILLIS = SESSION_MINUTES * 60_000L
-        const val ON_TIME_GRACE_MILLIS = 2 * 60_000L
+        const val ON_TIME_GRACE_MILLIS = SoftExitTiming.GRACE_MILLIS
         const val FADE_MILLIS = 3_000L
         const val TOAST_MILLIS = 2_500L
     }

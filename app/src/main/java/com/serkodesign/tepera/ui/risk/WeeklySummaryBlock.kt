@@ -49,7 +49,7 @@ internal fun WeeklySummaryBlock(
                 )
                 if (w.plan != null) {
                     Text(
-                        stringResource(R.string.v3_summary_ok, w.okThisWeek),
+                        stringResource(R.string.v3_summary_ok, w.okThisWeek, w.notTodayThisWeek),
                         color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp
                     )
                 }

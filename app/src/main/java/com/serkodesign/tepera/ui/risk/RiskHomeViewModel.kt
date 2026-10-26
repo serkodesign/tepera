@@ -57,6 +57,7 @@ data class RiskWindowUi(
     val currentMinutes: Double? = null,
     /** «Добре» на нагадуваннях цього вікна за останні 7 діб (самозвіт). */
     val okThisWeek: Int = 0,
+    val notTodayThisWeek: Int = 0,
     /** Запропонований зсув вікна (етап 2, п. 8) або `null`. */
     val shiftStart: Int? = null,
     val shiftEnd: Int? = null
@@ -153,6 +154,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     baselineMinutes = WindowMinutes.averagePerDay(baselineRecords, baselineDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     currentMinutes = WindowMinutes.averagePerDay(records, logicalDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     okThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.OK, weekFromMillis, now + 1),
+                    notTodayThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.NOT_TODAY, weekFromMillis, now + 1),
                     shiftStart = w.suggestedStartMinute, shiftEnd = w.suggestedEndMinute,
                     dots = logicalDays.map { day ->
                         when {

@@ -82,7 +82,8 @@ class GateAccessibilityService : AccessibilityService() {
             return
         }
         if (pkg in ignoredPackages || pkg in inputMethodPackages()) return
-        if (BuildConfig.V3_MVP) softExit.onForeground(pkg)
+        // Лише справжні застосунки (з іконкою запуску): службові вікна виробника виходом зі стрічки не вважаємо.
+        if (BuildConfig.V3_MVP) softExit.onForeground(pkg, countsAsLeaving = packageManager.getLaunchIntentForPackage(pkg) != null)
         if (pkg == lastPackage) {
             lastSeenMillis[pkg] = now
             return
@@ -158,7 +159,9 @@ class GateAccessibilityService : AccessibilityService() {
         "com.android.packageinstaller",
         "com.google.android.packageinstaller",
         "com.android.intentresolver",
-        "com.google.android.gms"
+        "com.google.android.gms",
+        // Samsung: панель жестів/навігації — службове вікно, не застосунок.
+        "com.samsung.android.sidegesturepad"
     )
 
     private companion object {

@@ -42,8 +42,7 @@ object PlanOverlayStore {
     fun recordLeft(context: Context) = bump(context, KEY_LEFT)
 
     /** Логічна доба (межа 04:00, як у пошуку годин): вечір 23:30–00:30 — одна доба. */
-    private fun logicalDay(nowMillis: Long): Long =
-        java.time.Instant.ofEpochMilli(nowMillis).atZone(java.time.ZoneId.systemDefault()).minusHours(4).toLocalDate().toEpochDay()
+    private fun logicalDay(nowMillis: Long): Long = com.serkodesign.tepera.domain.risk.LogicalDay.epochDay(nowMillis)
 
     /** «Не сьогодні» (на нагадуванні чи на листі плану): до кінця логічної доби план поверх стрічки не показується. */
     fun suppressToday(context: Context, nowMillis: Long = System.currentTimeMillis()) =
