@@ -19,11 +19,12 @@ class TesterStatsFormatTest {
         noWindows = "Вікон нема",
         window = "Вікно %1\$s–%2\$s (%3\$s): повторюваність %4\$d/%5\$d, ≈%6\$d хв; " +
             "хвилини у вікні за добу: спостереження %7\$s → поточний тиждень %8\$s",
-        tagWeekdays = "будні", tagDisabled = "вимкнене", tagPlan = "є план", tagNoPlan = "без плану",
+        tagManual = "вручну", tagWeekdays = "будні", tagDisabled = "вимкнене", tagPlan = "є план", tagNoPlan = "без плану",
         tagShift = "запропоновано зсув",
         minutes = "%1\$s хв",
         nudges = "Нагадування: заплановано %1\$d, показано %2\$d, «Добре» %3\$d, «Не сьогодні» %4\$d",
         nudgeDelay = "Середня затримка: %1\$s хв",
+        overlay = "План поверх стрічки: показано %1\$d, «Вийти» %2\$d, «Відкрити» %3\$d",
         note = "Примітка: порівняння орієнтовне."
     )
 
@@ -62,6 +63,21 @@ class TesterStatsFormatTest {
         val text = TesterStatsRepository.format(stats(listOf(window(null, null, DayType.WEEKDAYS))), uk)
         assertTrue(text.contains("спостереження — → поточний тиждень —"))
         assertTrue(text.contains("будні"))
+    }
+
+    @Test
+    fun `manual windows are tagged and algorithm windows are not`() {
+        val manual = TesterStatsRepository.format(stats(listOf(window(1.0, 2.0).copy(isManual = true))), uk)
+        assertTrue(manual.contains("(вручну, є план)"))
+        val found = TesterStatsRepository.format(stats(listOf(window(1.0, 2.0))), uk)
+        assertFalse(found.contains("вручну"))
+    }
+
+    @Test
+    fun `overlay counters appear only when present`() {
+        assertFalse(TesterStatsRepository.format(stats(emptyList()), uk).contains("поверх стрічки"))
+        val text = TesterStatsRepository.format(stats(emptyList()).copy(overlay = Triple(5, 3, 2)), uk)
+        assertTrue(text.contains("показано 5, «Вийти» 3, «Відкрити» 2"))
     }
 
     @Test

@@ -644,6 +644,15 @@
     <string name="v3_report_range">%1$s — %2$s</string>
     <string name="v3_report_no_windows">Вікон нема</string>
     <string name="v3_report_window">Вікно %1$s–%2$s (%3$s): повторюваність %4$d/%5$d, ≈%6$d хв; хвилини у вікні за добу: спостереження %7$s → поточний тиждень %8$s</string>
+    <string name="v3_overlay_label">Ти відкрив %1$s</string>
+    <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
+    <string name="v3_overlay_toggle_label">План поверх стрічки</string>
+    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить показує ваш план. Потрібен дозвіл «Спеціальні можливості»; не частіше разу на 20 хв для однієї години.</string>
+    <string name="v3_tester_nudge_now">Нагадати зараз</string>
+    <string name="v3_tester_nudge_sent">Нагадування надіслано</string>
+    <string name="v3_tester_nudge_none">Нема вікна з планом, або сповіщення вимкнені</string>
+    <string name="v3_report_overlay">План поверх стрічки: показано %1$d, «Вийти» %2$d, «Відкрити» %3$d</string>
+    <string name="v3_report_tag_manual">вручну</string>
     <string name="v3_report_tag_weekdays">будні</string>
     <string name="v3_report_tag_disabled">вимкнене</string>
     <string name="v3_report_tag_plan">є план</string>

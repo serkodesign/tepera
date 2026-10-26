@@ -65,7 +65,28 @@ class NudgeReceiver : BroadcastReceiver() {
         if (allowed) show(context, event, window.startMinute, plan.ifText, plan.thenText)
     }
 
-    private fun show(context: Context, event: NudgeEventEntity, startMinute: Int, ifText: String, thenText: String) {
+    companion object {
+        /**
+         * Для перевірки на собі (екран тестувальників): показує нагадування негайно для найближчого ввімкненого вікна
+         * з планом, минаючи правила «одне на добу» й «за 10 хв до». Подія пишеться в `nudge_events` як справжня, тож
+         * кнопки «Добре»/«Не сьогодні» теж працюють. Повертає `false`, якщо нема вікна з планом або сповіщення вимкнені.
+         */
+        suspend fun fireNow(context: Context): Boolean {
+            val app = context.applicationContext as TeperaApp
+            if (!WeeklySummaryWorker.canNotify(context)) return false
+            val now = System.currentTimeMillis()
+            val candidates = app.riskWindowRepository.getAll().filter { !it.isUserDisabled }
+                .mapNotNull { w -> app.riskWindowRepository.getPlan(w.id)?.let { w to it } }
+            val (window, plan) = candidates.firstOrNull() ?: return false
+            val event = NudgeEventEntity(
+                id = UUID.randomUUID().toString(), windowId = window.id, scheduledAt = now, shownAt = now, action = NudgeAction.NONE
+            )
+            app.nudgeEventDao.insert(event)
+            show(context, event, window.startMinute, plan.ifText, plan.thenText)
+            return true
+        }
+
+        private fun show(context: Context, event: NudgeEventEntity, startMinute: Int, ifText: String, thenText: String) {
         val open = PendingIntent.getActivity(
             context, 4410,
             Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
@@ -87,6 +108,7 @@ class NudgeReceiver : BroadcastReceiver() {
             NotificationManagerCompat.from(context).notify(NUDGE_NOTIFICATION_ID, builder.build())
         } catch (e: SecurityException) {
             // Дозвіл відкликали між перевіркою й відправкою — нічого не ламаємо.
+        }
         }
     }
 }

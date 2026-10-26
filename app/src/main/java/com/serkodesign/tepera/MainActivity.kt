@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
      * можна відкрити воротами кілька разів поспіль; без унікального ключа повторний тап з тим
      * самим packageName не перезапустив би LaunchedEffect у TeperaNavHost.
      */
-    data class GateRequest(val packageName: String, val nonce: Long)
+    data class GateRequest(val packageName: String, val nonce: Long, val planWindowId: String? = null)
 
     private var pendingGateRequest by mutableStateOf<GateRequest?>(null)
 
@@ -114,6 +114,7 @@ class MainActivity : ComponentActivity() {
                         pendingCategoryId = categoryId,
                         pendingGateTargetPackage = pendingGateRequest?.packageName,
                         pendingGateRequestNonce = pendingGateRequest?.nonce,
+                        pendingPlanWindowId = pendingGateRequest?.planWindowId,
                         pendingWeeklySummaryNonce = weeklySummaryNonce,
                         pendingShortcutScreen = pendingShortcutRequest?.screen,
                         pendingShortcutNonce = pendingShortcutRequest?.nonce
@@ -189,5 +190,5 @@ class MainActivity : ComponentActivity() {
 
     private fun gateRequestFromIntent(intent: Intent): GateRequest? =
         intent.getStringExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA)
-            ?.let { GateRequest(it, System.nanoTime()) }
+            ?.let { GateRequest(it, System.nanoTime(), intent.getStringExtra(GateRepository.PLAN_WINDOW_EXTRA)) }
 }

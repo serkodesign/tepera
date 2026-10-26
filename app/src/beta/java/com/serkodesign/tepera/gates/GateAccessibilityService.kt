@@ -5,9 +5,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
+import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.repository.GateRepository
+import com.serkodesign.tepera.domain.risk.NextWindow
+import com.serkodesign.tepera.domain.risk.PlanOverlayRule
+import com.serkodesign.tepera.util.PlanOverlayStore
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -79,20 +86,47 @@ class GateAccessibilityService : AccessibilityService() {
         val previousSeen = lastSeenMillis[pkg]
         lastPackage = pkg
         lastSeenMillis[pkg] = now
-        if (pkg !in gatedPackages) return
         if (previousSeen != null && now - previousSeen <= SAME_SESSION_MILLIS) return
 
         scope.launch {
-            if (gateRepository.shouldSkipPause(pkg)) return@launch
-            gateRepository.markPrechecked(pkg)
-            ignoreOwnUntilMillis = System.currentTimeMillis() + OWN_WINDOW_MILLIS
-            startActivity(
-                Intent(this@GateAccessibilityService, MainActivity::class.java)
-                    .setAction(Intent.ACTION_VIEW)
-                    .putExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA, pkg)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            // Ворота (затримка) важливіші за план: якщо пауза воріт показується, план цього разу не потрібен.
+            if (pkg in gatedPackages && !gateRepository.shouldSkipPause(pkg)) {
+                gateRepository.markPrechecked(pkg)
+                launchTepera(pkg, planWindowId = null)
+                return@launch
+            }
+            if (BuildConfig.V3_MVP) showPlanIfInsideWindow(pkg)
+        }
+    }
+
+    /** Етап 8: стрічка відкрита всередині ввімкненого вікна з планом — показуємо план «якщо — то» поверх неї. */
+    private suspend fun showPlanIfInsideWindow(pkg: String) {
+        if (!PlanOverlayStore.isEnabled(this)) return
+        val app = application as TeperaApp
+        if (pkg !in app.feedAppRepository.packages()) return
+        val candidates = app.riskWindowRepository.getAll().map { w ->
+            PlanOverlayRule.Candidate(
+                NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
+                enabled = !w.isUserDisabled,
+                hasPlan = app.riskWindowRepository.getPlan(w.id) != null
             )
         }
+        val nowMillis = System.currentTimeMillis()
+        val now = LocalDateTime.ofInstant(Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault())
+        val windowId = PlanOverlayRule.pick(candidates, now, nowMillis, { PlanOverlayStore.lastShownMillis(this, it) }) ?: return
+        PlanOverlayStore.recordShown(this, windowId, nowMillis)
+        launchTepera(pkg, planWindowId = windowId)
+    }
+
+    private fun launchTepera(pkg: String, planWindowId: String?) {
+        ignoreOwnUntilMillis = System.currentTimeMillis() + OWN_WINDOW_MILLIS
+        startActivity(
+            Intent(this, MainActivity::class.java)
+                .setAction(Intent.ACTION_VIEW)
+                .putExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA, pkg)
+                .apply { planWindowId?.let { putExtra(GateRepository.PLAN_WINDOW_EXTRA, it) } }
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        )
     }
 
     override fun onInterrupt() = Unit

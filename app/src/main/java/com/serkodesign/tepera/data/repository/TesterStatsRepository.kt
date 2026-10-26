@@ -25,6 +25,8 @@ data class TesterWindowStat(
     val isUserDisabled: Boolean,
     val hasPlan: Boolean,
     val shiftSuggested: Boolean,
+    /** Вікно задала людина вручну (а не знайшов алгоритм). */
+    val isManual: Boolean = false,
     /** Середні хвилини у вікні за добу в тиждень спостереження / в останні 7 завершених діб; `null` — нема з чого рахувати. */
     val baselineMinutes: Double?,
     val currentMinutes: Double?
@@ -42,7 +44,9 @@ data class TesterStats(
     val nudgesOk: Int,
     val nudgesNotToday: Int,
     /** Середня затримка показу відносно запланованого, хвилини; `null`, доки нічого не показано. */
-    val nudgeDelayMinutes: Double? = null
+    val nudgeDelayMinutes: Double? = null,
+    /** Етап 8: скільки разів показано план поверх стрічки і що людина обрала; `null` — функція не використовується (не beta). */
+    val overlay: Triple<Int, Int, Int>? = null
 )
 
 /**
@@ -81,6 +85,7 @@ class TesterStatsRepository(
                     w.isUserDisabled,
                     hasPlan = planDao.getForWindow(w.id) != null,
                     shiftSuggested = w.suggestedStartMinute != null,
+                    isManual = w.isManual,
                     baselineMinutes = WindowMinutes.averagePerDay(records, baselineDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     currentMinutes = WindowMinutes.averagePerDay(records, currentDays, w.startMinute, w.endMinute, w.dayType, cfg)
                 )
@@ -127,6 +132,7 @@ class TesterStatsRepository(
             } else {
                 s.windows.forEach { w ->
                     val tags = listOfNotNull(
+                        if (w.isManual) t.tagManual else null,
                         if (w.dayType == DayType.WEEKDAYS) t.tagWeekdays else null,
                         if (w.isUserDisabled) t.tagDisabled else null,
                         if (w.hasPlan) t.tagPlan else t.tagNoPlan,
@@ -142,6 +148,7 @@ class TesterStatsRepository(
             }
             appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk, s.nudgesNotToday))
             s.nudgeDelayMinutes?.let { appendLine(t.nudgeDelay.format(String.format(Locale.ROOT, "%.1f", it))) }
+            s.overlay?.let { (shown, left, opened) -> appendLine(t.overlay.format(shown, left, opened)) }
             appendLine(t.note)
         }
     }
@@ -159,6 +166,7 @@ data class ReportText(
     val range: String,
     val noWindows: String,
     val window: String,
+    val tagManual: String,
     val tagWeekdays: String,
     val tagDisabled: String,
     val tagPlan: String,
@@ -167,5 +175,6 @@ data class ReportText(
     val minutes: String,
     val nudges: String,
     val nudgeDelay: String,
+    val overlay: String,
     val note: String
 )

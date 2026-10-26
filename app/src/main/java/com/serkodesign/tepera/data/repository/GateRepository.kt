@@ -326,6 +326,9 @@ class GateRepository(
 
     companion object {
         const val GATE_TARGET_PACKAGE_EXTRA = "gate_target_package"
+
+        /** Етап 8: разом із [GATE_TARGET_PACKAGE_EXTRA] — показати не паузу воріт, а план цього вікна ризику. */
+        const val PLAN_WINDOW_EXTRA = "plan_window_id"
         private const val PROCEED_DEBOUNCE_MILLIS = 30_000L
         private const val PRECHECKED_TTL_MILLIS = 10_000L
     }

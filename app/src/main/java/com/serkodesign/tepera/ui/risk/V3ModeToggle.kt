@@ -7,8 +7,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.serkodesign.tepera.util.PlanOverlayStore
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
@@ -41,5 +46,22 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
             }
         )
         TeperaHint(text = stringResource(R.string.v3_mode_hint), modifier = Modifier.padding(horizontal = 12.dp))
+        val context = LocalContext.current
+        var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
+        GlassRow(
+            label = stringResource(R.string.v3_overlay_toggle_label),
+            leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
+            trailing = {
+                Switch(
+                    checked = overlayOn,
+                    onCheckedChange = { on ->
+                        overlayOn = on
+                        PlanOverlayStore.setEnabled(context, on)
+                    },
+                    colors = teperaSwitchColors()
+                )
+            }
+        )
+        TeperaHint(text = stringResource(R.string.v3_overlay_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
     }
 }

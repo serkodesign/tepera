@@ -15,7 +15,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.serkodesign.tepera.BuildConfig
+import com.serkodesign.tepera.data.NudgeReceiver
+import com.serkodesign.tepera.util.PlanOverlayStore
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -44,7 +49,14 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
     val clipboard = LocalClipboardManager.current
     var stats by remember { mutableStateOf<TesterStats?>(null) }
 
-    LaunchedEffect(Unit) { stats = app.testerStatsRepository.build() }
+    LaunchedEffect(Unit) {
+        stats = app.testerStatsRepository.build().copy(
+            overlay = if (BuildConfig.GATE_ACCESSIBILITY) {
+                Triple(PlanOverlayStore.shownCount(context), PlanOverlayStore.leftCount(context), PlanOverlayStore.continuedCount(context))
+            } else null
+        )
+    }
+    val scope = rememberCoroutineScope()
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
@@ -65,7 +77,8 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         range = stringResource(R.string.v3_report_range),
                         noWindows = stringResource(R.string.v3_report_no_windows),
                         window = stringResource(R.string.v3_report_window),
-                        tagWeekdays = stringResource(R.string.v3_report_tag_weekdays),
+                        tagManual = stringResource(R.string.v3_report_tag_manual),
+                        tagWeekdays =stringResource(R.string.v3_report_tag_weekdays),
                         tagDisabled = stringResource(R.string.v3_report_tag_disabled),
                         tagPlan = stringResource(R.string.v3_report_tag_plan),
                         tagNoPlan = stringResource(R.string.v3_report_tag_no_plan),
@@ -73,6 +86,7 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         minutes = stringResource(R.string.v3_report_minutes),
                         nudges = stringResource(R.string.v3_report_nudges),
                         nudgeDelay = stringResource(R.string.v3_report_nudge_delay),
+                        overlay = stringResource(R.string.v3_report_overlay),
                         note = stringResource(R.string.v3_report_note)
                     )
                     val text = TesterStatsRepository.format(s, reportText)
@@ -88,6 +102,18 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         }
                     )
                 }
+                val nudgeSent = stringResource(R.string.v3_tester_nudge_sent)
+                val nudgeNone = stringResource(R.string.v3_tester_nudge_none)
+                TeperaButton(
+                    text = stringResource(R.string.v3_tester_nudge_now),
+                    onClick = {
+                        scope.launch {
+                            val sent = NudgeReceiver.fireNow(context)
+                            Toast.makeText(context, if (sent) nudgeSent else nudgeNone, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    type = TeperaButtonType.Secondary
+                )
                 TeperaButton(
                     text = stringResource(R.string.v3_tester_restart),
                     onClick = onRestartOnboarding,
