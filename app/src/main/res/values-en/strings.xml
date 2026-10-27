@@ -33,6 +33,13 @@
     <!-- Diary (new navbar tab, node 2146:320 — replaced the inactive "Coming soon" placeholder;
          "History" moved here from the Stats screen at the user's request) -->
     <string name="diary_nav_action">Overview</string>
+    <string name="calendar_screen_title">Calendar</string>
+    <string name="calendar_mode_month">Month</string>
+    <string name="calendar_mode_week">Week</string>
+    <string name="calendar_prev">Previous period</string>
+    <string name="calendar_next">Next period</string>
+    <string name="calendar_today">Today</string>
+    <string name="calendar_day_description">%1$s, activities: %2$d</string>
     <string name="diary_screen_title">Diary</string>
     <string name="diary_add_entry_action">Add activity</string>
 

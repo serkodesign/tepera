@@ -130,7 +130,7 @@ fun HomeScreen(
     cardHistoryRepository: CardHistoryRepository,
     gateEventRepository: GateEventRepository,
     onOpenSettings: () -> Unit,
-    onOpenKnowledgeBase: () -> Unit,
+    onOpenCalendar: () -> Unit,
     onOpenStats: () -> Unit,
     onAddEntryForCategory: (String) -> Unit,
     onOpenCategoryHistory: (String) -> Unit,
@@ -473,7 +473,7 @@ fun HomeScreen(
             HomeHero(
                 state = heroState,
                 onOpenSettings = onOpenSettings,
-                onOpenKnowledgeBase = onOpenKnowledgeBase,
+                onOpenCalendar = onOpenCalendar,
                 onGrantAccess = { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) },
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                 teaser = { SummaryTeaserSlot(slot = teaserSlot, onOpen = { summarySheetTab = it }) }

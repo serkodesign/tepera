@@ -155,6 +155,7 @@ private object Routes {
     const val GATES = "gates"
     const val WIDGET_SETTINGS = "widget_settings"
     const val KNOWLEDGE_BASE = "knowledge_base"
+    const val CALENDAR = "calendar"
     const val KNOWLEDGE_SCROLLING = "knowledge_scrolling"
     const val CATEGORY_HISTORY = "category_history/{categoryId}"
 
@@ -179,7 +180,7 @@ private object Routes {
         SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
-        WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
+        WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -443,7 +444,7 @@ fun TeperaNavHost(
                     cardHistoryRepository = cardHistoryRepository,
                     gateEventRepository = gateEventRepository,
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
+                    onOpenCalendar = { navController.navigate(Routes.CALENDAR) },
                     // "Відкрити в статистиці" у шторці підсумків — той самий перехід, що вкладка "Статистика" в навбарі.
                     onOpenStats = {
                         navController.navigate(Routes.STATS) {
@@ -540,6 +541,14 @@ fun TeperaNavHost(
                     categoryId = entry.arguments?.getString("categoryId").orEmpty(),
                     onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
                     onAddEntry = { navController.navigate(Routes.addEntry(entry.arguments?.getString("categoryId").orEmpty())) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.CALENDAR) {
+                com.serkodesign.tepera.ui.calendar.CalendarScreen(
+                    activityRepository = activityRepository,
+                    categoryRepository = categoryRepository,
+                    onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
                     onBack = { navController.popBackStack() }
                 )
             }

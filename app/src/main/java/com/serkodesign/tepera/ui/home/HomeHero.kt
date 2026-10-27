@@ -107,7 +107,7 @@ import kotlin.math.sin
 fun HomeHero(
     state: HeroUiState,
     onOpenSettings: () -> Unit,
-    onOpenKnowledgeBase: () -> Unit,
+    onOpenCalendar: () -> Unit,
     onGrantAccess: () -> Unit,
     modifier: Modifier = Modifier,
     teaser: (@Composable () -> Unit)? = null
@@ -123,7 +123,7 @@ fun HomeHero(
     Column(modifier = modifier.fillMaxWidth()) {
     HeroHeader(
         onOpenSettings = onOpenSettings,
-        onOpenKnowledgeBase = onOpenKnowledgeBase,
+        onOpenCalendar = onOpenCalendar,
         modifier = Modifier.padding(start = 16.dp, end = 8.dp, bottom = 16.dp)
     )
     Column(
@@ -267,7 +267,7 @@ private fun HeroText(
 }
 
 @Composable
-private fun HeroHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Unit, modifier: Modifier = Modifier) {
+private fun HeroHeader(onOpenSettings: () -> Unit, onOpenCalendar: () -> Unit, modifier: Modifier = Modifier) {
     // Заголовок лежить на фоні екрана, не на картці: у темній темі — білий текст і кнопки hero/track (Figma 721:23828),
     // у світлій — темно-зелений текст (hero/on-light) і ледь помітна темна заливка кнопок.
     val dark = com.serkodesign.tepera.ui.theme.LocalTeperaColors.current.isDark
@@ -289,9 +289,9 @@ private fun HeroHeader(onOpenSettings: () -> Unit, onOpenKnowledgeBase: () -> Un
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TeperaIconButton(
-                icon = TeperaIcons.Book,
-                contentDescription = stringResource(R.string.settings_knowledge_base_action),
-                onClick = onOpenKnowledgeBase,
+                icon = TeperaIcons.Calendar,
+                contentDescription = stringResource(R.string.calendar_screen_title),
+                onClick = onOpenCalendar,
                 shape = CircleShape,
                 containerColor = buttonBg,
                 contentColor = onPage
