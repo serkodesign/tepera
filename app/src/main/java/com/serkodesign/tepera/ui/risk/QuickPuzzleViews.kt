@@ -50,13 +50,13 @@ private val CellFill = Color.White.copy(alpha = 0.10f)
  * «Гаразд, іду» завжди видно й воно головна кнопка — вийти простіше, ніж розв'язувати. Помилка тихо дає нову задачу того ж типу.
  */
 @Composable
-fun PuzzleStep(total: Int, onAllSolved: () -> Unit, onLeave: () -> Unit) {
+fun PuzzleStep(total: Int, level: QuickPuzzles.Level, onAllSolved: () -> Unit, onLeave: () -> Unit) {
     val context = LocalContext.current
     val kinds = remember { QuickPuzzles.pickKinds(total, PlanOverlayStore.lastPuzzleKind(context)) }
     LaunchedEffect(Unit) { kinds.lastOrNull()?.let { PlanOverlayStore.setLastPuzzleKind(context, it) } }
     var index by remember { mutableIntStateOf(0) }
     var attempt by remember { mutableIntStateOf(0) }
-    val puzzle = remember(index, attempt) { QuickPuzzles.generate(kinds[index]) }
+    val puzzle = remember(index, attempt) { QuickPuzzles.generate(kinds[index], level = level) }
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
         Text(

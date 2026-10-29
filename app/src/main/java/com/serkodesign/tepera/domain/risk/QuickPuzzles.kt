@@ -45,37 +45,61 @@ object QuickPuzzles {
     fun pickKinds(count: Int, last: Kind?, random: Random = Random): List<Kind> =
         Kind.entries.filter { it != last }.shuffled(random).take(count)
 
-    fun generate(kind: Kind, random: Random = Random): Puzzle = when (kind) {
-        Kind.ARITHMETIC -> arithmetic(random)
-        Kind.SCHULTE -> Schulte((1..9).shuffled(random), descending = random.nextBoolean())
-        Kind.DIGIT_MEMORY -> DigitMemory(List(4) { random.nextInt(10) })
-        Kind.SEQUENCE -> sequence(random)
-        Kind.SUDOKU -> sudoku(random)
-        Kind.INTENTION -> Intention
+    /** Скільки хвилин без повторного входу в ті самі ворота, щоб задачки стали легшими («тримається осторонь»). */
+    const val EASY_AFTER_AWAY_MINUTES = 10
+
+    /** Складність: [NORMAL] — звичайна; [EASY] — коли людина певний час не поверталась до стрічки. */
+    enum class Level { NORMAL, EASY }
+
+    /** [minutesSincePreviousReentry] — скільки минуло від попереднього показу для цих воріт (`null` — це перший показ). */
+    fun levelFor(minutesSincePreviousReentry: Long?): Level =
+        if (minutesSincePreviousReentry != null && minutesSincePreviousReentry >= EASY_AFTER_AWAY_MINUTES) Level.EASY else Level.NORMAL
+
+    fun generate(kind: Kind, random: Random = Random, level: Level = Level.NORMAL): Puzzle {
+        val easy = level == Level.EASY
+        return when (kind) {
+            Kind.ARITHMETIC -> arithmetic(random, easy)
+            // Легший варіант Шульте — лише за зростанням (за спаданням складніше).
+            Kind.SCHULTE -> Schulte((1..9).shuffled(random), descending = !easy && random.nextBoolean())
+            Kind.DIGIT_MEMORY -> DigitMemory(List(if (easy) 3 else 4) { random.nextInt(10) })
+            Kind.SEQUENCE -> sequence(random, easy)
+            Kind.SUDOKU -> sudoku(random, target = if (easy) SUDOKU_BLANKS_EASY else SUDOKU_BLANKS)
+            Kind.INTENTION -> Intention
+        }
     }
 
-    private fun arithmetic(r: Random): Arithmetic {
-        val (text, answer) = when (r.nextInt(4)) {
-            0 -> r.nextInt(12, 60).let { a -> r.nextInt(11, 40).let { b -> "$a + $b" to a + b } }
-            1 -> r.nextInt(40, 99).let { a -> r.nextInt(11, a - 9).let { b -> "$a − $b" to a - b } }
-            2 -> r.nextInt(3, 10).let { a -> r.nextInt(6, 13).let { b -> "$a × $b" to a * b } }
-            else -> r.nextInt(3, 10).let { a -> r.nextInt(4, 10).let { b -> r.nextInt(2, 20).let { c -> "$a × $b + $c" to a * b + c } } }
+    private fun arithmetic(r: Random, easy: Boolean): Arithmetic {
+        val (text, answer) = if (easy) {
+            // Один крок з невеликими числами.
+            when (r.nextInt(3)) {
+                0 -> r.nextInt(5, 31).let { a -> r.nextInt(3, 21).let { b -> "$a + $b" to a + b } }
+                1 -> r.nextInt(20, 61).let { a -> r.nextInt(3, a - 9).let { b -> "$a − $b" to a - b } }
+                else -> r.nextInt(2, 7).let { a -> r.nextInt(2, 7).let { b -> "$a × $b" to a * b } }
+            }
+        } else {
+            when (r.nextInt(4)) {
+                0 -> r.nextInt(12, 60).let { a -> r.nextInt(11, 40).let { b -> "$a + $b" to a + b } }
+                1 -> r.nextInt(40, 99).let { a -> r.nextInt(11, a - 9).let { b -> "$a − $b" to a - b } }
+                2 -> r.nextInt(3, 10).let { a -> r.nextInt(6, 13).let { b -> "$a × $b" to a * b } }
+                else -> r.nextInt(3, 10).let { a -> r.nextInt(4, 10).let { b -> r.nextInt(2, 20).let { c -> "$a × $b + $c" to a * b + c } } }
+            }
         }
         return Arithmetic(text, options(answer, listOf(1, 2, 10), r), answer)
     }
 
-    private fun sequence(r: Random): Sequence {
+    private fun sequence(r: Random, easy: Boolean): Sequence {
         val terms: List<Int>
         val step: Int
-        when (r.nextInt(3)) {
+        // Легший варіант — без «ростучих різниць».
+        when (r.nextInt(if (easy) 2 else 3)) {
             0 -> { // арифметична прогресія
-                step = r.nextInt(2, 10)
-                val start = r.nextInt(1, 21)
+                step = if (easy) r.nextInt(1, 6) else r.nextInt(2, 10)
+                val start = if (easy) r.nextInt(1, 11) else r.nextInt(1, 21)
                 terms = List(5) { start + it * step }
             }
             1 -> { // подвоєння
                 step = 2
-                val start = r.nextInt(1, 6)
+                val start = if (easy) r.nextInt(1, 4) else r.nextInt(1, 6)
                 terms = List(5) { start shl it }
             }
             else -> { // різниці ростуть: +d, +d+1, +d+2…
@@ -98,8 +122,9 @@ object QuickPuzzles {
     // ---------- Судоку 4×4 ----------
 
     private const val SUDOKU_BLANKS = 5
+    private const val SUDOKU_BLANKS_EASY = 3
 
-    private fun sudoku(r: Random): Sudoku {
+    private fun sudoku(r: Random, target: Int): Sudoku {
         val perm = (1..4).shuffled(r)
         val rows = listOf(0, 1).shuffled(r).flatMap { b -> listOf(0, 1).shuffled(r).map { b * 2 + it } }
         val cols = listOf(0, 1).shuffled(r).flatMap { b -> listOf(0, 1).shuffled(r).map { b * 2 + it } }
@@ -111,7 +136,7 @@ object QuickPuzzles {
         val cells = solution.toMutableList()
         var blanks = 0
         for (i in (0 until 16).shuffled(r)) {
-            if (blanks == SUDOKU_BLANKS) break
+            if (blanks == target) break
             val keep = cells[i]
             cells[i] = 0
             if (sudokuSolutions(cells, limit = 2) == 1) blanks++ else cells[i] = keep

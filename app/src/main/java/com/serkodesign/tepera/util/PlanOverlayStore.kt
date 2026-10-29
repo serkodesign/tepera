@@ -28,6 +28,7 @@ object PlanOverlayStore {
     private const val KEY_SE_EXTENDED = "se_extended"
     private const val KEY_PUZZLES_ENABLED = "puzzles_enabled"
     private const val KEY_REENTRY_PREFIX = "reentry_"
+    private const val KEY_REENTRY_AT_PREFIX = "reentry_t_"
     private const val KEY_LAST_PUZZLE = "last_puzzle"
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -54,13 +55,18 @@ object PlanOverlayStore {
     fun setPuzzlesEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_PUZZLES_ENABLED, enabled).apply()
 
     /** Це вже який за рахунком показ екрана «я за тобою слідкую» для цих воріт у межах поточної обіцянки (повертає новий номер). */
-    fun recordReentry(context: Context, packageName: String): Int {
+    fun recordReentry(context: Context, packageName: String, nowMillis: Long = System.currentTimeMillis()): Reentry {
         val p = prefs(context)
         val key = KEY_REENTRY_PREFIX + packageName
+        val atKey = KEY_REENTRY_AT_PREFIX + packageName
         val next = p.getInt(key, 0) + 1
-        p.edit().putInt(key, next).apply()
-        return next
+        val previousAt = p.getLong(atKey, 0L).takeIf { it > 0L }
+        p.edit().putInt(key, next).putLong(atKey, nowMillis).apply()
+        return Reentry(next, previousAt?.let { (nowMillis - it) / 60_000L })
     }
+
+    /** [number] — за рахунком показ для цих воріт у межах обіцянки; [minutesSincePrevious] — скільки минуло від попереднього (`null` — перший). */
+    data class Reentry(val number: Int, val minutesSincePrevious: Long?)
 
     fun lastPuzzleKind(context: Context): QuickPuzzles.Kind? =
         prefs(context).getString(KEY_LAST_PUZZLE, null)?.let { name -> QuickPuzzles.Kind.entries.firstOrNull { it.name == name } }

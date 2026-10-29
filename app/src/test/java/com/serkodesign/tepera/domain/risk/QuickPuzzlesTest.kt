@@ -73,6 +73,39 @@ class QuickPuzzlesTest {
         }
     }
 
+    @Test
+    fun levelIsEasyOnlyAfterStayingAway() {
+        assertEquals(QuickPuzzles.Level.NORMAL, QuickPuzzles.levelFor(null))
+        assertEquals(QuickPuzzles.Level.NORMAL, QuickPuzzles.levelFor(0))
+        assertEquals(QuickPuzzles.Level.NORMAL, QuickPuzzles.levelFor(QuickPuzzles.EASY_AFTER_AWAY_MINUTES - 1L))
+        assertEquals(QuickPuzzles.Level.EASY, QuickPuzzles.levelFor(QuickPuzzles.EASY_AFTER_AWAY_MINUTES.toLong()))
+        assertEquals(QuickPuzzles.Level.EASY, QuickPuzzles.levelFor(120))
+    }
+
+    @Test
+    fun easyPuzzlesAreValidAndSimpler() {
+        val easy = QuickPuzzles.Level.EASY
+        repeat(300) { seed ->
+            val arithmetic = QuickPuzzles.generate(QuickPuzzles.Kind.ARITHMETIC, Random(seed), easy) as QuickPuzzles.Arithmetic
+            assertValidOptions(arithmetic.options, arithmetic.answer)
+            assertEquals(evaluate(arithmetic.expression), arithmetic.answer)
+            assertTrue(arithmetic.answer < 70)
+
+            val sequence = QuickPuzzles.generate(QuickPuzzles.Kind.SEQUENCE, Random(seed), easy) as QuickPuzzles.Sequence
+            assertValidOptions(sequence.options, sequence.answer)
+
+            val schulte = QuickPuzzles.generate(QuickPuzzles.Kind.SCHULTE, Random(seed), easy) as QuickPuzzles.Schulte
+            assertEquals(false, schulte.descending)
+
+            val memory = QuickPuzzles.generate(QuickPuzzles.Kind.DIGIT_MEMORY, Random(seed), easy) as QuickPuzzles.DigitMemory
+            assertEquals(3, memory.digits.size)
+
+            val sudoku = QuickPuzzles.generate(QuickPuzzles.Kind.SUDOKU, Random(seed), easy) as QuickPuzzles.Sudoku
+            assertEquals(1, QuickPuzzles.sudokuSolutions(sudoku.cells, limit = 2))
+            assertEquals(3, sudoku.cells.count { it == 0 })
+        }
+    }
+
     private fun assertValidOptions(options: List<Int>, answer: Int) {
         assertEquals(4, options.size)
         assertEquals(4, options.toSet().size)

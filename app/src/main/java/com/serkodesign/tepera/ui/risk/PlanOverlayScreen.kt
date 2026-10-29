@@ -58,7 +58,8 @@ private data class OverlayContent(
     /** Людина щойно сказала «Так, роблю це» і знову відкрила стрічку: замість нової ідеї — «я бачу тебе». */
     val watching: Boolean = false,
     /** Скільки задачок треба розв'язати, перш ніж «Відкрити на 5 хв» спрацює (0 — жодної). Лише для екрана «я за тобою слідкую». */
-    val puzzles: Int = 0
+    val puzzles: Int = 0,
+    val puzzleLevel: QuickPuzzles.Level = QuickPuzzles.Level.NORMAL
 )
 
 private val DURATIONS_MINUTES = listOf(15, 30, 60)
@@ -102,11 +103,13 @@ fun PlanOverlayScreen(
         content = if (window == null || suggestion == null) null else {
             shown = setOf(suggestion.id)
             // Рахуємо показ екрана «я за тобою слідкую» для цих воріт; з 3-го разу «Відкрити» вимагає задачки.
-            val reentry = if (committed != null) PlanOverlayStore.recordReentry(context, packageName) else 0
+            val reentry = if (committed != null) PlanOverlayStore.recordReentry(context, packageName) else null
             OverlayContent(
                 resolveLabel(context.packageManager, packageName), window.startMinute, window.endMinute, suggestion,
                 watching = committed != null,
-                puzzles = QuickPuzzles.puzzlesRequired(reentry, PlanOverlayStore.arePuzzlesEnabled(context))
+                puzzles = QuickPuzzles.puzzlesRequired(reentry?.number ?: 0, PlanOverlayStore.arePuzzlesEnabled(context)),
+                // Людина певний час не поверталась до стрічки — задачки легші.
+                puzzleLevel = QuickPuzzles.levelFor(reentry?.minutesSincePrevious)
             )
         }
         // Вікно зникло між показом сервісу й відкриттям екрана — нічого показувати; пускаємо людину в застосунок.
@@ -210,6 +213,7 @@ fun PlanOverlayScreen(
                 if (c.watching && solving) {
                     PuzzleStep(
                         total = c.puzzles,
+                        level = c.puzzleLevel,
                         onAllSolved = ::openForFiveMinutes,
                         onLeave = { onDecided(); leave() }
                     )

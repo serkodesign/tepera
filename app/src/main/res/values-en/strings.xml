@@ -802,7 +802,7 @@
     <string name="v3_watch_5_body">You picked it yourself: \"%1$s\". Let\'s keep your word — the feed can wait.</string>
     <string name="v3_watch_leave">Fine, I\'m going</string>
     <string name="v3_puzzle_toggle_label">Puzzles on re-entry</string>
-    <string name="v3_puzzle_toggle_hint">From the third re-entry to the feed after \"Yes, I\'ll do it\", Tepera asks for a short puzzle (up to 30 seconds) before opening. You can always leave instead.</string>
+    <string name="v3_puzzle_toggle_hint">From the third re-entry to the feed after \"Yes, I\'ll do it\", Tepera asks for a short puzzle (up to 30 seconds) before opening. If you stayed away from the feed for a while, the puzzles are easier. You can always leave instead.</string>
     <string name="v3_puzzle_title">A moment of attention</string>
     <string name="v3_puzzle_hint">Solve it to open the feed. Or leave — that\'s a choice too.</string>
     <string name="v3_puzzle_hint_steps">Puzzle %1$d of %2$d. Or leave — that\'s a choice too.</string>
