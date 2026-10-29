@@ -646,7 +646,7 @@
     <string name="v3_overlay_label">Ти відкрив %1$s</string>
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
-    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; не частіше разу на 10 хв для однієї години.</string>
+    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; при кожному новому відкритті стрічки.</string>
     <string name="v3_tester_nudge_now">Нагадати зараз</string>
     <string name="v3_tester_nudge_sent">Нагадування надіслано</string>
     <string name="v3_tester_nudge_none">Нема вікна з планом, або сповіщення вимкнені</string>
@@ -802,6 +802,9 @@
     <string name="v3_overlay_ok_yesterday">Вчора ти відмітив «Добре».</string>
     <string name="v3_overlay_take_plan">Роблю за планом</string>
     <string name="v3_overlay_open_five">Відкрити на 5 хв</string>
+    <string name="v3_watch_title">Я за тобою слідкую</string>
+    <string name="v3_watch_body">Ти ж щойно обрав: «%1$s». І вже тут? Ми ж домовлялись.</string>
+    <string name="v3_watch_leave">Гаразд, іду</string>
     <string name="v3_summary_soft_exit">Сесій «на 5 хв»: %1$d, завершено вчасно: %2$d</string>
     <string name="v3_report_soft_exit">М\u0027який вихід за 7 днів: сесій %1$d, вчасно %2$d, «Ще 5» %3$d</string>
     <string name="v3_found_title">Я знайшов твою годину</string>

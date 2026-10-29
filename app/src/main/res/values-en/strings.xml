@@ -629,7 +629,7 @@
     <string name="v3_overlay_label">You opened %1$s</string>
     <string name="v3_overlay_title">It\'s your hour now, until %1$s</string>
     <string name="v3_overlay_toggle_label">Idea over the feed</string>
-    <string name="v3_overlay_toggle_hint">When you open a chosen feed inside your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission; at most once per 10 min for one hour.</string>
+    <string name="v3_overlay_toggle_hint">When you open a chosen feed inside your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission; every time you open the feed anew.</string>
     <string name="v3_tester_nudge_now">Remind me now</string>
     <string name="v3_tester_nudge_sent">Reminder sent</string>
     <string name="v3_tester_nudge_none">No window with a plan, or notifications are off</string>
@@ -785,6 +785,9 @@
     <string name="v3_overlay_ok_yesterday">Yesterday you tapped \"OK\".</string>
     <string name="v3_overlay_take_plan">Do my plan</string>
     <string name="v3_overlay_open_five">Open for 5 min</string>
+    <string name="v3_watch_title">I\'m watching you</string>
+    <string name="v3_watch_body">You just picked: \"%1$s\". And you\'re already here? We had a deal.</string>
+    <string name="v3_watch_leave">Fine, I\'m going</string>
     <string name="v3_summary_soft_exit">\"5-minute\" sessions: %1$d, finished on time: %2$d</string>
     <string name="v3_report_soft_exit">Soft exit, 7 days: sessions %1$d, on time %2$d, \"5 more\" %3$d</string>
     <string name="v3_found_title">I found your hour</string>

@@ -63,11 +63,9 @@ class PlanOverlayActivity : ComponentActivity() {
         }
     }
 
-    /** Людина пішла з листа (Home, «Недавні», блокування): нічого не лишаємо, наступний показ відкриє свіжий. */
+    /** Людина пішла з листа (Home, «Недавні», блокування): нічого не лишаємо, наступне відкриття стрічки покаже свіжий. */
     override fun onStop() {
         super.onStop()
-        // Без вибору («назад», Home, блокування) показ не рахується: стрічка, відкрита знову, отримає підказку без очікування дебаунсу.
-        if (!decided) windowId?.let { PlanOverlayStore.clearShown(this, it) }
         if (!isFinishing) finish()
     }
 }

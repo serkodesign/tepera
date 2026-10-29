@@ -8,12 +8,8 @@ import java.time.LocalDateTime
 class PlanOverlayRuleTest {
     private val evening = NextWindow.Spec("w1", 22 * 60 + 40, 24 * 60 + 10, DayType.ALL)
 
-    private fun pick(
-        now: LocalDateTime,
-        enabled: Boolean = true,
-        lastShown: Long = 0L,
-        nowMillis: Long = 10_000_000_000L
-    ) = PlanOverlayRule.pick(listOf(PlanOverlayRule.Candidate(evening, enabled)), now, nowMillis, { lastShown })
+    private fun pick(now: LocalDateTime, enabled: Boolean = true) =
+        PlanOverlayRule.pick(listOf(PlanOverlayRule.Candidate(evening, enabled)), now)
 
     @Test
     fun `inside an enabled window shows`() {
@@ -33,13 +29,5 @@ class PlanOverlayRuleTest {
     @Test
     fun `disabled window does not show`() {
         assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), enabled = false))
-    }
-
-    @Test
-    fun `recently shown idea is not repeated until debounce passes`() {
-        val now = 10_000_000_000L
-        assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 8 * 60_000L, nowMillis = now))
-        assertEquals("w1", pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 12 * 60_000L, nowMillis = now))
-        assertEquals("w1", pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 25 * 60_000L, nowMillis = now))
     }
 }

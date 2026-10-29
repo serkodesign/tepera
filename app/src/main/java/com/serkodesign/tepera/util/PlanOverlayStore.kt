@@ -16,7 +16,8 @@ object PlanOverlayStore {
     private const val KEY_LEFT = "left"
     private const val KEY_ACCEPTED = "accepted"
     private const val KEY_DECLINED = "declined"
-    private const val KEY_LAST_PREFIX = "last_"
+    private const val KEY_COMMIT_IDEA = "commit_idea"
+    private const val KEY_COMMIT_UNTIL = "commit_until"
     private const val KEY_PENDING_PACKAGE = "pending_pkg"
     private const val KEY_PENDING_LABEL = "pending_label"
     private const val KEY_PENDING_THEN = "pending_then"
@@ -32,15 +33,20 @@ object PlanOverlayStore {
 
     fun setEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
 
-    fun lastShownMillis(context: Context, windowId: String): Long = prefs(context).getLong(KEY_LAST_PREFIX + windowId, 0L)
+    fun recordShown(context: Context) = bump(context, KEY_SHOWN)
 
-    fun recordShown(context: Context, windowId: String, nowMillis: Long = System.currentTimeMillis()) {
-        val p = prefs(context)
-        p.edit().putLong(KEY_LAST_PREFIX + windowId, nowMillis).putInt(KEY_SHOWN, p.getInt(KEY_SHOWN, 0) + 1).apply()
+    /** «Так, роблю це»: до [untilMillis] повторне відкриття стрічки показує не нову ідею, а «я бачу тебе». */
+    fun setCommitment(context: Context, ideaId: ActivitySuggestions.Id, untilMillis: Long) {
+        prefs(context).edit().putString(KEY_COMMIT_IDEA, ideaId.name).putLong(KEY_COMMIT_UNTIL, untilMillis).apply()
     }
 
-    /** Лист закрили без вибору («назад», Home): показ не рахуємо, щоб стрічка, відкрита знову, не лишилась без підказки на весь дебаунс. */
-    fun clearShown(context: Context, windowId: String) = prefs(context).edit().remove(KEY_LAST_PREFIX + windowId).apply()
+    /** Ідея, яку людина щойно пообіцяла зробити, поки обіцянка діє; інакше `null`. */
+    fun activeCommitment(context: Context, nowMillis: Long = System.currentTimeMillis()): ActivitySuggestions.Id? {
+        val p = prefs(context)
+        if (nowMillis >= p.getLong(KEY_COMMIT_UNTIL, 0L)) return null
+        val name = p.getString(KEY_COMMIT_IDEA, null) ?: return null
+        return ActivitySuggestions.Id.entries.firstOrNull { it.name == name }
+    }
 
     /** Підказка, від якої людина відмовилась («Інша ідея», «Відкрити на 5 хв», «Не сьогодні»): кілька днів її не повторюємо. */
     fun recordDeclined(context: Context, id: ActivitySuggestions.Id, nowMillis: Long = System.currentTimeMillis()) {

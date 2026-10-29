@@ -129,19 +129,13 @@ class GateAccessibilityService : AccessibilityService() {
         }
         val nowMillis = System.currentTimeMillis()
         val now = LocalDateTime.ofInstant(Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault())
-        val windowId = PlanOverlayRule.pick(candidates, now, nowMillis, { PlanOverlayStore.lastShownMillis(this, it) })
+        val windowId = PlanOverlayRule.pick(candidates, now)
         if (windowId == null) {
-            val inside = PlanOverlayRule.inside(candidates, now)
-            if (inside.isEmpty()) {
-                log("$pkg: зараз нема активного вікна (вікон: ${candidates.size}, ввімкнених і не на паузі: ${candidates.count { it.enabled }})")
-            } else {
-                val left = inside.minOf { PlanOverlayRule.DEBOUNCE_MILLIS - (nowMillis - PlanOverlayStore.lastShownMillis(this, it.id)) } / 1000
-                log("$pkg: вікно активне, але підказку вже показували — дебаунс ще $left с")
-            }
+            log("$pkg: зараз нема активного вікна (вікон: ${candidates.size}, ввімкнених і не на паузі: ${candidates.count { it.enabled }})")
             return
         }
         log("$pkg: показую підказку вікна $windowId")
-        PlanOverlayStore.recordShown(this, windowId, nowMillis)
+        PlanOverlayStore.recordShown(this)
         launchTepera(pkg, planWindowId = windowId)
     }
 

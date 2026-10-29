@@ -53,10 +53,15 @@ private data class OverlayContent(
     val appLabel: String,
     val startMinute: Int,
     val endMinute: Int,
-    val suggestion: ActivitySuggestions.Suggestion
+    val suggestion: ActivitySuggestions.Suggestion,
+    /** Людина щойно сказала «Так, роблю це» і знову відкрила стрічку: замість нової ідеї — «я бачу тебе». */
+    val watching: Boolean = false
 )
 
 private val DURATIONS_MINUTES = listOf(15, 30, 60)
+
+/** Скільки діє обіцянка, коли для ідеї нема таймера (прогулянка тощо) і тривалість не питали. */
+private const val DEFAULT_COMMITMENT_MINUTES = 30
 
 /**
  * v3.0 MVP, Етап 8 (beta), макет `v3/PlanSheet`: підказка «що зробити замість» поверх стрічки, відкритої всередині
@@ -88,10 +93,14 @@ fun PlanOverlayScreen(
 
     LaunchedEffect(windowId) {
         val window = app.riskWindowRepository.getWindow(windowId)
-        val suggestion = SuggestionPicker.pickFor(context, windowId)
+        val committed = PlanOverlayStore.activeCommitment(context)
+        val suggestion = if (committed != null) ActivitySuggestions.Suggestion(committed, null) else SuggestionPicker.pickFor(context, windowId)
         content = if (window == null || suggestion == null) null else {
             shown = setOf(suggestion.id)
-            OverlayContent(resolveLabel(context.packageManager, packageName), window.startMinute, window.endMinute, suggestion)
+            OverlayContent(
+                resolveLabel(context.packageManager, packageName), window.startMinute, window.endMinute, suggestion,
+                watching = committed != null
+            )
         }
         // Вікно зникло між показом сервісу й відкриттям екрана — нічого показувати; пускаємо людину в застосунок.
         if (content == null) {
@@ -106,10 +115,15 @@ fun PlanOverlayScreen(
         finished = true
     }
 
+    fun commit(idea: ActivitySuggestions.Id, minutes: Int) =
+        PlanOverlayStore.setCommitment(context, idea, System.currentTimeMillis() + minutes * 60_000L)
+
     fun accept(minutes: Int) {
-        val categoryId = content?.suggestion?.categoryId ?: return
+        val suggestion = content?.suggestion ?: return
+        val categoryId = suggestion.categoryId ?: return
         onDecided()
         PlanOverlayStore.recordAccepted(context)
+        commit(suggestion.id, minutes)
         scope.launch {
             startPlannedCategoryTimer(context, categoryId, minutes)
             leave()
@@ -129,7 +143,8 @@ fun PlanOverlayScreen(
     fun openForFiveMinutes() {
         val c = content ?: return
         onDecided()
-        PlanOverlayStore.recordDeclined(context, c.suggestion.id)
+        // Обіцяну ідею не ховаємо на кілька днів: людина від неї не відмовлялась, лише зайшла раніше часу.
+        if (!c.watching) PlanOverlayStore.recordDeclined(context, c.suggestion.id)
         PlanOverlayStore.recordContinued(context)
         PlanOverlayStore.setPendingSoftExit(
             context,
@@ -185,12 +200,21 @@ fun PlanOverlayScreen(
                         )
                     }
                 }
-                if (choosingDuration) {
+                if (c.watching) {
+                    WatchingStep(
+                        suggestion = c.suggestion,
+                        onLeave = { onDecided(); leave() },
+                        onOpenFive = ::openForFiveMinutes
+                    )
+                } else if (choosingDuration) {
                     DurationStep(onPick = ::accept, onBack = { choosingDuration = false })
                 } else {
                     SuggestionStep(
                         suggestion = c.suggestion,
-                        onYes = { if (c.suggestion.categoryId != null) choosingDuration = true else { onDecided(); PlanOverlayStore.recordAccepted(context); leave() } },
+                        onYes = {
+                            if (c.suggestion.categoryId != null) choosingDuration = true
+                            else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
+                        },
                         onAnother = ::anotherIdea,
                         onOpenFive = ::openForFiveMinutes
                     )
@@ -241,6 +265,46 @@ private fun SuggestionStep(
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+/** Людина пообіцяла зайнятись справою і вже знову відкрила стрічку: жартівливе, але чесне «я бачу тебе». */
+@Composable
+private fun WatchingStep(
+    suggestion: ActivitySuggestions.Suggestion,
+    onLeave: () -> Unit,
+    onOpenFive: () -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("👀", fontSize = 56.sp, lineHeight = 64.sp)
+        Text(
+            stringResource(R.string.v3_watch_title), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
+            fontWeight = FontWeight.Medium, modifier = Modifier.semantics { heading() }
+        )
+        Text(
+            stringResource(R.string.v3_watch_body, stringResource(suggestionTextRes(suggestion.id))),
+            color = Color(0xFFC5DCD9), fontSize = 14.sp, lineHeight = 20.sp
+        )
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        TeperaButton(
+            text = stringResource(R.string.v3_watch_leave),
+            onClick = onLeave,
+            size = TeperaButtonSize.Medium,
+            type = TeperaButtonType.Primary,
+            modifier = Modifier.fillMaxWidth()
+        )
+        TeperaButton(
+            text = stringResource(R.string.v3_overlay_open_five),
+            onClick = onOpenFive,
+            size = TeperaButtonSize.Medium,
+            type = TeperaButtonType.Secondary,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
