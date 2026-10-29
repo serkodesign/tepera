@@ -128,13 +128,16 @@ class GateAccessibilityService : AccessibilityService() {
 
     private fun launchTepera(pkg: String, planWindowId: String?) {
         ignoreOwnUntilMillis = System.currentTimeMillis() + OWN_WINDOW_MILLIS
-        startActivity(
-            Intent(this, MainActivity::class.java)
-                .setAction(Intent.ACTION_VIEW)
-                .putExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA, pkg)
-                .apply { planWindowId?.let { putExtra(GateRepository.PLAN_WINDOW_EXTRA, it) } }
+        // Пауза воріт — екран Tepera; лист плану — прозора activity поверх стрічки (стрічка лишається видимою під затемненням).
+        val intent = if (planWindowId == null) {
+            Intent(this, MainActivity::class.java).setAction(Intent.ACTION_VIEW)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        )
+        } else {
+            Intent(this, PlanOverlayActivity::class.java)
+                .putExtra(GateRepository.PLAN_WINDOW_EXTRA, planWindowId)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
+        startActivity(intent.putExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA, pkg))
     }
 
     override fun onInterrupt() = Unit

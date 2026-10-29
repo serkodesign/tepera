@@ -17,6 +17,15 @@
                 android:resource="@xml/gate_accessibility_service" />
         </service>
 
+        <!-- Етап 8: лист плану поверх стрічки — прозора activity у власній задачі, не з'являється в «Недавніх». -->
+        <activity
+            android:name=".gates.PlanOverlayActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Tepera.PlanOverlay"
+            android:screenOrientation="portrait"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
         <!-- v3.0 MVP, Етап 4 (лише beta): нагадування перед годиною ризику. Приймають тільки системні події й власні
              PendingIntent застосунку. -->
         <receiver android:name=".data.NudgeReceiver" android:exported="false" />

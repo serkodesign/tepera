@@ -47,7 +47,6 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.util.PlanOverlayStore
-import com.serkodesign.tepera.util.findActivity
 import kotlinx.coroutines.launch
 
 private data class OverlayContent(
@@ -137,10 +136,7 @@ fun PlanOverlayScreen(
     }
 
     LaunchedEffect(finished) {
-        if (finished) {
-            onDone()
-            context.findActivity()?.moveTaskToBack(true)
-        }
+        if (finished) onDone()
     }
 
     BackHandler(enabled = content != null && !finished) {

@@ -28,7 +28,7 @@ import com.serkodesign.tepera.util.utcMidnightToLocalStartOfDay
 
 /**
  * Спільні M3-діалоги вибору часу й дати у стилі застосунку (форма додавання активності, розклад воріт,
- * пауза воріт). Час — 24-годинний циферблат із перемикачем на клавіатурний ввід.
+ * пауза воріт). Час — за замовчуванням клавіатурний ввід (швидше), з перемикачем на 24-годинний циферблат.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +37,7 @@ fun TeperaTimePickerDialog(
     minuteOfDay: Int,
     onSelected: (Int) -> Unit,
     onDismiss: () -> Unit,
-    startInKeyboard: Boolean = false
+    startInKeyboard: Boolean = true
 ) {
     val pickerState = rememberTimePickerState(
         initialHour = minuteOfDay / 60,

@@ -95,7 +95,6 @@ import com.serkodesign.tepera.ui.category.CategoryHistoryScreen
 import com.serkodesign.tepera.ui.diary.DiaryScreen
 import com.serkodesign.tepera.ui.knowledge.KnowledgeBaseScreen
 import com.serkodesign.tepera.ui.gates.GatePauseScreen
-import com.serkodesign.tepera.ui.risk.PlanOverlayScreen
 import com.serkodesign.tepera.ui.gates.GatesScreen
 import com.serkodesign.tepera.ui.gates.GateScheduleScreen
 import com.serkodesign.tepera.ui.home.HomeScreen
@@ -189,7 +188,6 @@ private object Routes {
     val BOTTOM_NAV_ROUTES = setOf(HOME, DIARY, STATS)
 
     const val GATE_PAUSE = "gate_pause/{packageName}"
-    const val PLAN_OVERLAY = "plan_overlay/{packageName}/{windowId}"
 
     // Екрани, для яких уже є Figma-дизайн (сторінка "Tepera", node 1873:2567) — градієнтний фон
     // малює зовнішній Box у TeperaNavHost для ВСІХ них, не лише для вкладок навбару. **За прямим
@@ -201,7 +199,7 @@ private object Routes {
         SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, NUDGE_INFO, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
-        WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, PLAN_OVERLAY, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
+        WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -210,8 +208,6 @@ private object Routes {
     fun editEntry(entryId: String) = "edit_entry/$entryId"
 
     fun gatePause(packageName: String) = "gate_pause/$packageName"
-
-    fun planOverlay(packageName: String, windowId: String) = "plan_overlay/$packageName/$windowId"
 
     fun categoryHistory(categoryId: String) = "category_history/$categoryId"
     fun v3Why(windowId: String) = "v3_why/$windowId"
@@ -248,8 +244,6 @@ fun TeperaNavHost(
     // б, якщо застосунок збігається з попереднім.
     pendingGateTargetPackage: String? = null,
     pendingGateRequestNonce: Long? = null,
-    // Етап 8: якщо задано, замість паузи воріт показується план цього вікна ризику.
-    pendingPlanWindowId: String? = null,
     pendingWeeklySummaryNonce: Long? = null,
     // Ярлик "Щоденник"/"Статистика" (довгий тап по іконці). Nonce — як у воріт: повторний тап по
     // тому самому ярлику має знову перейти на екран.
@@ -290,17 +284,14 @@ fun TeperaNavHost(
     LaunchedEffect(pendingGateRequestNonce) {
         if (pendingGateTargetPackage != null) {
             skipSplash()
-            navController.navigate(
-                if (pendingPlanWindowId != null) Routes.planOverlay(pendingGateTargetPackage, pendingPlanWindowId)
-                else Routes.gatePause(pendingGateTargetPackage)
-            )
+            navController.navigate(Routes.gatePause(pendingGateTargetPackage))
         }
     }
 
     // Ворота, з яких пішли без вибору («Додому», інший застосунок, блокування екрана), не лишаються в стеку: інакше
     // наступне відкриття Tepera з лаунчера показало б стару паузу замість Home. Подію рішення не пишемо — вибору не було.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-        if (navController.currentDestination?.route == Routes.GATE_PAUSE || navController.currentDestination?.route == Routes.PLAN_OVERLAY) {
+        if (navController.currentDestination?.route == Routes.GATE_PAUSE) {
             navController.popBackStack(Routes.HOME, inclusive = false)
         }
     }
@@ -694,20 +685,6 @@ fun TeperaNavHost(
                     // GatesScreen), звичайний одиничний pop повернув би саме туди — а разом із
                     // moveTaskToBack() у GatePauseScreen це означало б, що НАСТУПНЕ відкриття
                     // Tepera з лаунчера показує проміжний екран замість Home.
-                    onDone = { navController.popBackStack(Routes.HOME, inclusive = false) }
-                )
-            }
-            composable(
-                Routes.PLAN_OVERLAY,
-                arguments = listOf(
-                    navArgument("packageName") { type = NavType.StringType },
-                    navArgument("windowId") { type = NavType.StringType }
-                )
-            ) { entry ->
-                PlanOverlayScreen(
-                    gateRepository = gateRepository,
-                    packageName = entry.arguments?.getString("packageName").orEmpty(),
-                    windowId = entry.arguments?.getString("windowId").orEmpty(),
                     onDone = { navController.popBackStack(Routes.HOME, inclusive = false) }
                 )
             }
