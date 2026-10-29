@@ -268,6 +268,17 @@ private fun SuggestionStep(
     }
 }
 
+private class WatchVariant(val emoji: Int, val title: Int, val body: Int)
+
+/** Екрани «я бачу тебе» для повторного входу в стрічку після «Так, роблю це»; щоразу випадковий. */
+private val WATCH_VARIANTS = listOf(
+    WatchVariant(R.string.v3_watch_1_emoji, R.string.v3_watch_1_title, R.string.v3_watch_1_body),
+    WatchVariant(R.string.v3_watch_2_emoji, R.string.v3_watch_2_title, R.string.v3_watch_2_body),
+    WatchVariant(R.string.v3_watch_3_emoji, R.string.v3_watch_3_title, R.string.v3_watch_3_body),
+    WatchVariant(R.string.v3_watch_4_emoji, R.string.v3_watch_4_title, R.string.v3_watch_4_body),
+    WatchVariant(R.string.v3_watch_5_emoji, R.string.v3_watch_5_title, R.string.v3_watch_5_body)
+)
+
 /** Людина пообіцяла зайнятись справою і вже знову відкрила стрічку: жартівливе, але чесне «я бачу тебе». */
 @Composable
 private fun WatchingStep(
@@ -280,13 +291,15 @@ private fun WatchingStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("👀", fontSize = 56.sp, lineHeight = 64.sp)
+        // Варіант обираємо один раз на показ листа, щоб він не мінявся при перекомпонуванні.
+        val variant = remember { WATCH_VARIANTS.random() }
+        Text(stringResource(variant.emoji), fontSize = 56.sp, lineHeight = 64.sp)
         Text(
-            stringResource(R.string.v3_watch_title), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
+            stringResource(variant.title), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
             fontWeight = FontWeight.Medium, modifier = Modifier.semantics { heading() }
         )
         Text(
-            stringResource(R.string.v3_watch_body, stringResource(suggestionTextRes(suggestion.id))),
+            stringResource(variant.body, stringResource(suggestionTextRes(suggestion.id))),
             color = Color(0xFFC5DCD9), fontSize = 14.sp, lineHeight = 20.sp
         )
     }
