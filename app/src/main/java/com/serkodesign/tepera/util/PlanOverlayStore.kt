@@ -2,6 +2,7 @@ package com.serkodesign.tepera.util
 
 import android.content.Context
 import com.serkodesign.tepera.domain.risk.ActivitySuggestions
+import com.serkodesign.tepera.domain.risk.QuickPuzzles
 
 /**
  * v3.0 MVP, Етап 8 (лише beta): налаштування й лічильники «плану поверх стрічки». SharedPreferences, бо читається з
@@ -25,6 +26,9 @@ object PlanOverlayStore {
     private const val KEY_SE_STARTED = "se_started"
     private const val KEY_SE_ON_TIME = "se_on_time"
     private const val KEY_SE_EXTENDED = "se_extended"
+    private const val KEY_PUZZLES_ENABLED = "puzzles_enabled"
+    private const val KEY_REENTRY_PREFIX = "reentry_"
+    private const val KEY_LAST_PUZZLE = "last_puzzle"
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -37,8 +41,31 @@ object PlanOverlayStore {
 
     /** «Так, роблю це»: до [untilMillis] повторне відкриття стрічки показує не нову ідею, а «я бачу тебе». */
     fun setCommitment(context: Context, ideaId: ActivitySuggestions.Id, untilMillis: Long) {
-        prefs(context).edit().putString(KEY_COMMIT_IDEA, ideaId.name).putLong(KEY_COMMIT_UNTIL, untilMillis).apply()
+        val p = prefs(context)
+        val edit = p.edit().putString(KEY_COMMIT_IDEA, ideaId.name).putLong(KEY_COMMIT_UNTIL, untilMillis)
+        // Нова обіцянка — рахунок повторних входів (для задачок) починається спочатку.
+        p.all.keys.filter { it.startsWith(KEY_REENTRY_PREFIX) }.forEach { edit.remove(it) }
+        edit.apply()
     }
+
+    /** Задачки на екрані «я за тобою слідкую» (з 3-го показу): за замовчуванням увімкнено. */
+    fun arePuzzlesEnabled(context: Context): Boolean = prefs(context).getBoolean(KEY_PUZZLES_ENABLED, true)
+
+    fun setPuzzlesEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_PUZZLES_ENABLED, enabled).apply()
+
+    /** Це вже який за рахунком показ екрана «я за тобою слідкую» для цих воріт у межах поточної обіцянки (повертає новий номер). */
+    fun recordReentry(context: Context, packageName: String): Int {
+        val p = prefs(context)
+        val key = KEY_REENTRY_PREFIX + packageName
+        val next = p.getInt(key, 0) + 1
+        p.edit().putInt(key, next).apply()
+        return next
+    }
+
+    fun lastPuzzleKind(context: Context): QuickPuzzles.Kind? =
+        prefs(context).getString(KEY_LAST_PUZZLE, null)?.let { name -> QuickPuzzles.Kind.entries.firstOrNull { it.name == name } }
+
+    fun setLastPuzzleKind(context: Context, kind: QuickPuzzles.Kind) = prefs(context).edit().putString(KEY_LAST_PUZZLE, kind.name).apply()
 
     /** Ідея, яку людина щойно пообіцяла зробити, поки обіцянка діє; інакше `null`. */
     fun activeCommitment(context: Context, nowMillis: Long = System.currentTimeMillis()): ActivitySuggestions.Id? {

@@ -41,6 +41,7 @@ import com.serkodesign.tepera.data.startPlannedCategoryTimer
 import com.serkodesign.tepera.data.suggestionTextRes
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.ActivitySuggestions
+import com.serkodesign.tepera.domain.risk.QuickPuzzles
 import com.serkodesign.tepera.ui.theme.RedesignDarkColors
 import com.serkodesign.tepera.ui.theme.RedesignScope
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -55,7 +56,9 @@ private data class OverlayContent(
     val endMinute: Int,
     val suggestion: ActivitySuggestions.Suggestion,
     /** Людина щойно сказала «Так, роблю це» і знову відкрила стрічку: замість нової ідеї — «я бачу тебе». */
-    val watching: Boolean = false
+    val watching: Boolean = false,
+    /** Скільки задачок треба розв'язати, перш ніж «Відкрити на 5 хв» спрацює (0 — жодної). Лише для екрана «я за тобою слідкую». */
+    val puzzles: Int = 0
 )
 
 private val DURATIONS_MINUTES = listOf(15, 30, 60)
@@ -90,6 +93,7 @@ fun PlanOverlayScreen(
     var shown by remember { mutableStateOf(emptySet<ActivitySuggestions.Id>()) }
     var choosingDuration by remember { mutableStateOf(false) }
     var finished by remember { mutableStateOf(false) }
+    var solving by remember { mutableStateOf(false) }
 
     LaunchedEffect(windowId) {
         val window = app.riskWindowRepository.getWindow(windowId)
@@ -97,9 +101,12 @@ fun PlanOverlayScreen(
         val suggestion = if (committed != null) ActivitySuggestions.Suggestion(committed, null) else SuggestionPicker.pickFor(context, windowId)
         content = if (window == null || suggestion == null) null else {
             shown = setOf(suggestion.id)
+            // Рахуємо показ екрана «я за тобою слідкую» для цих воріт; з 3-го разу «Відкрити» вимагає задачки.
+            val reentry = if (committed != null) PlanOverlayStore.recordReentry(context, packageName) else 0
             OverlayContent(
                 resolveLabel(context.packageManager, packageName), window.startMinute, window.endMinute, suggestion,
-                watching = committed != null
+                watching = committed != null,
+                puzzles = QuickPuzzles.puzzlesRequired(reentry, PlanOverlayStore.arePuzzlesEnabled(context))
             )
         }
         // Вікно зникло між показом сервісу й відкриттям екрана — нічого показувати; пускаємо людину в застосунок.
@@ -159,7 +166,7 @@ fun PlanOverlayScreen(
     }
 
     BackHandler(enabled = content != null && !finished) {
-        if (choosingDuration) choosingDuration = false else {
+        if (choosingDuration) choosingDuration = false else if (solving) solving = false else {
             PlanOverlayStore.recordLeft(context)
             leave()
         }
@@ -200,11 +207,17 @@ fun PlanOverlayScreen(
                         )
                     }
                 }
-                if (c.watching) {
+                if (c.watching && solving) {
+                    PuzzleStep(
+                        total = c.puzzles,
+                        onAllSolved = ::openForFiveMinutes,
+                        onLeave = { onDecided(); leave() }
+                    )
+                } else if (c.watching) {
                     WatchingStep(
                         suggestion = c.suggestion,
                         onLeave = { onDecided(); leave() },
-                        onOpenFive = ::openForFiveMinutes
+                        onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
                     )
                 } else if (choosingDuration) {
                     DurationStep(onPick = ::accept, onBack = { choosingDuration = false })

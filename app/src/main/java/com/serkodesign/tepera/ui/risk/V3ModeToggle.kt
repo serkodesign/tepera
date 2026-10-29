@@ -63,5 +63,21 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
             }
         )
         TeperaHint(text = stringResource(R.string.v3_overlay_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
+        var puzzlesOn by remember { mutableStateOf(PlanOverlayStore.arePuzzlesEnabled(context)) }
+        GlassRow(
+            label = stringResource(R.string.v3_puzzle_toggle_label),
+            leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
+            trailing = {
+                Switch(
+                    checked = puzzlesOn,
+                    onCheckedChange = { on ->
+                        puzzlesOn = on
+                        PlanOverlayStore.setPuzzlesEnabled(context, on)
+                    },
+                    colors = teperaSwitchColors()
+                )
+            }
+        )
+        TeperaHint(text = stringResource(R.string.v3_puzzle_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
     }
 }
