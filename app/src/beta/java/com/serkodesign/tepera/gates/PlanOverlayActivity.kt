@@ -1,7 +1,9 @@
 package com.serkodesign.tepera.gates
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -31,6 +33,9 @@ class PlanOverlayActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Не в маніфесті: на Android 8.0 прозора activity з screenOrientation падає («Only fullscreen opaque activities can
+        // request orientation»); з 8.1 це дозволено.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)

@@ -22,7 +22,6 @@
             android:name=".gates.PlanOverlayActivity"
             android:exported="false"
             android:theme="@style/Theme.Tepera.PlanOverlay"
-            android:screenOrientation="portrait"
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
