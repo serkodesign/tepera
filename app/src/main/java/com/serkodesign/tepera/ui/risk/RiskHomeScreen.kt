@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,15 +45,21 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.data.local.entity.CategoryEntity
-import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.ui.home.BalanceViewModel
 import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.bottomNavClearance
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PartOfDay
+import com.serkodesign.tepera.domain.risk.RiskHero
+import com.serkodesign.tepera.domain.risk.RiskHeroPicker
+import com.serkodesign.tepera.ui.home.PatternMiniCard
+import com.serkodesign.tepera.ui.home.PauseCard
+import com.serkodesign.tepera.ui.home.PauseViewModel
+import com.serkodesign.tepera.ui.pattern.PatternViewModel
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.time.Duration
@@ -76,14 +83,39 @@ fun RiskHomeScreen(
     onOpenAccess: () -> Unit,
     onOpenWhy: (String) -> Unit,
     onAddWindow: () -> Unit,
-    onOpenNudgeInfo: () -> Unit
+    onOpenNudgeInfo: () -> Unit,
+    onAddEntry: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: RiskHomeViewModel = viewModel(factory = RiskHomeViewModel.Factory(app))
     val state by vm.state.collectAsState()
+    // Нове бачення головного екрана: герой за пріоритетом (година → паузи → наступна година → патерн), під ним чіпи
+    // активностей і «Online сьогодні»; решта (вікна, підсумок тижня) — деталі нижче.
+    val balanceViewModel: BalanceViewModel = viewModel(
+        factory = BalanceViewModel.Factory(
+            app.balanceRepository, app.activityRepository, app.categoryRepository, app.settingsStore, app.sleepWindowRepository
+        )
+    )
+    val balanceState by balanceViewModel.uiState.collectAsState()
+    val pauseViewModel: PauseViewModel = viewModel(
+        factory = PauseViewModel.Factory(app.pauseRepository, app.balanceRepository, app.activityRepository, app.settingsStore, app.sleepWindowRepository)
+    )
+    val pauseState by pauseViewModel.uiState.collectAsState()
+    val patternViewModel: PatternViewModel = viewModel(
+        // Вчорашня доба (1 день), як у шторці підсумків звичайного Home.
+        factory = PatternViewModel.Factory(
+            app.patternRepository, app.balanceRepository, app.settingsStore, initialPeriodDays = 1,
+            sleepWindowRepository = app.sleepWindowRepository
+        )
+    )
+    val patternState by patternViewModel.uiState.collectAsState()
+    val categories by app.categoryRepository.observeActiveCategories().collectAsState(initial = emptyList())
 
     LifecycleResumeEffect(Unit) {
         vm.refresh()
+        balanceViewModel.refresh()
+        pauseViewModel.refresh()
+        patternViewModel.refresh()
         onPauseOrDispose {}
     }
 
@@ -108,6 +140,12 @@ fun RiskHomeScreen(
         else -> dateText
     }
     val ready = !state.loading && state.hasAccess && state.feedCount > 0
+    val insideOcc = occurrences.firstOrNull { it.isInside(now) }
+    val nextOcc = occurrences.firstOrNull { !it.isInside(now) }
+    val hero = RiskHeroPicker.pick(
+        insideWindow = insideOcc != null, hasPauses = pauseState.visible, hasNextWindow = nextOcc != null,
+        hasPattern = patternState.hasEnoughData
+    )
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
@@ -130,7 +168,6 @@ fun RiskHomeScreen(
                         }
                     }
                 }
-                state.activeCategory?.let { category -> ActiveSessionCard(category, onFinish = vm::finishSession) }
                 when {
                     state.loading -> HomeSkeleton()
                     !state.hasAccess -> NoticeCard(
@@ -139,37 +176,55 @@ fun RiskHomeScreen(
                     state.feedCount == 0 -> NoticeCard(
                         R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                     )
-                    observing -> {
-                        ObservingContent(state)
-                        // Ручні вікна видно одразу, не чекаючи тиждень даних.
-                        WindowsHeader(onAddWindow)
-                        (state.windows + state.disabledWindows).forEach { w ->
-                            RiskWindowCard(w, onOpenWhy = { onOpenWhy(w.id) })
-                        }
-                    }
-                    planned -> PlannedContent(state, occurrences, now, onOpenWhy, onAddWindow)
-                    else -> FoundContent(state, onOpenWhy, onAddWindow)
-                }
-                if (ready && !observing) {
-                    WeeklySummaryBlock(state.windows, state.softExit, vm::applyShift, vm::dismissShift)
                 }
             }
+            // Герой: одна головна картка за пріоритетом. Паузи мають власний відступ, решта — загальні 16dp.
+            if (ready) {
+                val byId = state.windows.associateBy { it.id }
+                when (hero) {
+                    RiskHero.IN_WINDOW -> byId[insideOcc?.id]?.let { w ->
+                        Box(Modifier.padding(horizontal = 16.dp)) {
+                            // Тиждень спостереження мовчить: без ідей, лише відлік.
+                            if (observing) NextCard(w, insideOcc!!, now, onClick = { onOpenWhy(w.id) })
+                            else IdeaHero(w.id, insideOcc!!, now, categories)
+                        }
+                    }
+                    RiskHero.PAUSES -> PauseCard(
+                        state = pauseState, categories = categories, onLabel = pauseViewModel::labelGap,
+                        onDismissGap = pauseViewModel::dismissGap, onDismissCard = pauseViewModel::dismissCard
+                    )
+                    RiskHero.NEXT_WINDOW -> byId[nextOcc?.id]?.let { w ->
+                        Box(Modifier.padding(horizontal = 16.dp)) { NextCard(w, nextOcc!!, now, onClick = { onOpenWhy(w.id) }) }
+                    }
+                    RiskHero.PATTERN -> Box(Modifier.padding(horizontal = 16.dp)) { PatternMiniCard(patternState) }
+                    RiskHero.NONE -> Unit
+                }
+            }
+            if (!state.loading) ActivityChips(onAddEntry)
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OnlineTodayCard(balanceState)
+                if (ready) {
+                    // Деталі: вікна й тиждень. NextCard вже є героєм, якщо вікно ближче за все; інакше він тут не потрібен.
+                    when {
+                        observing -> {
+                            ObservingContent(state)
+                            // Ручні вікна видно одразу, не чекаючи тиждень даних.
+                            WindowsHeader(onAddWindow)
+                            (state.windows + state.disabledWindows).forEach { w ->
+                                RiskWindowCard(w, onOpenWhy = { onOpenWhy(w.id) })
+                            }
+                        }
+                        planned -> PlannedContent(state, occurrences, now, onOpenWhy, onAddWindow, showNext = hero != RiskHero.IN_WINDOW && hero != RiskHero.NEXT_WINDOW)
+                        else -> FoundContent(state, onOpenWhy, onAddWindow)
+                    }
+                    if (!observing) {
+                        WeeklySummaryBlock(state.windows, state.softExit, vm::applyShift, vm::dismissShift)
+                    }
+                }
+            }
+            // Запас під навбар-«таблетку», щоб останній рядок прокручувався над нею.
+            Spacer(Modifier.height(bottomNavClearance()))
         }
-    }
-}
-
-/**
- * Таймер, запущений з підказки (або будь-де), іде без міні-плеєра, тож Home каже, що триває, і лишає завершити
- * самому. Час сеансу не показуємо (раніше прийняте рішення — без цифр часу на картках). Запис зберігається саме
- * цією кнопкою або автоматично в обраний строк.
- */
-@Composable
-private fun ActiveSessionCard(category: CategoryEntity, onFinish: () -> Unit) {
-    TeperaCard(title = stringResource(R.string.v3_session_active, categoryDisplayName(category))) {
-        TeperaButton(
-            text = stringResource(R.string.v3_session_finish), onClick = onFinish,
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 
@@ -331,12 +386,13 @@ private fun PlannedContent(
     occurrences: List<NextWindow.Occurrence>,
     now: LocalDateTime,
     onOpenWhy: (String) -> Unit,
-    onAddWindow: () -> Unit
+    onAddWindow: () -> Unit,
+    showNext: Boolean
 ) {
     val byId = state.windows.associateBy { it.id }
     val ordered = occurrences.mapNotNull { o -> byId[o.id]?.let { it to o } }
     val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
-    ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
+    if (showNext) ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
     WindowsHeader(onAddWindow)
     (ordered.map { it.first } + rest + state.disabledWindows).forEach { w ->
         RiskWindowCard(w, onOpenWhy = { onOpenWhy(w.id) })

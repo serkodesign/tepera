@@ -83,6 +83,13 @@
     <string name="stats_offline_label">Без телефону</string>
     <string name="stats_below_five_min">&lt;5 хв</string>
     <string name="activities_title">Активності</string>
+    <string name="v3_online_today_title">Online сьогодні</string>
+    <string name="v3_hero_left_format">Залишилось %1$s</string>
+    <string name="v3_hero_committed_format">Ти обрав: «%1$s». Дотримаймося.</string>
+    <string name="v3_hero_start_format">Почати: %1$s</string>
+    <string name="v3_hero_do_it">Гаразд, зроблю це</string>
+    <string name="v3_chip_add_entry">Додати запис</string>
+    <string name="v3_online_target_format">Орієнтир: %1$s</string>
     <string name="home_add_category">Додати</string>
 
     <!-- Онбординг доступу до статистики використання (FR-7.1) -->
@@ -704,7 +711,7 @@
     <string name="v3_part_evening">Увечері</string>
     <string name="v3_part_night">Уночі</string>
     <string name="v3_mode_label">Режим v3 (beta)</string>
-    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу». Старі дані й екрани не видаляються: вимкніть, щоб повернути звичайний вигляд.</string>
+    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу», але Online сьогодні, активності, Щоденник і Статистика лишаються. Старі дані не видаляються: вимкніть, щоб повернути звичайний вигляд.</string>
     <string name="v3_tester_restart">Пройти онбординг v3 знову</string>
 
     <!-- v3.0 MVP, Етап 3: L5 «План якщо — то» (Figma 911:1066). Підказки вечора/обіду — з макета, ранку/дня — нейтральні. -->

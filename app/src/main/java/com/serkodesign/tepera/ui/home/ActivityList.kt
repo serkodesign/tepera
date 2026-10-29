@@ -78,9 +78,10 @@ import com.serkodesign.tepera.ui.theme.TeperaSymbols
 @Composable
 fun ActivitiesSectionHeader(
     title: String,
-    actionLabel: String,
-    onAction: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Без підпису й дії кнопки «Додати» нема (режим v3: категорії керуються з Налаштувань). */
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
 ) {
     Row(
         modifier = modifier
@@ -97,6 +98,7 @@ fun ActivitiesSectionHeader(
             fontSize = 22.sp,
             lineHeight = 24.2.sp
         )
+        if (actionLabel == null || onAction == null) return@Row
         val colors = TeperaPalette.colors
         // Візуально 32dp (Figma), але область дотику — не менше 48dp (HANDOFF, п. 10.4).
         Box(

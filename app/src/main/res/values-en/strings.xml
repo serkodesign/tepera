@@ -76,6 +76,13 @@
     <string name="stats_offline_label">Away from the phone</string>
     <string name="stats_below_five_min">&lt;5 min</string>
     <string name="activities_title">Activities</string>
+    <string name="v3_online_today_title">Online today</string>
+    <string name="v3_hero_left_format">%1$s left</string>
+    <string name="v3_hero_committed_format">You chose: “%1$s”. Let\'s keep to it.</string>
+    <string name="v3_hero_start_format">Start: %1$s</string>
+    <string name="v3_hero_do_it">OK, I\'ll do it</string>
+    <string name="v3_chip_add_entry">Add entry</string>
+    <string name="v3_online_target_format">Reference: %1$s</string>
     <string name="home_add_category">Add</string>
 
     <!-- Usage access onboarding (FR-7.1) -->
@@ -687,7 +694,7 @@
     <string name="v3_part_evening">Evening</string>
     <string name="v3_part_night">Night</string>
     <string name="v3_mode_label">v3 mode (beta)</string>
-    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”. Old data and screens are not deleted: turn it off to get the usual look back.</string>
+    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”, but Online today, activities, the Diary and Stats stay. Old data is not deleted: turn it off to get the usual look back.</string>
     <string name="v3_tester_restart">Redo v3 onboarding</string>
 
     <!-- v3.0 MVP, stage 3: L5 "If - then" plan (Figma 911:1066). Evening/lunch suggestions come from the design, morning/day are neutral. -->
