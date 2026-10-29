@@ -78,7 +78,7 @@ import java.util.Date
 @Composable
 fun RiskHomeScreen(
     onOpenSettings: () -> Unit,
-    onOpenKnowledgeBase: () -> Unit,
+    onOpenCalendar: () -> Unit,
     onOpenFeedPicker: () -> Unit,
     onOpenAccess: () -> Unit,
     onOpenWhy: (String) -> Unit,
@@ -153,7 +153,7 @@ fun RiskHomeScreen(
                 .padding(top = 12.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            RiskHeader(label, title, onOpenKnowledgeBase, onOpenSettings)
+            RiskHeader(label, title, onOpenCalendar, onOpenSettings)
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // Сценарій 7: без сповіщень план не нагадає про себе — тому підказка зверху, а не під усім вмістом.
                 if (ready && state.showNotifyHint) {
@@ -264,7 +264,7 @@ private fun HomeSkeleton() {
 }
 
 @Composable
-private fun RiskHeader(label: String, title: String, onOpenKnowledgeBase: () -> Unit, onOpenSettings: () -> Unit) {
+private fun RiskHeader(label: String, title: String, onOpenCalendar: () -> Unit, onOpenSettings: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -279,9 +279,9 @@ private fun RiskHeader(label: String, title: String, onOpenKnowledgeBase: () -> 
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TeperaIconButton(
-                icon = TeperaIcons.Book,
-                contentDescription = stringResource(R.string.settings_knowledge_base_action),
-                onClick = onOpenKnowledgeBase,
+                icon = TeperaIcons.Calendar,
+                contentDescription = stringResource(R.string.calendar_screen_title),
+                onClick = onOpenCalendar,
                 shape = CircleShape,
                 containerColor = TeperaPalette.headerButtonFill,
                 contentColor = TeperaPalette.textPrimary

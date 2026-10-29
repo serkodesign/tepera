@@ -8,8 +8,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 
-enum class CalendarMode { MONTH, WEEK }
-
 /** Один стікер = один запис активності за день. */
 data class CalendarSticker(val entry: ActivityEntryEntity, val category: CategoryEntity)
 
@@ -50,12 +48,6 @@ fun stickerShapeFor(id: String): StickerShape =
 
 /** Нахил від -6 до +6 градусів — «наліплено нашвидкуруч». */
 fun stickerTiltFor(id: String): Float = Math.floorMod(id.hashCode() / 7, 13) - 6f
-
-/** Тривалість у форматі «г:хх»: 15 хв → «0:15», 75 хв → «1:15», 120 хв → «2:00». */
-fun formatDurationClock(minutes: Int): String {
-    val m = minutes.coerceAtLeast(0)
-    return "${m / 60}:${(m % 60).toString().padStart(2, '0')}"
-}
 
 /** Висота області стікерів у клітинці місяця (dp): клітинка 88 мінус номер дня й відступи. */
 const val MONTH_STICKER_AREA_HEIGHT = 58f

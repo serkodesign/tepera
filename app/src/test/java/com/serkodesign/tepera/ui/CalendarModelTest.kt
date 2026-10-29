@@ -2,7 +2,6 @@ package com.serkodesign.tepera.ui
 
 import com.serkodesign.tepera.ui.calendar.MONTH_STICKER_AREA_HEIGHT
 import com.serkodesign.tepera.ui.calendar.StickerShape
-import com.serkodesign.tepera.ui.calendar.formatDurationClock
 import com.serkodesign.tepera.ui.calendar.glyphFit
 import com.serkodesign.tepera.ui.calendar.monthGrid
 import com.serkodesign.tepera.ui.calendar.monthStickerSlots
@@ -94,15 +93,5 @@ class CalendarModelTest {
         val ids = List(300) { "id-$it" }
         assertEquals(6, ids.map { stickerShapeFor(it) }.toSet().size)
         ids.forEach { assertEquals(stickerShapeFor(it), stickerShapeFor(it)) }
-    }
-
-    @Test
-    fun formatDurationClock_usesHoursAndTwoDigitMinutes() {
-        assertEquals("0:15", formatDurationClock(15))
-        assertEquals("1:15", formatDurationClock(75))
-        assertEquals("2:00", formatDurationClock(120))
-        assertEquals("4:30", formatDurationClock(270))
-        assertEquals("0:00", formatDurationClock(0))
-        assertEquals("10:39", formatDurationClock(639))
     }
 }

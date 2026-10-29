@@ -106,7 +106,6 @@ fun CalendarScreen(
         factory = CalendarViewModel.Factory(activityRepository, categoryRepository)
     )
     val state by viewModel.uiState.collectAsState()
-    val mode by viewModel.mode.collectAsState()
     val anchor by viewModel.anchor.collectAsState()
     val locale = LocalConfiguration.current.locales[0]
     val firstDay = remember(locale) { WeekFields.of(locale).firstDayOfWeek }
@@ -123,16 +122,8 @@ fun CalendarScreen(
                     .padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                PillSegmentedControl(
-                    options = listOf(
-                        CalendarMode.MONTH to stringResource(R.string.calendar_mode_month),
-                        CalendarMode.WEEK to stringResource(R.string.calendar_mode_week)
-                    ),
-                    selected = mode,
-                    onSelect = viewModel::setMode
-                )
                 CalendarNavRow(
-                    title = periodTitle(mode, anchor, firstDay, locale),
+                    title = monthTitle(anchor, locale),
                     onPrev = { viewModel.step(-1) },
                     onNext = { viewModel.step(1) },
                     onToday = viewModel::goToToday
@@ -144,23 +135,14 @@ fun CalendarScreen(
                         .background(TeperaPalette.cardTranslucent)
                         .padding(horizontal = 11.dp, vertical = 8.dp)
                 ) {
-                    when (mode) {
-                        CalendarMode.MONTH -> MonthGrid(
-                            month = YearMonth.from(anchor),
-                            firstDay = firstDay,
-                            today = today,
-                            locale = locale,
-                            stickers = state.stickers,
-                            onOpenDay = { openedDay = it }
-                        )
-                        CalendarMode.WEEK -> WeekList(
-                            days = weekDays(anchor, firstDay),
-                            today = today,
-                            locale = locale,
-                            stickers = state.stickers,
-                            onOpenDay = { openedDay = it }
-                        )
-                    }
+                    MonthGrid(
+                        month = YearMonth.from(anchor),
+                        firstDay = firstDay,
+                        today = today,
+                        locale = locale,
+                        stickers = state.stickers,
+                        onOpenDay = { openedDay = it }
+                    )
                 }
             }
         }
@@ -215,17 +197,8 @@ private fun CalendarNavRow(title: String, onPrev: () -> Unit, onNext: () -> Unit
     }
 }
 
-private fun periodTitle(mode: CalendarMode, anchor: LocalDate, firstDay: DayOfWeek, locale: Locale): String =
-    when (mode) {
-        CalendarMode.MONTH ->
-            DateTimeFormatter.ofPattern("LLLL yyyy", locale).format(anchor)
-                .replaceFirstChar { it.titlecase(locale) }
-        CalendarMode.WEEK -> {
-            val days = weekDays(anchor, firstDay)
-            val fmt = DateTimeFormatter.ofPattern("d.MM", locale)
-            "${fmt.format(days.first())} – ${fmt.format(days.last())}"
-        }
-    }
+private fun monthTitle(anchor: LocalDate, locale: Locale): String =
+    DateTimeFormatter.ofPattern("LLLL yyyy", locale).format(anchor).replaceFirstChar { it.titlecase(locale) }
 
 @Composable
 private fun MonthGrid(
@@ -333,84 +306,6 @@ private fun DayNumber(date: LocalDate, isToday: Boolean, faded: Boolean) {
             }
         )
     }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun WeekList(
-    days: List<LocalDate>,
-    today: LocalDate,
-    locale: Locale,
-    stickers: Map<LocalDate, List<CalendarSticker>>,
-    onOpenDay: (LocalDate) -> Unit
-) {
-    Column {
-        days.forEach { date ->
-            val items = stickers[date].orEmpty()
-            val description = stringResource(
-                R.string.calendar_day_description,
-                DateTimeFormatter.ofPattern("EEEE, d MMMM", locale).format(date),
-                items.size
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 68.dp)
-                    .semantics(mergeDescendants = true) { contentDescription = description }
-                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(Modifier.width(48.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
-                        fontSize = 12.sp,
-                        color = TeperaPalette.textSecondary
-                    )
-                    DayNumber(date, date == today, faded = false)
-                }
-                // Біла картка дня (Figma: surface/card, радіус 16, відступ 12, між рядками стікерів 6).
-                FlowRow(
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = 64.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(TeperaPalette.chipSurface)
-                        .clickable(enabled = items.isNotEmpty(), role = Role.Button) { onOpenDay(date) }
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    items.forEach { sticker ->
-                        // Чіп тривалості (Figma 961:29840): пілюля «г:хх», що на 10dp заходить на низ стікера.
-                        Column(
-                            modifier = Modifier.padding(horizontal = 3.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy((-10).dp)
-                        ) {
-                            Sticker(sticker, 44.dp)
-                            DurationChip(sticker.entry.durationMinutes)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DurationChip(minutes: Int) {
-    val shape = RoundedCornerShape(100.dp)
-    Text(
-        text = formatDurationClock(minutes),
-        modifier = Modifier
-            .clip(shape)
-            .background(TeperaPalette.chipSurface)
-            .border(1.dp, TeperaPalette.fieldBorder, shape)
-            .padding(horizontal = 6.dp, vertical = 2.dp),
-        fontSize = 11.sp,
-        lineHeight = 12.sp,
-        color = TeperaPalette.textSecondary
-    )
 }
 
 /** Паперовий стікер: пастельна заливка кольору категорії, біла «вирубна» обвідка, тінь і нахил. */

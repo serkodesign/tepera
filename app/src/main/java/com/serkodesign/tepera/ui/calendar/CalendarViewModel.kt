@@ -27,7 +27,6 @@ class CalendarViewModel(
     categoryRepository: CategoryRepository
 ) : ViewModel() {
 
-    val mode = MutableStateFlow(CalendarMode.MONTH)
     val anchor = MutableStateFlow(LocalDate.now())
 
     val uiState: StateFlow<CalendarUiState> = combine(
@@ -38,16 +37,9 @@ class CalendarViewModel(
         CalendarUiState(groupStickersByDay(all, categories), seriesRanges(all))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CalendarUiState())
 
-    fun setMode(value: CalendarMode) {
-        mode.value = value
-    }
-
-    /** [direction] -1 / +1: на місяць або тиждень залежно від режиму. */
+    /** [direction] -1 / +1: на місяць назад або вперед. */
     fun step(direction: Int) {
-        anchor.value = when (mode.value) {
-            CalendarMode.MONTH -> anchor.value.withDayOfMonth(1).plusMonths(direction.toLong())
-            CalendarMode.WEEK -> anchor.value.plusWeeks(direction.toLong())
-        }
+        anchor.value = anchor.value.withDayOfMonth(1).plusMonths(direction.toLong())
     }
 
     fun goToToday() {

@@ -461,7 +461,7 @@ fun TeperaNavHost(
                     LaunchedEffect(v3Seen) { if (v3Seen == false) navController.navigate(Routes.V3_WELCOME) }
                     RiskHomeScreen(
                         onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                        onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
+                        onOpenCalendar = { navController.navigate(Routes.CALENDAR) },
                         onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
                         onOpenAccess = { navController.navigate(Routes.V3_ACCESS) },
                         onOpenWhy = { windowId -> navController.navigate(Routes.v3Why(windowId)) },

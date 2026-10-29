@@ -39,8 +39,6 @@
          самого екрана (заголовок лишається "Щоденник" — перейменовано лише в навбарі). -->
     <string name="diary_nav_action">Огляд</string>
     <string name="calendar_screen_title">Календар</string>
-    <string name="calendar_mode_month">Місяць</string>
-    <string name="calendar_mode_week">Тиждень</string>
     <string name="calendar_prev">Попередній період</string>
     <string name="calendar_next">Наступний період</string>
     <string name="calendar_today">Сьогодні</string>

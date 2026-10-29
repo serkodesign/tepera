@@ -34,8 +34,6 @@
          "History" moved here from the Stats screen at the user's request) -->
     <string name="diary_nav_action">Overview</string>
     <string name="calendar_screen_title">Calendar</string>
-    <string name="calendar_mode_month">Month</string>
-    <string name="calendar_mode_week">Week</string>
     <string name="calendar_prev">Previous period</string>
     <string name="calendar_next">Next period</string>
     <string name="calendar_today">Today</string>
