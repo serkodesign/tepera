@@ -117,6 +117,9 @@ class GateAccessibilityService : AccessibilityService() {
         // Вимкнути план можна лише зсередини Tepera (перемикач у налаштуваннях, пауза чи вимкнення вікна) — з самого листа чи сповіщення ні.
         if (!PlanOverlayStore.isEnabled(this)) return log("$pkg: план поверх стрічки вимкнено в налаштуваннях")
         val app = application as TeperaApp
+        // Тиждень спостереження — база для порівняння: поки період не заданий (перший перерахунок ще не відбувся), Tepera лише дивиться,
+        // навіть якщо людина сама додала вікно.
+        if (app.database.observationPeriodDao().getLatest() == null) return log("$pkg: тиждень спостереження ще триває — мовчу")
         if (pkg !in app.feedAppRepository.packages()) return log("$pkg: не в списку стрічок")
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(

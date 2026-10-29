@@ -44,7 +44,10 @@ object NudgeScheduler {
         }
         val blocked = app.nudgeEventDao.getShownSince(nowMillis - 2 * DAY_MILLIS)
             .map { Instant.ofEpochMilli(it.scheduledAt).atZone(zone).toLocalDate() }.toSet()
-        val next = if (WeeklySummaryWorker.canNotify(context)) NudgePlanner.next(candidates, now, blocked) else null
+        // Тиждень спостереження — база для порівняння: поки період не заданий (перший перерахунок не відбувся), нагадувань нема,
+        // навіть якщо людина сама додала вікно. Після перерахунку Home/воркер викликає reschedule знову.
+        val observing = app.database.observationPeriodDao().getLatest() == null
+        val next = if (!observing && WeeklySummaryWorker.canNotify(context)) NudgePlanner.next(candidates, now, blocked) else null
 
         val pending = pendingIntent(context, next?.windowId, next?.fireAt?.atZone(zone)?.toInstant()?.toEpochMilli())
         if (next == null) {

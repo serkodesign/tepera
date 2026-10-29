@@ -50,6 +50,8 @@ class NudgeReceiver : BroadcastReceiver() {
         val now = System.currentTimeMillis()
         val window = app.riskWindowRepository.getWindow(windowId) ?: return
         if (window.isUserDisabled || window.isPausedAt(now)) return
+        // Будильник міг бути виставлений ще до перевірки тижня спостереження (оновлення поверх старої збірки).
+        if (app.database.observationPeriodDao().getLatest() == null) return
 
         val zone = ZoneId.systemDefault()
         val startOfToday = Instant.ofEpochMilli(now).atZone(zone).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
