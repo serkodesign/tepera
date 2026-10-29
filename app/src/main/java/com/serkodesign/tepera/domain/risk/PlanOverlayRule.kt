@@ -9,9 +9,13 @@ import java.time.LocalDateTime
  * інакше кожне повернення в стрічку за вечір було б «шторкою», а не тихою ідеєю.
  */
 object PlanOverlayRule {
-    const val DEBOUNCE_MILLIS = 20 * 60_000L
+    const val DEBOUNCE_MILLIS = 10 * 60_000L
 
     data class Candidate(val spec: NextWindow.Spec, val enabled: Boolean)
+
+    /** Ввімкнені вікна, що тривають зараз (без урахування дебаунсу). Окремо від [pick], щоб сервіс міг записати причину відмови в лог. */
+    fun inside(candidates: List<Candidate>, now: LocalDateTime, cfg: RiskConfig = RiskConfig()): List<NextWindow.Occurrence> =
+        NextWindow.occurrences(candidates.filter { it.enabled }.map { it.spec }, now, cfg).filter { it.isInside(now) }
 
     /** Id вікна, чию підказку треба показати зараз, або `null`. [lastShownMillis] — коли підказку цього вікна показували востаннє (0 — ніколи). */
     fun pick(
@@ -20,10 +24,6 @@ object PlanOverlayRule {
         nowMillis: Long,
         lastShownMillis: (String) -> Long,
         cfg: RiskConfig = RiskConfig()
-    ): String? {
-        val usable = candidates.filter { it.enabled }
-        return NextWindow.occurrences(usable.map { it.spec }, now, cfg)
-            .firstOrNull { it.isInside(now) && nowMillis - lastShownMillis(it.id) >= DEBOUNCE_MILLIS }
-            ?.id
-    }
+    ): String? =
+        inside(candidates, now, cfg).firstOrNull { nowMillis - lastShownMillis(it.id) >= DEBOUNCE_MILLIS }?.id
 }

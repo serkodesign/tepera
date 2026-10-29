@@ -12,6 +12,7 @@ import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.ui.risk.PlanOverlayScreen
 import com.serkodesign.tepera.ui.theme.TeperaTheme
 import com.serkodesign.tepera.util.LocaleStore
+import com.serkodesign.tepera.util.PlanOverlayStore
 import com.serkodesign.tepera.util.ProvideAppLocale
 
 /**
@@ -20,6 +21,9 @@ import com.serkodesign.tepera.util.ProvideAppLocale
  * просто `finish()`: під листом уже стоїть сама стрічка (або робочий стіл, якщо людина обрала вихід).
  */
 class PlanOverlayActivity : ComponentActivity() {
+
+    private var windowId: String? = null
+    private var decided = false
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleStore.wrap(newBase))
@@ -37,6 +41,7 @@ class PlanOverlayActivity : ComponentActivity() {
             finish()
             return
         }
+        this.windowId = windowId
         val app = application as TeperaApp
         setContent {
             ProvideAppLocale {
@@ -45,7 +50,8 @@ class PlanOverlayActivity : ComponentActivity() {
                         gateRepository = app.gateRepository,
                         packageName = packageName,
                         windowId = windowId,
-                        onDone = { finish() }
+                        onDone = { finish() },
+                        onDecided = { decided = true }
                     )
                 }
             }
@@ -55,6 +61,8 @@ class PlanOverlayActivity : ComponentActivity() {
     /** Людина пішла з листа (Home, «Недавні», блокування): нічого не лишаємо, наступний показ відкриє свіжий. */
     override fun onStop() {
         super.onStop()
+        // Без вибору («назад», Home, блокування) показ не рахується: стрічка, відкрита знову, отримає підказку без очікування дебаунсу.
+        if (!decided) windowId?.let { PlanOverlayStore.clearShown(this, it) }
         if (!isFinishing) finish()
     }
 }

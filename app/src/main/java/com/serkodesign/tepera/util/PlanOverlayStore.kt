@@ -38,6 +38,9 @@ object PlanOverlayStore {
         p.edit().putLong(KEY_LAST_PREFIX + windowId, nowMillis).putInt(KEY_SHOWN, p.getInt(KEY_SHOWN, 0) + 1).apply()
     }
 
+    /** Лист закрили без вибору («назад», Home): показ не рахуємо, щоб стрічка, відкрита знову, не лишилась без підказки на весь дебаунс. */
+    fun clearShown(context: Context, windowId: String) = prefs(context).edit().remove(KEY_LAST_PREFIX + windowId).apply()
+
     /** Підказка, від якої людина відмовилась («Інша ідея», «Відкрити на 5 хв», «Не сьогодні»): кілька днів її не повторюємо. */
     fun recordDeclined(context: Context, id: ActivitySuggestions.Id, nowMillis: Long = System.currentTimeMillis()) {
         val keep = nowMillis - ActivitySuggestions.DECLINE_DAYS * 24L * 3_600_000L

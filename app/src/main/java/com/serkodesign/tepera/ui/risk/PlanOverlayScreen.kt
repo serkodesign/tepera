@@ -74,7 +74,9 @@ fun PlanOverlayScreen(
     gateRepository: GateRepository,
     packageName: String,
     windowId: String,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    /** Людина зробила вибір («Так», «Відкрити на 5 хв»); «назад» і вихід з листа вибором не вважаються. */
+    onDecided: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as TeperaApp
@@ -107,6 +109,7 @@ fun PlanOverlayScreen(
 
     fun accept(minutes: Int) {
         val categoryId = content?.suggestion?.categoryId ?: return
+        onDecided()
         scope.launch {
             startPlannedCategoryTimer(context, categoryId, minutes)
             leave()
@@ -125,6 +128,7 @@ fun PlanOverlayScreen(
 
     fun openForFiveMinutes() {
         val c = content ?: return
+        onDecided()
         PlanOverlayStore.recordDeclined(context, c.suggestion.id)
         PlanOverlayStore.recordContinued(context)
         PlanOverlayStore.setPendingSoftExit(
@@ -183,7 +187,7 @@ fun PlanOverlayScreen(
                 } else {
                     SuggestionStep(
                         suggestion = c.suggestion,
-                        onYes = { if (c.suggestion.categoryId != null) choosingDuration = true else leave() },
+                        onYes = { if (c.suggestion.categoryId != null) choosingDuration = true else { onDecided(); leave() } },
                         onAnother = ::anotherIdea,
                         onOpenFive = ::openForFiveMinutes
                     )

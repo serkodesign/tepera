@@ -646,7 +646,7 @@
     <string name="v3_overlay_label">Ти відкрив %1$s</string>
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
-    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; не частіше разу на 20 хв для однієї години.</string>
+    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; не частіше разу на 10 хв для однієї години.</string>
     <string name="v3_tester_nudge_now">Нагадати зараз</string>
     <string name="v3_tester_nudge_sent">Нагадування надіслано</string>
     <string name="v3_tester_nudge_none">Нема вікна з планом, або сповіщення вимкнені</string>

@@ -38,7 +38,8 @@ class PlanOverlayRuleTest {
     @Test
     fun `recently shown idea is not repeated until debounce passes`() {
         val now = 10_000_000_000L
-        assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 5 * 60_000L, nowMillis = now))
+        assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 8 * 60_000L, nowMillis = now))
+        assertEquals("w1", pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 12 * 60_000L, nowMillis = now))
         assertEquals("w1", pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 25 * 60_000L, nowMillis = now))
     }
 }

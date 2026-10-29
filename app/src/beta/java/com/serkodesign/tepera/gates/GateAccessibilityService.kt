@@ -3,6 +3,7 @@ package com.serkodesign.tepera.gates
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
 import com.serkodesign.tepera.BuildConfig
@@ -88,13 +89,17 @@ class GateAccessibilityService : AccessibilityService() {
         if (BuildConfig.V3_MVP) softExit.onForeground(pkg, countsAsLeaving = packageManager.getLaunchIntentForPackage(pkg) != null)
         if (pkg == lastPackage) {
             lastSeenMillis[pkg] = now
+            log("$pkg: той самий застосунок уже на екрані — перехід не новий")
             return
         }
 
         val previousSeen = lastSeenMillis[pkg]
         lastPackage = pkg
         lastSeenMillis[pkg] = now
-        if (previousSeen != null && now - previousSeen <= SAME_SESSION_MILLIS) return
+        if (previousSeen != null && now - previousSeen <= SAME_SESSION_MILLIS) {
+            log("$pkg: повернення за ${(now - previousSeen) / 1000} с — та сама сесія (до ${SAME_SESSION_MILLIS / 1000} с)")
+            return
+        }
 
         scope.launch {
             // Ворота (затримка) важливіші за план: якщо пауза воріт показується, план цього разу не потрібен.
@@ -110,9 +115,9 @@ class GateAccessibilityService : AccessibilityService() {
     /** Етап 8: стрічка відкрита всередині ввімкненого вікна — показуємо підказку, що зробити замість, поверх неї. */
     private suspend fun showPlanIfInsideWindow(pkg: String) {
         // Вимкнути план можна лише зсередини Tepera (перемикач у налаштуваннях, пауза чи вимкнення вікна) — з самого листа чи сповіщення ні.
-        if (!PlanOverlayStore.isEnabled(this)) return
+        if (!PlanOverlayStore.isEnabled(this)) return log("$pkg: план поверх стрічки вимкнено в налаштуваннях")
         val app = application as TeperaApp
-        if (pkg !in app.feedAppRepository.packages()) return
+        if (pkg !in app.feedAppRepository.packages()) return log("$pkg: не в списку стрічок")
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(
                 NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
@@ -121,9 +126,25 @@ class GateAccessibilityService : AccessibilityService() {
         }
         val nowMillis = System.currentTimeMillis()
         val now = LocalDateTime.ofInstant(Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault())
-        val windowId = PlanOverlayRule.pick(candidates, now, nowMillis, { PlanOverlayStore.lastShownMillis(this, it) }) ?: return
+        val windowId = PlanOverlayRule.pick(candidates, now, nowMillis, { PlanOverlayStore.lastShownMillis(this, it) })
+        if (windowId == null) {
+            val inside = PlanOverlayRule.inside(candidates, now)
+            if (inside.isEmpty()) {
+                log("$pkg: зараз нема активного вікна (вікон: ${candidates.size}, ввімкнених і не на паузі: ${candidates.count { it.enabled }})")
+            } else {
+                val left = inside.minOf { PlanOverlayRule.DEBOUNCE_MILLIS - (nowMillis - PlanOverlayStore.lastShownMillis(this, it.id)) } / 1000
+                log("$pkg: вікно активне, але підказку вже показували — дебаунс ще $left с")
+            }
+            return
+        }
+        log("$pkg: показую підказку вікна $windowId")
         PlanOverlayStore.recordShown(this, windowId, nowMillis)
         launchTepera(pkg, planWindowId = windowId)
+    }
+
+    /** Причина показу чи відмови оверлея — лише в debug-збірці (назви застосунків у release-логи не пишемо). */
+    private fun log(message: String) {
+        if (BuildConfig.DEBUG) Log.d(LOG_TAG, message)
     }
 
     private fun launchTepera(pkg: String, planWindowId: String?) {
@@ -171,6 +192,7 @@ class GateAccessibilityService : AccessibilityService() {
     )
 
     private companion object {
+        const val LOG_TAG = "TeperaPlan"
         const val SAME_SESSION_MILLIS = 30_000L
         const val OWN_WINDOW_MILLIS = 5_000L
     }
