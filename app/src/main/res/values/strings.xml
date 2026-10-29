@@ -611,9 +611,9 @@
     <string name="widget_info_last_format">%1$s · сьогодні о %2$s</string>
     <string name="widget_info_chip_format">%1$s %2$s</string>
 
-    <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): години ризику. Поки лише в beta-збірці. -->
+    <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): години скролінгу. Поки лише в beta-збірці. -->
     <string name="v3_nudge_channel_name">Нагадування про план</string>
-    <string name="v3_section_title">Години ризику (beta)</string>
+    <string name="v3_section_title">Години скролінгу (beta)</string>
     <string name="v3_feed_picker_action">Застосунки-стрічки</string>
     <string name="v3_nudge_info_action">Нагадування про план</string>
     <string name="v3_feed_title">Застосунки-стрічки</string>
@@ -622,7 +622,7 @@
     <string name="v3_feed_section_all">Усі застосунки</string>
     <string name="v3_feed_empty">Поки немає даних про користування застосунками. Надайте доступ до статистики використання.</string>
     <string name="v3_nudge_title">Нагадування про план</string>
-    <string name="v3_nudge_explain">Tepera може раз на день, за 10 хвилин до вашої години ризику, тихо нагадати ваш власний план. Без звуку й вібрації, не частіше разу на добу. Без дозволу все інше працює, не працюють лише нагадування.</string>
+    <string name="v3_nudge_explain">Tepera може раз на день, за 10 хвилин до вашої години скролінгу, тихо нагадати ваш власний план. Без звуку й вібрації, не частіше разу на добу. Без дозволу все інше працює, не працюють лише нагадування.</string>
     <string name="v3_nudge_status_on">Сповіщення дозволені</string>
     <string name="v3_nudge_status_off">Сповіщення вимкнені</string>
     <string name="v3_nudge_allow">Дозволити сповіщення</string>
@@ -687,9 +687,9 @@
     <string name="v3_home_need_feeds_body">Tepera рахуватиме час лише в застосунках, які ви оберете.</string>
     <string name="v3_observing_hint">Нічого робити не треба — користуйся телефоном як завжди. Чесніше, якщо цього тижня ти не змінюєш звичок.</string>
     <string name="v3_heat_legend_feeds">стрічки</string>
-    <string name="v3_heat_legend_window">година ризику</string>
+    <string name="v3_heat_legend_window">година скролінгу</string>
     <string name="v3_heat_description">Теплова карта: час у стрічках за останні 7 днів по годинах.</string>
-    <string name="v3_heat_window_description">%1$s Години ризику: %2$s.</string>
+    <string name="v3_heat_window_description">%1$s Години скролінгу: %2$s.</string>
     <string name="v3_teaser_format">Вже помітно: близько %1$s схожі між собою. Перевірю ще %2$d дн.</string>
     <string name="v3_windows_intro_format">За тиждень стрічки повторювались у вікнах: %1$d. Решту дня Tepera не втручатиметься.</string>
     <string name="v3_windows_empty">Стабільних годин не знайшов — і це теж добре. Перевірю ще тиждень.</string>
@@ -704,7 +704,7 @@
     <string name="v3_part_evening">Увечері</string>
     <string name="v3_part_night">Уночі</string>
     <string name="v3_mode_label">Режим v3 (beta)</string>
-    <string name="v3_mode_hint">Замінює головний екран на «Години ризику». Старі дані й екрани не видаляються: вимкніть, щоб повернути звичайний вигляд.</string>
+    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу». Старі дані й екрани не видаляються: вимкніть, щоб повернути звичайний вигляд.</string>
     <string name="v3_tester_restart">Пройти онбординг v3 знову</string>
 
     <!-- v3.0 MVP, Етап 3: L5 «План якщо — то» (Figma 911:1066). Підказки вечора/обіду — з макета, ранку/дня — нейтральні. -->
@@ -759,7 +759,7 @@
     <string name="v3_why_and">" і "</string>
     <string name="v3_why_line3_format">У %1$s вікна не було — і це теж нормально.</string>
     <string name="v3_why_footer">Це не оцінка, а лише повторюваність. Tepera рахує все на телефоні.</string>
-    <string name="v3_why_toggle">Вважати це вікно годиною ризику</string>
+    <string name="v3_why_toggle">Вважати це вікно годиною скролінгу</string>
     <string name="v3_card_disabled">Вимкнено — вікно не враховується</string>
     <string name="v3_windows_all_off">Усі вікна вимкнено. Увімкнути можна в картці вікна.</string>
     <string-array name="v3_weekdays_accusative">
@@ -835,7 +835,7 @@
     <string name="v3_card_dots_label">Останні 7 днів</string>
     <string name="v3_card_dots_cd">Останні 7 днів: збіглося %1$d з %2$d</string>
     <string name="v3_card_disabled_chip">Вимкнено</string>
-    <string name="v3_windows_section">Години ризику</string>
+    <string name="v3_windows_section">Години скролінгу</string>
     <string name="v3_summary_per_day">Хвилин у вікні за добу</string>
     <string name="v3_summary_stat_before">Було</string>
     <string name="v3_summary_stat_now">Тепер</string>

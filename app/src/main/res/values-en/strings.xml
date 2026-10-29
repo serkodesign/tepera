@@ -594,9 +594,9 @@
     <string name="widget_info_last_format">%1$s · today at %2$s</string>
     <string name="widget_info_chip_format">%1$s %2$s</string>
 
-    <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): risk hours. Beta build only for now. -->
+    <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): scrolling hours. Beta build only for now. -->
     <string name="v3_nudge_channel_name">Plan reminders</string>
-    <string name="v3_section_title">Risk hours (beta)</string>
+    <string name="v3_section_title">Scrolling hours (beta)</string>
     <string name="v3_feed_picker_action">Feed apps</string>
     <string name="v3_nudge_info_action">Plan reminders</string>
     <string name="v3_feed_title">Feed apps</string>
@@ -605,7 +605,7 @@
     <string name="v3_feed_section_all">All apps</string>
     <string name="v3_feed_empty">No app usage data yet. Grant usage access first.</string>
     <string name="v3_nudge_title">Plan reminders</string>
-    <string name="v3_nudge_explain">Once a day, 10 minutes before your risk hour, Tepera can quietly remind you of your own plan. No sound or vibration, never more than once a day. Without permission everything else works; only the reminders do not.</string>
+    <string name="v3_nudge_explain">Once a day, 10 minutes before your scrolling hour, Tepera can quietly remind you of your own plan. No sound or vibration, never more than once a day. Without permission everything else works; only the reminders do not.</string>
     <string name="v3_nudge_status_on">Notifications are allowed</string>
     <string name="v3_nudge_status_off">Notifications are off</string>
     <string name="v3_nudge_allow">Allow notifications</string>
@@ -670,9 +670,9 @@
     <string name="v3_home_need_feeds_body">Tepera will only count time in the apps you choose.</string>
     <string name="v3_observing_hint">There is nothing to do: use your phone as usual. It is more honest if you do not change your habits this week.</string>
     <string name="v3_heat_legend_feeds">feeds</string>
-    <string name="v3_heat_legend_window">risk hour</string>
+    <string name="v3_heat_legend_window">scrolling hour</string>
     <string name="v3_heat_description">Heat map: time in feeds over the last 7 days, by hour.</string>
-    <string name="v3_heat_window_description">%1$s Risk hours: %2$s.</string>
+    <string name="v3_heat_window_description">%1$s Scrolling hours: %2$s.</string>
     <string name="v3_teaser_format">Already visible: around %1$s looks similar from day to day. I will check %2$d more days.</string>
     <string name="v3_windows_intro_format">Over the week feeds repeated in these windows: %1$d. The rest of the day Tepera will not interfere.</string>
     <string name="v3_windows_empty">I did not find stable hours, and that is fine too. I will check another week.</string>
@@ -687,7 +687,7 @@
     <string name="v3_part_evening">Evening</string>
     <string name="v3_part_night">Night</string>
     <string name="v3_mode_label">v3 mode (beta)</string>
-    <string name="v3_mode_hint">Replaces the home screen with “Risk hours”. Old data and screens are not deleted: turn it off to get the usual look back.</string>
+    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”. Old data and screens are not deleted: turn it off to get the usual look back.</string>
     <string name="v3_tester_restart">Redo v3 onboarding</string>
 
     <!-- v3.0 MVP, stage 3: L5 "If - then" plan (Figma 911:1066). Evening/lunch suggestions come from the design, morning/day are neutral. -->
@@ -742,7 +742,7 @@
     <string name="v3_why_and">" and "</string>
     <string name="v3_why_line3_format">On %1$s there was no window — and that is fine too.</string>
     <string name="v3_why_footer">This is not a grade, only how often it repeats. Tepera counts everything on the phone.</string>
-    <string name="v3_why_toggle">Treat this window as a risk hour</string>
+    <string name="v3_why_toggle">Treat this window as a scrolling hour</string>
     <string name="v3_card_disabled">Turned off — this window is not counted</string>
     <string name="v3_windows_all_off">All windows are turned off. You can turn one back on from its card.</string>
     <string-array name="v3_weekdays_accusative">
@@ -818,7 +818,7 @@
     <string name="v3_card_dots_label">Last 7 days</string>
     <string name="v3_card_dots_cd">Last 7 days: matched %1$d of %2$d</string>
     <string name="v3_card_disabled_chip">Off</string>
-    <string name="v3_windows_section">Risk hours</string>
+    <string name="v3_windows_section">Scrolling hours</string>
     <string name="v3_summary_per_day">Minutes in the window per day</string>
     <string name="v3_summary_stat_before">Before</string>
     <string name="v3_summary_stat_now">Now</string>
