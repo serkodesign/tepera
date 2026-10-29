@@ -14,6 +14,7 @@ object PlanOverlayStore {
     private const val KEY_SHOWN = "shown"
     private const val KEY_CONTINUED = "continued"
     private const val KEY_LEFT = "left"
+    private const val KEY_ACCEPTED = "accepted"
     private const val KEY_DECLINED = "declined"
     private const val KEY_LAST_PREFIX = "last_"
     private const val KEY_PENDING_PACKAGE = "pending_pkg"
@@ -57,7 +58,11 @@ object PlanOverlayStore {
 
     fun recordContinued(context: Context) = bump(context, KEY_CONTINUED)
 
+    /** Лист закрито без вибору («назад»): лічильник для екрана тестувальників. */
     fun recordLeft(context: Context) = bump(context, KEY_LEFT)
+
+    /** «Так, роблю це» (з тривалістю чи без). */
+    fun recordAccepted(context: Context) = bump(context, KEY_ACCEPTED)
 
     /** Сесія «Відкрити на 5 хв», яку тільки-но започаткував лист плану; сервіс забирає її одразу, як лише вона записана. */
     data class PendingSoftExit(val packageName: String, val appLabel: String, val thenText: String, val startedAtMillis: Long)
@@ -122,6 +127,7 @@ object PlanOverlayStore {
     fun shownCount(context: Context): Int = prefs(context).getInt(KEY_SHOWN, 0)
     fun continuedCount(context: Context): Int = prefs(context).getInt(KEY_CONTINUED, 0)
     fun leftCount(context: Context): Int = prefs(context).getInt(KEY_LEFT, 0)
+    fun acceptedCount(context: Context): Int = prefs(context).getInt(KEY_ACCEPTED, 0)
 
     private fun bump(context: Context, key: String) {
         val p = prefs(context)

@@ -2,7 +2,6 @@ package com.serkodesign.tepera.data.repository
 
 import com.serkodesign.tepera.data.local.dao.NudgeEventDao
 import com.serkodesign.tepera.data.local.dao.ObservationPeriodDao
-import com.serkodesign.tepera.data.local.dao.PlanDao
 import com.serkodesign.tepera.data.local.dao.RiskWindowDao
 import com.serkodesign.tepera.data.local.entity.NudgeAction
 import com.serkodesign.tepera.domain.risk.DayType
@@ -23,7 +22,6 @@ data class TesterWindowStat(
     val observedDays: Int,
     val avgMinutes: Int,
     val isUserDisabled: Boolean,
-    val hasPlan: Boolean,
     val shiftSuggested: Boolean,
     /** Вікно задала людина вручну (а не знайшов алгоритм). */
     val isManual: Boolean = false,
@@ -42,14 +40,20 @@ data class TesterStats(
     val nudgesScheduled: Int,
     val nudgesShown: Int,
     val nudgesOk: Int,
-    val nudgesNotToday: Int,
     /** Середня затримка показу відносно запланованого, хвилини; `null`, доки нічого не показано. */
     val nudgeDelayMinutes: Double? = null,
-    /** Етап 8: скільки разів показано план поверх стрічки і що людина обрала; `null` — функція не використовується (не beta). */
-    val overlay: Triple<Int, Int, Int>? = null,
+    /** Етап 8: що людина обрала на листі плану поверх стрічки; `null` — функція не використовується (не beta). */
+    val overlay: OverlayCounts? = null,
     /** М'який вихід за 7 діб: сесій розпочато / вчасно / «Ще 5»; `null` — не beta. */
-    val softExit: Triple<Int, Int, Int>? = null
+    val softExit: Triple<Int, Int, Int>? = null,
+    /** Для критерію «≥60% нагадувань не вимкнено»: чи дозволені сповіщення, чи ввімкнений сервіс доступності; `null` — не відомо/не beta. */
+    val appVersion: String? = null,
+    val notificationsEnabled: Boolean? = null,
+    val accessibilityEnabled: Boolean? = null
 )
+
+/** Лист плану: скільки разів показано, «Так», «Відкрити на 5 хв», закрито без вибору. */
+data class OverlayCounts(val shown: Int, val accepted: Int, val openedFive: Int, val dismissed: Int)
 
 /**
  * v3.0 MVP, Етап 7: підсумок для прихованого екрана «Статистика для тестувальників». Лише локальні дані,
@@ -59,7 +63,6 @@ class TesterStatsRepository(
     private val slots: UsageSlotRepository,
     private val feedApps: FeedAppRepository,
     private val windowDao: RiskWindowDao,
-    private val planDao: PlanDao,
     private val nudgeDao: NudgeEventDao,
     private val periodDao: ObservationPeriodDao
 ) {
@@ -85,7 +88,6 @@ class TesterStatsRepository(
                 TesterWindowStat(
                     w.startMinute, w.endMinute, w.dayType, w.recurrenceDays, w.observedDays, w.avgMinutes,
                     w.isUserDisabled,
-                    hasPlan = planDao.getForWindow(w.id) != null,
                     shiftSuggested = w.suggestedStartMinute != null,
                     isManual = w.isManual,
                     baselineMinutes = WindowMinutes.averagePerDay(records, baselineDays, w.startMinute, w.endMinute, w.dayType, cfg),
@@ -103,7 +105,6 @@ class TesterStatsRepository(
                 nudgesScheduled = nudgeDao.countScheduled(all.first, all.second),
                 nudgesShown = nudgeDao.countShown(all.first, all.second),
                 nudgesOk = nudgeDao.countByAction(NudgeAction.OK, all.first, all.second),
-                nudgesNotToday = nudgeDao.countByAction(NudgeAction.NOT_TODAY, all.first, all.second),
                 nudgeDelayMinutes = nudgeDao.averageDelayMillis()?.let { it / 60_000.0 }
             )
         }
@@ -121,7 +122,12 @@ class TesterStatsRepository(
         fun format(s: TesterStats, t: ReportText): String = buildString {
             fun minutes(value: Double?) = value?.let { t.minutes.format(String.format(Locale.ROOT, "%.0f", it)) } ?: DASH
 
+            fun yesNo(value: Boolean?) = when (value) { true -> t.yes; false -> t.no; null -> DASH }
+
             appendLine(t.title)
+            if (s.appVersion != null || s.notificationsEnabled != null || s.accessibilityEnabled != null) {
+                appendLine(t.status.format(s.appVersion ?: DASH, yesNo(s.notificationsEnabled), yesNo(s.accessibilityEnabled)))
+            }
             appendLine(t.firstData.format(s.firstDataDate?.toString() ?: DASH, s.coveredDays, s.feedAppCount))
             appendLine(
                 t.periods.format(
@@ -137,9 +143,8 @@ class TesterStatsRepository(
                         if (w.isManual) t.tagManual else null,
                         if (w.dayType == DayType.WEEKDAYS) t.tagWeekdays else null,
                         if (w.isUserDisabled) t.tagDisabled else null,
-                        if (w.hasPlan) t.tagPlan else t.tagNoPlan,
                         if (w.shiftSuggested) t.tagShift else null
-                    ).joinToString(", ")
+                    ).joinToString(", ").let { if (it.isEmpty()) "" else " ($it)" }
                     appendLine(
                         t.window.format(
                             hm(w.startMinute), hm(w.endMinute), tags, w.recurrenceDays, w.observedDays, w.avgMinutes,
@@ -148,9 +153,9 @@ class TesterStatsRepository(
                     )
                 }
             }
-            appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk, s.nudgesNotToday))
+            appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk))
             s.nudgeDelayMinutes?.let { appendLine(t.nudgeDelay.format(String.format(Locale.ROOT, "%.1f", it))) }
-            s.overlay?.let { (shown, left, opened) -> appendLine(t.overlay.format(shown, left, opened)) }
+            s.overlay?.let { appendLine(t.overlay.format(it.shown, it.accepted, it.openedFive, it.dismissed)) }
             s.softExit?.let { (started, onTime, extended) -> appendLine(t.softExit.format(started, onTime, extended)) }
             appendLine(t.note)
         }
@@ -172,13 +177,14 @@ data class ReportText(
     val tagManual: String,
     val tagWeekdays: String,
     val tagDisabled: String,
-    val tagPlan: String,
-    val tagNoPlan: String,
     val tagShift: String,
     val minutes: String,
     val nudges: String,
     val nudgeDelay: String,
     val overlay: String,
     val note: String,
-    val softExit: String = ""
+    val softExit: String = "",
+    val status: String = "",
+    val yes: String = "",
+    val no: String = ""
 )

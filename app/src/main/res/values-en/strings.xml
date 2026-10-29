@@ -625,7 +625,7 @@
     <string name="v3_report_period_not_set">not set yet</string>
     <string name="v3_report_range">%1$s — %2$s</string>
     <string name="v3_report_no_windows">No windows</string>
-    <string name="v3_report_window">Window %1$s–%2$s (%3$s): recurrence %4$d/%5$d, ≈%6$d min; minutes in the window per day: observation %7$s → current week %8$s</string>
+    <string name="v3_report_window">Window %1$s–%2$s%3$s: recurrence %4$d/%5$d, ≈%6$d min; minutes in the window per day: observation %7$s → current week %8$s</string>
     <string name="v3_overlay_label">You opened %1$s</string>
     <string name="v3_overlay_title">It\'s your hour now, until %1$s</string>
     <string name="v3_overlay_toggle_label">Idea over the feed</string>
@@ -633,16 +633,17 @@
     <string name="v3_tester_nudge_now">Remind me now</string>
     <string name="v3_tester_nudge_sent">Reminder sent</string>
     <string name="v3_tester_nudge_none">No window with a plan, or notifications are off</string>
-    <string name="v3_report_overlay">Plan over the feed: shown %1$d, \"Leave\" %2$d, \"Open\" %3$d</string>
+    <string name="v3_report_overlay">Suggestion over the feed: shown %1$d, \"Yes\" %2$d, \"Open for 5 min\" %3$d, closed without a choice %4$d</string>
     <string name="v3_report_tag_manual">manual</string>
     <string name="v3_report_tag_weekdays">weekdays</string>
     <string name="v3_report_tag_disabled">turned off</string>
-    <string name="v3_report_tag_plan">has a plan</string>
-    <string name="v3_report_tag_no_plan">no plan</string>
     <string name="v3_report_tag_shift">shift suggested</string>
     <string name="v3_report_minutes">%1$s min</string>
-    <string name="v3_report_nudges">Reminders: scheduled %1$d, shown %2$d, \"OK\" %3$d, \"Not today\" %4$d</string>
+    <string name="v3_report_nudges">Reminders: scheduled %1$d, shown %2$d, \"OK\" %3$d</string>
     <string name="v3_report_note">Note: the windows were picked from the observation week, so its minutes in the windows are higher than in a usual week — the comparison is approximate.</string>
+    <string name="v3_report_status">Version %1$s · notifications: %2$s · accessibility service: %3$s</string>
+    <string name="v3_report_yes">yes</string>
+    <string name="v3_report_no">no</string>
 
     <!-- v3.0 MVP, stage 3: onboarding L1-L2, home screen L3/L4 (Figma "App concept", page v3.0). -->
     <string name="v3_welcome_title">You do not pick up your phone by accident</string>

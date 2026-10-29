@@ -17,34 +17,34 @@ class TesterStatsFormatTest {
         periodNotSet = "ще не заданий",
         range = "%1\$s — %2\$s",
         noWindows = "Вікон нема",
-        window = "Вікно %1\$s–%2\$s (%3\$s): повторюваність %4\$d/%5\$d, ≈%6\$d хв; " +
+        window = "Вікно %1\$s–%2\$s%3\$s: повторюваність %4\$d/%5\$d, ≈%6\$d хв; " +
             "хвилини у вікні за добу: спостереження %7\$s → поточний тиждень %8\$s",
-        tagManual = "вручну", tagWeekdays = "будні", tagDisabled = "вимкнене", tagPlan = "є план", tagNoPlan = "без плану",
+        tagManual = "вручну", tagWeekdays = "будні", tagDisabled = "вимкнене",
         tagShift = "запропоновано зсув",
         minutes = "%1\$s хв",
-        nudges = "Нагадування: заплановано %1\$d, показано %2\$d, «Добре» %3\$d, «Не сьогодні» %4\$d",
+        nudges = "Нагадування: заплановано %1\$d, показано %2\$d, «Добре» %3\$d",
         nudgeDelay = "Середня затримка: %1\$s хв",
-        overlay = "План поверх стрічки: показано %1\$d, «Вийти» %2\$d, «Відкрити» %3\$d",
-        note = "Примітка: порівняння орієнтовне."
+        overlay = "Підказка поверх стрічки: показано %1\$d, «Так» %2\$d, «Відкрити на 5 хв» %3\$d, закрито без вибору %4\$d",
+        note = "Примітка: порівняння орієнтовне.",
+        status = "Версія %1\$s · сповіщення: %2\$s · сервіс доступності: %3\$s", yes = "так", no = "ні"
     )
 
     private val en = uk.copy(
         title = "Tepera v3 · tester statistics",
         noWindows = "No windows",
-        window = "Window %1\$s–%2\$s (%3\$s): recurrence %4\$d/%5\$d, ≈%6\$d min; observation %7\$s → current week %8\$s",
+        window = "Window %1\$s–%2\$s%3\$s: recurrence %4\$d/%5\$d, ≈%6\$d min; observation %7\$s → current week %8\$s",
         minutes = "%1\$s min",
-        tagPlan = "has a plan"
     )
 
     private fun stats(windows: List<TesterWindowStat>) = TesterStats(
         firstDataDate = LocalDate.of(2026, 10, 16), coveredDays = 10, feedAppCount = 3,
         baselineRange = range, currentRange = LocalDate.of(2026, 10, 25) to LocalDate.of(2026, 10, 31),
-        windows = windows, nudgesScheduled = 4, nudgesShown = 3, nudgesOk = 2, nudgesNotToday = 1
+        windows = windows, nudgesScheduled = 4, nudgesShown = 3, nudgesOk = 2
     )
 
     private fun window(baseline: Double?, current: Double?, dayType: DayType = DayType.ALL) = TesterWindowStat(
         startMinute = 610, endMinute = 680, dayType = dayType, recurrenceDays = 5, observedDays = 7, avgMinutes = 30,
-        isUserDisabled = false, hasPlan = true, shiftSuggested = false, baselineMinutes = baseline, currentMinutes = current
+        isUserDisabled = false, shiftSuggested = false, baselineMinutes = baseline, currentMinutes = current
     )
 
     @Test
@@ -53,8 +53,8 @@ class TesterStatsFormatTest {
         assertTrue(text.contains("10:10–11:20"))
         assertTrue(text.contains("повторюваність 5/7"))
         assertTrue(text.contains("спостереження 31 хв → поточний тиждень 18 хв"))
-        assertTrue(text.contains("заплановано 4, показано 3, «Добре» 2, «Не сьогодні» 1"))
-        assertTrue(text.contains("є план"))
+        assertTrue(text.contains("заплановано 4, показано 3, «Добре» 2"))
+        assertFalse(text.contains("Не сьогодні"))
         assertTrue(text.contains("Перші дані: 2026-10-16; днів покрито: 10; стрічок обрано: 3"))
     }
 
@@ -68,7 +68,7 @@ class TesterStatsFormatTest {
     @Test
     fun `manual windows are tagged and algorithm windows are not`() {
         val manual = TesterStatsRepository.format(stats(listOf(window(1.0, 2.0).copy(isManual = true))), uk)
-        assertTrue(manual.contains("(вручну, є план)"))
+        assertTrue(manual.contains("(вручну)"))
         val found = TesterStatsRepository.format(stats(listOf(window(1.0, 2.0))), uk)
         assertFalse(found.contains("вручну"))
     }
@@ -76,8 +76,17 @@ class TesterStatsFormatTest {
     @Test
     fun `overlay counters appear only when present`() {
         assertFalse(TesterStatsRepository.format(stats(emptyList()), uk).contains("поверх стрічки"))
-        val text = TesterStatsRepository.format(stats(emptyList()).copy(overlay = Triple(5, 3, 2)), uk)
-        assertTrue(text.contains("показано 5, «Вийти» 3, «Відкрити» 2"))
+        val text = TesterStatsRepository.format(stats(emptyList()).copy(overlay = OverlayCounts(5, 2, 2, 1)), uk)
+        assertTrue(text.contains("показано 5, «Так» 2, «Відкрити на 5 хв» 2, закрито без вибору 1"))
+    }
+
+    @Test
+    fun `status line shows version notifications and service, and is omitted when nothing is known`() {
+        assertFalse(TesterStatsRepository.format(stats(emptyList()), uk).contains("Версія"))
+        val text = TesterStatsRepository.format(
+            stats(emptyList()).copy(appVersion = "3.0.0-beta", notificationsEnabled = false, accessibilityEnabled = true), uk
+        )
+        assertTrue(text.contains("Версія 3.0.0-beta · сповіщення: ні · сервіс доступності: так"))
     }
 
     @Test
@@ -98,7 +107,7 @@ class TesterStatsFormatTest {
     fun `report follows the language of the templates`() {
         val text = TesterStatsRepository.format(stats(listOf(window(31.4, 18.0))), en)
         assertTrue(text.startsWith("Tepera v3 · tester statistics"))
-        assertTrue(text.contains("Window 10:10–11:20 (has a plan): recurrence 5/7, ≈30 min; observation 31 min → current week 18 min"))
+        assertTrue(text.contains("Window 10:10–11:20: recurrence 5/7, ≈30 min; observation 31 min → current week 18 min"))
         assertFalse(text.contains("Вікно"))
     }
 }

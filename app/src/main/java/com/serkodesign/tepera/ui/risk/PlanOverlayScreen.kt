@@ -101,7 +101,6 @@ fun PlanOverlayScreen(
     }
 
     fun leave() {
-        PlanOverlayStore.recordLeft(context)
         // Підказку показано поверх вже запущеного застосунку, тому вихід веде на робочий стіл (як у воріт через доступність).
         context.startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         finished = true
@@ -110,6 +109,7 @@ fun PlanOverlayScreen(
     fun accept(minutes: Int) {
         val categoryId = content?.suggestion?.categoryId ?: return
         onDecided()
+        PlanOverlayStore.recordAccepted(context)
         scope.launch {
             startPlannedCategoryTimer(context, categoryId, minutes)
             leave()
@@ -144,7 +144,10 @@ fun PlanOverlayScreen(
     }
 
     BackHandler(enabled = content != null && !finished) {
-        if (choosingDuration) choosingDuration = false else leave()
+        if (choosingDuration) choosingDuration = false else {
+            PlanOverlayStore.recordLeft(context)
+            leave()
+        }
     }
 
     val c = content ?: return
@@ -187,7 +190,7 @@ fun PlanOverlayScreen(
                 } else {
                     SuggestionStep(
                         suggestion = c.suggestion,
-                        onYes = { if (c.suggestion.categoryId != null) choosingDuration = true else { onDecided(); leave() } },
+                        onYes = { if (c.suggestion.categoryId != null) choosingDuration = true else { onDecided(); PlanOverlayStore.recordAccepted(context); leave() } },
                         onAnother = ::anotherIdea,
                         onOpenFive = ::openForFiveMinutes
                     )

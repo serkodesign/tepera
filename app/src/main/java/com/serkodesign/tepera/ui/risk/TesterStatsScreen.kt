@@ -31,7 +31,10 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.repository.TesterStats
+import androidx.core.app.NotificationManagerCompat
+import com.serkodesign.tepera.data.repository.OverlayCounts
 import com.serkodesign.tepera.data.repository.ReportText
+import com.serkodesign.tepera.util.GateAccessibility
 import com.serkodesign.tepera.data.repository.TesterStatsRepository
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -52,9 +55,15 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
     LaunchedEffect(Unit) {
         stats = app.testerStatsRepository.build().copy(
             overlay = if (BuildConfig.GATE_ACCESSIBILITY) {
-                Triple(PlanOverlayStore.shownCount(context), PlanOverlayStore.leftCount(context), PlanOverlayStore.continuedCount(context))
+                OverlayCounts(
+                    PlanOverlayStore.shownCount(context), PlanOverlayStore.acceptedCount(context),
+                    PlanOverlayStore.continuedCount(context), PlanOverlayStore.leftCount(context)
+                )
             } else null,
-            softExit = if (BuildConfig.GATE_ACCESSIBILITY) PlanOverlayStore.softExitCounts(context) else null
+            softExit = if (BuildConfig.GATE_ACCESSIBILITY) PlanOverlayStore.softExitCounts(context) else null,
+            appVersion = BuildConfig.VERSION_NAME,
+            notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled(),
+            accessibilityEnabled = if (BuildConfig.GATE_ACCESSIBILITY) GateAccessibility.isEnabled(context) else null
         )
     }
     val scope = rememberCoroutineScope()
@@ -81,15 +90,16 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         tagManual = stringResource(R.string.v3_report_tag_manual),
                         tagWeekdays =stringResource(R.string.v3_report_tag_weekdays),
                         tagDisabled = stringResource(R.string.v3_report_tag_disabled),
-                        tagPlan = stringResource(R.string.v3_report_tag_plan),
-                        tagNoPlan = stringResource(R.string.v3_report_tag_no_plan),
                         tagShift = stringResource(R.string.v3_report_tag_shift),
                         minutes = stringResource(R.string.v3_report_minutes),
                         nudges = stringResource(R.string.v3_report_nudges),
                         nudgeDelay = stringResource(R.string.v3_report_nudge_delay),
                         overlay = stringResource(R.string.v3_report_overlay),
                         note = stringResource(R.string.v3_report_note),
-                        softExit = stringResource(R.string.v3_report_soft_exit)
+                        softExit = stringResource(R.string.v3_report_soft_exit),
+                        status = stringResource(R.string.v3_report_status),
+                        yes = stringResource(R.string.v3_report_yes),
+                        no = stringResource(R.string.v3_report_no)
                     )
                     val text = TesterStatsRepository.format(s, reportText)
                     TeperaCard {

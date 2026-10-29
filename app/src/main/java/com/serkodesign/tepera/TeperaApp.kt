@@ -158,7 +158,7 @@ class TeperaApp : Application() {
     val usageSlotRepository: UsageSlotRepository by lazy { UsageSlotRepository(this, database.usageSlotDao(), feedAppRepository, settingsStore) }
     val testerStatsRepository: TesterStatsRepository by lazy {
         TesterStatsRepository(
-            usageSlotRepository, feedAppRepository, database.riskWindowDao(), database.planDao(),
+            usageSlotRepository, feedAppRepository, database.riskWindowDao(),
             database.nudgeEventDao(), database.observationPeriodDao()
         )
     }

@@ -642,7 +642,7 @@
     <string name="v3_report_period_not_set">ще не заданий</string>
     <string name="v3_report_range">%1$s — %2$s</string>
     <string name="v3_report_no_windows">Вікон нема</string>
-    <string name="v3_report_window">Вікно %1$s–%2$s (%3$s): повторюваність %4$d/%5$d, ≈%6$d хв; хвилини у вікні за добу: спостереження %7$s → поточний тиждень %8$s</string>
+    <string name="v3_report_window">Вікно %1$s–%2$s%3$s: повторюваність %4$d/%5$d, ≈%6$d хв; хвилини у вікні за добу: спостереження %7$s → поточний тиждень %8$s</string>
     <string name="v3_overlay_label">Ти відкрив %1$s</string>
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
@@ -650,16 +650,17 @@
     <string name="v3_tester_nudge_now">Нагадати зараз</string>
     <string name="v3_tester_nudge_sent">Нагадування надіслано</string>
     <string name="v3_tester_nudge_none">Нема вікна з планом, або сповіщення вимкнені</string>
-    <string name="v3_report_overlay">План поверх стрічки: показано %1$d, «Вийти» %2$d, «Відкрити» %3$d</string>
+    <string name="v3_report_overlay">Підказка поверх стрічки: показано %1$d, «Так» %2$d, «Відкрити на 5 хв» %3$d, закрито без вибору %4$d</string>
     <string name="v3_report_tag_manual">вручну</string>
     <string name="v3_report_tag_weekdays">будні</string>
     <string name="v3_report_tag_disabled">вимкнене</string>
-    <string name="v3_report_tag_plan">є план</string>
-    <string name="v3_report_tag_no_plan">без плану</string>
     <string name="v3_report_tag_shift">запропоновано зсув</string>
     <string name="v3_report_minutes">%1$s хв</string>
-    <string name="v3_report_nudges">Нагадування: заплановано %1$d, показано %2$d, «Добре» %3$d, «Не сьогодні» %4$d</string>
+    <string name="v3_report_nudges">Нагадування: заплановано %1$d, показано %2$d, «Добре» %3$d</string>
     <string name="v3_report_note">Примітка: вікна підбирались за тижнем спостереження, тож його хвилини у вікнах завищені відносно звичайного тижня — порівняння орієнтовне.</string>
+    <string name="v3_report_status">Версія %1$s · сповіщення: %2$s · сервіс доступності: %3$s</string>
+    <string name="v3_report_yes">так</string>
+    <string name="v3_report_no">ні</string>
 
     <!-- v3.0 MVP, Етап 3: онбординг L1–L2, головний екран L3/L4 (Figma "App concept", сторінка v3.0). -->
     <string name="v3_welcome_title">Ти береш телефон не випадково</string>
