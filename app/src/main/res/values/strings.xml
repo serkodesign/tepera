@@ -630,7 +630,6 @@
     <string name="v3_nudge_rules">Нагадування приходить за 10 хвилин до вікна, лише для вікон із вашим планом, не частіше разу на добу. Кнопки «Добре» і «Не сьогодні» ні до чого не зобов’язують.</string>
     <string name="v3_nudge_notification_title">Скоро твоя година · %1$s</string>
     <string name="v3_nudge_action_ok">Добре</string>
-    <string name="v3_nudge_action_not_today">Не сьогодні</string>
     <string name="v3_report_nudge_delay">Середня затримка нагадування відносно запланованого: %1$s хв</string>
     <string name="v3_tester_title">Статистика для тестувальників</string>
     <string name="v3_tester_copy">Скопіювати як текст</string>
@@ -646,8 +645,8 @@
     <string name="v3_report_window">Вікно %1$s–%2$s (%3$s): повторюваність %4$d/%5$d, ≈%6$d хв; хвилини у вікні за добу: спостереження %7$s → поточний тиждень %8$s</string>
     <string name="v3_overlay_label">Ти відкрив %1$s</string>
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
-    <string name="v3_overlay_toggle_label">План поверх стрічки</string>
-    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить показує ваш план. Потрібен дозвіл «Спеціальні можливості»; не частіше разу на 20 хв для однієї години.</string>
+    <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
+    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; не частіше разу на 20 хв для однієї години.</string>
     <string name="v3_tester_nudge_now">Нагадати зараз</string>
     <string name="v3_tester_nudge_sent">Нагадування надіслано</string>
     <string name="v3_tester_nudge_none">Нема вікна з планом, або сповіщення вимкнені</string>
@@ -812,4 +811,42 @@
     <string name="v3_notify_hint_later">Пізніше</string>
 
     <string name="v3_card_paused">На паузі — стрічки тут зараз не повторюються (відпустка?). Нагадувань не буде; вікно повернеться само за кілька тижнів.</string>
+
+    <!-- Home: редизайн (жовтень 2026) -->
+    <string name="v3_heat_legend_less">менше</string>
+    <string name="v3_heat_legend_more">більше</string>
+    <string name="v3_card_dots_label">Останні 7 днів</string>
+    <string name="v3_card_dots_cd">Останні 7 днів: збіглося %1$d з %2$d</string>
+    <string name="v3_card_disabled_chip">Вимкнено</string>
+    <string name="v3_windows_section">Години ризику</string>
+    <string name="v3_summary_per_day">Хвилин у вікні за добу</string>
+    <string name="v3_summary_stat_before">Було</string>
+    <string name="v3_summary_stat_now">Тепер</string>
+    <string name="v3_summary_stat_ok">«Добре»</string>
+    <string name="v3_summary_soft_started">Сесій «на 5 хв»</string>
+    <string name="v3_summary_soft_on_time">Вчасно</string>
+
+    <!-- Підказки замість плану (жовтень 2026) -->
+    <string name="v3_sg_book">Може, почитаєш книгу?</string>
+    <string name="v3_sg_podcast">Може, послухаєш подкаст з вимкненим екраном?</string>
+    <string name="v3_sg_todo_tomorrow">Може, запишеш 3 справи на завтра?</string>
+    <string name="v3_sg_charge_phone">Може, поставиш телефон на зарядку?</string>
+    <string name="v3_sg_breathe">Може, зробиш три глибокі вдихи?</string>
+    <string name="v3_sg_walk">Може, вийдеш пройтися?</string>
+    <string name="v3_sg_water">Може, вип’єш склянку води?</string>
+    <string name="v3_sg_stretch">Може, розімнешся?</string>
+    <string name="v3_sg_eat_no_phone">Може, поїси без телефона?</string>
+    <string name="v3_sg_call_friend">Може, зателефонуєш близькій людині?</string>
+    <string name="v3_sg_hobby">Може, займешся чимось своїм?</string>
+    <string name="v3_sg_hint">Це лише ідея — вирішуєш ти.</string>
+    <string name="v3_sg_yes">Так, роблю це</string>
+    <string name="v3_sg_another">Інша ідея</string>
+    <string name="v3_sg_duration_title">Скільки часу?</string>
+    <string name="v3_sg_duration_back">Назад</string>
+    <string name="v3_sg_timer_done_title">Час вийшов</string>
+    <string name="v3_sg_timer_done_text">Записав %1$d хв. Таймер зупинено.</string>
+    <string name="v3_session_active">Зараз триває: %1$s</string>
+    <string name="v3_session_finish">Закінчив</string>
+    <string name="v3_next_sub_inside_hint">Tepera підкаже, що зробити замість стрічки</string>
+    <string name="v3_overlay_sheet_title_suggest">Ідея на цей час</string>
 </resources>

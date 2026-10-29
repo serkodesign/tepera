@@ -12,9 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * v3.0 MVP, Етап 4: кнопки сповіщення «Добре» і «Не сьогодні». Обидві лише записують реакцію в `nudge_events` і
- * прибирають сповіщення; «Не сьогодні» лише гасить план поверх стрічки до кінця логічної доби (нагадування й так не більше одного на добу,
- * вікно лишається ввімкненим). Жодного підтвердження чи другого запиту.
+ * v3.0 MVP, Етап 4: кнопка сповіщення «Добре» записує реакцію в `nudge_events` і прибирає сповіщення. Кнопки «Не сьогодні»
+ * більше нема: вимкнути план з самого сповіщення чи листа не можна, лише зсередини Tepera (інакше за день-два це стало б
+ * рефлексом). Варіант NOT_TODAY в enum лишається, бо старі записи в БД його містять.
  */
 class NudgeActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -25,8 +25,6 @@ class NudgeActionReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 (context.applicationContext as TeperaApp).nudgeEventDao.setAction(eventId, action)
-                // «Не сьогодні» гасить і план поверх стрічки на решту цього вечора.
-                if (action == NudgeAction.NOT_TODAY) com.serkodesign.tepera.util.PlanOverlayStore.suppressToday(context)
                 NudgeScheduler.reschedule(context)
             } finally {
                 pending.finish()

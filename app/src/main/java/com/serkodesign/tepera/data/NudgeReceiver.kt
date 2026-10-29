@@ -25,7 +25,8 @@ internal const val NUDGE_NOTIFICATION_ID = 4402
 
 /**
  * v3.0 MVP, Етап 4: спрацювання будильника — вирішує, чи показувати нагадування, показує його (канал «Нагадування про
- * план», низька важливість, без звуку) й планує наступне. Не показує, якщо: нема дозволу, вікно вимкнене чи без плану,
+ * план», низька важливість, без звуку) й планує наступне; текст — підказка, що зробити замість стрічки
+ * ([SuggestionPicker]). Не показує, якщо: нема дозволу, вікно вимкнене чи на паузі,
  * сьогодні вже показували (одне на добу), людина зараз у стрічці, або будильник запізнився так, що вікно вже
  * почалось. Кожне спрацювання пишеться в `nudge_events`: з фактичним часом показу (для виміру похибки) або без нього.
  */
@@ -48,8 +49,7 @@ class NudgeReceiver : BroadcastReceiver() {
         val app = context.applicationContext as TeperaApp
         val now = System.currentTimeMillis()
         val window = app.riskWindowRepository.getWindow(windowId) ?: return
-        val plan = app.riskWindowRepository.getPlan(windowId)
-        if (window.isUserDisabled || window.isPausedAt(now) || plan == null) return
+        if (window.isUserDisabled || window.isPausedAt(now)) return
 
         val zone = ZoneId.systemDefault()
         val startOfToday = Instant.ofEpochMilli(now).atZone(zone).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
@@ -63,31 +63,33 @@ class NudgeReceiver : BroadcastReceiver() {
             shownAt = if (allowed) now else null, action = NudgeAction.NONE
         )
         app.nudgeEventDao.insert(event)
-        if (allowed) show(context, event, window.startMinute, plan.ifText, plan.thenText)
+        if (allowed) {
+            val suggestion = SuggestionPicker.pickFor(context, windowId, nowMillis = now)
+            if (suggestion != null) show(context, event, window.startMinute, context.getString(suggestionTextRes(suggestion.id)))
+        }
     }
 
     companion object {
         /**
-         * Для перевірки на собі (екран тестувальників): показує нагадування негайно для найближчого ввімкненого вікна
-         * з планом, минаючи правила «одне на добу» й «за 10 хв до». Подія пишеться в `nudge_events` як справжня, тож
-         * кнопки «Добре»/«Не сьогодні» теж працюють. Повертає `false`, якщо нема вікна з планом або сповіщення вимкнені.
+         * Для перевірки на собі (екран тестувальників): показує нагадування негайно для найближчого ввімкненого вікна,
+         * минаючи правила «одне на добу» й «за 10 хв до». Подія пишеться в `nudge_events` як справжня, тож кнопки
+         * «Добре»/«Не сьогодні» теж працюють. Повертає `false`, якщо нема вікна або сповіщення вимкнені.
          */
         suspend fun fireNow(context: Context): Boolean {
             val app = context.applicationContext as TeperaApp
             if (!WeeklySummaryWorker.canNotify(context)) return false
             val now = System.currentTimeMillis()
-            val candidates = app.riskWindowRepository.getAll().filter { !it.isUserDisabled && !it.isPausedAt(now) }
-                .mapNotNull { w -> app.riskWindowRepository.getPlan(w.id)?.let { w to it } }
-            val (window, plan) = candidates.firstOrNull() ?: return false
+            val window = app.riskWindowRepository.getAll().firstOrNull { !it.isUserDisabled && !it.isPausedAt(now) } ?: return false
+            val suggestion = SuggestionPicker.pickFor(context, window.id, nowMillis = now) ?: return false
             val event = NudgeEventEntity(
                 id = UUID.randomUUID().toString(), windowId = window.id, scheduledAt = now, shownAt = now, action = NudgeAction.NONE
             )
             app.nudgeEventDao.insert(event)
-            show(context, event, window.startMinute, plan.ifText, plan.thenText)
+            show(context, event, window.startMinute, context.getString(suggestionTextRes(suggestion.id)))
             return true
         }
 
-        private fun show(context: Context, event: NudgeEventEntity, startMinute: Int, ifText: String, thenText: String) {
+        private fun show(context: Context, event: NudgeEventEntity, startMinute: Int, text: String) {
         val open = PendingIntent.getActivity(
             context, 4410,
             Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
@@ -97,14 +99,13 @@ class NudgeReceiver : BroadcastReceiver() {
         val builder = NotificationCompat.Builder(context, NudgeChannel.ID)
             .setSmallIcon(R.drawable.ic_notification_summary)
             .setContentTitle(context.getString(R.string.v3_nudge_notification_title, time))
-            .setContentText(context.getString(R.string.v3_plan_format, ifText, thenText))
-            .setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(R.string.v3_plan_format, ifText, thenText)))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSilent(true)
             .setContentIntent(open)
             .setAutoCancel(true)
             .addAction(0, context.getString(R.string.v3_nudge_action_ok), NudgeActionReceiver.pending(context, event.id, NudgeAction.OK))
-            .addAction(0, context.getString(R.string.v3_nudge_action_not_today), NudgeActionReceiver.pending(context, event.id, NudgeAction.NOT_TODAY))
         try {
             NotificationManagerCompat.from(context).notify(NUDGE_NOTIFICATION_ID, builder.build())
         } catch (e: SecurityException) {

@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.util
 
 import android.content.Context
+import com.serkodesign.tepera.domain.risk.ActivitySuggestions
 
 /**
  * v3.0 MVP, Етап 8 (лише beta): налаштування й лічильники «плану поверх стрічки». SharedPreferences, бо читається з
@@ -13,8 +14,8 @@ object PlanOverlayStore {
     private const val KEY_SHOWN = "shown"
     private const val KEY_CONTINUED = "continued"
     private const val KEY_LEFT = "left"
+    private const val KEY_DECLINED = "declined"
     private const val KEY_LAST_PREFIX = "last_"
-    private const val KEY_SUPPRESSED_DAY = "suppressed_day"
     private const val KEY_PENDING_PACKAGE = "pending_pkg"
     private const val KEY_PENDING_LABEL = "pending_label"
     private const val KEY_PENDING_THEN = "pending_then"
@@ -37,27 +38,47 @@ object PlanOverlayStore {
         p.edit().putLong(KEY_LAST_PREFIX + windowId, nowMillis).putInt(KEY_SHOWN, p.getInt(KEY_SHOWN, 0) + 1).apply()
     }
 
+    /** Підказка, від якої людина відмовилась («Інша ідея», «Відкрити на 5 хв», «Не сьогодні»): кілька днів її не повторюємо. */
+    fun recordDeclined(context: Context, id: ActivitySuggestions.Id, nowMillis: Long = System.currentTimeMillis()) {
+        val keep = nowMillis - ActivitySuggestions.DECLINE_DAYS * 24L * 3_600_000L
+        val items = (declined(context).filterValues { it >= keep } + (id to nowMillis)).entries.joinToString(",") { "${it.key.name}:${it.value}" }
+        prefs(context).edit().putString(KEY_DECLINED, items).apply()
+    }
+
+    fun declined(context: Context): Map<ActivitySuggestions.Id, Long> =
+        prefs(context).getString(KEY_DECLINED, "").orEmpty().split(",").mapNotNull { part ->
+            val (name, at) = part.split(":").takeIf { it.size == 2 } ?: return@mapNotNull null
+            val id = ActivitySuggestions.Id.entries.firstOrNull { it.name == name } ?: return@mapNotNull null
+            at.toLongOrNull()?.let { id to it }
+        }.toMap()
+
     fun recordContinued(context: Context) = bump(context, KEY_CONTINUED)
 
     fun recordLeft(context: Context) = bump(context, KEY_LEFT)
 
-    /** Логічна доба (межа 04:00, як у пошуку годин): вечір 23:30–00:30 — одна доба. */
-    private fun logicalDay(nowMillis: Long): Long = com.serkodesign.tepera.domain.risk.LogicalDay.epochDay(nowMillis)
-
-    /** «Не сьогодні» (на нагадуванні чи на листі плану): до кінця логічної доби план поверх стрічки не показується. */
-    fun suppressToday(context: Context, nowMillis: Long = System.currentTimeMillis()) =
-        prefs(context).edit().putLong(KEY_SUPPRESSED_DAY, logicalDay(nowMillis)).apply()
-
-    fun isSuppressedToday(context: Context, nowMillis: Long = System.currentTimeMillis()): Boolean =
-        prefs(context).getLong(KEY_SUPPRESSED_DAY, Long.MIN_VALUE) == logicalDay(nowMillis)
-
-    /** Сесія «Відкрити на 5 хв», яку тільки-но започаткував лист плану; сервіс забирає її одразу після відкриття стрічки. */
+    /** Сесія «Відкрити на 5 хв», яку тільки-но започаткував лист плану; сервіс забирає її одразу, як лише вона записана. */
     data class PendingSoftExit(val packageName: String, val appLabel: String, val thenText: String, val startedAtMillis: Long)
 
     fun setPendingSoftExit(context: Context, session: PendingSoftExit) {
         prefs(context).edit()
             .putString(KEY_PENDING_PACKAGE, session.packageName).putString(KEY_PENDING_LABEL, session.appLabel)
             .putString(KEY_PENDING_THEN, session.thenText).putLong(KEY_PENDING_AT, session.startedAtMillis).apply()
+    }
+
+    /** Слухач запису сесії «Відкрити на 5 хв»: сервіс не мусить чекати на подію застосунку, яка не завжди приходить. Тримати посилання, поки слухач потрібен. */
+    fun listenForPendingSoftExit(context: Context, onPending: () -> Unit): android.content.SharedPreferences.OnSharedPreferenceChangeListener {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key -> if (key == KEY_PENDING_PACKAGE) onPending() }
+        prefs(context).registerOnSharedPreferenceChangeListener(listener)
+        return listener
+    }
+
+    fun stopListening(context: Context, listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs(context).unregisterOnSharedPreferenceChangeListener(listener)
+
+    /** Забирає сесію незалежно від пакета (одноразово). Старша за хвилину — застаріла, ігнорується. */
+    fun takeAnyPendingSoftExit(context: Context, nowMillis: Long = System.currentTimeMillis()): PendingSoftExit? {
+        val pkg = prefs(context).getString(KEY_PENDING_PACKAGE, null) ?: return null
+        return takePendingSoftExit(context, pkg, nowMillis)
     }
 
     /** Забирає сесію для [forPackage] (одноразово); для іншого пакета нічого не чіпає. Старша за хвилину — застаріла, ігнорується. */

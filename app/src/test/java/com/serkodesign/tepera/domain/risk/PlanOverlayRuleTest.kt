@@ -11,13 +11,12 @@ class PlanOverlayRuleTest {
     private fun pick(
         now: LocalDateTime,
         enabled: Boolean = true,
-        hasPlan: Boolean = true,
         lastShown: Long = 0L,
         nowMillis: Long = 10_000_000_000L
-    ) = PlanOverlayRule.pick(listOf(PlanOverlayRule.Candidate(evening, enabled, hasPlan)), now, nowMillis, { lastShown })
+    ) = PlanOverlayRule.pick(listOf(PlanOverlayRule.Candidate(evening, enabled)), now, nowMillis, { lastShown })
 
     @Test
-    fun `inside window with plan shows`() {
+    fun `inside an enabled window shows`() {
         assertEquals("w1", pick(LocalDateTime.of(2026, 10, 26, 23, 0)))
     }
 
@@ -32,13 +31,12 @@ class PlanOverlayRuleTest {
     }
 
     @Test
-    fun `disabled or without plan does not show`() {
+    fun `disabled window does not show`() {
         assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), enabled = false))
-        assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), hasPlan = false))
     }
 
     @Test
-    fun `recently shown plan is not repeated until debounce passes`() {
+    fun `recently shown idea is not repeated until debounce passes`() {
         val now = 10_000_000_000L
         assertNull(pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 5 * 60_000L, nowMillis = now))
         assertEquals("w1", pick(LocalDateTime.of(2026, 10, 26, 23, 0), lastShown = now - 25 * 60_000L, nowMillis = now))

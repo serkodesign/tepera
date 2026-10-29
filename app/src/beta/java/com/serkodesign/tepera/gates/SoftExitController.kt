@@ -63,15 +63,34 @@ class SoftExitController(private val service: AccessibilityService) {
         if (current == null) {
             val pending = PlanOverlayStore.takePendingSoftExit(service, packageName) ?: return
             start(pending)
-        } else if (current.packageName != packageName && countsAsLeaving) {
+        } else if (current.packageName != packageName && countsAsLeaving && !justStarted(current)) {
             finish(onTime = isOnTime(current))
         }
     }
 
+    /**
+     * Лист плану записав сесію «Відкрити на 5 хв»: стартуємо одразу, не чекаючи на подію застосунку (вона не завжди
+     * приходить, коли стрічка вже була відкрита під листом — тоді таймер не запускався взагалі). Стару сесію, якщо вона
+     * ще висить, замінюємо без підрахунку.
+     */
+    fun onPendingSessionWritten() {
+        val pending = PlanOverlayStore.takeAnyPendingSoftExit(service) ?: return
+        if (session != null) {
+            session = null
+            handler.removeCallbacks(onDeadline)
+            handler.removeCallbacks(onStrong)
+            removeAll()
+        }
+        start(pending)
+    }
+
     /** Людина перейшла на робочий стіл. */
     fun onLeftToLauncher() {
-        session?.let { finish(onTime = isOnTime(it)) }
+        session?.let { if (!justStarted(it)) finish(onTime = isOnTime(it)) }
     }
+
+    /** Перші секунди після старту йде перехід листа плану → стрічка: проміжні вікна виходом не вважаємо. */
+    private fun justStarted(s: Session) = System.currentTimeMillis() - s.startedAt < START_GRACE_MILLIS
 
     fun destroy() {
         session = null
@@ -329,6 +348,7 @@ class SoftExitController(private val service: AccessibilityService) {
         const val SESSION_MINUTES = 5
         const val SESSION_MILLIS = SESSION_MINUTES * 60_000L
         const val ON_TIME_GRACE_MILLIS = SoftExitTiming.GRACE_MILLIS
+        const val START_GRACE_MILLIS = 4_000L
         const val FADE_MILLIS = 3_000L
         const val TOAST_MILLIS = 2_500L
     }

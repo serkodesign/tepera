@@ -3,7 +3,7 @@
     <string name="a11y_service_label">Tepera: delay before apps</string>
     <string name="a11y_service_description">Notices which app was opened and shows a short pause before the ones you picked in Tepera. Screen content is not read. Data about opened apps stays on the device and is not shared.</string>
     <string name="soft_exit_title">%1$d min have passed</string>
-    <string name="soft_exit_body">Time to close %1$s. Your plan: %2$s.</string>
+    <string name="soft_exit_body">Time to close %1$s. %2$s</string>
     <string name="soft_exit_more">5 more</string>
     <string name="soft_exit_leave">Leave</string>
     <string name="soft_exit_confirm_title">5 more minutes?</string>

@@ -8,7 +8,7 @@ import java.time.LocalDateTime
  * передаються параметрами.
  *
  * Правила (план v3.0): нагадування за [LEAD_MINUTES] хв до початку вікна, не більше одного на календарну добу,
- * лише для ввімкнених вікон із планом. Якщо в один день вікон кілька, першим спрацьовує найближче; після показу
+ * лише для ввімкнених вікон (у нагадуванні — підказка, що зробити замість стрічки). Якщо в один день вікон кілька, першим спрацьовує найближче; після показу
  * решта цього дня блокується через [blockedDates].
  */
 object NudgePlanner {
@@ -19,8 +19,7 @@ object NudgePlanner {
         val startMinute: Int,
         val endMinute: Int,
         val dayType: DayType,
-        val enabled: Boolean,
-        val hasPlan: Boolean
+        val enabled: Boolean
     )
 
     data class Nudge(val windowId: String, val fireAt: LocalDateTime, val windowStart: LocalDateTime)
@@ -35,7 +34,7 @@ object NudgePlanner {
         blockedDates: Set<LocalDate>,
         cfg: RiskConfig = RiskConfig()
     ): Nudge? =
-        candidates.filter { it.enabled && it.hasPlan }.flatMap { c ->
+        candidates.filter { it.enabled }.flatMap { c ->
             (-1..8).mapNotNull { offset ->
                 val date = now.toLocalDate().plusDays(offset.toLong())
                 // Вікно «лише будні» й початок до 04:00: день за логічною добою (як у NextWindow).

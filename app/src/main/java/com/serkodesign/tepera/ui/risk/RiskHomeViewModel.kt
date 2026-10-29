@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import android.content.Context
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.FoundWindowsNotifier
+import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.local.entity.isPausedAt
+import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.data.WeeklySummaryWorker
 import com.serkodesign.tepera.util.PlanOverlayStore
 import com.serkodesign.tepera.data.NudgeScheduler
@@ -24,6 +26,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -45,8 +48,6 @@ data class RiskWindowUi(
     val partOfDay: PartOfDay,
     val appLabels: List<String>,
     val dots: List<DotState>,
-    /** Збережений план («якщо» і «то» дослівно) або `null`. */
-    val plan: Pair<String, String>? = null,
     /** Людина вимкнула вікно («Вважати це вікно годиною ризику» у M6): показується приглушеним у кінці списку. */
     val isDisabled: Boolean = false,
     /** Вікно на паузі (повторюваність впала, напр. відпустка): не нагадує, повернеться само. */
@@ -57,7 +58,6 @@ data class RiskWindowUi(
     val currentMinutes: Double? = null,
     /** «Добре» на нагадуваннях цього вікна за останні 7 діб (самозвіт). */
     val okThisWeek: Int = 0,
-    val notTodayThisWeek: Int = 0,
     /** Запропонований зсув вікна (етап 2, п. 8) або `null`. */
     val shiftStart: Int? = null,
     val shiftEnd: Int? = null
@@ -82,7 +82,9 @@ data class RiskHomeState(
     /** М'який вихід за 7 діб (beta): сесій «на 5 хв» розпочато / завершено вчасно; `null`, поки сесій не було. */
     val softExit: Pair<Int, Int>? = null,
     /** Показати м'яку підказку, що без сповіщень нагадувань не буде (не частіше разу на тиждень). */
-    val showNotifyHint: Boolean = false
+    val showNotifyHint: Boolean = false,
+    /** Категорія, чий таймер зараз іде (запущений з підказки чи будь-де), або `null`. */
+    val activeCategory: CategoryEntity? = null
 )
 
 /**
@@ -93,6 +95,15 @@ data class RiskHomeState(
 class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
     private val _state = MutableStateFlow(RiskHomeState())
     val state: StateFlow<RiskHomeState> = _state.asStateFlow()
+
+    init {
+        // Таймер, запущений з підказки, живе без міні-плеєра (у режимі v3 його нема): Home показує, що триває, і дає «Закінчив».
+        viewModelScope.launch {
+            combine(app.activeTimerStore.activeTimers, app.categoryRepository.observeActiveCategories()) { timers, categories ->
+                categories.firstOrNull { it.id in timers }
+            }.collect { category -> _state.update { it.copy(activeCategory = category) } }
+        }
+    }
 
     fun refresh() {
         viewModelScope.launch {
@@ -148,13 +159,11 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     isManual = w.isManual,
                     partOfDay = HeatGrid.partOfDay(w.startMinute),
                     appLabels = if (w.isManual) manualApps else w.topApps.split(",").filter { it.isNotBlank() }.take(2).map { labels[it] ?: it },
-                    plan = app.riskWindowRepository.getPlan(w.id)?.let { it.ifText to it.thenText },
                     isDisabled = w.isUserDisabled,
                     isPaused = w.isPausedAt(now),
                     baselineMinutes = WindowMinutes.averagePerDay(baselineRecords, baselineDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     currentMinutes = WindowMinutes.averagePerDay(records, logicalDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     okThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.OK, weekFromMillis, now + 1),
-                    notTodayThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.NOT_TODAY, weekFromMillis, now + 1),
                     shiftStart = w.suggestedStartMinute, shiftEnd = w.suggestedEndMinute,
                     dots = logicalDays.map { day ->
                         when {
@@ -204,6 +213,12 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             app.riskWindowRepository.dismissShift(windowId)
             refresh()
         }
+    }
+
+    /** «Закінчив» на картці активної сесії: той самий тап-таймер, що зупиняє й зберігає запис (час — справжній). */
+    fun finishSession() {
+        val category = _state.value.activeCategory ?: return
+        viewModelScope.launch { toggleCategoryTimer(app.activeTimerStore, app.activityRepository, category.id) }
     }
 
     private suspend fun feedLabels(): Map<String, String> =

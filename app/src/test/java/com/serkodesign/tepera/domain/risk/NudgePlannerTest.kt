@@ -12,8 +12,8 @@ class NudgePlannerTest {
     private fun date(day: Int) = LocalDate.of(2026, 10, day)
 
     private fun window(
-        id: String, start: Int, end: Int, dayType: DayType = DayType.ALL, enabled: Boolean = true, plan: Boolean = true
-    ) = NudgePlanner.Candidate(id, start, end, dayType, enabled, plan)
+        id: String, start: Int, end: Int, dayType: DayType = DayType.ALL, enabled: Boolean = true
+    ) = NudgePlanner.Candidate(id, start, end, dayType, enabled)
 
     private val evening = window("e", 22 * 60 + 40, 10)
     private val lunch = window("l", 13 * 60, 13 * 60 + 30, DayType.WEEKDAYS)
@@ -32,8 +32,8 @@ class NudgePlannerTest {
     }
 
     @Test
-    fun `windows without a plan or turned off are never nudged`() {
-        assertNull(NudgePlanner.next(listOf(window("a", 600, 660, plan = false), window("b", 700, 760, enabled = false)), at(22, 0, 0), emptySet()))
+    fun `turned off windows are never nudged`() {
+        assertNull(NudgePlanner.next(listOf(window("b", 700, 760, enabled = false)), at(22, 0, 0), emptySet()))
     }
 
     @Test

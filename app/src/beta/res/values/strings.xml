@@ -3,7 +3,7 @@
     <string name="a11y_service_label">Tepera: затримка перед застосунками</string>
     <string name="a11y_service_description">Помічає, який застосунок відкрився, і показує коротку паузу перед тими, що ви обрали в Tepera. Вміст екрана не читається. Дані про відкриті застосунки лишаються на пристрої і нікому не передаються.</string>
     <string name="soft_exit_title">%1$d хв минуло</string>
-    <string name="soft_exit_body">Час закрити %1$s. Твій план: %2$s.</string>
+    <string name="soft_exit_body">Час закрити %1$s. %2$s</string>
     <string name="soft_exit_more">Ще 5</string>
     <string name="soft_exit_leave">Вийти</string>
     <string name="soft_exit_confirm_title">Ще 5 хвилин?</string>

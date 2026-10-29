@@ -51,10 +51,12 @@ class GateAccessibilityService : AccessibilityService() {
     private var ignoreOwnUntilMillis = 0L
     private val lastSeenMillis = HashMap<String, Long>()
     private lateinit var softExit: SoftExitController
+    private var pendingListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         softExit = SoftExitController(this)
+        pendingListener = PlanOverlayStore.listenForPendingSoftExit(this) { softExit.onPendingSessionWritten() }
         gateRepository = (application as TeperaApp).gateRepository
         launcherPackages = resolveLauncherPackages()
         ignoredPackages = buildIgnoredPackages()
@@ -105,16 +107,16 @@ class GateAccessibilityService : AccessibilityService() {
         }
     }
 
-    /** Етап 8: стрічка відкрита всередині ввімкненого вікна з планом — показуємо план «якщо — то» поверх неї. */
+    /** Етап 8: стрічка відкрита всередині ввімкненого вікна — показуємо підказку, що зробити замість, поверх неї. */
     private suspend fun showPlanIfInsideWindow(pkg: String) {
-        if (!PlanOverlayStore.isEnabled(this) || PlanOverlayStore.isSuppressedToday(this)) return
+        // Вимкнути план можна лише зсередини Tepera (перемикач у налаштуваннях, пауза чи вимкнення вікна) — з самого листа чи сповіщення ні.
+        if (!PlanOverlayStore.isEnabled(this)) return
         val app = application as TeperaApp
         if (pkg !in app.feedAppRepository.packages()) return
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(
                 NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
-                enabled = !w.isUserDisabled && !w.isPausedAt(System.currentTimeMillis()),
-                hasPlan = app.riskWindowRepository.getPlan(w.id) != null
+                enabled = !w.isUserDisabled && !w.isPausedAt(System.currentTimeMillis())
             )
         }
         val nowMillis = System.currentTimeMillis()
@@ -138,6 +140,7 @@ class GateAccessibilityService : AccessibilityService() {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        pendingListener?.let { PlanOverlayStore.stopListening(this, it) }
         if (::softExit.isInitialized) softExit.destroy()
         scope.cancel()
         super.onDestroy()

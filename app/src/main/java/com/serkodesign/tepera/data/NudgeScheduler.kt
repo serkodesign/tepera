@@ -39,7 +39,7 @@ object NudgeScheduler {
         val candidates = app.riskWindowRepository.getAll().map { w ->
             NudgePlanner.Candidate(
                 w.id, w.startMinute, w.endMinute, w.dayType,
-                enabled = !w.isUserDisabled && !w.isPausedAt(nowMillis), hasPlan = app.riskWindowRepository.getPlan(w.id) != null
+                enabled = !w.isUserDisabled && !w.isPausedAt(nowMillis)
             )
         }
         val blocked = app.nudgeEventDao.getShownSince(nowMillis - 2 * DAY_MILLIS)

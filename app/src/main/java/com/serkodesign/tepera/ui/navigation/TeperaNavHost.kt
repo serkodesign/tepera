@@ -118,7 +118,6 @@ import com.serkodesign.tepera.ui.risk.FeedPickerScreen
 import com.serkodesign.tepera.ui.risk.NudgeInfoScreen
 import com.serkodesign.tepera.ui.risk.TesterStatsScreen
 import com.serkodesign.tepera.ui.risk.RiskHomeScreen
-import com.serkodesign.tepera.ui.risk.PlanEditorScreen
 import com.serkodesign.tepera.ui.risk.WindowWhyScreen
 import com.serkodesign.tepera.ui.risk.WindowEditorScreen
 import com.serkodesign.tepera.ui.risk.V3AccessScreen
@@ -167,7 +166,6 @@ private object Routes {
     const val V3_WELCOME = "v3_welcome"
     const val V3_ACCESS = "v3_access"
     const val V3_FEEDS = "v3_feeds"
-    const val V3_PLAN = "v3_plan/{windowId}"
     const val V3_WHY = "v3_why/{windowId}"
     const val V3_WINDOW_NEW = "v3_window_new"
     const val V3_WINDOW_EDIT = "v3_window_edit/{windowId}"
@@ -200,7 +198,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, NUDGE_INFO, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_PLAN, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, NUDGE_INFO, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, PLAN_OVERLAY, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY
@@ -216,7 +214,6 @@ private object Routes {
     fun planOverlay(packageName: String, windowId: String) = "plan_overlay/$packageName/$windowId"
 
     fun categoryHistory(categoryId: String) = "category_history/$categoryId"
-    fun v3Plan(windowId: String) = "v3_plan/$windowId"
     fun v3Why(windowId: String) = "v3_why/$windowId"
     fun v3WindowEdit(windowId: String) = "v3_window_edit/$windowId"
 }
@@ -478,7 +475,6 @@ fun TeperaNavHost(
                         onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                         onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
                         onOpenAccess = { navController.navigate(Routes.V3_ACCESS) },
-                        onOpenPlan = { windowId -> navController.navigate(Routes.v3Plan(windowId)) },
                         onOpenWhy = { windowId -> navController.navigate(Routes.v3Why(windowId)) },
                         onAddWindow = { navController.navigate(Routes.V3_WINDOW_NEW) },
                         onOpenNudgeInfo = { navController.navigate(Routes.NUDGE_INFO) }
@@ -760,19 +756,6 @@ fun TeperaNavHost(
                             settingsStore.setV3OnboardingSeen(true)
                             navController.popBackStack()
                         }
-                    }
-                )
-            }
-            composable(
-                Routes.V3_PLAN,
-                arguments = listOf(navArgument("windowId") { type = NavType.StringType })
-            ) { entry ->
-                PlanEditorScreen(
-                    windowId = entry.arguments?.getString("windowId").orEmpty(),
-                    onBack = { navController.popBackStack() },
-                    onSaved = { ask ->
-                        if (ask) navController.navigate(Routes.NUDGE_INFO) { popUpTo(Routes.V3_PLAN) { inclusive = true } }
-                        else navController.popBackStack()
                     }
                 )
             }

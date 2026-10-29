@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,7 +39,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +50,7 @@ import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaButtonSize
+import com.serkodesign.tepera.ui.theme.TeperaChip
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import java.time.LocalDate
@@ -59,13 +62,13 @@ import java.util.Locale
  * 909:380). Усі кольори — токени [TeperaPalette] (світла й темна тема), не значення з макета напряму.
  */
 
-/** Скляна картка v3: радіус 24, поле 16/14 (макет), обвідка — якщо тема її має. */
+/** Скляна картка v3: ті самі радіус 16, поле 16 і проміжок 12, що в [com.serkodesign.tepera.ui.theme.TeperaCard]; обвідка — якщо тема її має. */
 @Composable
 internal fun V3Card(
     modifier: Modifier = Modifier,
-    padding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-    radius: Dp = 24.dp,
-    spacing: Dp = 10.dp,
+    padding: PaddingValues = PaddingValues(16.dp),
+    radius: Dp = 16.dp,
+    spacing: Dp = 12.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val border = TeperaPalette.activityCardIdleBorder
@@ -107,25 +110,25 @@ fun HeatWeek(
 
     V3Card(
         modifier = modifier.semantics(mergeDescendants = true) { contentDescription = description },
-        padding = PaddingValues(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 12.dp),
-        spacing = 6.dp
+        padding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
+        spacing = 8.dp
     ) {
         Row {
-            Column(Modifier.width(22.dp)) {
+            Column(Modifier.width(28.dp)) {
                 dates.forEach { date ->
-                    Box(Modifier.height(14.dp)) {
+                    Box(Modifier.height(16.dp)) {
                         Text(
                             text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).replaceFirstChar { it.uppercase() },
-                            color = secondary, fontSize = 11.sp, lineHeight = 12.sp, maxLines = 1
+                            color = secondary, fontSize = 12.sp, lineHeight = 16.sp, maxLines = 1
                         )
                     }
                 }
             }
-            Canvas(Modifier.weight(1f).height((rows * 14 - 1).dp)) {
+            Canvas(Modifier.weight(1f).height((rows * 16 - 1).dp)) {
                 val pitch = size.width / HeatGrid.HOURS
                 val cellW = pitch - 1.dp.toPx()
-                val cellH = 13.dp.toPx()
-                val rowPitch = 14.dp.toPx()
+                val cellH = 15.dp.toPx()
+                val rowPitch = 16.dp.toPx()
                 val radius = CornerRadius(2.dp.toPx())
                 for (r in 0 until rows) for (c in 0 until HeatGrid.HOURS) {
                     val bucket = HeatGrid.bucket(grid.getOrNull(r)?.getOrNull(c) ?: 0)
@@ -151,12 +154,16 @@ fun HeatWeek(
                 }
             }
         }
-        BoxWithConstraints(Modifier.fillMaxWidth().padding(start = 22.dp).height(14.dp)) {
+        // Підпис години — по центру її стовпця, не лівим краєм; крайні не виходять за картку.
+        BoxWithConstraints(Modifier.fillMaxWidth().padding(start = 28.dp).height(16.dp)) {
+            val labelWidth = 20.dp
             listOf(0, 6, 12, 18, 23).forEach { hour ->
+                val center = maxWidth * ((hour + 0.5f) / HeatGrid.HOURS)
                 Text(
                     text = String.format(Locale.ROOT, "%02d", hour),
-                    color = secondary, fontSize = 11.sp, lineHeight = 12.sp,
-                    modifier = Modifier.offset(x = maxWidth * (hour / HeatGrid.HOURS.toFloat()))
+                    color = secondary, fontSize = 12.sp, lineHeight = 16.sp, maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.width(labelWidth).offset(x = (center - labelWidth / 2).coerceIn(0.dp, maxWidth - labelWidth))
                 )
             }
         }
@@ -174,6 +181,7 @@ fun HeatWeek(
                 }
             }
         }
+        LegendScale(ramp)
     }
 }
 
@@ -181,13 +189,28 @@ fun HeatWeek(
 private fun LegendItem(label: String, marker: @Composable () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         marker()
-        Text(label, color = TeperaPalette.textSecondary, fontSize = 11.sp, lineHeight = 12.sp)
+        Text(label, color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
     }
 }
 
-/** `v3/RiskWindowCard`, стан «Без плану» (кнопка «Скласти план» з'явиться разом з конструктором плану, L5). */
+/** Шкала інтенсивності «менше → більше» з тих самих кошиків, що й клітинки карти. */
 @Composable
-fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -> Unit, modifier: Modifier = Modifier) {
+private fun LegendScale(ramp: List<Color>) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(stringResource(R.string.v3_heat_legend_less), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+        ramp.forEach { Box(Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(it)) }
+        Text(stringResource(R.string.v3_heat_legend_more), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+    }
+}
+
+/**
+ * `v3/RiskWindowCard`: час і шеврон «Чому це вікно?» (уся верхня частина натискається), мета-рядок 14sp, чіп
+ * повторюваності поруч із крапками останніх 7 днів (крапки мають текстовий опис для TalkBack, не лише колір) і
+ * нижній рядок лише для вимкненого чи призупиненого вікна. Вимкнене вікно — без прозорості всієї картки: контраст
+ * тексту лишається, стан каже чіп «Вимкнено».
+ */
+@Composable
+fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifier = Modifier) {
     val primary = TeperaPalette.textPrimary
     val secondary = TeperaPalette.textSecondary
     val recurrence = stringResource(
@@ -195,6 +218,7 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -
         window.recurrenceDays, window.observedDays
     )
     val chip = when {
+        window.isDisabled -> stringResource(R.string.v3_card_disabled_chip)
         window.isManual && window.observedDays == 0 -> stringResource(R.string.v3_card_manual)
         window.isManual -> stringResource(R.string.v3_card_manual_format, recurrence)
         else -> recurrence
@@ -205,80 +229,56 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenPlan: () -> Unit, onOpenWhy: () -
     } else {
         stringResource(R.string.v3_card_meta_format, part, window.appLabels.joinToString(", "), window.avgMinutes)
     }
-    V3Card(modifier = modifier.alpha(if (window.isDisabled) 0.55f else 1f)) {
+    val applicable = window.dots.count { it != DotState.NOT_APPLICABLE }
+    val dotsDescription = stringResource(R.string.v3_card_dots_cd, window.dots.count { it == DotState.HIT }, applicable)
+    V3Card(modifier = modifier) {
         // Верхня частина відкриває «Чому це вікно?» (M6), нижня — план (L5) або кнопку «Скласти план».
         Column(
             Modifier.fillMaxWidth()
                 .clickable(onClickLabel = stringResource(R.string.v3_why_action), role = Role.Button, onClick = onOpenWhy),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = formatWindowTime(window.startMinute, window.endMinute),
-                color = primary, fontSize = 22.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f)
-            )
-            Box(
-                Modifier.clip(RoundedCornerShape(100.dp)).background(TeperaPalette.heatmapAmber.copy(alpha = 0.16f))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text(chip, color = primary, fontSize = 12.sp, lineHeight = 16.sp)
-            }
-        }
-        Text(meta, color = secondary, fontSize = 12.sp, lineHeight = 16.sp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-            window.dots.forEach { dot ->
-                Box(
-                    Modifier.size(8.dp).clip(CircleShape).background(
-                        when (dot) {
-                            DotState.HIT -> TeperaPalette.heatmapAmber
-                            DotState.MISS -> TeperaPalette.heatmapNoDataFill
-                            DotState.NOT_APPLICABLE -> TeperaPalette.heatmapNoDataFill.copy(alpha = 0.4f)
-                        }
-                    )
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            Icon(TeperaSymbols.Info, contentDescription = null, tint = secondary, modifier = Modifier.size(16.dp))
-        }
-        }
-        HorizontalDivider(color = TeperaPalette.borderDefault)
-        val plan = window.plan
-        if (window.isDisabled) {
-            Text(stringResource(R.string.v3_card_disabled), color = secondary, fontSize = 14.sp, lineHeight = 18.sp)
-        } else if (window.isPaused) {
-            Text(stringResource(R.string.v3_card_paused), color = secondary, fontSize = 14.sp, lineHeight = 18.sp)
-        } else if (plan == null) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    stringResource(R.string.v3_card_no_plan), color = secondary, fontSize = 14.sp, lineHeight = 18.sp,
+                    text = formatWindowTime(window.startMinute, window.endMinute),
+                    color = if (window.isDisabled) secondary else primary,
+                    fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
-                )
-                TeperaButton(
-                    text = stringResource(R.string.v3_card_make_plan),
-                    onClick = onOpenPlan,
-                    size = TeperaButtonSize.Small,
-                    modifier = Modifier.width(112.dp)
-                )
-            }
-        } else {
-            Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(role = Role.Button, onClick = onOpenPlan),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Box(
-                    Modifier.size(32.dp).clip(CircleShape).background(TeperaPalette.surfaceBrandLight),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(TeperaSymbols.Checklist, contentDescription = null, tint = TeperaPalette.brandAccent, modifier = Modifier.size(18.dp))
-                }
-                Text(
-                    stringResource(R.string.v3_plan_format, plan.first, plan.second),
-                    color = primary, fontSize = 14.sp, lineHeight = 18.sp, modifier = Modifier.weight(1f)
                 )
                 Icon(TeperaSymbols.ChevronRight, contentDescription = null, tint = secondary, modifier = Modifier.size(24.dp))
             }
+            Text(meta, color = secondary, fontSize = 14.sp, lineHeight = 20.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                TeperaChip(label = chip, compact = true, modifier = Modifier.weight(1f, fill = false))
+                Spacer(Modifier.weight(1f))
+                if (!window.isDisabled && window.dots.isNotEmpty()) {
+                    Row(
+                        Modifier.semantics(mergeDescendants = true) { contentDescription = dotsDescription },
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        window.dots.forEach { dot ->
+                            Box(
+                                Modifier.size(10.dp).clip(CircleShape).background(
+                                    when (dot) {
+                                        DotState.HIT -> TeperaPalette.heatmapAmber
+                                        DotState.MISS -> TeperaPalette.heatmapNoDataFill
+                                        DotState.NOT_APPLICABLE -> TeperaPalette.heatmapNoDataFill.copy(alpha = 0.4f)
+                                    }
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        // Без плану: підказка «що зробити замість» приходить сама (оверлей і нагадування), тож картка лише про вікно.
+        if (window.isDisabled || window.isPaused) {
+            HorizontalDivider(color = TeperaPalette.borderDefault)
+            Text(
+                stringResource(if (window.isDisabled) R.string.v3_card_disabled else R.string.v3_card_paused),
+                color = secondary, fontSize = 14.sp, lineHeight = 20.sp
+            )
         }
     }
 }
