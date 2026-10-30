@@ -607,25 +607,13 @@
     <string name="widget_info_chip_format">%1$s %2$s</string>
 
     <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): scrolling hours. Beta build only for now. -->
-    <string name="v3_nudge_channel_name">Plan reminders</string>
     <string name="v3_section_title">Scrolling hours (beta)</string>
     <string name="v3_feed_picker_action">Feed apps</string>
-    <string name="v3_nudge_info_action">Plan reminders</string>
     <string name="v3_feed_title">Feed apps</string>
     <string name="v3_feed_hint">Choose the apps where you usually get stuck scrolling. Tepera will only count time in them. We do not suggest messengers, but you can add them if you want.</string>
     <string name="v3_feed_section_suggested">Often opened in the evening</string>
     <string name="v3_feed_section_all">All apps</string>
     <string name="v3_feed_empty">No app usage data yet. Grant usage access first.</string>
-    <string name="v3_nudge_title">Plan reminders</string>
-    <string name="v3_nudge_explain">Once a day, 10 minutes before your scrolling hour, Tepera can quietly remind you of your own plan. No sound or vibration, never more than once a day. Without permission everything else works; only the reminders do not.</string>
-    <string name="v3_nudge_status_on">Notifications are allowed</string>
-    <string name="v3_nudge_status_off">Notifications are off</string>
-    <string name="v3_nudge_allow">Allow notifications</string>
-    <string name="v3_nudge_open_settings">Open notification settings</string>
-    <string name="v3_nudge_rules">The reminder comes 10 minutes before the window, only for windows that have your plan, never more than once a day. The buttons \"OK\" and \"Not today\" commit you to nothing.</string>
-    <string name="v3_nudge_notification_title">Your hour is coming · %1$s</string>
-    <string name="v3_nudge_action_ok">OK</string>
-    <string name="v3_report_nudge_delay">Average reminder delay versus scheduled: %1$s min</string>
     <string name="v3_tester_title">Tester statistics</string>
     <string name="v3_tester_copy">Copy as text</string>
     <string name="v3_tester_copied">Copied</string>
@@ -642,16 +630,12 @@
     <string name="v3_overlay_title">It\'s your hour now, until %1$s</string>
     <string name="v3_overlay_toggle_label">Idea over the feed</string>
     <string name="v3_overlay_toggle_hint">When you open a chosen feed inside your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission; every time you open the feed anew.</string>
-    <string name="v3_tester_nudge_now">Remind me now</string>
-    <string name="v3_tester_nudge_sent">Reminder sent</string>
-    <string name="v3_tester_nudge_none">No window with a plan, or notifications are off</string>
     <string name="v3_report_overlay">Suggestion over the feed: shown %1$d, \"Yes\" %2$d, \"Open for 5 min\" %3$d, closed without a choice %4$d</string>
     <string name="v3_report_tag_manual">manual</string>
     <string name="v3_report_tag_weekdays">weekdays</string>
     <string name="v3_report_tag_disabled">turned off</string>
     <string name="v3_report_tag_shift">shift suggested</string>
     <string name="v3_report_minutes">%1$s min</string>
-    <string name="v3_report_nudges">Reminders: scheduled %1$d, shown %2$d, \"OK\" %3$d</string>
     <string name="v3_report_note">Note: the windows were picked from the observation week, so its minutes in the windows are higher than in a usual week — the comparison is approximate.</string>
     <string name="v3_report_status">Version %1$s · notifications: %2$s · accessibility service: %3$s</string>
     <string name="v3_report_yes">yes</string>
@@ -833,10 +817,6 @@
     <string name="v3_report_soft_exit">Soft exit, 7 days: sessions %1$d, on time %2$d, \"5 more\" %3$d</string>
     <string name="v3_found_title">I found your hour</string>
     <string name="v3_found_body">See when feeds repeat and make a plan — it takes a minute.</string>
-    <string name="v3_notify_hint_title">Without notifications Tepera only counts</string>
-    <string name="v3_notify_hint_body">Your plan cannot remind you before your hour: reminders arrive only as notifications. You can turn them on any time.</string>
-    <string name="v3_notify_hint_action">Turn on</string>
-    <string name="v3_notify_hint_later">Later</string>
 
     <string name="v3_card_paused">Paused — feeds are not repeating here right now (vacation?). No reminders; the window comes back on its own in a few weeks.</string>
 
@@ -877,4 +857,7 @@
     <string name="v3_session_finish">Done</string>
     <string name="v3_next_sub_inside_hint">Tepera will suggest what to do instead of the feed</string>
     <string name="v3_overlay_sheet_title_suggest">An idea for now</string>
+    <string name="v3_nudge_channel_name">Plan reminders</string>
+    <string name="v3_nudge_notification_title">Your hour is coming · %1$s</string>
+    <string name="v3_nudge_action_ok">OK</string>
 </resources>

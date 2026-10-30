@@ -22,8 +22,6 @@ class TesterStatsFormatTest {
         tagManual = "вручну", tagWeekdays = "будні", tagDisabled = "вимкнене",
         tagShift = "запропоновано зсув",
         minutes = "%1\$s хв",
-        nudges = "Нагадування: заплановано %1\$d, показано %2\$d, «Добре» %3\$d",
-        nudgeDelay = "Середня затримка: %1\$s хв",
         overlay = "Підказка поверх стрічки: показано %1\$d, «Так» %2\$d, «Відкрити на 5 хв» %3\$d, закрито без вибору %4\$d",
         note = "Примітка: порівняння орієнтовне.",
         status = "Версія %1\$s · сповіщення: %2\$s · сервіс доступності: %3\$s", yes = "так", no = "ні"
@@ -48,12 +46,11 @@ class TesterStatsFormatTest {
     )
 
     @Test
-    fun `report contains window times recurrence minutes and nudge counts`() {
+    fun `report contains window times recurrence and minutes`() {
         val text = TesterStatsRepository.format(stats(listOf(window(31.4, 18.0))), uk)
         assertTrue(text.contains("10:10–11:20"))
         assertTrue(text.contains("повторюваність 5/7"))
         assertTrue(text.contains("спостереження 31 хв → поточний тиждень 18 хв"))
-        assertTrue(text.contains("заплановано 4, показано 3, «Добре» 2"))
         assertFalse(text.contains("Не сьогодні"))
         assertTrue(text.contains("Перші дані: 2026-10-16; днів покрито: 10; стрічок обрано: 3"))
     }

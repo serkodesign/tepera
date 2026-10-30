@@ -66,7 +66,6 @@ fun SettingsScreen(
     onOpenAbout: () -> Unit,
     onOpenProInterest: () -> Unit,
     onOpenFeedPicker: () -> Unit,
-    onOpenNudgeInfo: () -> Unit,
     settingsStore: com.serkodesign.tepera.data.local.SettingsStore,
     onBack: () -> Unit
 ) {
@@ -135,12 +134,6 @@ fun SettingsScreen(
                         label = stringResource(R.string.v3_feed_picker_action),
                         onClick = onOpenFeedPicker,
                         leading = { TeperaIconCircle(TeperaSymbols.Apps) },
-                        trailing = { NavChevron() }
-                    )
-                    GlassRow(
-                        label = stringResource(R.string.v3_nudge_info_action),
-                        onClick = onOpenNudgeInfo,
-                        leading = { TeperaIconCircle(TeperaSymbols.Notifications) },
                         trailing = { NavChevron() }
                     )
                 }

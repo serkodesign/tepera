@@ -18,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.serkodesign.tepera.BuildConfig
-import com.serkodesign.tepera.data.NudgeReceiver
 import com.serkodesign.tepera.util.PlanOverlayStore
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
@@ -92,8 +91,6 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         tagDisabled = stringResource(R.string.v3_report_tag_disabled),
                         tagShift = stringResource(R.string.v3_report_tag_shift),
                         minutes = stringResource(R.string.v3_report_minutes),
-                        nudges = stringResource(R.string.v3_report_nudges),
-                        nudgeDelay = stringResource(R.string.v3_report_nudge_delay),
                         overlay = stringResource(R.string.v3_report_overlay),
                         note = stringResource(R.string.v3_report_note),
                         softExit = stringResource(R.string.v3_report_soft_exit),
@@ -114,18 +111,6 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         }
                     )
                 }
-                val nudgeSent = stringResource(R.string.v3_tester_nudge_sent)
-                val nudgeNone = stringResource(R.string.v3_tester_nudge_none)
-                TeperaButton(
-                    text = stringResource(R.string.v3_tester_nudge_now),
-                    onClick = {
-                        scope.launch {
-                            val sent = NudgeReceiver.fireNow(context)
-                            Toast.makeText(context, if (sent) nudgeSent else nudgeNone, Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    type = TeperaButtonType.Secondary
-                )
                 TeperaButton(
                     text = stringResource(R.string.v3_tester_restart),
                     onClick = onRestartOnboarding,

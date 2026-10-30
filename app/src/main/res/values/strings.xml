@@ -624,25 +624,13 @@
     <string name="widget_info_chip_format">%1$s %2$s</string>
 
     <!-- v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): години скролінгу. Поки лише в beta-збірці. -->
-    <string name="v3_nudge_channel_name">Нагадування про план</string>
     <string name="v3_section_title">Години скролінгу (beta)</string>
     <string name="v3_feed_picker_action">Застосунки-стрічки</string>
-    <string name="v3_nudge_info_action">Нагадування про план</string>
     <string name="v3_feed_title">Застосунки-стрічки</string>
     <string name="v3_feed_hint">Оберіть застосунки, у яких зазвичай «зависаєте». Tepera рахуватиме час лише в них. Месенджери не пропонуємо, але за бажанням їх можна додати.</string>
     <string name="v3_feed_section_suggested">Часто відкриваєте ввечері</string>
     <string name="v3_feed_section_all">Усі застосунки</string>
     <string name="v3_feed_empty">Поки немає даних про користування застосунками. Надайте доступ до статистики використання.</string>
-    <string name="v3_nudge_title">Нагадування про план</string>
-    <string name="v3_nudge_explain">Tepera може раз на день, за 10 хвилин до вашої години скролінгу, тихо нагадати ваш власний план. Без звуку й вібрації, не частіше разу на добу. Без дозволу все інше працює, не працюють лише нагадування.</string>
-    <string name="v3_nudge_status_on">Сповіщення дозволені</string>
-    <string name="v3_nudge_status_off">Сповіщення вимкнені</string>
-    <string name="v3_nudge_allow">Дозволити сповіщення</string>
-    <string name="v3_nudge_open_settings">Відкрити налаштування сповіщень</string>
-    <string name="v3_nudge_rules">Нагадування приходить за 10 хвилин до вікна, лише для вікон із вашим планом, не частіше разу на добу. Кнопки «Добре» і «Не сьогодні» ні до чого не зобов’язують.</string>
-    <string name="v3_nudge_notification_title">Скоро твоя година · %1$s</string>
-    <string name="v3_nudge_action_ok">Добре</string>
-    <string name="v3_report_nudge_delay">Середня затримка нагадування відносно запланованого: %1$s хв</string>
     <string name="v3_tester_title">Статистика для тестувальників</string>
     <string name="v3_tester_copy">Скопіювати як текст</string>
     <string name="v3_tester_copied">Скопійовано</string>
@@ -659,16 +647,12 @@
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
     <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; при кожному новому відкритті стрічки.</string>
-    <string name="v3_tester_nudge_now">Нагадати зараз</string>
-    <string name="v3_tester_nudge_sent">Нагадування надіслано</string>
-    <string name="v3_tester_nudge_none">Нема вікна з планом, або сповіщення вимкнені</string>
     <string name="v3_report_overlay">Підказка поверх стрічки: показано %1$d, «Так» %2$d, «Відкрити на 5 хв» %3$d, закрито без вибору %4$d</string>
     <string name="v3_report_tag_manual">вручну</string>
     <string name="v3_report_tag_weekdays">будні</string>
     <string name="v3_report_tag_disabled">вимкнене</string>
     <string name="v3_report_tag_shift">запропоновано зсув</string>
     <string name="v3_report_minutes">%1$s хв</string>
-    <string name="v3_report_nudges">Нагадування: заплановано %1$d, показано %2$d, «Добре» %3$d</string>
     <string name="v3_report_note">Примітка: вікна підбирались за тижнем спостереження, тож його хвилини у вікнах завищені відносно звичайного тижня — порівняння орієнтовне.</string>
     <string name="v3_report_status">Версія %1$s · сповіщення: %2$s · сервіс доступності: %3$s</string>
     <string name="v3_report_yes">так</string>
@@ -850,10 +834,6 @@
     <string name="v3_report_soft_exit">М\u0027який вихід за 7 днів: сесій %1$d, вчасно %2$d, «Ще 5» %3$d</string>
     <string name="v3_found_title">Я знайшов твою годину</string>
     <string name="v3_found_body">Подивись, коли стрічки повторюються, і склади план — це хвилина.</string>
-    <string name="v3_notify_hint_title">Без сповіщень Tepera лише рахує</string>
-    <string name="v3_notify_hint_body">План не нагадає про себе перед твоєю годиною: нагадування приходять тільки через сповіщення. Можна ввімкнути в будь-який момент.</string>
-    <string name="v3_notify_hint_action">Увімкнути</string>
-    <string name="v3_notify_hint_later">Пізніше</string>
 
     <string name="v3_card_paused">На паузі — стрічки тут зараз не повторюються (відпустка?). Нагадувань не буде; вікно повернеться само за кілька тижнів.</string>
 
@@ -894,4 +874,7 @@
     <string name="v3_session_finish">Закінчив</string>
     <string name="v3_next_sub_inside_hint">Tepera підкаже, що зробити замість стрічки</string>
     <string name="v3_overlay_sheet_title_suggest">Ідея на цей час</string>
+    <string name="v3_nudge_channel_name">Нагадування про план</string>
+    <string name="v3_nudge_notification_title">Скоро твоя година · %1$s</string>
+    <string name="v3_nudge_action_ok">Добре</string>
 </resources>

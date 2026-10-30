@@ -114,7 +114,6 @@ import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.debug.RiskSpikeScreen
 import com.serkodesign.tepera.ui.risk.FeedPickerScreen
-import com.serkodesign.tepera.ui.risk.NudgeInfoScreen
 import com.serkodesign.tepera.ui.risk.TesterStatsScreen
 import com.serkodesign.tepera.ui.risk.RiskHomeScreen
 import com.serkodesign.tepera.ui.risk.WindowWhyScreen
@@ -160,7 +159,6 @@ private object Routes {
     const val ABOUT = "about"
     const val RISK_SPIKE = "risk_spike"
     const val FEED_PICKER = "feed_picker"
-    const val NUDGE_INFO = "nudge_info"
     const val TESTER_STATS = "tester_stats"
     const val V3_WELCOME = "v3_welcome"
     const val V3_ACCESS = "v3_access"
@@ -197,7 +195,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, NUDGE_INFO, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
@@ -466,7 +464,6 @@ fun TeperaNavHost(
                         onOpenAccess = { navController.navigate(Routes.V3_ACCESS) },
                         onOpenWhy = { windowId -> navController.navigate(Routes.v3Why(windowId)) },
                         onAddWindow = { navController.navigate(Routes.V3_WINDOW_NEW) },
-                        onOpenNudgeInfo = { navController.navigate(Routes.NUDGE_INFO) },
                         onAddEntry = { navController.navigate(Routes.addEntry()) }
                     )
                 } else
@@ -657,7 +654,6 @@ fun TeperaNavHost(
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
-                    onOpenNudgeInfo = { navController.navigate(Routes.NUDGE_INFO) },
                     settingsStore = settingsStore,
                     onBack = { navController.popBackStack() }
                 )
@@ -764,7 +760,6 @@ fun TeperaNavHost(
                 )
             }
             composable(Routes.FEED_PICKER) { FeedPickerScreen(onBack = { navController.popBackStack() }) }
-            composable(Routes.NUDGE_INFO) { NudgeInfoScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.TESTER_STATS) {
                 TesterStatsScreen(
                     onBack = { navController.popBackStack() },

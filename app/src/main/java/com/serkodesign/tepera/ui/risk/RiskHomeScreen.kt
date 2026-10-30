@@ -83,7 +83,6 @@ fun RiskHomeScreen(
     onOpenAccess: () -> Unit,
     onOpenWhy: (String) -> Unit,
     onAddWindow: () -> Unit,
-    onOpenNudgeInfo: () -> Unit,
     onAddEntry: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as TeperaApp
@@ -155,19 +154,6 @@ fun RiskHomeScreen(
         ) {
             RiskHeader(label, title, onOpenCalendar, onOpenSettings)
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // Сценарій 7: без сповіщень план не нагадає про себе — тому підказка зверху, а не під усім вмістом.
-                if (ready && state.showNotifyHint) {
-                    TeperaCard(title = stringResource(R.string.v3_notify_hint_title)) {
-                        Text(stringResource(R.string.v3_notify_hint_body), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                            TeperaButton(text = stringResource(R.string.v3_notify_hint_action), onClick = onOpenNudgeInfo, modifier = Modifier.weight(1f))
-                            TeperaButton(
-                                text = stringResource(R.string.v3_notify_hint_later), onClick = vm::dismissNotifyHint,
-                                type = TeperaButtonType.Secondary, modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
                 when {
                     state.loading -> HomeSkeleton()
                     !state.hasAccess -> NoticeCard(

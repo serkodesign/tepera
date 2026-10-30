@@ -153,8 +153,6 @@ class TesterStatsRepository(
                     )
                 }
             }
-            appendLine(t.nudges.format(s.nudgesScheduled, s.nudgesShown, s.nudgesOk))
-            s.nudgeDelayMinutes?.let { appendLine(t.nudgeDelay.format(String.format(Locale.ROOT, "%.1f", it))) }
             s.overlay?.let { appendLine(t.overlay.format(it.shown, it.accepted, it.openedFive, it.dismissed)) }
             s.softExit?.let { (started, onTime, extended) -> appendLine(t.softExit.format(started, onTime, extended)) }
             appendLine(t.note)
@@ -179,8 +177,6 @@ data class ReportText(
     val tagDisabled: String,
     val tagShift: String,
     val minutes: String,
-    val nudges: String,
-    val nudgeDelay: String,
     val overlay: String,
     val note: String,
     val softExit: String = "",

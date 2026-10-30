@@ -25,6 +25,12 @@ import java.time.ZoneId
  * безпечний: попередній будильник замінюється.
  */
 object NudgeScheduler {
+    /**
+     * Нагадування перед годиною ризику вимкнені (рішення власника 30.10.2026): воно лише відволікає й дублює лист плану
+     * поверх стрічки. Код лишено до повного прибирання; без цього прапорця будильник не планується і не показується.
+     */
+    const val NUDGES_ENABLED = false
+
     private const val REQUEST_CODE = 4401
     const val EXTRA_WINDOW_ID = "nudge_window_id"
     const val EXTRA_SCHEDULED_AT = "nudge_scheduled_at"
@@ -47,7 +53,7 @@ object NudgeScheduler {
         // Тиждень спостереження — база для порівняння: поки період не заданий (перший перерахунок не відбувся), нагадувань нема,
         // навіть якщо людина сама додала вікно. Після перерахунку Home/воркер викликає reschedule знову.
         val observing = app.database.observationPeriodDao().getLatest() == null
-        val next = if (!observing && WeeklySummaryWorker.canNotify(context)) NudgePlanner.next(candidates, now, blocked) else null
+        val next = if (NUDGES_ENABLED && !observing && WeeklySummaryWorker.canNotify(context)) NudgePlanner.next(candidates, now, blocked) else null
 
         val pending = pendingIntent(context, next?.windowId, next?.fireAt?.atZone(zone)?.toInstant()?.toEpochMilli())
         if (next == null) {

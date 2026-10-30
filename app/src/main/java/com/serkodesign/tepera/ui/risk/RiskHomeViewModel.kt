@@ -82,7 +82,6 @@ data class RiskHomeState(
     /** М'який вихід за 7 діб (beta): сесій «на 5 хв» розпочато / завершено вчасно; `null`, поки сесій не було. */
     val softExit: Pair<Int, Int>? = null,
     /** Показати м'яку підказку, що без сповіщень нагадувань не буде (не частіше разу на тиждень). */
-    val showNotifyHint: Boolean = false,
     /** Категорія, чий таймер зараз іде (запущений з підказки чи будь-де), або `null`. */
     val activeCategory: CategoryEntity? = null
 )
@@ -177,11 +176,9 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
 
             val windows = allWindows.filter { !it.isDisabled }
             val (seStarted, seOnTime, _) = PlanOverlayStore.softExitCounts(app)
-            val notifyHintDue = now - app.getSharedPreferences(HINT_PREFS, Context.MODE_PRIVATE).getLong(HINT_KEY, 0L) > HINT_INTERVAL_MILLIS
             _state.update {
                 it.copy(
                     softExit = if (seStarted > 0) seStarted to seOnTime else null,
-                    showNotifyHint = windows.isNotEmpty() && !WeeklySummaryWorker.canNotify(app) && notifyHintDue,
                     loading = false, hasAccess = hasAccess, feedCount = feed.size, observedDays = observed,
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
                     grid = HeatGrid.minutesByHour(records, dates), windows = windows,
@@ -192,12 +189,6 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                 )
             }
         }
-    }
-
-    /** «Пізніше» на підказці про сповіщення: наступна — не раніше ніж за тиждень. */
-    fun dismissNotifyHint() {
-        app.getSharedPreferences(HINT_PREFS, Context.MODE_PRIVATE).edit().putLong(HINT_KEY, System.currentTimeMillis()).apply()
-        _state.update { it.copy(showNotifyHint = false) }
     }
 
     fun applyShift(windowId: String) {
@@ -249,9 +240,6 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
     private companion object {
         const val SCAN_INTERVAL_MILLIS = 15 * 60 * 1000L
         const val TEASER_MIN_DAYS = 3
-        const val HINT_PREFS = "v3_notify_hint"
-        const val HINT_KEY = "dismissed_at"
-        const val HINT_INTERVAL_MILLIS = 7 * 24 * 3_600_000L
 
         /** Спільне на процес: щоб повторне відкриття Home не перераховувало все щоразу. */
         @Volatile var lastScanMillis = 0L

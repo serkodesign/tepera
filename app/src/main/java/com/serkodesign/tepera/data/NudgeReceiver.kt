@@ -46,6 +46,7 @@ class NudgeReceiver : BroadcastReceiver() {
     }
 
     private suspend fun handle(context: Context, windowId: String, scheduledAt: Long) {
+        if (!NudgeScheduler.NUDGES_ENABLED) return // будильник, виставлений старою збіркою
         val app = context.applicationContext as TeperaApp
         val now = System.currentTimeMillis()
         val window = app.riskWindowRepository.getWindow(windowId) ?: return
@@ -78,6 +79,7 @@ class NudgeReceiver : BroadcastReceiver() {
          * «Добре»/«Не сьогодні» теж працюють. Повертає `false`, якщо нема вікна або сповіщення вимкнені.
          */
         suspend fun fireNow(context: Context): Boolean {
+            if (!NudgeScheduler.NUDGES_ENABLED) return false
             val app = context.applicationContext as TeperaApp
             if (!WeeklySummaryWorker.canNotify(context)) return false
             val now = System.currentTimeMillis()
