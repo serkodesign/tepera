@@ -835,7 +835,7 @@
     <string name="v3_found_title">Я знайшов твою годину</string>
     <string name="v3_found_body">Подивись, коли стрічки повторюються, і склади план — це хвилина.</string>
 
-    <string name="v3_card_paused">На паузі — стрічки тут зараз не повторюються (відпустка?). Нагадувань не буде; вікно повернеться само за кілька тижнів.</string>
+    <string name="v3_card_paused">На паузі</string>
 
     <!-- Home: редизайн (жовтень 2026) -->
     <string name="v3_heat_legend_less">менше</string>
@@ -877,4 +877,8 @@
     <string name="v3_nudge_channel_name">Нагадування про план</string>
     <string name="v3_nudge_notification_title">Скоро твоя година · %1$s</string>
     <string name="v3_nudge_action_ok">Добре</string>
+    <string name="v3_summary_show_more">Ще вікон: %1$d</string>
+    <string name="v3_summary_show_less">Згорнути</string>
+    <string name="v3_why_pause">Пауза на 2 тижні</string>
+    <string name="v3_why_pause_hint">Без підказок і листа плану; потім вікно поверне себе саме</string>
 </resources>

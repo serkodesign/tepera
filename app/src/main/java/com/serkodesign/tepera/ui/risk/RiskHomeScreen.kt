@@ -196,9 +196,7 @@ fun RiskHomeScreen(
                             ObservingContent(state)
                             // Ручні вікна видно одразу, не чекаючи тиждень даних.
                             WindowsHeader(onAddWindow)
-                            (state.windows + state.disabledWindows).forEach { w ->
-                                RiskWindowCard(w, onOpenWhy = { onOpenWhy(w.id) })
-                            }
+                            WindowsCarousel(state.windows + state.disabledWindows, onOpenWhy)
                         }
                         planned -> PlannedContent(state, occurrences, now, onOpenWhy, onAddWindow, showNext = hero != RiskHero.IN_WINDOW && hero != RiskHero.NEXT_WINDOW)
                         else -> FoundContent(state, onOpenWhy, onAddWindow)
@@ -349,9 +347,7 @@ private fun FoundContent(state: RiskHomeState, onOpenWhy: (String) -> Unit, onAd
     }
     HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
     WindowsHeader(onAddWindow)
-    (windows + state.disabledWindows).forEach { w ->
-        RiskWindowCard(w, onOpenWhy = { onOpenWhy(w.id) })
-    }
+    WindowsCarousel(windows + state.disabledWindows, onOpenWhy)
 }
 
 /** Поточний час, що оновлюється раз на 30 с: відлік до наступної години на L6 не застигає. */
@@ -380,9 +376,7 @@ private fun PlannedContent(
     val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
     if (showNext) ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
     WindowsHeader(onAddWindow)
-    (ordered.map { it.first } + rest + state.disabledWindows).forEach { w ->
-        RiskWindowCard(w, onOpenWhy = { onOpenWhy(w.id) })
-    }
+    WindowsCarousel(ordered.map { it.first } + rest + state.disabledWindows, onOpenWhy)
 }
 
 /** `next`: темна картка з відліком до години або «до кінця» для години, що триває; значки й підписи — токени hero. */

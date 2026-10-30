@@ -243,8 +243,10 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifi
                     text = formatWindowTime(window.startMinute, window.endMinute),
                     color = if (window.isDisabled) secondary else primary,
                     fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium,
-                    modifier = Modifier.weight(1f)
                 )
+                // Пауза — тег одразу після годин; зняти її можна лише з «Чому це вікно?».
+                if (window.isPaused && !window.isDisabled) TeperaChip(label = stringResource(R.string.v3_card_paused), compact = true)
+                Spacer(Modifier.weight(1f))
                 Icon(TeperaSymbols.ChevronRight, contentDescription = null, tint = secondary, modifier = Modifier.size(24.dp))
             }
             Text(meta, color = secondary, fontSize = 14.sp, lineHeight = 20.sp)
@@ -273,12 +275,9 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifi
             }
         }
         // Без плану: підказка «що зробити замість» приходить сама (оверлей і нагадування), тож картка лише про вікно.
-        if (window.isDisabled || window.isPaused) {
+        if (window.isDisabled) {
             HorizontalDivider(color = TeperaPalette.borderDefault)
-            Text(
-                stringResource(if (window.isDisabled) R.string.v3_card_disabled else R.string.v3_card_paused),
-                color = secondary, fontSize = 14.sp, lineHeight = 20.sp
-            )
+            Text(stringResource(R.string.v3_card_disabled), color = secondary, fontSize = 14.sp, lineHeight = 20.sp)
         }
     }
 }

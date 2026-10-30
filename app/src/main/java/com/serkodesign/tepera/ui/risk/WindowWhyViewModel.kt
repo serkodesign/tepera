@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.NudgeScheduler
+import com.serkodesign.tepera.data.local.entity.isPausedAt
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PackageSlotUsage
@@ -41,6 +42,7 @@ data class WhyUi(
     val dates: List<LocalDate>,
     val grid: Array<IntArray>,
     val enabled: Boolean,
+    val paused: Boolean,
     val isManual: Boolean
 )
 
@@ -82,6 +84,7 @@ class WindowWhyViewModel(private val app: TeperaApp, private val windowId: Strin
                 missedWeekdays = WindowExplain.missedWeekdays(coveredLogical, hits, window.dayType),
                 dates = dates, grid = HeatGrid.minutesByHour(records, dates),
                 enabled = !window.isUserDisabled,
+                paused = window.isPausedAt(now),
                 isManual = window.isManual
             )
         }
@@ -92,6 +95,14 @@ class WindowWhyViewModel(private val app: TeperaApp, private val windowId: Strin
             app.riskWindowRepository.setUserDisabled(windowId, !enabled)
             NudgeScheduler.reschedule(app)
             _ui.update { it?.copy(enabled = enabled) }
+        }
+    }
+
+    fun setPaused(paused: Boolean) {
+        viewModelScope.launch {
+            app.riskWindowRepository.setPaused(windowId, paused)
+            NudgeScheduler.reschedule(app)
+            _ui.update { it?.copy(paused = paused) }
         }
     }
 

@@ -331,3 +331,10 @@ val MIGRATION_21_22 = object : Migration(21, 22) {
         db.execSQL("ALTER TABLE risk_windows ADD COLUMN pausedUntil INTEGER DEFAULT NULL")
     }
 }
+
+/** Версія 23 (v3.0 MVP): isk_windows.pausedByUser — пауза, яку людина поставила вікну сама (перерахунок її не скидає). */
+val MIGRATION_22_23 = object : Migration(22, 23) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE risk_windows ADD COLUMN pausedByUser INTEGER NOT NULL DEFAULT 0")
+    }
+}

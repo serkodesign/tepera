@@ -6,6 +6,7 @@ import com.serkodesign.tepera.data.local.dao.UsageSlotDao
 import com.serkodesign.tepera.data.local.entity.PlanEntity
 import com.serkodesign.tepera.data.local.entity.RiskWindowEntity
 import com.serkodesign.tepera.data.local.entity.WINDOW_PAUSE_MILLIS
+import com.serkodesign.tepera.data.local.entity.isPausedAt
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.RiskCandidate
 import com.serkodesign.tepera.domain.risk.RiskConfig
@@ -52,6 +53,17 @@ class RiskWindowRepository(
 
     suspend fun setUserDisabled(windowId: String, disabled: Boolean) = withContext(Dispatchers.IO) {
         windowDao.setUserDisabled(windowId, disabled, System.currentTimeMillis())
+    }
+
+    /**
+     * Людина ставить вікно на паузу (на [WINDOW_PAUSE_MILLIS]) або знімає її. Зняття лишає pausedUntil у минулому, а не 
+ull:
+     * 
+ull дозволив би наступному перерахунку одразу поставити автоматичну паузу знову, ніби людина нічого не казала.
+     */
+    suspend fun setPaused(windowId: String, paused: Boolean) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        windowDao.setPause(windowId, if (paused) now + WINDOW_PAUSE_MILLIS else now, paused)
     }
 
     /** Зберігає план словами людини; повторне збереження оновлює той самий план, зберігаючи `createdAt`. */
@@ -124,7 +136,9 @@ class RiskWindowRepository(
                         avgMinutes = c.avgMinutes,
                         topApps = topApps,
                         updatedAt = nowMillis,
-                        pausedUntil = null
+                        // Автоматична пауза знімається, коли вікно знову повторюється; пауза людини діє до свого терміну.
+                        pausedUntil = if (match.pausedByUser && match.isPausedAt(nowMillis)) match.pausedUntil else null,
+                        pausedByUser = match.pausedByUser && match.isPausedAt(nowMillis)
                     )
                 )
             } else {

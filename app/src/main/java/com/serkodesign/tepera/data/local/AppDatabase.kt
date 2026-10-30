@@ -114,7 +114,7 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         NudgeEventEntity::class,
         ObservationPeriodEntity::class
     ],
-    version = 22,
+    version = 23,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

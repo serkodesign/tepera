@@ -80,6 +80,7 @@ fun WindowWhyScreen(windowId: String, onBack: () -> Unit, onEdit: (String) -> Un
                         fontSize = 12.sp, lineHeight = 16.sp
                     )
                     EnabledRow(data, onChange = vm::setEnabled)
+                    if (data.enabled) PauseRow(data, onChange = vm::setPaused)
                     if (data.isManual) {
                         TeperaButton(
                             text = stringResource(R.string.v3_editor_edit_action),
@@ -143,6 +144,29 @@ private fun EnabledRow(data: WhyUi, onChange: (Boolean) -> Unit) {
             )
             Switch(
                 checked = data.enabled, onCheckedChange = onChange, colors = teperaSwitchColors(),
+                modifier = Modifier.semantics { role = Role.Switch }
+            )
+        }
+    }
+}
+
+/** Пауза: вікно не показує підказок, поки людина не зніме її або не мине два тижні; на відміну від вимкнення, повертається саме. */
+@Composable
+private fun PauseRow(data: WhyUi, onChange: (Boolean) -> Unit) {
+    V3Card(radius = 16.dp, padding = PaddingValues(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(40.dp).clip(CircleShape).background(TeperaPalette.surfaceBrandLight),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(TeperaSymbols.Schedule, contentDescription = null, tint = TeperaPalette.brandAccent, modifier = Modifier.size(24.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.v3_why_pause), color = TeperaPalette.textPrimary, fontSize = 16.sp, lineHeight = 20.sp)
+                Text(stringResource(R.string.v3_why_pause_hint), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+            }
+            Switch(
+                checked = data.paused, onCheckedChange = onChange, colors = teperaSwitchColors(),
                 modifier = Modifier.semantics { role = Role.Switch }
             )
         }

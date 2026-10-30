@@ -818,7 +818,7 @@
     <string name="v3_found_title">I found your hour</string>
     <string name="v3_found_body">See when feeds repeat and make a plan — it takes a minute.</string>
 
-    <string name="v3_card_paused">Paused — feeds are not repeating here right now (vacation?). No reminders; the window comes back on its own in a few weeks.</string>
+    <string name="v3_card_paused">Paused</string>
 
     <!-- Home: redesign (October 2026) -->
     <string name="v3_heat_legend_less">less</string>
@@ -860,4 +860,8 @@
     <string name="v3_nudge_channel_name">Plan reminders</string>
     <string name="v3_nudge_notification_title">Your hour is coming · %1$s</string>
     <string name="v3_nudge_action_ok">OK</string>
+    <string name="v3_summary_show_more">More windows: %1$d</string>
+    <string name="v3_summary_show_less">Show less</string>
+    <string name="v3_why_pause">Pause for 2 weeks</string>
+    <string name="v3_why_pause_hint">No hints or plan sheet; the window comes back on its own</string>
 </resources>
