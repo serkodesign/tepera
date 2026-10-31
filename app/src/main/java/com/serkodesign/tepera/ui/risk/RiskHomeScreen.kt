@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.risk
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,6 +52,7 @@ import com.serkodesign.tepera.ui.theme.bottomNavClearance
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.heroMoodBackground
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PartOfDay
@@ -150,18 +152,23 @@ fun RiskHomeScreen(
         Column(
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
                 .padding(top = 12.dp, bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            // Закон близькості: пов'язане — ближче (заголовок із вмістом 8dp, картки одного блоку 12dp, шапка з героєм 16dp),
+            // окремі блоки — далі (24dp).
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+          Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             RiskHeader(label, title, onOpenCalendar, onOpenSettings)
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                when {
-                    state.loading -> HomeSkeleton()
-                    !state.hasAccess -> NoticeCard(
-                        R.string.v3_home_need_access_title, R.string.v3_home_need_access_body, R.string.v3_access_grant, onOpenAccess
-                    )
-                    state.feedCount == 0 -> NoticeCard(
-                        R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
-                    )
+            if (state.loading || !state.hasAccess || state.feedCount == 0) {
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    when {
+                        state.loading -> HomeSkeleton()
+                        !state.hasAccess -> NoticeCard(
+                            R.string.v3_home_need_access_title, R.string.v3_home_need_access_body, R.string.v3_access_grant, onOpenAccess
+                        )
+                        else -> NoticeCard(
+                            R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
+                        )
+                    }
                 }
             }
             // Герой: одна головна картка за пріоритетом. Паузи мають власний відступ, решта — загальні 16dp.
@@ -186,8 +193,9 @@ fun RiskHomeScreen(
                     RiskHero.NONE -> Unit
                 }
             }
+          }
             if (!state.loading) ActivityChips(onAddEntry)
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                 OnlineTodayCard(balanceState)
                 if (ready) {
                     // Деталі: вікна й тиждень. NextCard вже є героєм, якщо вікно ближче за все; інакше він тут не потрібен.
@@ -195,8 +203,10 @@ fun RiskHomeScreen(
                         observing -> {
                             ObservingContent(state)
                             // Ручні вікна видно одразу, не чекаючи тиждень даних.
-                            WindowsHeader(onAddWindow)
-                            WindowsCarousel(state.windows + state.disabledWindows, onOpenWhy)
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                WindowsHeader(onAddWindow)
+                                WindowsCarousel(state.windows + state.disabledWindows, onOpenWhy)
+                            }
                         }
                         planned -> PlannedContent(state, occurrences, now, onOpenWhy, onAddWindow, showNext = hero != RiskHero.IN_WINDOW && hero != RiskHero.NEXT_WINDOW)
                         else -> FoundContent(state, onOpenWhy, onAddWindow)
@@ -292,7 +302,7 @@ private fun NoticeCard(titleRes: Int, bodyRes: Int, buttonRes: Int, onClick: () 
 
 /** L3: прогрес 7 днів, пояснення «нічого робити не треба», теплова карта й, якщо вже щось видно, підказка. */
 @Composable
-private fun ObservingContent(state: RiskHomeState) {
+private fun ObservingContent(state: RiskHomeState) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
     V3Card(spacing = 12.dp) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             repeat(7) { i ->
@@ -325,6 +335,7 @@ private fun ObservingContent(state: RiskHomeState) {
 @Composable
 private fun FoundContent(state: RiskHomeState, onOpenWhy: (String) -> Unit, onAddWindow: () -> Unit) {
     val windows = state.windows
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
     Text(
         text = if (windows.isEmpty() && state.disabledWindows.isNotEmpty()) {
             stringResource(R.string.v3_windows_all_off)
@@ -346,8 +357,11 @@ private fun FoundContent(state: RiskHomeState, onOpenWhy: (String) -> Unit, onAd
         )
     }
     HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
-    WindowsHeader(onAddWindow)
-    WindowsCarousel(windows + state.disabledWindows, onOpenWhy)
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        WindowsHeader(onAddWindow)
+        WindowsCarousel(windows + state.disabledWindows, onOpenWhy)
+    }
 }
 
 /** Поточний час, що оновлюється раз на 30 с: відлік до наступної години на L6 не застигає. */
@@ -375,8 +389,10 @@ private fun PlannedContent(
     val ordered = occurrences.mapNotNull { o -> byId[o.id]?.let { it to o } }
     val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
     if (showNext) ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
-    WindowsHeader(onAddWindow)
-    WindowsCarousel(ordered.map { it.first } + rest + state.disabledWindows, onOpenWhy)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        WindowsHeader(onAddWindow)
+        WindowsCarousel(ordered.map { it.first } + rest + state.disabledWindows, onOpenWhy)
+    }
 }
 
 /** `next`: темна картка з відліком до години або «до кінця» для години, що триває; значки й підписи — токени hero. */
@@ -394,7 +410,8 @@ private fun NextCard(window: RiskWindowUi, occurrence: NextWindow.Occurrence, no
         else -> stringResource(R.string.v3_next_sub_inside_hint)
     }
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(TeperaPalette.heroSurface)
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).heroMoodBackground(showBody = false)
+            .then(if (TeperaPalette.colors.isDawn) Modifier.border(1.dp, TeperaPalette.heroBorder, RoundedCornerShape(24.dp)) else Modifier)
             .clickable(role = Role.Button, onClick = onClick).padding(20.dp)
             .semantics(mergeDescendants = true) {},
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -408,10 +425,6 @@ private fun NextCard(window: RiskWindowUi, occurrence: NextWindow.Occurrence, no
             Text(big, color = onDark, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Medium)
             Text(sub, color = onDark.copy(alpha = 0.8f), fontSize = 14.sp, lineHeight = 20.sp)
         }
-        Icon(
-            imageVector = if (window.partOfDay == PartOfDay.EVENING || window.partOfDay == PartOfDay.NIGHT) TeperaSymbols.Bedtime else TeperaSymbols.Schedule,
-            contentDescription = null, tint = TeperaPalette.restOfDayCard, modifier = Modifier.size(32.dp)
-        )
         Icon(TeperaSymbols.ChevronRight, contentDescription = null, tint = onDark.copy(alpha = 0.8f), modifier = Modifier.size(24.dp))
     }
 }

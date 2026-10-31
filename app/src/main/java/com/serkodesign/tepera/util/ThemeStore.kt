@@ -18,7 +18,8 @@ object ThemeStore {
      */
     const val THEME_CHOICE_ENABLED = true
 
-    enum class Mode { SYSTEM, LIGHT, DARK }
+    /** TIME — за часом доби: вдень світла, ввечері темна, вночі найтемніша ("Світанок" змінюється плавно). */
+    enum class Mode { SYSTEM, LIGHT, DARK, TIME }
 
     /** За замовчуванням — системна тема: слідує за темою телефона, як вирішив власник. */
     private val defaultMode = Mode.SYSTEM

@@ -270,6 +270,14 @@
     <string name="settings_theme_system">Системна</string>
     <string name="settings_theme_light">Світла</string>
     <string name="settings_theme_dark">Темна</string>
+    <string name="settings_debug_clock_title">Година теми (тимчасово, debug)</string>
+    <string name="settings_debug_clock_real">справжній час</string>
+    <string name="settings_debug_clock_reset">Повернути справжній час</string>
+    <string name="settings_theme_time">За часом</string>
+    <string name="settings_theme_time_hint">Вдень світла, ввечері темна, вночі найтемніша. У «Світанку» зміна плавна, у «Поточному» — три ступені.</string>
+    <string name="settings_mood_title">Настрій застосунку</string>
+    <string name="settings_mood_classic">Поточний</string>
+    <string name="settings_mood_dawn">Світанок</string>
     <string name="settings_target_info">Скільки годин Online орієнтовно вписується у ваш день. Просто позначка на шкалі, без оцінювання.</string>
     <string name="settings_target_hours_format">%d год</string>
     <string name="settings_target_decrease">Зменшити орієнтир</string>

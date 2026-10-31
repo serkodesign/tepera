@@ -53,27 +53,34 @@ internal fun WeeklySummaryBlock(
         title = stringResource(R.string.v3_summary_title),
         subtitle = stringResource(R.string.v3_summary_intro)
     ) {
-        // Сесії «на 5 хв» (макет «М'який вихід»): скільки розпочато й скільки завершено вчасно (до +2 хв).
-        softExit?.let { (started, onTime) ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BigStat(started.toString(), stringResource(R.string.v3_summary_soft_started))
-                BigStat(onTime.toString(), stringResource(R.string.v3_summary_soft_on_time))
+        // Закон близькості: дві групи (числа сесій; вікна з підписом) по 16dp одна від одної, всередині груп — тісніше.
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            // Сесії «на 5 хв» (макет «М'який вихід»): скільки розпочато й скільки завершено вчасно (до +2 хв).
+            softExit?.let { (started, onTime) ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    BigStat(started.toString(), stringResource(R.string.v3_summary_soft_started))
+                    BigStat(onTime.toString(), stringResource(R.string.v3_summary_soft_on_time))
+                }
             }
-        }
-        Text(
-            stringResource(R.string.v3_summary_per_day),
-            color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium
-        )
-        // Більше трьох вікон — решта під кнопкою, щоб підсумок не ріс у довгий стек. Вікно із запропонованим зсувом видно завжди.
-        var expanded by rememberSaveable { mutableStateOf(false) }
-        val (always, rest) = windows.withIndex().partition { (i, w) -> i < COLLAPSED_COUNT || w.shiftStart != null }
-        always.forEach { WindowSummary(it.value, onApplyShift, onDismissShift) }
-        if (expanded) rest.forEach { WindowSummary(it.value, onApplyShift, onDismissShift) }
-        if (rest.isNotEmpty()) {
-            TeperaButton(
-                text = if (expanded) stringResource(R.string.v3_summary_show_less) else stringResource(R.string.v3_summary_show_more, rest.size),
-                onClick = { expanded = !expanded }, type = TeperaButtonType.Tertiary, modifier = Modifier.fillMaxWidth()
-            )
+            // Підпис стоїть упритул до вікон, яких стосується (8dp), а не плаває посередині між групами.
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    stringResource(R.string.v3_summary_per_day),
+                    color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                // Більше трьох вікон — решта під кнопкою, щоб підсумок не ріс у довгий стек. Вікно із запропонованим зсувом видно завжди.
+                var expanded by rememberSaveable { mutableStateOf(false) }
+                val (always, rest) = windows.withIndex().partition { (i, w) -> i < COLLAPSED_COUNT || w.shiftStart != null }
+                always.forEach { WindowSummary(it.value, onApplyShift, onDismissShift) }
+                if (expanded) rest.forEach { WindowSummary(it.value, onApplyShift, onDismissShift) }
+                if (rest.isNotEmpty()) {
+                    TeperaButton(
+                        text = if (expanded) stringResource(R.string.v3_summary_show_less) else stringResource(R.string.v3_summary_show_more, rest.size),
+                        onClick = { expanded = !expanded }, type = TeperaButtonType.Tertiary, modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
     }
 }
@@ -83,8 +90,9 @@ internal fun WeeklySummaryBlock(
 private fun WindowSummary(w: RiskWindowUi, onApplyShift: (String) -> Unit, onDismissShift: (String) -> Unit) {
     val shape = RoundedCornerShape(16.dp)
     Column(
-        Modifier.fillMaxWidth().clip(shape).background(TeperaPalette.heatmapNoDataFill.copy(alpha = 0.35f)).padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        // Тональна поверхня теми (світле скло / біле 12–15% у темних наборах) замість сірої заливки, що в темній темі брудніла.
+        Modifier.fillMaxWidth().clip(shape).background(TeperaPalette.innerSurface).padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -99,7 +107,8 @@ private fun WindowSummary(w: RiskWindowUi, onApplyShift: (String) -> Unit, onDis
         }
         // Обидві смуги в одному масштабі (більше з двох значень = повна довжина), щоб різницю було видно, а не вгадувати.
         val scale = maxOf(w.baselineMinutes ?: 0.0, w.currentMinutes ?: 0.0, 1.0)
-        MinutesBar(stringResource(R.string.v3_summary_stat_before), w.baselineMinutes, scale, TeperaPalette.textSecondary.copy(alpha = 0.45f))
+        // «Було» — нейтральна смуга з кольору тексту, «Тепер» — акцент теми; різниця у довжині, не в «добре/погано».
+        MinutesBar(stringResource(R.string.v3_summary_stat_before), w.baselineMinutes, scale, TeperaPalette.textPrimary.copy(alpha = 0.3f))
         MinutesBar(stringResource(R.string.v3_summary_stat_now), w.currentMinutes, scale, TeperaPalette.brandAccent)
         if (w.shiftStart != null && w.shiftEnd != null) {
             Text(
@@ -131,10 +140,10 @@ private fun MinutesBar(caption: String, minutes: Double?, scale: Double, color: 
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(caption, color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.width(56.dp))
-        Box(Modifier.weight(1f).height(12.dp).clip(RoundedCornerShape(6.dp)).background(TeperaPalette.cardSurface)) {
+        Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(TeperaPalette.textPrimary.copy(alpha = 0.08f))) {
             // Навіть мала ненульова величина лишає помітну смужку (мінімум — висота смуги), нуль — порожньо.
             if (fraction > 0f) {
-                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.04f)).clip(RoundedCornerShape(6.dp)).background(color))
+                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.04f)).clip(RoundedCornerShape(7.dp)).background(color))
             }
         }
         Text(
@@ -148,12 +157,12 @@ private fun MinutesBar(caption: String, minutes: Double?, scale: Double, color: 
 @Composable
 private fun RowScope.BigStat(value: String, caption: String) {
     Column(
-        Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(TeperaPalette.heatmapNoDataFill.copy(alpha = 0.35f))
-            .padding(horizontal = 12.dp, vertical = 10.dp).semantics(mergeDescendants = true) {},
+        Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(TeperaPalette.innerSurface)
+            .padding(horizontal = 14.dp, vertical = 12.dp).semantics(mergeDescendants = true) {},
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Text(value, color = TeperaPalette.textPrimary, fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium)
-        Text(caption, color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+        Text(value, color = TeperaPalette.textPrimary, fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Medium)
+        Text(caption, color = TeperaPalette.textSecondary, fontSize = 13.sp, lineHeight = 18.sp)
     }
 }
 

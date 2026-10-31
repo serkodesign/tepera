@@ -203,7 +203,8 @@ fun NavChevron(modifier: Modifier = Modifier) {
 /** Кольори перемикача: увімкнений — фірмовий темно-зелений (як на toggle track у фреймі), вимкнений — за Material 3 (суцільний трек, рамка й ручка кольору outline). */
 @Composable
 fun teperaSwitchColors() = SwitchDefaults.colors(
-    checkedTrackColor = TeperaPalette.brandAccent,
+    // «Світанок»: світлий персиковий трек (акцент) і темний движок для чіткого контрасту; решта — як було.
+    checkedTrackColor = TeperaPalette.colors.let { if (it.isDawn) it.primaryFill else TeperaPalette.brandAccent },
     checkedThumbColor = TeperaPalette.onPrimary,
     checkedBorderColor = Color.Transparent,
     uncheckedTrackColor = TeperaPalette.switchTrackOff,

@@ -11,6 +11,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp as lerpColor
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -113,7 +114,15 @@ data class TeperaColors(
     /** `hero/track` — порожня доріжка графіків, фон кнопок/пілюль/скелетонів у hero. */
     val heroTrack: Color,
     /** `button/add-time-tonal` — кружок "додати час" на рядку активності. */
-    val addTimeTonal: Color
+    val addTimeTonal: Color,
+    // «Світанок» (Налаштування → Настрій застосунку): значення за замовчуванням лишають решту наборів без змін.
+    /** true — набір «Світанок»: небесний градієнт за порою доби, скляні картки, hero без картки з сонцем/місяцем. */
+    val isDawn: Boolean = false,
+    /** Багатоколірний вертикальний градієнт фону; якщо задано — замість пари [backgroundTop]/[backgroundBottom]. */
+    val backgroundStops: List<Color>? = null,
+    /** Головна кнопка на hero (кремова в класичних наборах, персикова в «Світанку») і її текст. */
+    val heroCta: Color = Color(0xFFFEFFEF),
+    val heroCtaText: Color = Color(0xFF062924)
 )
 
 val LegacyTeperaColors = TeperaColors(
@@ -302,6 +311,267 @@ val RedesignDarkColors = TeperaColors(
     heroTrack = Color(0x2EFFFFFF), // FFFFFF 18%
     addTimeTonal = Color(0x38DCF6ED) // DCF6ED 22%
 )
+
+/**
+ * «Світанок» (варіант 2 з макета 31.10.2026): небо за порою доби, скляні картки, персиковий акцент. Кольори залежать
+ * лише від годинника, а не від даних людини (жодного оцінювання). Склад: градієнт фону, текст, поверхні, навбар, hero.
+ */
+private val DawnInkLight = Color(0xFF3A2340)
+private val DawnPeach = Color(0xFFFF9F6B)
+
+private val DawnLightBase = TeperaColors(
+    isDark = false,
+    backgroundTop = Color(0xFFFFD9C0),
+    backgroundBottom = Color(0xFFD7EBFF),
+    ink = DawnInkLight,
+    textSecondary = Color(0xFF5E4262),
+    brand = Color(0xFF8F3A14),
+    switchTrackOff = Color(0x333A2340),
+    surfaceBrandLight = Color(0x99FFFFFF),
+    card = Color(0x8CFFFFFF),
+    cardActive = Color(0xCCFFFFFF),
+    listItem = Color(0x99FFFFFF),
+    primaryFill = DawnPeach,
+    onPrimary = Color(0xFF3A1D0D),
+    chipFill = Color(0xA6FFFFFF),
+    chipContent = DawnInkLight,
+    labelChipFill = Color(0xB3FFFFFF),
+    labelChipBorder = Color(0xFFFFFFFF),
+    iconButtonFill = Color(0xB0FFFFFF),
+    iconButtonContent = DawnInkLight,
+    moreTimeFill = Color(0xFFFFD9C0),
+    navPill = Color(0x80FFFFFF), // білий 50% (за запитом)
+    navSelected = DawnInkLight,
+    navSelectedContent = Color.White,
+    navUnselectedContent = Color(0xFF5E4262),
+    navTabUnselected = Color(0x59FFFFFF),
+    pagerDotActive = DawnInkLight,
+    pagerDotInactive = DawnInkLight.copy(alpha = 0.25f),
+    barFrame = Color(0xB3FFFFFF),
+    barFrameBorder = Color(0x99FFFFFF),
+    barTrack = Color(0x1F3A2340),
+    barHatchStripe = Color(0x80FFFFFF),
+    barRestSegment = Color(0xFFFFB78F),
+    barTargetLine = Color(0xFFF5C401),
+    barTargetFill = Color(0x33F5C401),
+    dialogSurface = Color(0xFFFFF3EC),
+    textPrimary = DawnInkLight,
+    textOnDark = DawnInkLight,
+    textPlaceholder = Color(0xFF6E5472),
+    textDisabled = Color(0xFF9E8AA2),
+    textError = Color(0xFFB3261E),
+    borderDefault = Color(0x663A2340),
+    borderStrong = DawnInkLight,
+    borderError = Color(0xFFB3261E),
+    borderBrand = Color(0xFF8F3A14),
+    lightSystemBars = true,
+    heroSurface = Color(0xA6FFFFFF),
+    heroOnLight = DawnInkLight,
+    heroBorder = Color(0xE6FFFFFF),
+    heroTrack = Color(0x223A2340),
+    addTimeTonal = Color(0xB3FFFFFF),
+    isDawn = true,
+    heroCta = DawnPeach,
+    heroCtaText = Color(0xFF3A1D0D)
+)
+
+private val DawnDarkBase = TeperaColors(
+    isDark = true,
+    backgroundTop = Color(0xFF1B1B3A),
+    backgroundBottom = Color(0xFF11322E),
+    ink = Color(0xFFFEFFEF),
+    textSecondary = Color(0xFFC9BFE0),
+    brand = Color(0xFFFFB78F),
+    switchTrackOff = Color(0x2EFFFFFF),
+    surfaceBrandLight = Color(0x24FFFFFF),
+    card = Color(0x14FFFFFF),
+    cardActive = Color(0x26FFFFFF),
+    listItem = Color(0x1FFFFFFF),
+    primaryFill = DawnPeach,
+    onPrimary = Color(0xFF2B1304),
+    chipFill = Color(0x1FFFFFFF),
+    chipContent = Color(0xFFFEFFEF),
+    labelChipFill = Color(0x1FFFFFFF),
+    labelChipBorder = Color(0x2EFFFFFF),
+    iconButtonFill = Color(0x1FFFFFFF),
+    iconButtonContent = Color(0xFFFEFFEF),
+    moreTimeFill = Color(0x40FFB78F),
+    navPill = Color(0x1FFFFFFF),
+    navSelected = Color(0xFFFEFFEF),
+    navSelectedContent = Color(0xFF2A1F45),
+    navUnselectedContent = Color(0xFFC9BFE0),
+    navTabUnselected = Color(0x14FFFFFF),
+    pagerDotActive = Color(0xFFFEFFEF),
+    pagerDotInactive = Color(0xFFFEFFEF).copy(alpha = 0.3f),
+    barFrame = Color(0x14FFFFFF),
+    barFrameBorder = Color(0x2EFFFFFF),
+    barTrack = Color(0x24FFFFFF),
+    barHatchStripe = Color(0x24FFFFFF),
+    barRestSegment = DawnPeach,
+    barTargetLine = Color(0xFFF5C401),
+    barTargetFill = Color(0x33F5C401),
+    dialogSurface = Color(0xFF2A2342),
+    textPrimary = Color(0xFFFEFFEF),
+    textOnDark = Color(0xFFFEFFEF),
+    textPlaceholder = Color(0xFFB4A9CC),
+    textDisabled = Color(0x40FFFFFF),
+    textError = Color(0xFFFF8A80),
+    borderDefault = Color(0x40FFFFFF),
+    borderStrong = Color(0xFFFEFFEF),
+    borderError = Color(0xFFFF8A80),
+    borderBrand = Color(0xFFFFB78F),
+    lightSystemBars = false,
+    heroSurface = Color(0x29FFFFFF),
+    heroOnLight = Color(0xFF2A1F45),
+    heroBorder = Color(0x40FFFFFF),
+    heroTrack = Color(0x2EFFFFFF),
+    addTimeTonal = Color(0x38FFB78F),
+    isDawn = true,
+    heroCta = DawnPeach,
+    heroCtaText = Color(0xFF2B1304)
+)
+
+/** Небо «Світанку» за годиною: ранок 5–10, день 11–16, вечір 17–21, ніч 22–4. Зверху вниз. */
+private fun dawnSky(dark: Boolean, hour: Int): List<Color> = when (hour) {
+    in 5..10 -> if (dark) listOf(0xFF2B2A4A, 0xFF4F3556, 0xFF2E3B3A) else listOf(0xFFFFEFD0, 0xFFFFD7B5, 0xFFF9C9D6, 0xFFE3D6F7)
+    in 11..16 -> if (dark) listOf(0xFF12304A, 0xFF15434F, 0xFF11322E) else listOf(0xFFDDF1FF, 0xFFCFEAF6, 0xFFD7F3E6, 0xFFF4F0D8)
+    in 17..21 -> if (dark) listOf(0xFF1B1B3A, 0xFF3A2A55, 0xFF11322E) else listOf(0xFFFFD9C0, 0xFFF7C6D9, 0xFFCFC6F5, 0xFFD7EBFF)
+    else -> if (dark) listOf(0xFF0E1226, 0xFF1B1B3A, 0xFF0B1F1C) else listOf(0xFFD9D6F2, 0xFFC3BFE8, 0xFFB2B6E0, 0xFFCFE0F2)
+}.map { Color(it) }
+
+/** Набір «Світанок» для світлої/темної теми й години доби. */
+fun dawnColors(dark: Boolean, hour: Int): TeperaColors {
+    val sky = dawnSky(dark, hour)
+    return (if (dark) DawnDarkBase else DawnLightBase).copy(
+        backgroundTop = sky.first(), backgroundBottom = sky.last(), backgroundStops = sky
+    )
+}
+
+// ---------- Тема «За часом доби» (Налаштування → Загальні → Тема) ----------
+
+/** «Поточний» настрій, ступінь 3 (вночі): темніший за [RedesignDarkColors] — майже чорний фон, приглушений текст. */
+val RedesignNightColors = RedesignDarkColors.copy(
+    backgroundTop = Color(0xFF050506),
+    backgroundBottom = Color(0xFF010603),
+    card = Color(0xFF09090A),
+    cardActive = Color(0x1AFFFFFF),
+    listItem = Color(0x1AFFFFFF),
+    chipFill = Color(0x1AFFFFFF),
+    iconButtonFill = Color(0x1AFFFFFF),
+    barFrame = Color(0xFF09090A),
+    dialogSurface = Color(0xFF111113),
+    textSecondary = Color(0xFFA9BFBC),
+    heroSurface = Color(0x33454545)
+)
+
+/** Ступені теми за часом для «Поточного» настрою: день — світла, вечір — темна, ніч — найтемніша. */
+enum class TimePhase { DAY, EVENING, NIGHT }
+
+/** День 05:00–19:00, вечір 19:00–23:00, ніч 23:00–05:00. */
+fun timePhaseAt(minuteOfDay: Int): TimePhase = when {
+    minuteOfDay < 5 * 60 -> TimePhase.NIGHT
+    minuteOfDay < 19 * 60 -> TimePhase.DAY
+    minuteOfDay < 23 * 60 -> TimePhase.EVENING
+    else -> TimePhase.NIGHT
+}
+
+fun classicTimeColors(minuteOfDay: Int): TeperaColors = when (timePhaseAt(minuteOfDay)) {
+    TimePhase.DAY -> RedesignLightColors
+    TimePhase.EVENING -> RedesignDarkColors
+    TimePhase.NIGHT -> RedesignNightColors
+}
+
+private val DawnNightBase = DawnDarkBase.copy(
+    card = Color(0x0FFFFFFF),
+    listItem = Color(0x18FFFFFF),
+    heroSurface = Color(0x22FFFFFF),
+    dialogSurface = Color(0xFF1B1730),
+    textSecondary = Color(0xFFA99FC4),
+    textPlaceholder = Color(0xFF9388AD)
+)
+
+private fun sky(vararg argb: Long): List<Color> = argb.map { Color(it) }
+
+private val SkyNight = sky(0xFF070A18, 0xFF0E1226, 0xFF0A1424, 0xFF06120F)
+private val SkyMorning = sky(0xFFFFEFD0, 0xFFFFD7B5, 0xFFF9C9D6, 0xFFE3D6F7)
+private val SkyDay = sky(0xFFDDF1FF, 0xFFCFEAF6, 0xFFD7F3E6, 0xFFF4F0D8)
+private val SkyEveningLight = sky(0xFFFFD9C0, 0xFFF7C6D9, 0xFFCFC6F5, 0xFFD7EBFF)
+private val SkyEveningDark = sky(0xFF1B1B3A, 0xFF2A2147, 0xFF3A2A55, 0xFF11322E)
+
+/** Небо за хвилиною доби: повільне перетікання між опорними кадрами (повертається до ночі наприкінці доби). */
+private fun skyAt(minute: Int): List<Color> {
+    // Захід сонця тримається до 18:30 і темніє за ~45 хв, щоб небо швидко проходило середню яскравість, на якій
+    // текст не читається (момент зміни кольору тексту — 18:50–19:00, див. [uiDarkness]).
+    val frames = listOf(
+        0 to SkyNight, 4 * 60 to SkyNight, 6 * 60 to SkyMorning, 11 * 60 to SkyDay,
+        17 * 60 to SkyEveningLight, 18 * 60 + 30 to SkyEveningLight, 19 * 60 + 15 to SkyEveningDark,
+        23 * 60 to SkyNight, 24 * 60 to SkyNight
+    )
+    val i = frames.indexOfLast { it.first <= minute }.coerceIn(0, frames.size - 2)
+    val (t0, a) = frames[i]
+    val (t1, b) = frames[i + 1]
+    val f = ((minute - t0).toFloat() / (t1 - t0)).coerceIn(0f, 1f)
+    return a.indices.map { lerpColor(a[it], b[it], f) }
+}
+
+/**
+ * Ступінь «темряви» інтерфейсу: 0 — світлий, 1 — вечірній, 2 — нічний. Переходи тексту/поверхонь короткі (10–15 хв)
+ * і припадають на момент, коли небо пройшло ~55% шляху між світлим і темним, щоб текст на небі не «тонув» (перевірено
+ * на пристрої: при зміні тексту о 19:00–19:20, коли небо вже темне, заголовки зникали).
+ */
+private fun uiDarkness(minute: Int): Float {
+    fun ramp(from: Int, to: Int) = ((minute - from).toFloat() / (to - from)).coerceIn(0f, 1f)
+    return when {
+        minute < 5 * 60 + 10 -> 2f
+        minute < 5 * 60 + 25 -> 2f * (1f - ramp(5 * 60 + 10, 5 * 60 + 25))
+        minute < 18 * 60 + 50 -> 0f
+        minute < 19 * 60 -> ramp(18 * 60 + 50, 19 * 60)
+        minute < 22 * 60 + 30 -> 1f
+        minute < 23 * 60 + 30 -> 1f + ramp(22 * 60 + 30, 23 * 60 + 30)
+        else -> 2f
+    }
+}
+
+/** «Світанок» + тема «За часом»: небо й кольори інтерфейсу плавно змінюються протягом доби. */
+fun dawnColorsForMinute(minute: Int): TeperaColors {
+    val d = uiDarkness(minute)
+    val ui = if (d <= 1f) lerpTeperaColors(DawnLightBase, DawnDarkBase, d) else lerpTeperaColors(DawnDarkBase, DawnNightBase, d - 1f)
+    val skyColors = skyAt(minute)
+    return ui.copy(backgroundTop = skyColors.first(), backgroundBottom = skyColors.last(), backgroundStops = skyColors)
+}
+
+private fun lerpTeperaColors(a: TeperaColors, b: TeperaColors, f: Float): TeperaColors {
+    if (f <= 0f) return a
+    if (f >= 1f) return b
+    fun l(x: Color, y: Color) = lerpColor(x, y, f)
+    return a.copy(
+        isDark = if (f < 0.5f) a.isDark else b.isDark,
+        lightSystemBars = if (f < 0.5f) a.lightSystemBars else b.lightSystemBars,
+        ink = l(a.ink, b.ink), textSecondary = l(a.textSecondary, b.textSecondary), brand = l(a.brand, b.brand),
+        switchTrackOff = l(a.switchTrackOff, b.switchTrackOff), surfaceBrandLight = l(a.surfaceBrandLight, b.surfaceBrandLight),
+        card = l(a.card, b.card), cardActive = l(a.cardActive, b.cardActive), listItem = l(a.listItem, b.listItem),
+        primaryFill = l(a.primaryFill, b.primaryFill), onPrimary = l(a.onPrimary, b.onPrimary),
+        chipFill = l(a.chipFill, b.chipFill), chipContent = l(a.chipContent, b.chipContent),
+        labelChipFill = l(a.labelChipFill, b.labelChipFill), labelChipBorder = l(a.labelChipBorder, b.labelChipBorder),
+        iconButtonFill = l(a.iconButtonFill, b.iconButtonFill), iconButtonContent = l(a.iconButtonContent, b.iconButtonContent),
+        moreTimeFill = l(a.moreTimeFill, b.moreTimeFill), navPill = l(a.navPill, b.navPill),
+        navSelected = l(a.navSelected, b.navSelected), navSelectedContent = l(a.navSelectedContent, b.navSelectedContent),
+        navUnselectedContent = l(a.navUnselectedContent, b.navUnselectedContent), navTabUnselected = l(a.navTabUnselected, b.navTabUnselected),
+        pagerDotActive = l(a.pagerDotActive, b.pagerDotActive), pagerDotInactive = l(a.pagerDotInactive, b.pagerDotInactive),
+        barFrame = l(a.barFrame, b.barFrame), barFrameBorder = l(a.barFrameBorder, b.barFrameBorder),
+        barTrack = l(a.barTrack, b.barTrack), barHatchStripe = l(a.barHatchStripe, b.barHatchStripe),
+        barRestSegment = l(a.barRestSegment, b.barRestSegment), barTargetLine = l(a.barTargetLine, b.barTargetLine),
+        barTargetFill = l(a.barTargetFill, b.barTargetFill), dialogSurface = l(a.dialogSurface, b.dialogSurface),
+        textPrimary = l(a.textPrimary, b.textPrimary), textOnDark = l(a.textOnDark, b.textOnDark),
+        textPlaceholder = l(a.textPlaceholder, b.textPlaceholder), textDisabled = l(a.textDisabled, b.textDisabled),
+        textError = l(a.textError, b.textError), borderDefault = l(a.borderDefault, b.borderDefault),
+        borderStrong = l(a.borderStrong, b.borderStrong), borderError = l(a.borderError, b.borderError),
+        borderBrand = l(a.borderBrand, b.borderBrand), heroSurface = l(a.heroSurface, b.heroSurface),
+        heroOnLight = l(a.heroOnLight, b.heroOnLight), heroBorder = l(a.heroBorder, b.heroBorder),
+        heroTrack = l(a.heroTrack, b.heroTrack), addTimeTonal = l(a.addTimeTonal, b.addTimeTonal),
+        heroCta = l(a.heroCta, b.heroCta), heroCtaText = l(a.heroCtaText, b.heroCtaText)
+    )
+}
 
 val LocalTeperaColors = staticCompositionLocalOf { LegacyTeperaColors }
 

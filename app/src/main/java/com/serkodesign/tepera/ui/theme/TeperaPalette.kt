@@ -102,11 +102,11 @@ object TeperaPalette {
     // За запитом: білий 70% (rgba(255,255,255,0.7)) — як картки Щоденника й Налаштувань у світлій темі.
     // Темна тема (макет 362:516): звичайна картка #1D5945, активна (таймер) #DCF6ED з темним текстом.
     val activityCardIdle: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
-    val activityCardActive: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF006944)) { if (isDark) Color(0xFFDCF6ED) else Color(0xFF006944) }
+    val activityCardActive: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF006944)) { if (isDawn) primaryFill else if (isDark) Color(0xFFDCF6ED) else Color(0xFF006944) }
     // За прямим запитом (Figma 336:537 "more_time"): #C5E2CB у світлій темі; темна — #DCF6ED з прозорістю 30%.
-    val activityMoreTime: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFC5E2CB)) { if (isDark) Color(0x4DDCF6ED) else Color(0xFFC5E2CB) }
+    val activityMoreTime: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFFC5E2CB)) { if (isDawn) moreTimeFill else if (isDark) Color(0x4DDCF6ED) else Color(0xFFC5E2CB) }
     // Іконка на кнопці "додати час": у темній темі темна (на світлій #C5E2CB), у світлій — як buttonBrandDark.
-    val activityMoreTimeContent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF003926)) { if (isDark) Color(0xFFDCF6ED) else Color(0xFF003926) }
+    val activityMoreTimeContent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF003926)) { if (isDawn) ink else if (isDark) Color(0xFFDCF6ED) else Color(0xFF003926) }
     /** Рамка 1dp ідлу-картки активності (node 347:3052: `border border-white`) — лише світлий редизайн, активна картка й легасі її не мають. */
     val activityCardIdleBorder: Color? @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.let { if (it === LegacyTeperaColors) null else if (it.isDark) it.listItem else Color(0xB3FFFFFF) }
     val headerButtonFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { iconButtonFill } // білий 50% (було 80% за Figma; змінено за запитом користувача)
@@ -160,6 +160,8 @@ object TeperaPalette {
     val heroBorder: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroBorder
     val heroTrack: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroTrack
     val addTimeTonal: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.addTimeTonal
+    val heroCta: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroCta
+    val heroCtaText: Color @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.heroCtaText
 
     /** Поточний набір кольорів теми — для ролей, яких нема серед іменованих токенів нижче. */
     val colors: TeperaColors @Composable @ReadOnlyComposable get() = LocalTeperaColors.current
@@ -255,7 +257,7 @@ fun Modifier.teperaGradientBackground(): Modifier {
     // розмитими плямами поверх, тим самим механізмом (drawBlurredBlob), що легасі-фон нижче, та
     // ж позиція/радіус/сигма (302/97.55dp), лише нові кольори набору.
     if (top != null && bottom != null) {
-        var modifier = this.fillMaxSize().background(Brush.verticalGradient(listOf(top, bottom)))
+        var modifier = this.fillMaxSize().background(Brush.verticalGradient(colors.backgroundStops ?: listOf(top, bottom)))
         val blobTopRight = colors.backgroundBlobTopRight
         val blobBottomLeft = colors.backgroundBlobBottomLeft
         if (blobTopRight != null || blobBottomLeft != null) {

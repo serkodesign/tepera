@@ -255,6 +255,14 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
+    <string name="settings_debug_clock_title">Theme hour (temporary, debug)</string>
+    <string name="settings_debug_clock_real">real time</string>
+    <string name="settings_debug_clock_reset">Back to real time</string>
+    <string name="settings_theme_time">By time</string>
+    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night. Smooth change in Dawn, three steps in Current.</string>
+    <string name="settings_mood_title">App mood</string>
+    <string name="settings_mood_classic">Current</string>
+    <string name="settings_mood_dawn">Dawn</string>
     <string name="settings_target_info">Roughly how many Online hours fit your day. Just a marker on the scale, no judgment.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_target_decrease">Decrease target</string>

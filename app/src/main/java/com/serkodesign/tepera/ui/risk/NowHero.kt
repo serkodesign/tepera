@@ -52,6 +52,7 @@ import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
 import com.serkodesign.tepera.ui.home.HomeViewModel
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.heroMoodBackground
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.util.PlanOverlayStore
 import kotlinx.coroutines.launch
@@ -97,7 +98,7 @@ fun IdeaHero(
     val left = (total - passed).coerceAtLeast(0)
 
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(TeperaPalette.heroSurface).padding(20.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).heroMoodBackground().padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -160,17 +161,23 @@ fun IdeaHero(
 @Composable
 private fun HeroButton(text: String, filled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(100.dp)
+    // «Світанок» бере кольори з теми; класичний вигляд лишається буквально як був (кремова кнопка на темному hero).
+    val dawn = TeperaPalette.colors.isDawn
+    val filledBg = if (dawn) TeperaPalette.heroCta else HeroCream
+    val filledText = if (dawn) TeperaPalette.heroCtaText else HeroCreamText
+    val plainBg = if (dawn) TeperaPalette.heroTrack else Color.White.copy(alpha = 0.12f)
+    val plainText = if (dawn) TeperaPalette.textOnDark else HeroCream
     Box(
         modifier = modifier
             .heightIn(min = 48.dp)
             .clip(shape)
-            .then(if (filled) Modifier.background(HeroCream) else Modifier.background(Color.White.copy(alpha = 0.12f)))
+            .then(if (filled) Modifier.background(filledBg) else Modifier.background(plainBg))
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text, color = if (filled) HeroCreamText else HeroCream, fontSize = 14.sp, lineHeight = 20.sp,
+            text, color = if (filled) filledText else plainText, fontSize = 14.sp, lineHeight = 20.sp,
             fontWeight = FontWeight.Medium, maxLines = 2
         )
     }

@@ -38,6 +38,14 @@ import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.util.AppLocale
 import com.serkodesign.tepera.util.FeedbackForm
 import com.serkodesign.tepera.util.PlayStore
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.serkodesign.tepera.ui.theme.DebugClock
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.util.MoodStore
 import com.serkodesign.tepera.util.ThemeStore
 
 /**
@@ -174,12 +182,53 @@ fun SettingsScreen(
                             options = listOf(
                                 ThemeStore.Mode.SYSTEM to stringResource(R.string.settings_theme_system),
                                 ThemeStore.Mode.LIGHT to stringResource(R.string.settings_theme_light),
-                                ThemeStore.Mode.DARK to stringResource(R.string.settings_theme_dark)
+                                ThemeStore.Mode.DARK to stringResource(R.string.settings_theme_dark),
+                                ThemeStore.Mode.TIME to stringResource(R.string.settings_theme_time)
                             ),
                             selected = ThemeStore.current(),
                             onSelect = { ThemeStore.set(context, it) }
                         )
+                        if (ThemeStore.current() == ThemeStore.Mode.TIME) {
+                            Text(
+                                stringResource(R.string.settings_theme_time_hint),
+                                color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
+                            )
+                        }
                     }
+                }
+                // ТИМЧАСОВО (лише debug): повзунок години, щоб побачити тему «За часом» у будь-яку пору доби.
+                if (BuildConfig.DEBUG) {
+                    val debugMinute = DebugClock.override.value
+                    val shown = debugMinute ?: java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+                    TeperaCard(title = stringResource(R.string.settings_debug_clock_title)) {
+                        Text(
+                            String.format(java.util.Locale.ROOT, "%02d:%02d", shown / 60, shown % 60) +
+                                if (debugMinute == null) " · " + stringResource(R.string.settings_debug_clock_real) else "",
+                            color = TeperaPalette.textPrimary, fontSize = 20.sp, lineHeight = 28.sp
+                        )
+                        androidx.compose.material3.Slider(
+                            value = shown.toFloat(),
+                            onValueChange = { DebugClock.override.value = it.toInt().coerceIn(0, 1439) },
+                            valueRange = 0f..1439f
+                        )
+                        TeperaButton(
+                            text = stringResource(R.string.settings_debug_clock_reset),
+                            onClick = { DebugClock.override.value = null },
+                            type = TeperaButtonType.Secondary,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+                // Настрій — Поточний / Світанок (MoodStore): новий стиль поряд зі старим, незалежно від теми вище.
+                TeperaCard(title = stringResource(R.string.settings_mood_title)) {
+                    PillSegmentedControl(
+                        options = listOf(
+                            MoodStore.Mood.CLASSIC to stringResource(R.string.settings_mood_classic),
+                            MoodStore.Mood.DAWN to stringResource(R.string.settings_mood_dawn)
+                        ),
+                        selected = MoodStore.current(),
+                        onSelect = { MoodStore.set(context, it) }
+                    )
                 }
                 ExtraAnimationsToggle()
                 GlassRow(
