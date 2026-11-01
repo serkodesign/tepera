@@ -41,14 +41,14 @@
 
 **User control / disclosure**
 > The service is off by default. Before sending the user to system settings, the app shows a prominent in-app disclosure
-> dialog (what is seen, why, that nothing leaves the device) with "I agree" and "Not now". Declining keeps the feature off;
+> dialog (what is seen, why, that Tepera sends nothing anywhere) with "I agree" and "Not now". Declining keeps the feature off;
 > the dialog can be opened again. The service can be disabled any time in Android Settings → Accessibility.
 
 **Is the service designed to help people with disabilities?** — No (`isAccessibilityTool` is not set).
 
 ## 3. Текст розкриття в застосунку (як у демо)
 
-- UA: «Tepera використовує службу Спеціальних можливостей лише для того, щоб побачити назву застосунку, який щойно відкрився, і показати коротку паузу перед тими, що ви самі обрали. Служба не читає вміст екрана, текст, паролі чи повідомлення. Дані про відкриті застосунки лишаються на вашому пристрої і нікому не передаються. …» — кнопки «Погоджуюсь» / «Не зараз».
+- UA: «Tepera використовує службу Спеціальних можливостей лише для того, щоб побачити назву застосунку, який щойно відкрився, і показати коротку паузу перед тими, що ви самі обрали. Служба не читає вміст екрана, текст, паролі чи повідомлення. Tepera не передає дані про відкриті застосунки нікуди й нікому. …» — кнопки «Погоджуюсь» / «Не зараз».
 - EN: «Tepera uses an Accessibility service only to see the name of the app that has just opened … I agree / Not now».
 
 ## 4. Сценарій відео (≈ 2 хв; мова застосунку — English; субтитри EN)
@@ -65,7 +65,7 @@
 |---|---|---|---|
 | 1 | Титр | «Tepera — Delayed apps. AccessibilityService demo» | 3 с |
 | 2 | Запуск Tepera, проходимо онбординг до екрана дозволів («Delay before apps» — другий рядок, «Usage access» — перший) | «Permissions screen. The Accessibility row is optional» | 6 с |
-| 3 | Тап рядка «Delay before apps» → діалог розкриття на весь екран. **Затримка 8–10 с**, щоб прочитати весь текст | «Prominent disclosure: what the service sees, why, and that nothing leaves the device» | 10 с |
+| 3 | Тап рядка «Delay before apps» → діалог розкриття на весь екран. **Затримка 8–10 с**, щоб прочитати весь текст | «Prominent disclosure: what the service sees, why, and that Tepera sends nothing anywhere» | 10 с |
 | 4 | **Відмова:** тап «Not now». Рядок лишився, служба не ввімкнена | «User declines. Accessibility stays off» | 4 с |
 | 5 | **Повторне розкриття:** тап того ж рядка → діалог з'являється знову | «The disclosure can be opened again» | 4 с |
 | 6 | **Згода:** тап «I agree» → системні «Accessibility» → «Tepera: delay before apps» → показати опис служби → перемикач → системне підтвердження | «User gives consent and grants access in system settings» | 15 с |
@@ -110,7 +110,7 @@
 **Етап 3 — Play Console (ти; тексти я вже дав).**
 1. Опублікувати оновлену політику (`privacy-policy.md`) за тим самим URL.
 2. App content → Accessibility API declaration: відповіді з розділу 2, посилання на відео.
-3. Data Safety / App content: перевірити, що відповіді не суперечать політиці (дані лишаються на пристрої).
+3. Data Safety / App content: перевірити, що відповіді не суперечать політиці (Tepera нікуди не надсилає дані; Auto Backup лишається керованим Android).
 4. Підготувати `bundleBetaRelease` (я), завантажити на закритий трек (ти).
 
 **Етап 4 — очікування.**

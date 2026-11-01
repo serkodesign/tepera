@@ -38,7 +38,7 @@ It shows your day's structure — how much of it was online, what you logged off
 
 🌗 **Light and dark theme, English and Ukrainian.**
 
-🔒 **Private by design** — usage statistics are processed on your device only and are never sent anywhere. No accounts, no social feed, no ads. Optional crash reports can be switched off in Settings → Data and privacy. The in-app Knowledge base explains exactly what data is used and why.
+🔒 **Private by design** — usage statistics are processed on your device and Tepera never sends them anywhere. No accounts, no social feed, no ads. Optional crash reports can be switched off in Settings → Data and privacy. The in-app Knowledge base explains exactly what data is used and why.
 
 Built in a "monastic" style — no badges, no streaks, no points for usage. Just a calm look at your day, for people tired of endless scrolling who want a healthier balance between phone time and real life.
 

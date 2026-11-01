@@ -11,7 +11,7 @@ is optional
 3
 00:00:09,300 --> 00:00:18,800
 Prominent disclosure: what the service sees, why,
-and that nothing leaves the device
+and that Tepera sends nothing anywhere
 
 4
 00:00:19,300 --> 00:00:22,800
