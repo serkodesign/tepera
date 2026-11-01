@@ -79,7 +79,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     // Етап 6: у режимі v3 (beta) старі категорії й кнопки віджета приховані; дані в базі лишаються.
-    val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = false)
+    val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
     val v3Active = BuildConfig.V3_MVP && v3Mode
 
     // FR-6.4: чесне попередження перед відкриттям браузера — тап не веде туди одразу.

@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.data.local
 
+import com.serkodesign.tepera.BuildConfig
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -390,8 +391,8 @@ class SettingsStore(private val context: Context) {
         context.settingsDataStore.edit { it[WEEKLY_SUMMARY_ENABLED_KEY] = enabled }
     }
 
-    /** v3.0 MVP (beta): режим «Години ризику» замість звичайного Home. */
-    val v3ModeEnabled: Flow<Boolean> = context.settingsDataStore.data.map { it[V3_MODE_KEY] ?: false }
+    /** v3.0 MVP (beta): режим «Години ризику» замість звичайного Home. У beta увімкнений за замовчуванням (01.11.2026, для відкритого тесту); хто вимкнув сам — лишається вимкненим. */
+    val v3ModeEnabled: Flow<Boolean> = context.settingsDataStore.data.map { it[V3_MODE_KEY] ?: BuildConfig.V3_MVP }
 
     suspend fun setV3ModeEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[V3_MODE_KEY] = enabled }

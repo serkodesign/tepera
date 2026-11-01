@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.ui.risk
 
+import com.serkodesign.tepera.BuildConfig
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
-    val enabled by settingsStore.v3ModeEnabled.collectAsState(initial = false)
+    val enabled by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
     Column(modifier = modifier.padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         GlassRow(
             label = stringResource(R.string.v3_mode_label),
