@@ -46,4 +46,10 @@ interface RiskWindowDao {
             "WHERE id = :id AND suggestedStartMinute IS NOT NULL AND suggestedEndMinute IS NOT NULL"
     )
     suspend fun applyShiftSuggestion(id: String, now: Long)
+
+    @Query("DELETE FROM risk_windows")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(windows: List<RiskWindowEntity>)
 }

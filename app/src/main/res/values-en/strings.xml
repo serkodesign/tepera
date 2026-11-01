@@ -290,13 +290,13 @@
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export statistics</string>
     <string name="backup_import_action">Import statistics</string>
-    <string name="backup_not_included_note">The file includes: activities (name, icon, colour, order, archived state), all activity entries (start, duration, note), excluded apps, the Online-time reference and the daily Online history (Online minutes, unlocks, day start and end, Online by hour). Other settings (sleep window, gates, widget, language, theme) need to be set up again.</string>
+    <string name="backup_not_included_note">The file includes: activities (name, icon, colour, order, archived state), all activity entries (start, duration, note), excluded apps, the Online-time reference and the daily Online history (Online minutes, unlocks, day start and end, Online by hour). In v3 mode (beta) it also includes the chosen feed apps, their time slots, the scrolling hours found, your \"if — then\" plans, reminder events and observation weeks. Other settings (sleep window, gates, widget, language, theme) need to be set up again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
     <string name="backup_import_failure">Couldn\'t import the data — check the file</string>
     <string name="backup_import_confirm_title">Replace all data?</string>
-    <string name="backup_import_confirm_body">Importing replaces activities, entries, excluded apps, the reference and the daily Online history with the data from the file. This cannot be undone. Other settings are not restored.</string>
+    <string name="backup_import_confirm_body">Importing replaces activities, entries, excluded apps, the reference, the daily Online history and (if present in the file) scrolling-hours data and plans with the data from the file. This cannot be undone. Other settings are not restored.</string>
     <string name="backup_import_confirm_action">Import</string>
 
     <!-- Exclusion List (FR-3.5) -->

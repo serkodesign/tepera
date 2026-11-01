@@ -33,4 +33,11 @@ interface UsageSlotDao {
 
     @Query("DELETE FROM usage_slots WHERE date < :beforeEpochDay")
     suspend fun deleteOlderThan(beforeEpochDay: Long)
+
+    /** Резервна копія: усі слоти (їх небагато — зберігається лише обмежене вікно днів). */
+    @Query("SELECT * FROM usage_slots")
+    suspend fun getAllOnce(): List<UsageSlotEntity>
+
+    @Query("DELETE FROM usage_slots")
+    suspend fun deleteAll()
 }

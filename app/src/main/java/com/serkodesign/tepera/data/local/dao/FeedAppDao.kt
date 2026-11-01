@@ -23,4 +23,14 @@ interface FeedAppDao {
 
     @Query("SELECT COUNT(*) FROM feed_apps")
     suspend fun count(): Int
+
+    /** Резервна копія: усі обрані стрічки. */
+    @Query("SELECT * FROM feed_apps")
+    suspend fun getAllOnce(): List<FeedAppEntity>
+
+    @Query("DELETE FROM feed_apps")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(apps: List<FeedAppEntity>)
 }

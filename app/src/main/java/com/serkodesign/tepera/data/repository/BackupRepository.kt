@@ -12,11 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import com.serkodesign.tepera.data.repository.V3BackupJson.mapObjects
 import org.json.JSONObject
 
 // P-2 (CLAUDE-CODE-PLAN-pro.md): версія 2 додає необов'язковий масив "daySummaries" — старі
 // файли версії 1 (без ключа) імпортуються нормально, просто без цих даних (root.optJSONArray).
-private const val SCHEMA_VERSION = 2
+// Версія 3 (v3.0 MVP, 01.11.2026): додає масиви feedApps, usageSlots, riskWindows, plans, nudgeEvents,
+// observationPeriods. Якщо ключа "riskWindows" у файлі немає (файли версій 1–2), v3-дані на пристрої НЕ чіпаються.
+private const val SCHEMA_VERSION = 3
 
 /**
  * FR-6.2: ручний JSON-експорт/імпорт — доповнення до Android Auto Backup (FR-6.1), яке працює
@@ -55,6 +58,15 @@ class BackupRepository(
         root.put("daySummaries", JSONArray().apply {
             database.daySummaryDao().getAllOnce().forEach { put(daySummaryToJson(it)) }
         })
+        // v3.0: стрічки, слоти, години ризику, плани, події нагадувань, тижні спостереження.
+        root.put("feedApps", JSONArray().apply { database.feedAppDao().getAllOnce().forEach { put(V3BackupJson.feedAppToJson(it)) } })
+        root.put("usageSlots", JSONArray().apply { database.usageSlotDao().getAllOnce().forEach { put(V3BackupJson.usageSlotToJson(it)) } })
+        root.put("riskWindows", JSONArray().apply { database.riskWindowDao().getAll().forEach { put(V3BackupJson.riskWindowToJson(it)) } })
+        root.put("plans", JSONArray().apply { database.planDao().getAllOnce().forEach { put(V3BackupJson.planToJson(it)) } })
+        root.put("nudgeEvents", JSONArray().apply { database.nudgeEventDao().getAllOnce().forEach { put(V3BackupJson.nudgeEventToJson(it)) } })
+        root.put("observationPeriods", JSONArray().apply {
+            database.observationPeriodDao().getAllOnce().forEach { put(V3BackupJson.observationPeriodToJson(it)) }
+        })
 
         root.toString(2)
     }
@@ -80,6 +92,17 @@ class BackupRepository(
         // CC-1: немає значення (або 0) — орієнтира немає; імпорт повністю замінює поточний.
         val targetMinutes = if (settingsJson == null || settingsJson.isNull("targetMinutes")) null else settingsJson.optInt("targetMinutes").takeIf { it > 0 }
 
+        // v3.0: файли версій 1–2 не мають "riskWindows" — тоді v3-дані на пристрої лишаються як є.
+        val hasV3 = root.has("riskWindows")
+        val feedApps = root.optJSONArray("feedApps").mapObjects(V3BackupJson::feedAppFromJson)
+        val usageSlots = root.optJSONArray("usageSlots").mapObjects(V3BackupJson::usageSlotFromJson)
+        val riskWindows = root.optJSONArray("riskWindows").mapObjects(V3BackupJson::riskWindowFromJson)
+        val windowIds = riskWindows.mapTo(HashSet()) { it.id }
+        // Плани й події без вікна (FK) відкидаємо, щоб імпорт не падав на пошкодженому файлі.
+        val plans = root.optJSONArray("plans").mapObjects(V3BackupJson::planFromJson).filter { it.windowId in windowIds }
+        val nudgeEvents = root.optJSONArray("nudgeEvents").mapObjects(V3BackupJson::nudgeEventFromJson).filter { it.windowId in windowIds }
+        val observationPeriods = root.optJSONArray("observationPeriods").mapObjects(V3BackupJson::observationPeriodFromJson)
+
         database.withTransaction {
             database.activityEntryDao().deleteAll() // спершу дочірня таблиця (FK на categories)
             database.categoryDao().deleteAll()
@@ -90,9 +113,25 @@ class BackupRepository(
             database.activityEntryDao().insertAll(entries)
             database.excludedAppDao().insertAll(excludedApps)
             database.daySummaryDao().insertAll(daySummaries)
+
+            if (hasV3) {
+                database.riskWindowDao().deleteAll() // каскадом прибирає plans і nudge_events
+                database.feedAppDao().deleteAll()
+                database.usageSlotDao().deleteAll()
+                database.observationPeriodDao().deleteAll()
+
+                database.feedAppDao().insertAll(feedApps)
+                database.usageSlotDao().insertAll(usageSlots)
+                database.riskWindowDao().insertAll(riskWindows) // батьківська таблиця перед дочірніми
+                database.planDao().insertAll(plans)
+                database.nudgeEventDao().insertAll(nudgeEvents)
+                database.observationPeriodDao().insertAll(observationPeriods)
+            }
         }
 
         settingsStore.setTargetMinutes(targetMinutes)
+        // Є обрані стрічки з копії — онбординг v3 повторювати не треба.
+        if (hasV3 && feedApps.isNotEmpty()) settingsStore.setV3OnboardingSeen(true)
     }
 
     private fun categoryToJson(c: CategoryEntity) = JSONObject().apply {

@@ -2,6 +2,7 @@ package com.serkodesign.tepera.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.serkodesign.tepera.data.local.entity.NudgeAction
 import com.serkodesign.tepera.data.local.entity.NudgeEventEntity
@@ -42,4 +43,13 @@ interface NudgeEventDao {
     /** Середня похибка будильника в мілісекундах (фактичний показ мінус запланований); `null`, поки нічого не показано. */
     @Query("SELECT AVG(shownAt - scheduledAt) FROM nudge_events WHERE shownAt IS NOT NULL")
     suspend fun averageDelayMillis(): Double?
+
+    @Query("SELECT * FROM nudge_events")
+    suspend fun getAllOnce(): List<NudgeEventEntity>
+
+    @Query("DELETE FROM nudge_events")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(events: List<NudgeEventEntity>)
 }

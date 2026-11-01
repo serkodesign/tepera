@@ -21,4 +21,10 @@ interface PlanDao {
 
     @Query("DELETE FROM plans WHERE windowId = :windowId")
     suspend fun deleteForWindow(windowId: String)
+
+    @Query("SELECT * FROM plans")
+    suspend fun getAllOnce(): List<PlanEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(plans: List<PlanEntity>)
 }

@@ -14,4 +14,13 @@ interface ObservationPeriodDao {
     /** Найновіший період (за початком). */
     @Query("SELECT * FROM observation_periods ORDER BY startDate DESC LIMIT 1")
     suspend fun getLatest(): ObservationPeriodEntity?
+
+    @Query("SELECT * FROM observation_periods")
+    suspend fun getAllOnce(): List<ObservationPeriodEntity>
+
+    @Query("DELETE FROM observation_periods")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(periods: List<ObservationPeriodEntity>)
 }
