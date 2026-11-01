@@ -1,0 +1,52 @@
+1
+00:00:00,300 --> 00:00:02,800
+Tepera — Delayed apps.
+AccessibilityService demo
+
+2
+00:00:03,300 --> 00:00:08,800
+Permissions screen. The Accessibility row
+is optional
+
+3
+00:00:09,300 --> 00:00:18,800
+Prominent disclosure: what the service sees, why,
+and that nothing leaves the device
+
+4
+00:00:19,300 --> 00:00:22,800
+User declines.
+Accessibility stays off
+
+5
+00:00:23,300 --> 00:00:26,800
+The disclosure can be opened again
+
+6
+00:00:27,300 --> 00:00:41,800
+User gives consent and grants access
+in system settings
+
+7
+00:00:42,300 --> 00:00:45,800
+Access granted by the user
+
+8
+00:00:46,300 --> 00:00:55,800
+The user chooses which apps get a pause
+
+9
+00:00:56,300 --> 00:01:05,800
+Core feature: a short pause before a chosen app
+
+10
+00:01:06,300 --> 00:01:17,800
+The user can always continue
+
+11
+00:01:18,300 --> 00:01:23,800
+Other apps are not affected
+
+12
+00:01:24,300 --> 00:01:31,800
+The user can turn it off at any time
