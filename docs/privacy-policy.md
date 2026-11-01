@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 23.10.2026*
+*Останнє оновлення / Last updated: 01.11.2026*
 
 ---
 
@@ -18,6 +18,19 @@ title: Privacy Policy — Tepera
   пристрої**, в захищеному сховищі застосунку.
 - Резервне копіювання відбувається виключно через стандартний механізм **Android Auto Backup**
   (керується Google Account на вашому пристрої) або через ручний експорт файлу, який ви самі контролюєте.
+  Android може зберігати дані застосунку в резервній копії вашого облікового запису Google за
+  налаштуваннями вашого телефона; сама Tepera нічого не надсилає.
+- **Що входить у файл експорту** (Налаштування → Дані й приватність → «Експортувати статистику»):
+  ваші активності (назва, іконка, колір, порядок, архівація), усі записи часу (початок, тривалість,
+  нотатка), виключені застосунки, орієнтир Online-часу та щоденна історія Online (хвилини Online,
+  розблокування, початок і кінець дня, Online по годинах). **У тестовій (beta) збірці з режимом
+  «Години скролінгу»** до файлу також потрапляють: обрані вами застосунки-стрічки, час у них за
+  15-хвилинними проміжками доби, знайдені години скролінгу, **ваші плани «якщо — то» (текст, який ви
+  пишете самі)**, час нагадувань із вашими відповідями на них і тижні спостереження. Файл створюється
+  на вашому пристрої й зберігається там, куди ви його збережете; **Tepera його нікуди не надсилає**.
+  Файл не зашифрований, тож зберігайте його так, як зберігаєте особисті дані, і не передавайте
+  стороннім. Імпорт файлу повністю замінює відповідні дані на пристрої; налаштування (мова, тема,
+  вікно сну, ворота, віджет) у файл не входять.
 - Щоб показати співвідношення екранного й реального часу, застосунок читає **статистику
   використання застосунків на вашому пристрої** через системний API `UsageStatsManager` (доступ
   надається вручну через Налаштування Android). Ці дані обробляються **виключно на пристрої**,
@@ -41,9 +54,9 @@ title: Privacy Policy — Tepera
 показується на першому екрані онбордингу і завжди доступний у Налаштування → Загальні; на час
 закритого тестування він увімкнений за замовчуванням.
 
-**Ваш контроль:** ви можете в будь-який момент експортувати свої дані (Налаштування → Резервне
-копіювання) або видалити їх усі (Налаштування → Резервне копіювання → «Видалити всі дані»; потрібно
-двічі підтвердити). Видалення застосунку видаляє всі локальні дані (крім копії в Android Auto
+**Ваш контроль:** ви можете в будь-який момент експортувати свої дані та імпортувати їх назад
+(Налаштування → Дані й приватність) або видалити їх усі (Налаштування → Дані й приватність →
+«Видалити всі дані»; потрібно двічі підтвердити). Видалення очищає й дані режиму «Години скролінгу». Видалення застосунку видаляє всі локальні дані (крім копії в Android Auto
 Backup, яку можна вимкнути в системних налаштуваннях Android).
 
 **Контакт:** serkodesign@gmail.com
@@ -59,7 +72,20 @@ with third parties.
 - All activity entries (category, duration, notes) are stored **locally on your device only**, in the
   app's protected storage.
 - Backups happen only through the standard **Android Auto Backup** mechanism (tied to your Google
-  Account on-device) or through a manual file export that you fully control.
+  Account on-device) or through a manual file export that you fully control. Android may keep the
+  app's data in your Google account backup according to your phone settings; Tepera itself sends
+  nothing.
+- **What the export file contains** (Settings → Data and privacy → "Export statistics"): your
+  activities (name, icon, colour, order, archived state), all activity entries (start, duration,
+  note), excluded apps, the Online-time reference and the daily Online history (Online minutes,
+  unlocks, day start and end, Online by hour). **In the test (beta) build with the "Scrolling
+  hours" mode** the file also includes: the feed apps you chose, the time spent in them in
+  15-minute slots of the day, the scrolling hours found, **your "if — then" plans (text you write
+  yourself)**, reminder times with your replies to them, and observation weeks. The file is created
+  on your device and stays wherever you save it; **Tepera does not send it anywhere**. The file is
+  not encrypted, so keep it as you would any personal data and do not share it with others.
+  Importing a file fully replaces the corresponding data on the device; settings (language, theme,
+  sleep window, gates, widget) are not part of the file.
 - To show your screen-time vs. real-life balance, the app reads **app usage statistics on your
   device** through the system `UsageStatsManager` API (access is granted manually via Android
   Settings). This data is processed **entirely on-device**, never transmitted to a server, and never
@@ -82,8 +108,9 @@ identification, and no in-app behavior tracking. **You can turn this off:** the 
 toggle is shown on the first onboarding screen and always available in Settings → General; it is
 on by default during the closed test.
 
-**Your control:** you can export your data at any time (Settings → Backup and restore) or delete all
-of it (Settings → Backup and restore → "Delete all data"; you have to confirm twice). Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be
+**Your control:** you can export your data at any time and import it back (Settings → Data and
+privacy) or delete all of it (Settings → Data and privacy → "Delete all data"; you have to confirm
+twice). Deleting also clears the "Scrolling hours" data. Uninstalling the app removes all local data (except any Android Auto Backup copy, which can be
 disabled in Android system settings).
 
 **Contact:** serkodesign@gmail.com
