@@ -103,14 +103,14 @@
     <string name="welcome_onboarding_body">Tepera лише показує, як минає ваш день: не оцінює і не підганяє. Ви порівнюєте себе тільки з собою.</string>
     <string name="welcome_principle_no_scores">Без оцінок і балів</string>
     <string name="welcome_principle_no_shaming">Без шеймінгу і поспіху</string>
-    <string name="welcome_principle_private">Усі дані лишаються на телефоні</string>
+    <string name="welcome_principle_private">Tepera не надсилає ваші дані нікуди</string>
     <string name="welcome_onboarding_start">Почати</string>
     <string name="gates_onboarding_demo_description">Приклад екрана паузи: квітка повільно дихає, число відлічує секунди</string>
     <string name="onboarding_target_scale_description">Шкала годин на день</string>
     <string name="onboarding_target_unit">год</string>
     <string name="onboarding_target_chip">Орієнтир</string>
     <string name="perm_title">Перед тим як почати</string>
-    <string name="perm_body">Дані лишаються на телефоні. Назовні йдуть лише анонімні звіти про збої — їх можна вимкнути в Налаштуваннях</string>
+    <string name="perm_body">Tepera сама нічого не надсилає, крім анонімних звітів про збої — їх можна вимкнути в Налаштуваннях. Android може зберігати копію даних у вашому обліковому записі Google — це керується налаштуваннями телефона.</string>
     <string name="perm_usage_label">Доступ до статистики</string>
     <string name="perm_continue">Продовжити</string>
     <string name="target_onboarding_title">Орієнтир на день</string>

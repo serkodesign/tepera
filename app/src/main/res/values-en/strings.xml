@@ -96,14 +96,14 @@
     <string name="welcome_onboarding_body">Tepera only shows how your day goes by: it doesn\'t grade you or rush you. You compare yourself only with yourself.</string>
     <string name="welcome_principle_no_scores">No scores, no points</string>
     <string name="welcome_principle_no_shaming">No shaming, no rush</string>
-    <string name="welcome_principle_private">All data stays on your phone</string>
+    <string name="welcome_principle_private">Tepera does not send your data anywhere</string>
     <string name="welcome_onboarding_start">Start</string>
     <string name="gates_onboarding_demo_description">Pause screen example: the flower breathes slowly while the number counts down seconds</string>
     <string name="onboarding_target_scale_description">Hours per day scale</string>
     <string name="onboarding_target_unit">h</string>
     <string name="onboarding_target_chip">Reference</string>
     <string name="perm_title">Before we begin</string>
-    <string name="perm_body">Your data stays on your phone. Only anonymous crash reports leave it — turn them off anytime in Settings</string>
+    <string name="perm_body">Tepera itself sends nothing except anonymous crash reports — you can turn them off anytime in Settings. Android may keep a copy of your data in your Google account — that is controlled by your phone settings.</string>
     <string name="perm_usage_label">Usage access</string>
     <string name="perm_continue">Continue</string>
     <string name="target_onboarding_title">A reference for your day</string>
