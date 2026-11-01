@@ -777,7 +777,12 @@
     <string name="v3_editor_delete">Delete window</string>
     <string name="v3_editor_edit_action">Edit window</string>
     <string name="v3_summary_title">Weekly summary</string>
-    <string name="v3_summary_intro">Only what can be measured: minutes in feeds during the window and your \"OK\" taps. No judgments.</string>
+    <string name="v3_summary_intro">How much time per day you spent in feeds during your windows — compared with your first week of observation.</string>
+    <string name="v3_summary_was">was %1$d min</string>
+    <string name="v3_summary_soft_title">\"5-minute\" sessions this week</string>
+    <string name="v3_summary_delta_less">%1$d min less per day than in the first week</string>
+    <string name="v3_summary_delta_more">%1$d min more per day than in the first week</string>
+    <string name="v3_summary_delta_same">About the same as in the first week</string>
     <string name="v3_summary_minutes">Minutes in the window per day: observation %1$s → this week %2$s</string>
     <string name="v3_summary_ok">Reminders: \"OK\" %1$d, \"Not today\" %2$d</string>
     <string name="v3_summary_shift">The window has shifted — now about %1$s. Update?</string>
@@ -835,12 +840,12 @@
     <string name="v3_card_dots_cd">Last 7 days: matched %1$d of %2$d</string>
     <string name="v3_card_disabled_chip">Off</string>
     <string name="v3_windows_section">Scrolling hours</string>
-    <string name="v3_summary_per_day">Minutes in the window per day</string>
-    <string name="v3_summary_stat_before">Before</string>
-    <string name="v3_summary_stat_now">Now</string>
+    <string name="v3_summary_per_day">Daily average, in the window</string>
+    <string name="v3_summary_stat_before">First week</string>
+    <string name="v3_summary_stat_now">This week</string>
     <string name="v3_summary_stat_ok">\"OK\"</string>
-    <string name="v3_summary_soft_started">\"5-min\" sessions</string>
-    <string name="v3_summary_soft_on_time">On time</string>
+    <string name="v3_summary_soft_started">Started</string>
+    <string name="v3_summary_soft_on_time">Finished on time</string>
 
     <!-- Suggestions instead of a plan (October 2026) -->
     <string name="v3_sg_book">Maybe read a book?</string>

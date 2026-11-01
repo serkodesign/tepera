@@ -152,9 +152,9 @@ fun RiskHomeScreen(
         Column(
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
                 .padding(top = 12.dp, bottom = 32.dp),
-            // Закон близькості: пов'язане — ближче (заголовок із вмістом 8dp, картки одного блоку 12dp, шапка з героєм 16dp),
-            // окремі блоки — далі (24dp).
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            // Закон близькості: пов'язане — ближче (шапка з героєм 16dp, заголовок із вмістом 8dp, картки одного блоку 12dp),
+            // окремі блоки — помітно далі (40dp).
+            verticalArrangement = Arrangement.spacedBy(40.dp)
         ) {
           Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             RiskHeader(label, title, onOpenCalendar, onOpenSettings)
@@ -195,16 +195,17 @@ fun RiskHomeScreen(
             }
           }
             if (!state.loading) ActivityChips(onAddEntry)
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                OnlineTodayCard(balanceState)
+            // Без бічного відступу: його мають окремі блоки, а ряд карток вікон — на всю ширину (див. WindowsCarousel).
+            Column(verticalArrangement = Arrangement.spacedBy(40.dp)) {
+                Box(Modifier.padding(horizontal = 16.dp)) { OnlineTodayCard(balanceState) }
                 if (ready) {
                     // Деталі: вікна й тиждень. NextCard вже є героєм, якщо вікно ближче за все; інакше він тут не потрібен.
                     when {
                         observing -> {
-                            ObservingContent(state)
+                            Box(Modifier.padding(horizontal = 16.dp)) { ObservingContent(state) }
                             // Ручні вікна видно одразу, не чекаючи тиждень даних.
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                WindowsHeader(onAddWindow)
+                                Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
                                 WindowsCarousel(state.windows + state.disabledWindows, onOpenWhy)
                             }
                         }
@@ -212,7 +213,9 @@ fun RiskHomeScreen(
                         else -> FoundContent(state, onOpenWhy, onAddWindow)
                     }
                     if (!observing) {
-                        WeeklySummaryBlock(state.windows, state.softExit, vm::applyShift, vm::dismissShift)
+                        Box(Modifier.padding(horizontal = 16.dp)) {
+                            WeeklySummaryBlock(state.windows, state.softExit, vm::applyShift, vm::dismissShift)
+                        }
                     }
                 }
             }
@@ -335,7 +338,7 @@ private fun ObservingContent(state: RiskHomeState) = Column(verticalArrangement 
 @Composable
 private fun FoundContent(state: RiskHomeState, onOpenWhy: (String) -> Unit, onAddWindow: () -> Unit) {
     val windows = state.windows
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
     Text(
         text = if (windows.isEmpty() && state.disabledWindows.isNotEmpty()) {
             stringResource(R.string.v3_windows_all_off)
@@ -359,7 +362,7 @@ private fun FoundContent(state: RiskHomeState, onOpenWhy: (String) -> Unit, onAd
     HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        WindowsHeader(onAddWindow)
+        Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
         WindowsCarousel(windows + state.disabledWindows, onOpenWhy)
     }
 }
@@ -388,9 +391,11 @@ private fun PlannedContent(
     val byId = state.windows.associateBy { it.id }
     val ordered = occurrences.mapNotNull { o -> byId[o.id]?.let { it to o } }
     val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
-    if (showNext) ordered.firstOrNull()?.let { (w, o) -> NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
+    if (showNext) ordered.firstOrNull()?.let { (w, o) ->
+        Box(Modifier.padding(horizontal = 16.dp)) { NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        WindowsHeader(onAddWindow)
+        Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
         WindowsCarousel(ordered.map { it.first } + rest + state.disabledWindows, onOpenWhy)
     }
 }

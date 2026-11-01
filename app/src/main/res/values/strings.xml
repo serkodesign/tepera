@@ -794,7 +794,12 @@
     <string name="v3_editor_delete">Видалити вікно</string>
     <string name="v3_editor_edit_action">Змінити вікно</string>
     <string name="v3_summary_title">Підсумок тижня</string>
-    <string name="v3_summary_intro">Лише те, що можна виміряти: хвилини у стрічках у вікні та твої «Добре». Без оцінок.</string>
+    <string name="v3_summary_intro">Скільки часу за добу ти проводив у стрічках у свої години — порівняно з першим тижнем спостереження.</string>
+    <string name="v3_summary_was">було %1$d хв</string>
+    <string name="v3_summary_soft_title">Сесії «на 5 хв» за тиждень</string>
+    <string name="v3_summary_delta_less">На %1$d хв менше за добу, ніж у перший тиждень</string>
+    <string name="v3_summary_delta_more">На %1$d хв більше за добу, ніж у перший тиждень</string>
+    <string name="v3_summary_delta_same">Приблизно стільки ж, як у перший тиждень</string>
     <string name="v3_summary_minutes">Хвилини у вікні за добу: спостереження %1$s → цей тиждень %2$s</string>
     <string name="v3_summary_ok">Нагадування: «Добре» %1$d, «Не сьогодні» %2$d</string>
     <string name="v3_summary_shift">Вікно зсунулося — тепер приблизно %1$s. Оновити?</string>
@@ -852,12 +857,12 @@
     <string name="v3_card_dots_cd">Останні 7 днів: збіглося %1$d з %2$d</string>
     <string name="v3_card_disabled_chip">Вимкнено</string>
     <string name="v3_windows_section">Години скролінгу</string>
-    <string name="v3_summary_per_day">Хвилин у вікні за добу</string>
-    <string name="v3_summary_stat_before">Було</string>
-    <string name="v3_summary_stat_now">Тепер</string>
+    <string name="v3_summary_per_day">У середньому за добу, у вікні</string>
+    <string name="v3_summary_stat_before">Перший тиждень</string>
+    <string name="v3_summary_stat_now">Цей тиждень</string>
     <string name="v3_summary_stat_ok">«Добре»</string>
-    <string name="v3_summary_soft_started">Сесій «на 5 хв»</string>
-    <string name="v3_summary_soft_on_time">Вчасно</string>
+    <string name="v3_summary_soft_started">Розпочато</string>
+    <string name="v3_summary_soft_on_time">Завершено вчасно</string>
 
     <!-- Підказки замість плану (жовтень 2026) -->
     <string name="v3_sg_book">Може, почитаєш книгу?</string>

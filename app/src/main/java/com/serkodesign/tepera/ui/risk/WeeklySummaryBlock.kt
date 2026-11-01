@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +31,7 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.TeperaChip
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import kotlin.math.roundToInt
 
@@ -49,26 +50,18 @@ internal fun WeeklySummaryBlock(
     onDismissShift: (String) -> Unit
 ) {
     if (windows.isEmpty()) return
-    TeperaCard(
-        title = stringResource(R.string.v3_summary_title),
-        subtitle = stringResource(R.string.v3_summary_intro)
-    ) {
+    TeperaCard(title = stringResource(R.string.v3_summary_title)) {
         // Закон близькості: дві групи (числа сесій; вікна з підписом) по 16dp одна від одної, всередині груп — тісніше.
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             // Сесії «на 5 хв» (макет «М'який вихід»): скільки розпочато й скільки завершено вчасно (до +2 хв).
             softExit?.let { (started, onTime) ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BigStat(started.toString(), stringResource(R.string.v3_summary_soft_started))
-                    BigStat(onTime.toString(), stringResource(R.string.v3_summary_soft_on_time))
-                }
+                Text(
+                    stringResource(R.string.v3_summary_soft_exit, started, onTime),
+                    color = TeperaPalette.textPrimary, fontSize = 14.sp, lineHeight = 20.sp
+                )
             }
             // Підпис стоїть упритул до вікон, яких стосується (8dp), а не плаває посередині між групами.
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.v3_summary_per_day),
-                    color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 // Більше трьох вікон — решта під кнопкою, щоб підсумок не ріс у довгий стек. Вікно із запропонованим зсувом видно завжди.
                 var expanded by rememberSaveable { mutableStateOf(false) }
                 val (always, rest) = windows.withIndex().partition { (i, w) -> i < COLLAPSED_COUNT || w.shiftStart != null }
@@ -85,84 +78,93 @@ internal fun WeeklySummaryBlock(
     }
 }
 
-/** Контейнер одного вікна: час і «Добре» в шапці, під ними дві смуги «Було» / «Тепер» з підписаними значеннями. */
+/**
+ * Одне вікно: час (і «Добре») над смугою. Заливка смуги — «тепер», риска на смузі — «було» (перший тиждень), один
+ * масштаб; під смугою «було N хв». Без кольорів «добре/погано»: довжина порівнюється з власною історією.
+ */
 @Composable
 private fun WindowSummary(w: RiskWindowUi, onApplyShift: (String) -> Unit, onDismissShift: (String) -> Unit) {
-    val shape = RoundedCornerShape(16.dp)
-    Column(
-        // Тональна поверхня теми (світле скло / біле 12–15% у темних наборах) замість сірої заливки, що в темній темі брудніла.
-        Modifier.fillMaxWidth().clip(shape).background(TeperaPalette.innerSurface).padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    // Закон близькості: час, смуга й підпис «було» — одна група (4dp); між вікнами відступ більший (його задає батько).
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    formatWindowTime(w.startMinute, w.endMinute),
-                    color = TeperaPalette.textPrimary, fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium
-                )
-            }
+            Text(
+                formatWindowTime(w.startMinute, w.endMinute),
+                color = TeperaPalette.textPrimary, fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
             if (w.okThisWeek > 0) {
                 TeperaChip(label = stringResource(R.string.v3_summary_stat_ok), value = w.okThisWeek.toString(), compact = true)
             }
         }
-        // Обидві смуги в одному масштабі (більше з двох значень = повна довжина), щоб різницю було видно, а не вгадувати.
-        val scale = maxOf(w.baselineMinutes ?: 0.0, w.currentMinutes ?: 0.0, 1.0)
-        // «Було» — нейтральна смуга з кольору тексту, «Тепер» — акцент теми; різниця у довжині, не в «добре/погано».
-        MinutesBar(stringResource(R.string.v3_summary_stat_before), w.baselineMinutes, scale, TeperaPalette.textPrimary.copy(alpha = 0.3f))
-        MinutesBar(stringResource(R.string.v3_summary_stat_now), w.currentMinutes, scale, TeperaPalette.brandAccent)
+        val before = w.baselineMinutes
+        val now = w.currentMinutes
+        if (now != null) {
+            ComparisonBar(now = now, before = before)
+            if (before != null) {
+                Text(
+                    stringResource(R.string.v3_summary_was, before.roundToInt()),
+                    color = TeperaPalette.textSecondary, fontSize = 13.sp, lineHeight = 18.sp
+                )
+            }
+        }
         if (w.shiftStart != null && w.shiftEnd != null) {
-            Text(
-                stringResource(R.string.v3_summary_shift, formatWindowTime(w.shiftStart, w.shiftEnd)),
-                color = TeperaPalette.textPrimary, fontSize = 14.sp, lineHeight = 20.sp
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                TeperaButton(
-                    stringResource(R.string.v3_summary_shift_apply), onClick = { onApplyShift(w.id) },
-                    modifier = Modifier.weight(1f)
+            Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    stringResource(R.string.v3_summary_shift, formatWindowTime(w.shiftStart, w.shiftEnd)),
+                    color = TeperaPalette.textPrimary, fontSize = 14.sp, lineHeight = 20.sp
                 )
-                TeperaButton(
-                    stringResource(R.string.v3_summary_shift_keep), onClick = { onDismissShift(w.id) },
-                    type = TeperaButtonType.Secondary, modifier = Modifier.weight(1f)
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    TeperaButton(
+                        stringResource(R.string.v3_summary_shift_apply), onClick = { onApplyShift(w.id) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    TeperaButton(
+                        stringResource(R.string.v3_summary_shift_keep), onClick = { onDismissShift(w.id) },
+                        type = TeperaButtonType.Secondary, modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
 }
 
-/** Рядок «підпис — смуга — значення»; без даних смуга порожня, значення «—». */
+/** Смуга «тепер» з рискою «було» в одному масштабі (більше з двох значень = повна довжина) і значенням праворуч. */
 @Composable
-private fun MinutesBar(caption: String, minutes: Double?, scale: Double, color: androidx.compose.ui.graphics.Color) {
-    val value = minutes?.let { stringResource(R.string.v3_dur_minutes, it.roundToInt()) } ?: "—"
-    val fraction = (minutes ?: 0.0).div(scale).toFloat().coerceIn(0f, 1f)
+private fun ComparisonBar(now: Double, before: Double?) {
+    // Запас 15% у масштабі, щоб риска «було» не злипалась із краєм смуги.
+    val scale = maxOf(now, before ?: 0.0, 1.0).toFloat() * 1.15f
+    val fill = TeperaPalette.brandAccent
+    // Риска і її обводка мають контрастувати із заливкою (у темній темі вона світла): темна риска в світлій обводці й навпаки.
+    val dark = LocalTeperaColors.current.isDark
+    val tick = if (dark) Color(0xFF2A1F45) else TeperaPalette.textPrimary
+    val tickEdge = if (dark) TeperaPalette.textPrimary else Color.White
+    val track = TeperaPalette.textPrimary.copy(alpha = 0.08f)
+    val fraction = (now.toFloat() / scale).coerceIn(0f, 1f)
+    val beforeFraction = before?.let { (it.toFloat() / scale).coerceIn(0f, 1f) }
     Row(
         Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(caption, color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.width(56.dp))
-        Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(TeperaPalette.textPrimary.copy(alpha = 0.08f))) {
-            // Навіть мала ненульова величина лишає помітну смужку (мінімум — висота смуги), нуль — порожньо.
+        Box(Modifier.weight(1f).height(16.dp).clip(RoundedCornerShape(8.dp)).background(track)) {
+            // Навіть мала ненульова величина лишає помітну смужку, нуль — порожньо.
             if (fraction > 0f) {
-                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.04f)).clip(RoundedCornerShape(7.dp)).background(color))
+                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.04f)).clip(RoundedCornerShape(8.dp)).background(fill))
+            }
+            // Риска «було»: тонка вертикальна лінія на всю висоту смуги.
+            if (beforeFraction != null && beforeFraction > 0f) {
+                Box(Modifier.fillMaxHeight().fillMaxWidth(beforeFraction).padding(end = 0.dp), contentAlignment = Alignment.CenterEnd) {
+                    Box(Modifier.fillMaxHeight().width(5.dp).background(tickEdge), contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxHeight().width(3.dp).background(tick))
+                    }
+                }
             }
         }
         Text(
-            value, color = TeperaPalette.textPrimary, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium,
-            modifier = Modifier.width(52.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End
+            stringResource(R.string.v3_dur_minutes, now.roundToInt()),
+            color = TeperaPalette.textPrimary, fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium,
+            modifier = Modifier.width(60.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End
         )
-    }
-}
-
-/** Велике число над підписом у тональному контейнері. */
-@Composable
-private fun RowScope.BigStat(value: String, caption: String) {
-    Column(
-        Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(TeperaPalette.innerSurface)
-            .padding(horizontal = 14.dp, vertical = 12.dp).semantics(mergeDescendants = true) {},
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        Text(value, color = TeperaPalette.textPrimary, fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Medium)
-        Text(caption, color = TeperaPalette.textSecondary, fontSize = 13.sp, lineHeight = 18.sp)
     }
 }
 

@@ -160,10 +160,9 @@ fun DiaryScreen(
                 .padding(end = 20.dp, bottom = bottomNavClearance())
                 .width(64.dp),
             shape = CircleShape,
-            // Темна тема: світлий зелений Brand/200 (#B2E5D3) з темно-зеленою іконкою — помітніше на тлі.
-            // Світла тема без змін (#006944 з іконкою onPrimary).
-            containerColor = if (LocalTeperaColors.current.isDark) Color(0xFFB2E5D3) else Color(0xFF006944),
-            contentColor = if (LocalTeperaColors.current.isDark) Color(0xFF003926) else TeperaPalette.onPrimary,
+            // Колір головної дії теми (як кнопки «Світанку»): акцент і контрастна іконка на ньому.
+            containerColor = LocalTeperaColors.current.primaryFill,
+            contentColor = LocalTeperaColors.current.onPrimary,
             height = 64.dp,
             iconSize = 32.dp
         )

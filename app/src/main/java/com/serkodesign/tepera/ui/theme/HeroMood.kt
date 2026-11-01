@@ -55,7 +55,7 @@ fun Modifier.heroMoodBackground(showBody: Boolean = true): Modifier {
             val scale = breath?.value ?: 1f
             val r = 46.dp.toPx()
             val c = Offset(size.width - r - 4.dp.toPx(), r - 2.dp.toPx())
-            val halo = if (isMoon) Color(0xFFB9B4E8) else Color(0xFFFF9F6B)
+            val halo = if (isMoon) Color(0xFFB9B4E8) else Color(0xFFF2A6C8)
             drawCircle(
                 Brush.radialGradient(listOf(halo.copy(alpha = 0.40f), halo.copy(alpha = 0f)), center = c, radius = r * 1.9f * scale),
                 radius = r * 1.9f * scale, center = c
@@ -65,7 +65,7 @@ fun Modifier.heroMoodBackground(showBody: Boolean = true): Modifier {
             val body = if (isMoon) {
                 listOf(Color(0xFFF4F1FF), Color(0xFFB9B4E8), Color(0xFF8E88C9))
             } else {
-                listOf(Color(0xFFFFF3C4), Color(0xFFFFB78F), Color(0xFFFF8FA3))
+                listOf(Color(0xFFFFF3C4), Color(0xFFFFD98A), Color(0xFFF2A6C8))
             }
             drawCircle(Brush.radialGradient(body, center = Offset(c.x - r * 0.3f, c.y - r * 0.3f), radius = r * 1.4f), radius = r, center = c)
         }
