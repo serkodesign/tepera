@@ -17,6 +17,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.domain.risk.QuickPuzzles
 import com.serkodesign.tepera.domain.risk.SoftExitTiming
 import com.serkodesign.tepera.util.PlanOverlayStore
 import kotlin.math.roundToInt
@@ -31,6 +32,13 @@ import kotlin.math.roundToInt
  * Вийшов сам раніше (на робочий стіл чи в інший застосунок) — таймер скасовується й сесія рахується вчасною. «Вчасно» =
  * вихід не пізніше ніж за [ON_TIME_GRACE_MILLIS] після поточного строку (він зсувається на 5 хв після кожного «Ще 5»).
  */
+/** Зв'язок між [PlanOverlayActivity] (задачки перед «Ще 5») і [SoftExitController]: обидва в одному процесі. */
+object SoftExitPuzzleBridge {
+    enum class Result { SOLVED, LEAVE, BACK }
+
+    @Volatile var listener: ((Result) -> Unit)? = null
+}
+
 class SoftExitController(private val service: AccessibilityService) {
 
     private class Session(
@@ -185,7 +193,33 @@ class SoftExitController(private val service: AccessibilityService) {
 
     private fun onMore() {
         val s = session ?: return
-        if (s.extensions >= 1) showConfirm(s) else extend()
+        val press = s.extensions + 1
+        val puzzles = QuickPuzzles.puzzlesRequired(press, PlanOverlayStore.arePuzzlesEnabled(service))
+        when {
+            puzzles > 0 -> askPuzzles(s, puzzles)
+            s.extensions >= 1 -> showConfirm(s)
+            else -> extend()
+        }
+    }
+
+    /** З 3-го «Ще 5» за сесію: спершу задачка (та сама механіка, що на екрані «я за тобою слідкую»); «Гаразд, іду» вільний. */
+    private fun askPuzzles(s: Session, puzzles: Int) {
+        SoftExitPuzzleBridge.listener = { result ->
+            SoftExitPuzzleBridge.listener = null
+            when (result) {
+                SoftExitPuzzleBridge.Result.SOLVED -> extend()
+                SoftExitPuzzleBridge.Result.LEAVE -> leave()
+                SoftExitPuzzleBridge.Result.BACK -> if (session != null) showReminder()
+            }
+        }
+        removeAll()
+        handler.removeCallbacks(onStrong)
+        service.startActivity(
+            android.content.Intent(service, PlanOverlayActivity::class.java)
+                .putExtra(PlanOverlayActivity.EXTRA_SOFT_EXIT_PUZZLES, puzzles)
+                .putExtra(PlanOverlayActivity.EXTRA_APP_LABEL, s.appLabel)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
     }
 
     private fun extend() {

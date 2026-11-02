@@ -30,6 +30,7 @@ object PlanOverlayStore {
     private const val KEY_REENTRY_PREFIX = "reentry_"
     private const val KEY_REENTRY_AT_PREFIX = "reentry_t_"
     private const val KEY_LAST_PUZZLE = "last_puzzle"
+    private const val REENTRY_RESET_MILLIS = 60 * 60_000L
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -59,8 +60,10 @@ object PlanOverlayStore {
         val p = prefs(context)
         val key = KEY_REENTRY_PREFIX + packageName
         val atKey = KEY_REENTRY_AT_PREFIX + packageName
-        val next = p.getInt(key, 0) + 1
         val previousAt = p.getLong(atKey, 0L).takeIf { it > 0L }
+        // Довга перерва (> години) — нова серія відкриттів, рахунок починається спочатку.
+        val stale = previousAt != null && nowMillis - previousAt > REENTRY_RESET_MILLIS
+        val next = (if (stale) 0 else p.getInt(key, 0)) + 1
         p.edit().putInt(key, next).putLong(atKey, nowMillis).apply()
         return Reentry(next, previousAt?.let { (nowMillis - it) / 60_000L })
     }

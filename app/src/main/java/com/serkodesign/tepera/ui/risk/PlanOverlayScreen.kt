@@ -102,14 +102,14 @@ fun PlanOverlayScreen(
         val suggestion = if (committed != null) ActivitySuggestions.Suggestion(committed, null) else SuggestionPicker.pickFor(context, windowId)
         content = if (window == null || suggestion == null) null else {
             shown = setOf(suggestion.id)
-            // Рахуємо показ екрана «я за тобою слідкую» для цих воріт; з 3-го разу «Відкрити» вимагає задачки.
-            val reentry = if (committed != null) PlanOverlayStore.recordReentry(context, packageName) else null
+            // Рахуємо КОЖЕН показ листа для цих воріт (з обіцянкою чи без); з 3-го разу «Відкрити на 5 хв» вимагає задачки.
+            val reentry = PlanOverlayStore.recordReentry(context, packageName)
             OverlayContent(
                 resolveLabel(context.packageManager, packageName), window.startMinute, window.endMinute, suggestion,
                 watching = committed != null,
-                puzzles = QuickPuzzles.puzzlesRequired(reentry?.number ?: 0, PlanOverlayStore.arePuzzlesEnabled(context)),
+                puzzles = QuickPuzzles.puzzlesRequired(reentry.number, PlanOverlayStore.arePuzzlesEnabled(context)),
                 // Людина певний час не поверталась до стрічки — задачки легші.
-                puzzleLevel = QuickPuzzles.levelFor(reentry?.minutesSincePrevious)
+                puzzleLevel = QuickPuzzles.levelFor(reentry.minutesSincePrevious)
             )
         }
         // Вікно зникло між показом сервісу й відкриттям екрана — нічого показувати; пускаємо людину в застосунок.
@@ -210,7 +210,7 @@ fun PlanOverlayScreen(
                         )
                     }
                 }
-                if (c.watching && solving) {
+                if (solving) {
                     PuzzleStep(
                         total = c.puzzles,
                         level = c.puzzleLevel,
@@ -233,9 +233,44 @@ fun PlanOverlayScreen(
                             else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
                         },
                         onAnother = ::anotherIdea,
-                        onOpenFive = ::openForFiveMinutes
+                        onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Задачки на шляху «Ще 5» м'якого виходу (з 3-го натискання за сесію; те саме правило, що для «Відкрити на 5 хв» на екрані
+ * «я за тобою слідкую»). «Гаразд, іду» вільний, «назад» — повернення до плашки.
+ */
+@Composable
+fun SoftExitPuzzleScreen(
+    appLabel: String,
+    puzzles: Int,
+    level: QuickPuzzles.Level,
+    onSolved: () -> Unit,
+    onLeave: () -> Unit,
+    onBack: () -> Unit
+) {
+    BackHandler(onBack = onBack)
+    RedesignScope(RedesignDarkColors) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f))) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .background(Color(0xFF1B1B1D))
+                    .navigationBarsPadding()
+                    .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(Modifier.size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.14f)))
+                Text(appLabel, color = Color.White, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth())
+                PuzzleStep(total = puzzles, level = level, onAllSolved = onSolved, onLeave = onLeave)
             }
         }
     }

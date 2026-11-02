@@ -11,7 +11,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.repository.GateRepository
+import com.serkodesign.tepera.domain.risk.QuickPuzzles
 import com.serkodesign.tepera.ui.risk.PlanOverlayScreen
+import com.serkodesign.tepera.ui.risk.SoftExitPuzzleScreen
 import com.serkodesign.tepera.ui.theme.TeperaTheme
 import com.serkodesign.tepera.util.LocaleStore
 import com.serkodesign.tepera.util.PlanOverlayStore
@@ -40,6 +42,25 @@ class PlanOverlayActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
         )
+        val puzzles = intent.getIntExtra(EXTRA_SOFT_EXIT_PUZZLES, 0)
+        if (puzzles > 0) {
+            // Задачки на шляху «Ще 5» м'якого виходу: результат повертаємо контролеру через [SoftExitPuzzleBridge].
+            setContent {
+                ProvideAppLocale {
+                    TeperaTheme {
+                        SoftExitPuzzleScreen(
+                            appLabel = intent.getStringExtra(EXTRA_APP_LABEL).orEmpty(),
+                            puzzles = puzzles,
+                            level = QuickPuzzles.Level.NORMAL,
+                            onSolved = { puzzleResult(SoftExitPuzzleBridge.Result.SOLVED) },
+                            onLeave = { puzzleResult(SoftExitPuzzleBridge.Result.LEAVE) },
+                            onBack = { puzzleResult(SoftExitPuzzleBridge.Result.BACK) }
+                        )
+                    }
+                }
+            }
+            return
+        }
         val packageName = intent.getStringExtra(GateRepository.GATE_TARGET_PACKAGE_EXTRA)
         val windowId = intent.getStringExtra(GateRepository.PLAN_WINDOW_EXTRA)
         if (packageName == null || windowId == null) {
@@ -63,9 +84,25 @@ class PlanOverlayActivity : ComponentActivity() {
         }
     }
 
+    private var puzzleReported = false
+
+    private fun puzzleResult(result: SoftExitPuzzleBridge.Result) {
+        if (puzzleReported) return
+        puzzleReported = true
+        SoftExitPuzzleBridge.listener?.invoke(result)
+        finish()
+    }
+
     /** Людина пішла з листа (Home, «Недавні», блокування): нічого не лишаємо, наступне відкриття стрічки покаже свіжий. */
     override fun onStop() {
         super.onStop()
+        // Задачки: пішов без вибору — плашка м'якого виходу повертається (Home сам завершить сесію через робочий стіл).
+        if (intent.getIntExtra(EXTRA_SOFT_EXIT_PUZZLES, 0) > 0) puzzleResult(SoftExitPuzzleBridge.Result.BACK)
         if (!isFinishing) finish()
+    }
+
+    companion object {
+        const val EXTRA_SOFT_EXIT_PUZZLES = "soft_exit_puzzles"
+        const val EXTRA_APP_LABEL = "soft_exit_app_label"
     }
 }

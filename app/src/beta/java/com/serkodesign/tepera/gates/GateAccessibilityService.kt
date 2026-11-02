@@ -49,7 +49,8 @@ class GateAccessibilityService : AccessibilityService() {
     private var ignoredPackages: Set<String> = emptySet()
 
     private var lastPackage: String? = null
-    private var ignoreOwnUntilMillis = 0L
+    private var lastLaunchedPackage: String? = null
+    private var lastLaunchMillis = 0L
     private val lastSeenMillis = HashMap<String, Long>()
     private lateinit var softExit: SoftExitController
     private var pendingListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
@@ -70,6 +71,7 @@ class GateAccessibilityService : AccessibilityService() {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
         val now = System.currentTimeMillis()
+        log("подія: $pkg / ${event.className} (lastPackage=$lastPackage)")
 
         if (pkg in launcherPackages) {
             // Робочий стіл: сесія закінчилась.
@@ -79,14 +81,17 @@ class GateAccessibilityService : AccessibilityService() {
             return
         }
         if (pkg == packageName) {
-            // Власне вікно паузи (щойно запущене сервісом) застосунком не рахуємо; будь-яке інше відкриття Tepera — це вихід з попереднього.
-            if (now < ignoreOwnUntilMillis) return
-            lastPackage = pkg
+            // Вікна самої Tepera (пауза, лист плану, відкриття зі сповіщення) виходом зі стрічки не вважаємо: інакше «зайшов у
+            // стрічку → торкнувся сповіщення Tepera → повернувся» чи довге читання листа давали НОВЕ відкриття і другий лист.
+            // Сесію закінчує лише робочий стіл (вихід з листа/паузи веде туди) або інший справжній застосунок.
             return
         }
         if (pkg in ignoredPackages || pkg in inputMethodPackages()) return
-        // Лише справжні застосунки (з іконкою запуску): службові вікна виробника виходом зі стрічки не вважаємо.
-        if (BuildConfig.V3_MVP) softExit.onForeground(pkg, countsAsLeaving = packageManager.getLaunchIntentForPackage(pkg) != null)
+        // Лише справжні застосунки (з іконкою запуску): службові вікна виробника (панелі, віджети, спливаючі вікна) не
+        // скидають сесію стрічки — раніше саме вони давали «оверлей просто так».
+        val isRealApp = packageManager.getLaunchIntentForPackage(pkg) != null
+        if (!isRealApp) return
+        if (BuildConfig.V3_MVP) softExit.onForeground(pkg, countsAsLeaving = true)
         if (pkg == lastPackage) {
             lastSeenMillis[pkg] = now
             log("$pkg: той самий застосунок уже на екрані — перехід не новий")
@@ -102,6 +107,8 @@ class GateAccessibilityService : AccessibilityService() {
         }
 
         scope.launch {
+            // Не показуємо одразу два листи поспіль для того самого застосунку (кілька подій відкриття майже одночасно).
+            if (pkg == lastLaunchedPackage && now - lastLaunchMillis < LAUNCH_DEDUPE_MILLIS) return@launch
             // Ворота (затримка) важливіші за план: якщо пауза воріт показується, план цього разу не потрібен.
             if (pkg in gatedPackages && !gateRepository.shouldSkipPause(pkg)) {
                 gateRepository.markPrechecked(pkg)
@@ -145,7 +152,10 @@ class GateAccessibilityService : AccessibilityService() {
     }
 
     private fun launchTepera(pkg: String, planWindowId: String?) {
-        ignoreOwnUntilMillis = System.currentTimeMillis() + OWN_WINDOW_MILLIS
+        // Поки читали БД, людина могла вже піти зі стрічки — тоді запізнілий лист був би «просто так».
+        if (lastPackage != pkg) return log("$pkg: людина вже пішла зі стрічки — лист не потрібен")
+        lastLaunchedPackage = pkg
+        lastLaunchMillis = System.currentTimeMillis()
         // Пауза воріт — екран Tepera; лист плану — прозора activity поверх стрічки (стрічка лишається видимою під затемненням).
         val intent = if (planWindowId == null) {
             Intent(this, MainActivity::class.java).setAction(Intent.ACTION_VIEW)
@@ -191,6 +201,6 @@ class GateAccessibilityService : AccessibilityService() {
     private companion object {
         const val LOG_TAG = "TeperaPlan"
         const val SAME_SESSION_MILLIS = 30_000L
-        const val OWN_WINDOW_MILLIS = 5_000L
+        const val LAUNCH_DEDUPE_MILLIS = 3_000L
     }
 }
