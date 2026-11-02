@@ -104,10 +104,14 @@ fun PlanOverlayScreen(
             shown = setOf(suggestion.id)
             // Рахуємо КОЖЕН показ листа для цих воріт (з обіцянкою чи без); з 3-го разу «Відкрити на 5 хв» вимагає задачки.
             val reentry = PlanOverlayStore.recordReentry(context, packageName)
+            val puzzles = QuickPuzzles.puzzlesRequired(reentry.number, PlanOverlayStore.arePuzzlesEnabled(context))
+            // Попереднє відкриття теж закінчувалось задачкою — наступна йде одразу за нею, без плашки з пропозицією
+            // і кнопкою «Відкрити на 5 хв» (вона все одно вела б до задачки). «Назад» з задачки повертає до плашки.
+            solving = puzzles > 0 && reentry.number > QuickPuzzles.FIRST_PUZZLE_REENTRY
             OverlayContent(
                 resolveLabel(context.packageManager, packageName), window.startMinute, window.endMinute, suggestion,
                 watching = committed != null,
-                puzzles = QuickPuzzles.puzzlesRequired(reentry.number, PlanOverlayStore.arePuzzlesEnabled(context)),
+                puzzles = puzzles,
                 // Людина певний час не поверталась до стрічки — задачки легші.
                 puzzleLevel = QuickPuzzles.levelFor(reentry.minutesSincePrevious)
             )
