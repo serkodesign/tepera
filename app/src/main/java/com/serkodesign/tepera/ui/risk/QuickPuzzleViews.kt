@@ -40,7 +40,6 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.util.PlanOverlayStore
-import kotlinx.coroutines.delay
 
 private val SoftText = Color(0xFFC5DCD9)
 private val CellFill = Color.White.copy(alpha = 0.10f)
@@ -163,16 +162,10 @@ private fun SchulteBody(puzzle: QuickPuzzles.Schulte, onSolved: () -> Unit) {
     }
 }
 
-private const val MEMORY_SHOW_MILLIS = 2200L
-
 @Composable
 private fun MemoryBody(puzzle: QuickPuzzles.DigitMemory, onSolved: () -> Unit, onWrong: () -> Unit) {
     var hidden by remember { mutableStateOf(false) }
     var typed by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
-        delay(MEMORY_SHOW_MILLIS)
-        hidden = true
-    }
     val expected = puzzle.digits.joinToString("")
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -184,7 +177,16 @@ private fun MemoryBody(puzzle: QuickPuzzles.DigitMemory, onSolved: () -> Unit, o
             shown.toList().joinToString("  "), color = Color.White, fontSize = 40.sp, lineHeight = 48.sp,
             fontWeight = FontWeight.Medium
         )
-        if (hidden) {
+        if (!hidden) {
+            // Цифри не зникають самі: відлік починає людина, коли запам'ятала (раніше єдина кнопка на екрані була «Гаразд, іду»).
+            TeperaButton(
+                text = stringResource(R.string.v3_puzzle_memory_ready),
+                onClick = { hidden = true },
+                size = TeperaButtonSize.Medium,
+                type = TeperaButtonType.Secondary,
+                modifier = Modifier.fillMaxWidth()
+            )
+        } else {
             listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"), listOf("←", "0", "")).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                     row.forEach { label ->

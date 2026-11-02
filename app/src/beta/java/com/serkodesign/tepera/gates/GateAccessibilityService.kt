@@ -1,6 +1,8 @@
 package com.serkodesign.tepera.gates
 
 import android.accessibilityservice.AccessibilityService
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
@@ -14,6 +16,7 @@ import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PlanOverlayRule
 import com.serkodesign.tepera.util.PlanOverlayStore
+import com.serkodesign.tepera.util.queryEventsOrNull
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -21,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -74,10 +78,19 @@ class GateAccessibilityService : AccessibilityService() {
         log("подія: $pkg / ${event.className} (lastPackage=$lastPackage)")
 
         if (pkg in launcherPackages) {
-            // Робочий стіл: сесія закінчилась.
-            softExit.onLeftToLauncher()
-            lastPackage = pkg
-            lastSeenMillis.clear()
+            // Робочий стіл: сесія закінчилась. Але Samsung шле «подію лаунчера» і без виходу на стіл (закрили шторку
+            // сповіщень — застосунок під нею лишився), тому спершу звіряємось із системною історією переднього плану.
+            scope.launch {
+                delay(LAUNCHER_VERIFY_DELAY_MILLIS)
+                val foreground = realForegroundPackage()
+                if (foreground != null && foreground != pkg && foreground in lastSeenMillis) {
+                    log("$pkg: подія лаунчера фантомна (на екрані досі $foreground) — сесію не скидаю")
+                    return@launch
+                }
+                softExit.onLeftToLauncher()
+                lastPackage = pkg
+                lastSeenMillis.clear()
+            }
             return
         }
         if (pkg == packageName) {
@@ -119,6 +132,30 @@ class GateAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * Застосунок, що за UsageStats зараз на передньому плані: останній MOVE_TO_FOREGROUND без пізнішого
+     * MOVE_TO_BACKGROUND того самого пакета. `null` — не вдалося визначити (нема доступу/збій) або застосунок пішов у фон.
+     */
+    private fun realForegroundPackage(): String? = try {
+        val usm = getSystemService(UsageStatsManager::class.java)
+        val end = System.currentTimeMillis()
+        val events = usm?.queryEventsOrNull(end - FOREGROUND_LOOKBACK_MILLIS, end)
+        var current: String? = null
+        if (events != null) {
+            val e = UsageEvents.Event()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(e)
+                when (e.eventType) {
+                    UsageEvents.Event.MOVE_TO_FOREGROUND -> current = e.packageName
+                    UsageEvents.Event.MOVE_TO_BACKGROUND -> if (e.packageName == current) current = null
+                }
+            }
+        }
+        current
+    } catch (_: SecurityException) {
+        null
+    }
+
     /** Етап 8: стрічка відкрита всередині ввімкненого вікна — показуємо підказку, що зробити замість, поверх неї. */
     private suspend fun showPlanIfInsideWindow(pkg: String) {
         // Вимкнути план можна лише зсередини Tepera (перемикач у налаштуваннях, пауза чи вимкнення вікна) — з самого листа чи сповіщення ні.
@@ -148,7 +185,7 @@ class GateAccessibilityService : AccessibilityService() {
 
     /** Причина показу чи відмови оверлея — лише в debug-збірці (назви застосунків у release-логи не пишемо). */
     private fun log(message: String) {
-        if (BuildConfig.DEBUG) Log.d(LOG_TAG, message)
+        Log.i(LOG_TAG, message) // TEMP-DIAG
     }
 
     private fun launchTepera(pkg: String, planWindowId: String?) {
@@ -202,5 +239,7 @@ class GateAccessibilityService : AccessibilityService() {
         const val LOG_TAG = "TeperaPlan"
         const val SAME_SESSION_MILLIS = 30_000L
         const val LAUNCH_DEDUPE_MILLIS = 3_000L
+        const val LAUNCHER_VERIFY_DELAY_MILLIS = 700L
+        const val FOREGROUND_LOOKBACK_MILLIS = 30 * 60_000L
     }
 }

@@ -838,6 +838,7 @@
     <string name="v3_puzzle_schulte_desc">Торкайся чисел по черзі: від 9 до 1</string>
     <string name="v3_puzzle_memory_look">Запам\'ятай цифри</string>
     <string name="v3_puzzle_memory_enter">Введи їх</string>
+    <string name="v3_puzzle_memory_ready">Запам\'ятав — далі</string>
     <string name="v3_puzzle_sudoku">Заповни порожні клітинки: у кожному рядку, стовпці й квадраті 2×2 цифри від 1 до 4 без повторів</string>
     <string name="v3_puzzle_intent_title">Для чого ти відкриваєш?</string>
     <string name="v3_puzzle_intent_1">Написати комусь або відповісти</string>

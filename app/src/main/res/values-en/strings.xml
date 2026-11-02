@@ -821,6 +821,7 @@
     <string name="v3_puzzle_schulte_desc">Tap the numbers in order: 9 to 1</string>
     <string name="v3_puzzle_memory_look">Remember the digits</string>
     <string name="v3_puzzle_memory_enter">Enter them</string>
+    <string name="v3_puzzle_memory_ready">Got it — next</string>
     <string name="v3_puzzle_sudoku">Fill the empty cells: digits 1 to 4 without repeats in every row, column and 2×2 square</string>
     <string name="v3_puzzle_intent_title">Why are you opening it?</string>
     <string name="v3_puzzle_intent_1">To message or reply to someone</string>
