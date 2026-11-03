@@ -52,17 +52,33 @@ class GateAccessibilityService : AccessibilityService() {
     private var launcherPackages: Set<String> = emptySet()
     private var ignoredPackages: Set<String> = emptySet()
 
-    private var lastPackage: String? = null
-    private var lastLaunchedPackage: String? = null
-    private var lastLaunchMillis = 0L
-    private val lastSeenMillis = HashMap<String, Long>()
+    // Стан сесій живе в companion (на рівні процесу): Samsung іноді перестворює екземпляр служби між кроками, і тоді
+    // «останній застосунок» скидався в null — відкриття стрічки з листа плану вважалось новим і давало ще один лист.
+    private var lastPackage: String?
+        get() = sLastPackage
+        set(v) { sLastPackage = v }
+    private var lastLaunchedPackage: String?
+        get() = sLastLaunchedPackage
+        set(v) { sLastLaunchedPackage = v }
+    private var lastLaunchMillis: Long
+        get() = sLastLaunchMillis
+        set(v) { sLastLaunchMillis = v }
+    private val lastSeenMillis: HashMap<String, Long> get() = sLastSeenMillis
     private lateinit var softExit: SoftExitController
     private var pendingListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         softExit = SoftExitController(this)
-        pendingListener = PlanOverlayStore.listenForPendingSoftExit(this) { softExit.onPendingSessionWritten() }
+        pendingListener = PlanOverlayStore.listenForPendingSoftExit(this) {
+            softExit.onPendingSessionWritten()
+            softExit.startingPackage()?.let {
+                sOpenFivePackage = it
+                sOpenFiveAtMillis = System.currentTimeMillis()
+                lastPackage = it
+                lastSeenMillis[it] = sOpenFiveAtMillis
+            }
+        }
         gateRepository = (application as TeperaApp).gateRepository
         launcherPackages = resolveLauncherPackages()
         ignoredPackages = buildIgnoredPackages()
@@ -165,6 +181,9 @@ class GateAccessibilityService : AccessibilityService() {
         // навіть якщо людина сама додала вікно.
         if (app.database.observationPeriodDao().getLatest() == null) return log("$pkg: тиждень спостереження ще триває — мовчу")
         if (pkg !in app.feedAppRepository.packages()) return log("$pkg: не в списку стрічок")
+        if (pkg == sOpenFivePackage && System.currentTimeMillis() - sOpenFiveAtMillis < OPEN_FIVE_QUIET_MILLIS) {
+            return log("$pkg: людина щойно обрала «Відкрити на 5 хв» — нового листа не показую")
+        }
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(
                 NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
@@ -185,7 +204,7 @@ class GateAccessibilityService : AccessibilityService() {
 
     /** Причина показу чи відмови оверлея — лише в debug-збірці (назви застосунків у release-логи не пишемо). */
     private fun log(message: String) {
-        Log.i(LOG_TAG, message) // TEMP-DIAG
+        if (BuildConfig.DEBUG) Log.i(LOG_TAG, message)
     }
 
     private fun launchTepera(pkg: String, planWindowId: String?) {
@@ -236,6 +255,14 @@ class GateAccessibilityService : AccessibilityService() {
     )
 
     private companion object {
+        @Volatile var sLastPackage: String? = null
+        @Volatile var sLastLaunchedPackage: String? = null
+        @Volatile var sLastLaunchMillis = 0L
+        val sLastSeenMillis = HashMap<String, Long>()
+        /** Остання вибрана «Відкрити на 5 хв»: поки триває сесія, нового листа для цього застосунку не показуємо. */
+        @Volatile var sOpenFivePackage: String? = null
+        @Volatile var sOpenFiveAtMillis = 0L
+        const val OPEN_FIVE_QUIET_MILLIS = 10 * 60_000L
         const val LOG_TAG = "TeperaPlan"
         const val SAME_SESSION_MILLIS = 30_000L
         const val LAUNCH_DEDUPE_MILLIS = 3_000L

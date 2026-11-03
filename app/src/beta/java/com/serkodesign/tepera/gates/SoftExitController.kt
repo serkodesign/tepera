@@ -93,6 +93,9 @@ class SoftExitController(private val service: AccessibilityService) {
     }
 
     /** Людина перейшла на робочий стіл. */
+    /** Пакет сесії, що стартувала щойно (триває перехід лист → стрічка), інакше null. */
+    fun startingPackage(): String? = session?.takeIf { justStarted(it) }?.packageName
+
     fun onLeftToLauncher() {
         session?.let { if (!justStarted(it)) finish(onTime = isOnTime(it)) }
     }
