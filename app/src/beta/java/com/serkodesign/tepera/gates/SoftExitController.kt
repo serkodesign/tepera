@@ -61,6 +61,9 @@ class SoftExitController(private val service: AccessibilityService) {
     private var pillView: View? = null
     private var toastView: View? = null
 
+    /** Контекст служби з мовою, обраною в застосунку (сама служба її не знає): інакше затемнення лишалось англійським. */
+    private fun localized() = com.serkodesign.tepera.util.LocaleStore.wrap(service)
+
     private val onDeadline = Runnable { showReminder() }
     private val onStrong = Runnable { strengthenDim() }
     private val hideToast = Runnable { removeView(toastView).also { toastView = null } }
@@ -174,9 +177,9 @@ class SoftExitController(private val service: AccessibilityService) {
             setPadding(dp(20), dp(18), dp(20), dp(16))
         }
         val head = LinearLayout(service).apply { orientation = LinearLayout.VERTICAL }
-        head.addView(label(service.getString(R.string.soft_exit_title, minutesSinceStart(s)), 18f, Color.WHITE, medium = true))
+        head.addView(label(localized().getString(R.string.soft_exit_title, minutesSinceStart(s)), 18f, Color.WHITE, medium = true))
         head.addView(
-            label(service.getString(R.string.soft_exit_body, s.appLabel, s.thenText), 12f, 0xBFFFFFFF.toInt()).apply { setPadding(0, dp(2), 0, 0) }
+            label(localized().getString(R.string.soft_exit_body, s.appLabel, s.thenText), 12f, 0xBFFFFFFF.toInt()).apply { setPadding(0, dp(2), 0, 0) }
         )
         pill.addView(head)
         val buttons = LinearLayout(service).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(12), 0, 0) }
@@ -248,9 +251,9 @@ class SoftExitController(private val service: AccessibilityService) {
             }
             setPadding(dp(20), dp(20), dp(20), dp(24))
         }
-        sheet.addView(label(service.getString(R.string.soft_exit_confirm_title), 27f, Color.WHITE, medium = true))
+        sheet.addView(label(localized().getString(R.string.soft_exit_confirm_title), 27f, Color.WHITE, medium = true))
         sheet.addView(
-            label(service.getString(R.string.soft_exit_confirm_body, minutesSinceStart(s)), 14f, 0xFFC5DCD9.toInt()).apply { setPadding(0, dp(6), 0, dp(14)) }
+            label(localized().getString(R.string.soft_exit_confirm_body, minutesSinceStart(s)), 14f, 0xFFC5DCD9.toInt()).apply { setPadding(0, dp(6), 0, dp(14)) }
         )
         sheet.addView(
             button(R.string.soft_exit_leave, outlined = false, tall = true, onDark = false) { leave() },
@@ -271,7 +274,7 @@ class SoftExitController(private val service: AccessibilityService) {
         finish(onTime = onTime)
         service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
         showToast(
-            service.getString(if (onTime) R.string.soft_exit_toast_on_time else R.string.soft_exit_toast_late, minutes, SESSION_MINUTES)
+            localized().getString(if (onTime) R.string.soft_exit_toast_on_time else R.string.soft_exit_toast_late, minutes, SESSION_MINUTES)
         )
     }
 
@@ -363,7 +366,7 @@ class SoftExitController(private val service: AccessibilityService) {
 
     private fun button(textRes: Int, outlined: Boolean, plain: Boolean = false, tall: Boolean = false, onDark: Boolean = true, onClick: () -> Unit): View =
         TextView(service).apply {
-            text = service.getString(textRes)
+            text = localized().getString(textRes)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
             gravity = Gravity.CENTER
