@@ -574,7 +574,7 @@
     <string name="a11y_gate_enable_action">Turn on</string>
     <string name="a11y_gate_manage_action">Settings</string>
     <string name="a11y_disclosure_title">Accessibility access</string>
-    <string name="a11y_disclosure_body">Tepera uses an Accessibility service only to see the name of the app that has just opened and show a short pause before the ones you chose yourself.\n\nThe service does not read screen content, text, passwords or messages. Tepera does not send data about opened apps anywhere or share it with anyone. You can turn the service off any time in Android settings.</string>
+    <string name="a11y_disclosure_body">Tepera uses an Accessibility service only to see the name of the app that has just opened and show a short pause or a Tepera suggestion over the apps and feeds you chose yourself (and, after a timer you set, a dimming with "5 more" / "Leave" buttons).\n\nThe service does not read screen content, text, passwords or messages. Tepera does not send data about opened apps anywhere or share it with anyone. You can turn the service off any time in Android settings.</string>
     <string name="a11y_disclosure_continue">I agree</string>
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>

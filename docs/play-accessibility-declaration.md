@@ -116,3 +116,32 @@
 **Етап 4 — очікування.**
 - Відмова: прочитати причину, виправити (текст, відео, функціональність) і подати знову. Не подавати відразу кілька разів поспіль.
 - Схвалення: далі лише тест; рішення про перенесення служби в `standard` — окремо, після досвіду.
+
+## 7. Доповнення 03.11.2026: v3 «Години скролінгу» теж використовує сервіс
+
+**Розбіжність, знайдена при підготовці відкритого тесту:** розділи 1–4 описують лише «Застосунки з затримкою». Збірка `beta`
+(1.0.4-beta / 24) з увімкненим v3 робить із тим самим сервісом більше: (а) коли відкрито обрану стрічку у власну годину
+скролінгу, `PlanOverlayActivity` показує поверх екрана підказку (з 4-го поспіль відкриття — одразу коротку головоломку);
+(б) після обраного таймера `SoftExitController` малює вікнами `TYPE_ACCESSIBILITY_OVERLAY` затемнення й кнопки «Ще 5» /
+«Вийти». Якщо форма й відео покажуть тільки паузу, Google побачить у збірці поведінку, якої нема в декларації.
+
+**Додати до відповідей форми (EN), у «How the API is used»:**
+> In the "Scrolling hours" mode, when the user opens a feed app they selected during an hour they marked as risky, Tepera
+> shows its own suggestion screen over the app (an alternative action or a timer). After a timer chosen by the user ends,
+> Tepera draws a temporary dimming layer with two buttons ("5 more" / "Leave") using TYPE_ACCESSIBILITY_OVERLAY. These
+> elements belong to Tepera only; the service still reads nothing but the package name, does not read other apps' content,
+> and does not click, scroll or type in other apps. The user can close every element, continue to the app, and turn the
+> feature off in Tepera or the service off in Android Settings.
+
+**Додати до відео (після кроку 11, ≈ +40 с):**
+
+| # | Кадр | Субтитр |
+|---|---|---|
+| 11a | Обрана стрічка (напр. Firefox) + година скролінгу, що охоплює «зараз» → відкрити стрічку | «Scrolling hours: a Tepera suggestion appears over the chosen feed» |
+| 11b | Тап «Відкрити на 5 хв» → стрічка відкривається | «The user can always continue to the app» |
+| 11c | Через 5 хв з'являється затемнення з «Ще 5» / «Вийти» | «After the timer: dimming with "5 more" / "Leave"» |
+| 11d | Тап «Вийти» → робочий стіл | «The user can leave in one tap» |
+
+`play-store/accessibility-demo.en.srt` цих кадрів ще не має — дописати після запису. Також звірити розділ 3 з реальним
+`a11y_disclosure_*`: поточний текст розкриття згадує лише «коротку паузу», а не підказку поверх стрічки й затемнення —
+**це потрібно виправити в коді/рядках до запису відео** (розкриття має описувати всі дії служби).

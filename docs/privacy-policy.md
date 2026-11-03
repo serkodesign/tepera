@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 01.11.2026*
+*Останнє оновлення / Last updated: 03.11.2026*
 
 ---
 
@@ -42,7 +42,11 @@ title: Privacy Policy — Tepera
   вийшов на передній план, і показує коротку паузу перед тими застосунками, які ви обрали в Tepera.
   Вона **не читає** вміст екрана, текст, паролі, повідомлення чи введення. Рішення на екрані паузи
   («Продовжити» / «Не зараз») зберігаються **лише локально** на пристрої, нічого не передається на
-  сервер і нікому не надається. Службу можна вимкнути будь-коли в Налаштуваннях Android →
+  сервер і нікому не надається. **У режимі «Години скролінгу»** та сама служба, коли ви відкриваєте
+  обрану вами стрічку у власну годину скролінгу, показує поверх екрана підказку Tepera (альтернативна
+  дія або таймер), а після обраного вами таймера — тимчасове затемнення з кнопками «Ще 5» / «Вийти».
+  Служба так само бачить лише назву пакета й малює тільки елементи Tepera; вона не читає вміст чужих
+  застосунків і не керує ними. Службу можна вимкнути будь-коли в Налаштуваннях Android →
   Спеціальні можливості. Без неї застосунок працює повністю; у звичайній (не beta) збірці цієї служби немає.
 - Ми **не** запитуємо дозвіл на геолокацію (в жодній формі, включно з фоновою).
 - Ми **не** створюємо облікових записів і не вимагаємо реєстрації.
@@ -96,7 +100,11 @@ with third parties.
   shows a short pause before the apps you picked in Tepera. It does **not** read screen content,
   text, passwords, messages or anything you type. Your choices on the pause screen ("Continue" /
   "Not now") are stored **only locally** on the device; nothing is sent to a server or shared with
-  anyone. You can turn the service off at any time in Android Settings → Accessibility. The app
+  anyone. **With the "Scrolling hours" mode**, the same service, when you open a feed you chose during
+  your own scrolling hour, shows a Tepera suggestion over the screen (an alternative action or a timer)
+  and, after a timer you picked, a temporary dimming with "5 more" / "Leave" buttons. It still sees only
+  the package name and only draws Tepera's own elements; it does not read the content of other apps or
+  control them. You can turn the service off at any time in Android Settings → Accessibility. The app
   works fully without it; the regular (non-beta) build contains no such service.
 - We do **not** request location permissions, in any form, including background location.
 - We do **not** create user accounts or require registration.
