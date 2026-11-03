@@ -8,9 +8,9 @@
 
 | Що | Де | Стан |
 |---|---|---|
-| Підписаний AAB для Play | `release/tepera-1.0.4-beta-24-play.aab` (8,3 МБ) | зібрано 03.11 з коміту `4528afb` (`bundleBetaRelease`, R8), `jarsigner`: verified, юніт-тести `beta` пройшли |
+| Підписаний AAB для Play | `release/tepera-1.0.5-beta-30-play.aab` (8,3 МБ) | зібрано 03.11 з коміту `4528afb` (`bundleBetaRelease`, R8), `jarsigner`: verified, юніт-тести `beta` пройшли |
 | Відбиток upload-ключа (SHA-256) | `C6:BB:72:F3:FE:E1:24:9F:7E:38:2E:06:D5:75:C4:C3:B1:A5:B1:AB:64:18:DB:93:78:CE:6E:00:82:0F:66:86` | збігається з `keystore/ПРОЧИТАЙ-ПРО-КЛЮЧ.txt` |
-| Версія | `1.0.4-beta`, versionCode **24** | див. п. 4.1 |
+| Версія | `1.0.5-beta`, versionCode **30** (standard 24 = опублікований 1.0.5) | див. п. 4.1 |
 | Іконка 512, feature graphic UA/EN, скріншоти | `docs/play-store/` | **застарілі** (див. п. 3) |
 | Описи сторінки магазину UA/EN | `docs/store-listing-ua.md`, `store-listing-en.md` | про v3 нічого не кажуть (п. 3) |
 | Політика конфіденційності | `docs/privacy-policy.md` | оновлена 03.11 (v3 + Accessibility), **не опублікована** (п. 2) |
@@ -24,7 +24,7 @@
 
 Android Studio там не потрібна: усе, що лишилось, робиться в браузері (Play Console, GitHub, YouTube).
 
-1. `release/tepera-1.0.4-beta-24-play.aab` — `*.aab` в `.gitignore`, **через git не поїде**: USB / хмарний диск.
+1. `release/tepera-1.0.5-beta-30-play.aab` — `*.aab` в `.gitignore`, **через git не поїде**: USB / хмарний диск.
 2. Папка `docs/` (або весь репозиторій після `git push`; зараз правки документів **не закомічені**).
 3. **Keystore НЕ потрібен**, щоб завантажити готовий AAB — він уже підписаний. Але переконайтесь, що копія
    `keystore/tepera-upload.jks` + паролі лежать поза цим комп'ютером (менеджер паролів + носій). Не пересилайте файл

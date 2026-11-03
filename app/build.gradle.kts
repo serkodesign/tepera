@@ -33,8 +33,8 @@ android {
         applicationId = "com.serkodesign.tepera"
         minSdk = 26        // Android 8.0 — нижня межа сумісності (SRS 5.6)
         targetSdk = 36      // Android 16 — обов'язково для Google Play з 31.08.2026 (SRS PUB-4)
-        versionCode = 22
-        versionName = "1.0.4"
+        versionCode = 24
+        versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -51,7 +51,7 @@ android {
         create("beta") {
             dimension = "distribution"
             versionNameSuffix = "-beta"
-            versionCode = 24
+            versionCode = 30
             buildConfigField("boolean", "GATE_ACCESSIBILITY", "true")
             // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): збір слотів і службовий екран годин ризику — лише в beta.
             buildConfigField("boolean", "V3_MVP", "true")
