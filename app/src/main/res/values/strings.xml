@@ -653,6 +653,7 @@
     <string name="v3_report_window">Вікно %1$s–%2$s%3$s: повторюваність %4$d/%5$d, ≈%6$d хв; хвилини у вікні за добу: спостереження %7$s → поточний тиждень %8$s</string>
     <string name="v3_overlay_label">Ти відкрив %1$s</string>
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
+    <string name="v3_overlay_enable_access">Увімкнути доступ</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
     <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; при кожному новому відкритті стрічки.</string>
     <string name="v3_report_overlay">Підказка поверх стрічки: показано %1$d, «Так» %2$d, «Відкрити на 5 хв» %3$d, закрито без вибору %4$d</string>
@@ -676,7 +677,7 @@
     <string name="v3_access_lives_title">Де це живе</string>
     <string name="v3_access_lives_body">Tepera не надсилає ці дані нікуди.</string>
     <string name="v3_access_not_needed_title">Що не потрібно</string>
-    <string name="v3_access_not_needed_body">Ні «Спеціальних можливостей», ні геолокації, ні мікрофона.</string>
+    <string name="v3_access_not_needed_body">Ні геолокації, ні мікрофона. Спеціальні можливості — лише якщо ви самі їх увімкнете пізніше.</string>
     <string name="v3_access_grant">Надати доступ</string>
     <string name="v3_access_details">Що саме збирається</string>
     <string name="v3_access_details_text">Tepera читає із системи лише час, коли застосунки з вашого списку стрічок були на екрані: назву застосунку, початок і кінець. Із цього рахуються години, у які ви найчастіше в стрічках. Вміст екрана, повідомлення й тексти не читаються. Усе зберігається тільки на цьому телефоні.</string>

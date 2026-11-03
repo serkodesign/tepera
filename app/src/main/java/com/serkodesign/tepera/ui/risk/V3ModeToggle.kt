@@ -15,6 +15,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.serkodesign.tepera.util.PlanOverlayStore
+import com.serkodesign.tepera.util.GateAccessibility
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.gates.AccessibilityDisclosureDialog
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
@@ -49,6 +54,12 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
         TeperaHint(text = stringResource(R.string.v3_mode_hint), modifier = Modifier.padding(horizontal = 12.dp))
         val context = LocalContext.current
         var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
+        var showA11yDisclosure by remember { mutableStateOf(false) }
+        var a11yOn by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
+        LifecycleResumeEffect(Unit) {
+            a11yOn = GateAccessibility.isEnabled(context)
+            onPauseOrDispose { }
+        }
         GlassRow(
             label = stringResource(R.string.v3_overlay_toggle_label),
             leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
@@ -58,12 +69,33 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
                     onCheckedChange = { on ->
                         overlayOn = on
                         PlanOverlayStore.setEnabled(context, on)
+                        // Play: помітне розкриття ПЕРЕД відправкою в системні налаштування Accessibility.
+                        if (on && GateAccessibility.isAvailable && !GateAccessibility.isEnabled(context)) {
+                            showA11yDisclosure = true
+                        }
                     },
                     colors = teperaSwitchColors()
                 )
             }
         )
+        if (showA11yDisclosure) {
+            AccessibilityDisclosureDialog(
+                onDismiss = { showA11yDisclosure = false },
+                onContinue = {
+                    showA11yDisclosure = false
+                    GateAccessibility.openSettings(context)
+                }
+            )
+        }
         TeperaHint(text = stringResource(R.string.v3_overlay_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
+        if (overlayOn && GateAccessibility.isAvailable && !a11yOn) {
+            TeperaButton(
+                text = stringResource(R.string.v3_overlay_enable_access),
+                onClick = { showA11yDisclosure = true },
+                type = TeperaButtonType.Secondary,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
         var puzzlesOn by remember { mutableStateOf(PlanOverlayStore.arePuzzlesEnabled(context)) }
         GlassRow(
             label = stringResource(R.string.v3_puzzle_toggle_label),

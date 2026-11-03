@@ -636,6 +636,7 @@
     <string name="v3_report_window">Window %1$s–%2$s%3$s: recurrence %4$d/%5$d, ≈%6$d min; minutes in the window per day: observation %7$s → current week %8$s</string>
     <string name="v3_overlay_label">You opened %1$s</string>
     <string name="v3_overlay_title">It\'s your hour now, until %1$s</string>
+    <string name="v3_overlay_enable_access">Turn on access</string>
     <string name="v3_overlay_toggle_label">Idea over the feed</string>
     <string name="v3_overlay_toggle_hint">When you open a chosen feed inside your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission; every time you open the feed anew.</string>
     <string name="v3_report_overlay">Suggestion over the feed: shown %1$d, \"Yes\" %2$d, \"Open for 5 min\" %3$d, closed without a choice %4$d</string>
@@ -659,7 +660,7 @@
     <string name="v3_access_lives_title">Where it lives</string>
     <string name="v3_access_lives_body">Tepera does not send this data anywhere.</string>
     <string name="v3_access_not_needed_title">What is not needed</string>
-    <string name="v3_access_not_needed_body">No Accessibility, no location, no microphone.</string>
+    <string name="v3_access_not_needed_body">No location, no microphone. Accessibility only if you turn it on yourself later.</string>
     <string name="v3_access_grant">Grant access</string>
     <string name="v3_access_details">What exactly is collected</string>
     <string name="v3_access_details_text">Tepera reads from the system only the time when the apps on your feed list were on screen: the app name, the start and the end. From that it works out the hours when you are most often in feeds. Screen content, messages and texts are not read. Everything is stored only on this phone.</string>
