@@ -117,7 +117,10 @@ object PlanOverlayStore {
 
     /** Слухач запису сесії «Відкрити на 5 хв»: сервіс не мусить чекати на подію застосунку, яка не завжди приходить. Тримати посилання, поки слухач потрібен. */
     fun listenForPendingSoftExit(context: Context, onPending: () -> Unit): android.content.SharedPreferences.OnSharedPreferenceChangeListener {
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key -> if (key == KEY_PENDING_PACKAGE) onPending() }
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            // Android 11+ повідомляє лише про ЗМІНЕНЕ значення: якщо пакет той самий (неспожитий запис), реагуємо на час запису, що щоразу інший.
+            if (key == KEY_PENDING_PACKAGE || key == KEY_PENDING_AT) onPending()
+        }
         prefs(context).registerOnSharedPreferenceChangeListener(listener)
         return listener
     }
