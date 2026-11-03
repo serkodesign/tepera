@@ -1,10 +1,12 @@
 # Store listing — English
 
+*Updated 03.11.2026 for build 1.0.5-beta (v3 "Scrolling hours" + the optional Accessibility service). Screenshots — `play-store/marketing/v3/en/` (1080×2160).*
+
 ## App name (≤30 chars)
 Tepera: Screen Time & Offline
 
 ## Short description (≤80 chars)
-Calm screen time tracker: online hours, offline activities, no guilt or pressure
+Finds your scrolling hours and quietly suggests something else just then
 
 ## Category and tags (Play Console)
 - Category: **Health & Fitness** (alternative: Productivity). Type: App.
@@ -12,37 +14,42 @@ Calm screen time tracker: online hours, offline activities, no guilt or pressure
 
 ## Full description (≤4000 chars)
 
-**Tepera is a calm screen time tracker and offline activity log — not a screen blocker and not a guilt counter.**
+**Tepera is a calm helper for people tired of endless scrolling. It is not a screen blocker and not a guilt counter.**
 
-It shows your day's structure — how much of it was online, what you logged offline, and how much is left for everything else — and lets you log what your offline life is made of in 1-2 taps.
+We rarely pick up the phone by accident: it mostly happens at the same hours and in the same situations. Within a week Tepera finds your scrolling hours and helps in exactly those. The rest of the day it stays quiet.
 
-**What the app shows:**
+**What the app does:**
 
-📊 **A structure, not an opposition** — one scale, three neutral parts: Online (counted automatically from your phone usage), what you've logged by category (Nature, Reading, Hobbies, Movement, Time with people, Errands — plus up to two of your own), and the rest of the day. The rest of the day is never shown as a gap or lost time.
+⏰ **Scrolling hours** — after a week of observation Tepera shows the hours when you usually get stuck in the feeds you choose yourself. You can also add your own windows by hand.
 
-⚡ **1-2 taps, then back to life** — a quick activity timer or a manual entry, no distracting screens. Log it and get back to the moment.
+💡 **A suggestion at the right moment** — open a chosen feed during your hour and Tepera briefly suggests something else: "Maybe go for a walk?". Say yes, ask for another idea, or open the feed for 5 minutes. The choice is always yours.
 
-📱 **Phone usage, honestly** — daily online time, a pattern of when you use your phone, unlock count and when you last picked it up. You see these numbers when you look for them, not as pushy alerts.
+🌗 **Gentle exit** — after "Open for 5 min" the screen dims a little and Tepera quietly reminds you of the time: "5 more" or "Leave". Nothing is blocked, no penalties.
 
-🧭 **A reference point, not a goal** — a quiet mark on the scale that you set yourself. It never changes color and never "fails". Comparisons are only ever against your own history, never against an average.
+📊 **Weekly summary** — compared only with your own observation week, never with a "norm" or other people's averages.
 
-☕ **Phone-free pauses** — when enough time passes between uses, the app offers to label that gap with a category, instead of relying on you to remember to log it.
+📱 **Structure of the day** — one scale, three neutral parts: Online (counted automatically), what you logged offline by category (Nature, Reading, Hobbies, Movement, Time with people, Errands — plus up to two of your own) and the rest of the day. The rest of the day is never shown as a gap.
 
-⏳ **Apps with a delay (optional)** — add a short pause of your own choosing before opening specific apps, such as social media. It is a deliberate delay you set for yourself, not a technical barrier, and you can turn it off for the day with one tap.
+⚡ **1–2 taps, then back to life** — a quick activity timer or a manual entry, plus 1x1, 2x1, 4x1 and 4x2 home-screen widgets.
 
-🧩 **Home-screen widgets** — 1x1, 2x1, 4x1 and 4x2: start a timer for an activity right from the home screen and see the day at a glance.
+📈 **Statistics** — when you reach for your phone through the day, unlocks, time by category and your online trend for a day, week or month.
 
-📈 **Statistics** — a day, week or month view of your time by category and your online trend.
+🧭 **A reference point, not a goal** — a quiet mark on the scale that you set yourself. It never changes color and never "fails".
 
-🚫 **Exclusion list** — maps, e-books, banking apps don't count toward Online time.
+☕ **Phone-free pauses** — Tepera offers to label a long break from your phone with a category, so you don't rely on manual logging alone.
+
+🚫 **Exclusion list** — maps, e-books and banking apps don't count toward Online time.
 
 🌗 **Light and dark theme, English and Ukrainian.**
 
-🔒 **Private by design** — usage statistics are processed on your device and Tepera never sends them anywhere. No accounts, no social feed, no ads. Optional crash reports can be switched off in Settings → Data and privacy. The in-app Knowledge base explains exactly what data is used and why.
+🔒 **Privacy** — usage statistics are processed on your device and Tepera does not send them anywhere. No accounts, no ads, no social feed. Optional anonymous crash reports can be switched off in Settings → Data and privacy. Android may keep a backup of the app data in your Google account according to your phone settings; Tepera itself sends nothing.
 
-Built in a "monastic" style — no badges, no streaks, no points for usage. Just a calm look at your day, for people tired of endless scrolling who want a healthier balance between phone time and real life.
+**Permissions and Accessibility:**
+• **Usage access** (Settings → Special access) — needed to count Online time and find scrolling hours. Without it the offline log still works fully.
+• **The Accessibility service is optional.** It is needed only to show a suggestion or a reminder over a feed you chose. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages. You turn it on yourself after an explanation in the app and can turn it off any time in Android settings. Tepera does not send this data anywhere.
+• **Notifications** — optional, for the weekly summary.
 
-**Permissions:** Tepera asks for usage access (Settings → Special access) to count Online time, and optionally for notifications. Without usage access, offline logging still works fully.
+Built in a "monastic" style: no badges, no streaks, no points for usage. Just a calm look at your day for people who want a healthier balance between the phone and real life.
 
 ---
 
