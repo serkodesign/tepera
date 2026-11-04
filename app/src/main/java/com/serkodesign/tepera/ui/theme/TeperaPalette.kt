@@ -32,6 +32,7 @@ import com.serkodesign.tepera.R
  * Services, а пряме бандлення файлу шрифту цього ризику взагалі не має. "Satoshi" (текст, не
  * заголовки) лишається дефолтним sans — про це запиту не було.
  */
+@Deprecated("Дизайн-система v3.1: використовуй MaterialTheme.colorScheme і M3Extra.colors (план CLAUDE-CODE-PLAN-m3-v31.md, таблиця 4). Видалити в I27.")
 object TeperaPalette {
     val backgroundBase = Color(0xFFC5E2CB) // Figma "App concept", node 274:531 — база фону
     val backgroundCreamBlob = Color(0xFFFFFFB1) // Ellipse 6 (50%)

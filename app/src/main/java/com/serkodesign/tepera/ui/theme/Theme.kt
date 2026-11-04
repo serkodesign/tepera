@@ -62,8 +62,9 @@ fun TeperaTheme(
         mode == ThemeStore.Mode.TIME && dawn -> remember(timeBucket) { dawnColorsForMinute(timeBucket) }
         mode == ThemeStore.Mode.TIME -> remember(timeBucket) { classicTimeColors(timeBucket) }
         dawn -> remember(dark, hour) { dawnColors(dark, hour) }
-        dark -> RedesignDarkColors
-        else -> RedesignLightColors
+        // Мостик I08: старі екрани бачать значення v3.1 (таблиця 4 плану), див. M3LegacyBridge.kt.
+        dark -> remember { m3BridgeColors(dark = true) }
+        else -> remember { m3BridgeColors(dark = false) }
     }
     // Дизайн-система v3.1 (M3): нова ColorScheme/Typography/Shapes + TeperaExtraColors для звичайних режимів
     // (Світла/Темна/Системна). «Світанок» і «За часом» лишаються на старих кольорах (план, I25l).
