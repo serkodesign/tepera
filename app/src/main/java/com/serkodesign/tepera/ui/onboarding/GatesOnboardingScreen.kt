@@ -29,9 +29,11 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.gates.BreathingBadge
 import com.serkodesign.tepera.ui.gates.rememberBreathState
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
-import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.extraAnimationsEnabled
 import kotlinx.coroutines.delay
@@ -85,7 +87,7 @@ fun GatesOnboardingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 48.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)
+                    .padding(top = 48.dp, start = TeperaSpacing.screenHorizontal, end = TeperaSpacing.screenHorizontal, bottom = TeperaSpacing.xxl)
             ) {
                 Column(
                     modifier = Modifier
@@ -104,22 +106,24 @@ fun GatesOnboardingScreen(
                     )
                     TeperaOnboardingTitle(
                         text = stringResource(R.string.gates_onboarding_title),
-                        modifier = Modifier.padding(top = 24.dp)
+                        modifier = Modifier.padding(top = TeperaSpacing.xxl)
                     )
                     Text(
                         text = stringResource(R.string.gates_onboarding_body),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = TeperaSpacing.s)
                     )
                 }
-                TeperaButton(
+                M3Button(
+                    type = M3ButtonType.Filled,
+                    size = M3ButtonSize.M,
                     text = stringResource(R.string.gates_onboarding_action),
                     onClick = onDone,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    type = TeperaButtonType.Primary
+                        .padding(top = TeperaSpacing.l)
                 )
             }
             OnboardingTopBar(

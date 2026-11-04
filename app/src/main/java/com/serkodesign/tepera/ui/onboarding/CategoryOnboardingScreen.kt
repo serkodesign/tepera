@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -26,8 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.CategoryRepository
@@ -35,6 +32,10 @@ import com.serkodesign.tepera.ui.category.CategoryIconBadge
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.settings.CrashReportsToggle
 import com.serkodesign.tepera.ui.theme.GlassRow
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
@@ -111,24 +112,25 @@ fun CategoryOnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 48.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                .padding(top = 48.dp, start = TeperaSpacing.screenHorizontal, end = TeperaSpacing.screenHorizontal, bottom = TeperaSpacing.xxl),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TeperaOnboardingTitle(text = stringResource(R.string.category_onboarding_title))
             Text(
                 text = stringResource(R.string.category_onboarding_subtitle),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = TeperaSpacing.s)
             )
 
             Column(
                 modifier = Modifier
-                    .padding(top = 24.dp)
+                    .padding(top = TeperaSpacing.xxl)
                     .weight(1f)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(TeperaSpacing.s)
             ) {
                 defaultCategories.forEach { category ->
                     val enabled = selected[category.id] ?: true
@@ -148,20 +150,22 @@ fun CategoryOnboardingScreen(
                 }
                 // D-15: чесне повідомлення про звіти про збої одразу на початку, з можливістю вимкнути.
                 // Усередині спільної прокрутки: довгий пояснювальний текст не має відбирати місце у списку.
-                CrashReportsToggle(modifier = Modifier.padding(top = 8.dp))
+                CrashReportsToggle(modifier = Modifier.padding(top = TeperaSpacing.s))
             }
 
-            TeperaButton(
+            M3Button(
+                type = M3ButtonType.Filled,
+                size = M3ButtonSize.M,
                 text = stringResource(R.string.category_onboarding_continue),
                 onClick = { finish() },
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                type = TeperaButtonType.Primary
+                modifier = Modifier.fillMaxWidth().padding(top = TeperaSpacing.l)
             )
-            TeperaButton(
+            M3Button(
+                type = M3ButtonType.Text,
+                size = M3ButtonSize.S,
                 text = stringResource(R.string.onboarding_skip),
                 onClick = { skip() },
-                modifier = Modifier.padding(top = 4.dp),
-                type = TeperaButtonType.Tertiary
+                modifier = Modifier.padding(top = TeperaSpacing.s)
             )
         }
         OnboardingTopBar(

@@ -38,18 +38,19 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
+import com.serkodesign.tepera.ui.theme.GolosTextFamily
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
-import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaMotion
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
-import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.util.TargetSuggestion
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -87,47 +88,51 @@ fun TargetOnboardingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 48.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                    .padding(top = 48.dp, start = TeperaSpacing.screenHorizontal, end = TeperaSpacing.screenHorizontal, bottom = TeperaSpacing.xxl),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 TeperaOnboardingTitle(text = stringResource(R.string.target_onboarding_title))
                 Text(
                     text = stringResource(R.string.target_onboarding_body),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = TeperaSpacing.s)
                 )
                 TargetRuler(
                     hours = hours,
                     onHoursChange = { hours = it },
-                    modifier = Modifier.padding(top = 40.dp)
+                    modifier = Modifier.padding(top = TeperaSpacing.huge)
                 )
-                // «Задати» — головна дія (Primary), «Пізніше» — Secondary; розмір однаковий.
+                // «Задати» — головна дія (Filled), «Пізніше» — Outlined; розмір однаковий.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 40.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(top = TeperaSpacing.huge),
+                    horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.betweenButtons)
                 ) {
-                    TeperaButton(
+                    M3Button(
+                        type = M3ButtonType.Outlined,
+                        size = M3ButtonSize.M,
                         text = stringResource(R.string.target_onboarding_later),
                         onClick = { finish(setTarget = false) },
-                        modifier = Modifier.weight(1f),
-                        type = TeperaButtonType.Secondary
+                        modifier = Modifier.weight(1f)
                     )
-                    TeperaButton(
+                    M3Button(
+                        type = M3ButtonType.Filled,
+                        size = M3ButtonSize.M,
                         text = stringResource(R.string.target_onboarding_set),
                         onClick = { finish(setTarget = true) },
-                        modifier = Modifier.weight(1f),
-                        type = TeperaButtonType.Primary
+                        modifier = Modifier.weight(1f)
                     )
                 }
                 Text(
                     text = stringResource(R.string.target_onboarding_later_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 12.dp)
+                    modifier = Modifier.padding(top = TeperaSpacing.m)
                 )
             }
             OnboardingTopBar(
@@ -154,8 +159,11 @@ private fun TargetRuler(
 ) {
     val minHours = TargetSuggestion.MIN_HOURS
     val maxHours = TargetSuggestion.MAX_HOURS
-    val ink = TeperaPalette.buttonBrandDark
-    val brand = TeperaPalette.buttonBrand
+    // Дизайн-система v3.1 (I18c): число — primary, підписи/риски — onSurfaceVariant, маркер — primary, чіп — primaryContainer.
+    val scheme = MaterialTheme.colorScheme
+    val numberColor = scheme.primary
+    val tickColor = scheme.onSurfaceVariant
+    val markerColor = scheme.primary
     val valueText = stringResource(R.string.settings_target_hours_format, hours)
     val scaleDescription = stringResource(R.string.onboarding_target_scale_description)
 
@@ -174,15 +182,16 @@ private fun TargetRuler(
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = hours.toString(),
-                color = ink,
-                fontFamily = TeperaPalette.headlineFont,
-                fontWeight = FontWeight.Medium,
+                color = numberColor,
+                // Велике число — окремий кастомний розмір (як Onboarding/Numeral у плані), поза шкалою M3.
+                fontFamily = GolosTextFamily,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                 fontSize = 96.sp,
                 lineHeight = 100.sp
             )
             Text(
                 text = stringResource(R.string.onboarding_target_unit),
-                color = ink.copy(alpha = 0.7f),
+                color = scheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 18.dp)
             )
@@ -223,7 +232,7 @@ private fun TargetRuler(
                     val major = i % 4 == 0
                     val tickHeight = if (major) 26.dp.toPx() else 14.dp.toPx()
                     drawRoundRect(
-                        color = ink.copy(alpha = if (major) 0.55f else 0.28f),
+                        color = tickColor.copy(alpha = if (major) 0.55f else 0.28f),
                         topLeft = Offset(usable * i / steps, size.height - tickHeight),
                         size = Size(tickWidth, tickHeight),
                         cornerRadius = CornerRadius(tickWidth / 2f)
@@ -232,7 +241,7 @@ private fun TargetRuler(
                 val markerWidth = 6.dp.toPx()
                 val markerHeight = 40.dp.toPx()
                 drawRoundRect(
-                    color = brand,
+                    color = markerColor,
                     topLeft = Offset(
                         (usable * markerFraction + tickWidth / 2f - markerWidth / 2f)
                             .coerceIn(0f, size.width - markerWidth),
@@ -245,13 +254,13 @@ private fun TargetRuler(
         }
         Text(
             text = stringResource(R.string.onboarding_target_chip),
-            color = ink,
+            color = scheme.onPrimaryContainer,
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier
-                .padding(top = 8.dp)
+                .padding(top = TeperaSpacing.s)
                 .clip(RoundedCornerShape(100.dp))
-                .background(ink.copy(alpha = 0.12f))
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .background(scheme.primaryContainer)
+                .padding(horizontal = TeperaSpacing.l, vertical = 6.dp)
         )
     }
 }

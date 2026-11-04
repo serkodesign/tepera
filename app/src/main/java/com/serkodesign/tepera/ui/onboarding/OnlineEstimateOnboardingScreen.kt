@@ -12,8 +12,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.serkodesign.tepera.ui.theme.GlassRow
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
-import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,10 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
-import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.local.entity.EstimateType
 import com.serkodesign.tepera.data.repository.UserEstimateRepository
@@ -93,7 +94,7 @@ fun OnlineEstimateOnboardingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 48.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                    .padding(top = 48.dp, start = TeperaSpacing.screenHorizontal, end = TeperaSpacing.screenHorizontal, bottom = TeperaSpacing.xxl),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Заголовок, підказка й варіанти — одним блоком по центру між верхнім рядком і «Пропустити».
@@ -107,15 +108,16 @@ fun OnlineEstimateOnboardingScreen(
                 TeperaOnboardingTitle(text = stringResource(R.string.online_estimate_onboarding_title))
                 Text(
                     text = stringResource(R.string.online_estimate_onboarding_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = TeperaSpacing.s)
                 )
                 Column(
                     modifier = Modifier
-                        .padding(top = 24.dp)
+                        .padding(top = TeperaSpacing.xxl)
                         .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(TeperaSpacing.s)
                 ) {
                     DailyOnlineGuess.entries.forEach { guess ->
                         GlassRow(
@@ -127,17 +129,18 @@ fun OnlineEstimateOnboardingScreen(
                                 Icon(
                                     TeperaSymbols.ChevronRight,
                                     contentDescription = null,
-                                    tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.5f)
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         )
                     }
                 }
                 }
-                TeperaButton(
+                M3Button(
+                    type = M3ButtonType.Text,
+                    size = M3ButtonSize.S,
                     text = stringResource(R.string.onboarding_skip),
-                    onClick = { finish(null) },
-                    type = TeperaButtonType.Tertiary
+                    onClick = { finish(null) }
                 )
             }
             OnboardingTopBar(
