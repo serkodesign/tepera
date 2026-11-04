@@ -59,6 +59,7 @@ class SoftExitController(private val service: AccessibilityService) {
     private var dimView: FrameLayout? = null
     private var strongLayer: View? = null
     private var pillView: View? = null
+    private var exitPill: SoftExitStyle.ExitPillViews? = null
     private var toastView: View? = null
 
     /** Контекст служби з мовою, обраною в застосунку (сама служба її не знає): інакше затемнення лишалось англійським. */
@@ -142,8 +143,8 @@ class SoftExitController(private val service: AccessibilityService) {
 
     private fun showDim() {
         val base = FrameLayout(service).apply {
-            // Макет v25/DimLayer «Ніч»: бурштин 16% під чорним 50%.
-            background = android.graphics.drawable.LayerDrawable(arrayOf(ColorDrawable(0x29E69D00), ColorDrawable(0x80000000.toInt())))
+            // Дизайн-система v3.1 (3.6): чорний 50% + теплий шар signalVivid 18%.
+            background = SoftExitStyle(service, dark = true).dimBackground()
             alpha = 0f
         }
         val extra = View(service).apply {
@@ -168,33 +169,29 @@ class SoftExitController(private val service: AccessibilityService) {
         val s = session ?: return
         s.strong = true
         strongLayer?.animate()?.alpha(1f)?.setDuration(FADE_MILLIS)?.start()
+        // Стадія «+2 хв» (3.6): кнопки плашки розтягуються порівну.
+        exitPill?.expand()
     }
 
     private fun showPill(s: Session) {
-        val pill = LinearLayout(service).apply {
-            orientation = LinearLayout.VERTICAL
-            background = rounded(0xFF11322E.toInt(), 28, stroke = 0x1AFFFFFF)
-            setPadding(dp(20), dp(18), dp(20), dp(16))
-        }
-        val head = LinearLayout(service).apply { orientation = LinearLayout.VERTICAL }
-        head.addView(label(localized().getString(R.string.soft_exit_title, minutesSinceStart(s)), 18f, Color.WHITE, medium = true))
-        head.addView(
-            label(localized().getString(R.string.soft_exit_body, s.appLabel, s.thenText), 12f, 0xBFFFFFFF.toInt()).apply { setPadding(0, dp(2), 0, 0) }
+        // Дизайн-система v3.1 (3.6 плану): плашка завжди темна (лежить на затемненні), токени — див. SoftExitStyle.
+        val text = localized()
+        val views = SoftExitStyle(service, dark = true).exitPill(
+            title = text.getString(R.string.soft_exit_title, minutesSinceStart(s)),
+            body = text.getString(R.string.soft_exit_body, s.appLabel, s.thenText),
+            moreText = text.getString(R.string.soft_exit_more),
+            leaveText = text.getString(R.string.soft_exit_leave),
+            onMore = { onMore() },
+            onLeave = { leave() }
         )
-        pill.addView(head)
-        val buttons = LinearLayout(service).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(12), 0, 0) }
-        buttons.addView(
-            button(R.string.soft_exit_more, outlined = true) { onMore() },
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { rightMargin = dp(8) }
-        )
-        buttons.addView(button(R.string.soft_exit_leave, outlined = false) { leave() }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        pill.addView(buttons)
-
         val params = touchable(width = service.resources.displayMetrics.widthPixels - dp(32)).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             y = dp(72)
         }
-        if (addView(pill, params)) pillView = pill
+        if (addView(views.root, params)) {
+            pillView = views.root
+            exitPill = views
+        }
     }
 
     private fun onMore() {
@@ -243,6 +240,7 @@ class SoftExitController(private val service: AccessibilityService) {
     private fun showConfirm(s: Session) {
         removeView(pillView)
         pillView = null
+        exitPill = null
         // Дизайн-система v3.1 (3.5 плану): шторка на токенах теми, див. SoftExitStyle.
         val text = localized()
         val sheet = SoftExitStyle(service).confirmSheet(
@@ -334,7 +332,7 @@ class SoftExitController(private val service: AccessibilityService) {
 
     private fun removeAll() {
         removeView(dimView); dimView = null; strongLayer = null
-        removeView(pillView); pillView = null
+        removeView(pillView); pillView = null; exitPill = null
     }
 
     // --- Дрібниці вигляду ---

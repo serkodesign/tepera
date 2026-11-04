@@ -4,16 +4,22 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.res.ResourcesCompat
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.DarkTeperaExtraColors
+import com.serkodesign.tepera.ui.theme.LightTeperaExtraColors
 import com.serkodesign.tepera.ui.theme.TeperaDarkColors
 import com.serkodesign.tepera.ui.theme.TeperaLightColors
 import com.serkodesign.tepera.util.ThemeStore
@@ -46,6 +52,10 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
     private val surfaceContainerLow get() = scheme.surfaceContainerLow.toArgb()
     private val surfaceContainerHighest get() = scheme.surfaceContainerHighest.toArgb()
     private val outlineVariant get() = scheme.outlineVariant.toArgb()
+    private val surfaceContainerHigh get() = scheme.surfaceContainerHigh.toArgb()
+    private val extra get() = if (dark) DarkTeperaExtraColors else LightTeperaExtraColors
+    private val signal get() = extra.signal.toArgb()
+    private val signalVivid get() = extra.signalVivid.toArgb()
 
     /** Текст за стилем M3: розмір/інтервал рядка/інтервал літер у sp, вага — Golos Text (variable, вісь `wght`). */
     fun text(value: String, sizeSp: Float, lineSp: Float, weight: Int, spacingSp: Float, color: Int) = TextView(context).apply {
@@ -62,6 +72,9 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
 
     /** headlineSmall: 24/32, Medium, −0.12 — заголовок шторок і діалогів. */
     fun headline(value: String) = text(value, 24f, 32f, 500, -0.12f, onSurface)
+
+    /** titleMedium: 16/24, Medium — заголовок плашки виходу. */
+    fun title(value: String) = text(value, 16f, 24f, 500, 0f, onSurface)
 
     /** bodyMedium: 14/20, Normal — основний текст. */
     fun body(value: String, color: Int = onSurfaceVariant) = text(value, 14f, 20f, 400, 0f, color)
@@ -139,6 +152,59 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
         )
         sheet.addView(content, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         return sheet
+    }
+
+    /**
+     * Затемнення під плашкою (3.6): чорний 50% і поверх нього теплий шар `signalVivid` 18%. Дотики крізь нього проходять
+     * (прапорці вікна задає контролер).
+     */
+    fun dimBackground(): Drawable = LayerDrawable(
+        arrayOf(ColorDrawable(0x80000000.toInt()), ColorDrawable((signalVivid and 0x00FFFFFF) or (0x2E shl 24)))
+    )
+
+    /** Плашка виходу й її кнопки: у стадії «+2 хв» кнопки розтягуються порівну ([expand]). */
+    class ExitPillViews(val root: View, private val more: View, private val leave: View) {
+        fun expand() {
+            for (button in listOf(more, leave)) {
+                button.layoutParams = (button.layoutParams as LinearLayout.LayoutParams).apply { width = 0; weight = 1f }
+            }
+            root.requestLayout()
+        }
+    }
+
+    /**
+     * `ExitPill` (3.6): `surfaceContainerHigh`, форма 28dp, без обвідки, поля 16dp зверху/знизу й 20dp з боків, проміжки
+     * 12dp. Голова — іконка 22dp `signal`, заголовок titleMedium, підпис bodyMedium. Кнопки в рядку з проміжком 8dp:
+     * `Outlined S` «Ще 5» і `Filled S` «Вийти» — за вмістом у компактній стадії, `weight(1f)` після [ExitPillViews.expand].
+     * Плашка завжди темна: створюйте [SoftExitStyle] з `dark = true`.
+     */
+    fun exitPill(title: String, body: String, moreText: String, leaveText: String, onMore: () -> Unit, onLeave: () -> Unit): ExitPillViews {
+        val pill = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            background = GradientDrawable().apply { setColor(surfaceContainerHigh); cornerRadius = dp(28).toFloat() }
+            setPadding(dp(20), dp(16), dp(20), dp(16))
+        }
+        val head = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        head.addView(
+            ImageView(context).apply {
+                setImageResource(R.drawable.ic_soft_exit_clock)
+                setColorFilter(signal)
+            },
+            LinearLayout.LayoutParams(dp(22), dp(22)).apply { rightMargin = dp(12) }
+        )
+        val texts = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+        texts.addView(title(title))
+        texts.addView(body(body))
+        head.addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        pill.addView(head)
+        val more = button(ButtonType.OUTLINED, ButtonSize.S, moreText, onMore)
+        val leave = button(ButtonType.FILLED, ButtonSize.S, leaveText, onLeave)
+        val buttons = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        buttons.addView(more, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { rightMargin = dp(8) })
+        buttons.addView(leave, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        // MATCH_PARENT: інакше після expand() вага кнопок не має вільного місця (кнопки лишаються за вмістом і текст переноситься).
+        pill.addView(buttons, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12) })
+        return ExitPillViews(pill, more, leave)
     }
 
     companion object {
