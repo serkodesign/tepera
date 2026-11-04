@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,46 +34,52 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.onboarding.AppIconTile
-import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
+import com.serkodesign.tepera.ui.theme.M3Card
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 import com.serkodesign.tepera.ui.theme.TeperaIcons
-import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 
 /**
- * v3.0 MVP, Етап 3, L1 «Вітання» (Figma "App concept" 911:162): іконка, заголовок 34sp, пояснення, одна кнопка.
+ * v3.0 MVP, Етап 3, L1 «Вітання» (Figma "App concept" 911:162): іконка, заголовок, пояснення, одна кнопка.
+ * Дизайн-система v3.1 (I18a): заголовок `headlineLarge` (Onboarding/Title, таблиця стилів 2.3) кольору `primary`
+ * (text/brand-dark → primary, таблиця 4), пояснення `bodyLarge`/`onSurfaceVariant`, кнопка `M3Button(Filled, M)`.
  */
 @Composable
 fun V3WelcomeScreen(onStart: () -> Unit) {
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().padding(horizontal = 16.dp)) {
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(Modifier.padding(padding).fillMaxSize().padding(horizontal = TeperaSpacing.screenHorizontal)) {
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = TeperaSpacing.xxl),
+                verticalArrangement = Arrangement.spacedBy(TeperaSpacing.l)
+            ) {
                 AppIconTile()
                 Text(
                     text = stringResource(R.string.v3_welcome_title),
-                    color = TeperaPalette.buttonBrandDark,
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 34.sp, lineHeight = 38.sp, letterSpacing = (-0.68).sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineLarge,
                     modifier = Modifier.semantics { heading() }
                 )
                 Text(
                     text = stringResource(R.string.v3_welcome_body),
-                    color = TeperaPalette.textSecondary, fontSize = 16.sp, lineHeight = 21.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
-            TeperaButton(
+            M3Button(
+                type = M3ButtonType.Filled,
+                size = M3ButtonSize.M,
                 text = stringResource(R.string.v3_welcome_start),
                 onClick = onStart,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = TeperaSpacing.l)
             )
         }
     }
@@ -99,28 +106,35 @@ fun V3AccessScreen(onGranted: () -> Unit) {
     }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().padding(horizontal = 16.dp)) {
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(padding).fillMaxSize().padding(horizontal = TeperaSpacing.screenHorizontal)) {
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = TeperaSpacing.s),
+                verticalArrangement = Arrangement.spacedBy(TeperaSpacing.betweenCards)
+            ) {
                 Text(
                     text = stringResource(R.string.v3_access_title),
-                    color = TeperaPalette.textPrimary, fontSize = 22.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.semantics { heading() }
                 )
                 InfoBlock(TeperaIcons.Smartphone, R.string.v3_access_sees_title, R.string.v3_access_sees_body)
                 InfoBlock(TeperaSymbols.PhonelinkOff, R.string.v3_access_lives_title, R.string.v3_access_lives_body)
                 InfoBlock(TeperaSymbols.Check, R.string.v3_access_not_needed_title, R.string.v3_access_not_needed_body)
             }
-            Column(Modifier.padding(horizontal = 4.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                TeperaButton(
+            Column(Modifier.padding(vertical = TeperaSpacing.s), verticalArrangement = Arrangement.spacedBy(TeperaSpacing.betweenButtons)) {
+                M3Button(
+                    type = M3ButtonType.Filled,
+                    size = M3ButtonSize.M,
                     text = stringResource(R.string.v3_access_grant),
                     onClick = { context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) },
                     modifier = Modifier.fillMaxWidth()
                 )
-                TeperaButton(
+                M3Button(
+                    type = M3ButtonType.Text,
+                    size = M3ButtonSize.S,
                     text = stringResource(R.string.v3_access_details),
                     onClick = { details = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    type = TeperaButtonType.Tertiary
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -137,20 +151,23 @@ fun V3AccessScreen(onGranted: () -> Unit) {
     }
 }
 
-/** Блок інформації L2: іконка у світлому колі 36dp + заголовок 14sp Medium + пояснення 12sp (макет 911:380). */
+/**
+ * Блок інформації L2 (макет 911:380): іконка у колі 36dp (`surfaceContainerHighest`, іконка `primary`) + заголовок
+ * `titleSmall` + пояснення `bodySmall` у картці `M3Card`.
+ */
 @Composable
 private fun InfoBlock(icon: ImageVector, titleRes: Int, bodyRes: Int) {
-    V3Card(radius = 20.dp, padding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+    M3Card {
+        Row(horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.m), verticalAlignment = Alignment.Top) {
             Box(
-                Modifier.size(36.dp).clip(CircleShape).background(TeperaPalette.surfaceBrandLight),
+                Modifier.size(36.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = TeperaPalette.brandAccent, modifier = Modifier.size(20.dp))
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(titleRes), color = TeperaPalette.textPrimary, fontSize = 14.sp, lineHeight = 15.sp, fontWeight = FontWeight.Medium)
-                Text(stringResource(bodyRes), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xxs)) {
+                Text(stringResource(titleRes), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(bodyRes), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
