@@ -56,6 +56,9 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
     private val extra get() = if (dark) DarkTeperaExtraColors else LightTeperaExtraColors
     private val signal get() = extra.signal.toArgb()
     private val signalVivid get() = extra.signalVivid.toArgb()
+    private val inverseSurface get() = scheme.inverseSurface.toArgb()
+    private val inverseOnSurface get() = scheme.inverseOnSurface.toArgb()
+    private val inverseSignal get() = extra.inverseSignal.toArgb()
 
     /** Текст за стилем M3: розмір/інтервал рядка/інтервал літер у sp, вага — Golos Text (variable, вісь `wght`). */
     fun text(value: String, sizeSp: Float, lineSp: Float, weight: Int, spacingSp: Float, color: Int) = TextView(context).apply {
@@ -161,6 +164,26 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
     fun dimBackground(): Drawable = LayerDrawable(
         arrayOf(ColorDrawable(0x80000000.toInt()), ColorDrawable((signalVivid and 0x00FFFFFF) or (0x2E shl 24)))
     )
+
+    /**
+     * `ExitToast` (3.7, стиль M3 snackbar): фон `inverseSurface`, форма 4dp, поля 12×16dp, висота від 48dp, проміжок 12dp;
+     * галочка 20dp кольору `inverseSignal`, текст bodyMedium кольору `inverseOnSurface`.
+     */
+    fun toast(value: String): View = LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        minimumHeight = dp(48)
+        background = GradientDrawable().apply { setColor(inverseSurface); cornerRadius = dp(4).toFloat() }
+        setPadding(dp(16), dp(12), dp(16), dp(12))
+        addView(
+            ImageView(context).apply {
+                setImageResource(R.drawable.ic_soft_exit_check)
+                setColorFilter(inverseSignal)
+            },
+            LinearLayout.LayoutParams(dp(20), dp(20)).apply { rightMargin = dp(12) }
+        )
+        addView(body(value, color = inverseOnSurface))
+    }
 
     /** Плашка виходу й її кнопки: у стадії «+2 хв» кнопки розтягуються порівну ([expand]). */
     class ExitPillViews(val root: View, private val more: View, private val leave: View) {

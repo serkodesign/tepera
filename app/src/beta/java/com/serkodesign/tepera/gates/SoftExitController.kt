@@ -1,21 +1,14 @@
 package com.serkodesign.tepera.gates
 
 import android.accessibilityservice.AccessibilityService
-import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.domain.risk.QuickPuzzles
 import com.serkodesign.tepera.domain.risk.SoftExitTiming
@@ -279,23 +272,8 @@ class SoftExitController(private val service: AccessibilityService) {
 
     private fun showToast(text: String) {
         removeView(toastView)
-        val row = LinearLayout(service).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            background = rounded(0xFFF9F0DF.toInt(), 100)
-            setPadding(dp(12), dp(10), dp(18), dp(10))
-        }
-        row.addView(
-            TextView(service).apply {
-                this.text = "✓"
-                setTextColor(Color.WHITE)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-                gravity = Gravity.CENTER
-                background = rounded(0xFF006944.toInt(), 14)
-            },
-            LinearLayout.LayoutParams(dp(28), dp(28)).apply { rightMargin = dp(10) }
-        )
-        row.addView(label(text, 14f, 0xFF1B1B1D.toInt(), medium = true))
+        // Дизайн-система v3.1 (3.7 плану): тост у стилі M3 snackbar, тема — як у застосунку (див. SoftExitStyle).
+        val row = SoftExitStyle(service).toast(text)
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
@@ -338,39 +316,6 @@ class SoftExitController(private val service: AccessibilityService) {
     // --- Дрібниці вигляду ---
 
     private fun dp(value: Int) = (value * density).roundToInt()
-
-    private fun rounded(color: Int, radiusDp: Int, stroke: Int? = null) = GradientDrawable().apply {
-        setColor(color)
-        cornerRadius = dp(radiusDp).toFloat()
-        stroke?.let { setStroke(dp(1), it) }
-    }
-
-    private fun label(text: String, sp: Float, color: Int, medium: Boolean = false) = TextView(service).apply {
-        this.text = text
-        setTextColor(color)
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, sp)
-        typeface = if (medium) Typeface.create("sans-serif-medium", Typeface.NORMAL) else Typeface.DEFAULT
-    }
-
-    private fun button(textRes: Int, outlined: Boolean, plain: Boolean = false, tall: Boolean = false, onDark: Boolean = true, onClick: () -> Unit): View =
-        TextView(service).apply {
-            text = localized().getString(textRes)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            gravity = Gravity.CENTER
-            val vertical = if (tall) 15 else 10
-            setPadding(dp(if (tall) 16 else 14), dp(vertical), dp(if (tall) 16 else 14), dp(vertical))
-            when {
-                outlined -> { background = rounded(Color.TRANSPARENT, 100, stroke = 0x59FFFFFF); setTextColor(Color.WHITE) }
-                plain -> { setTextColor(0xFFFEFFEF.toInt()) }
-                // Світла кнопка: на темній плашці — біла (#fff/#1b1b1d), на листі — кремова (#feffef/#062924).
-                else -> {
-                    background = rounded(if (onDark) Color.WHITE else 0xFFFEFFEF.toInt(), if (tall) 24 else 100)
-                    setTextColor(if (onDark) 0xFF1B1B1D.toInt() else 0xFF062924.toInt())
-                }
-            }
-            setOnClickListener { onClick() }
-        }
 
     private companion object {
         const val SESSION_MINUTES = 5
