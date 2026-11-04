@@ -371,7 +371,7 @@ Hero-картка на головній («До твоєї години / 2 го
 - [x] **I03 · ColorScheme (15 хв).** `TeperaLightColors` / `TeperaDarkColors` через `lightColorScheme(...)` / `darkColorScheme(...)` за 2.1. Поки ніде не підключати. Коміт.
 - [x] **I04 · TeperaColors (20 хв).** `data class TeperaExtraColors` + `LightTeperaExtraColors` / `DarkTeperaExtraColors` + `LocalTeperaExtraColors` (staticCompositionLocalOf) + `object M3Extra { val colors @Composable get() = LocalTeperaExtraColors.current }` (у плані це `TeperaTheme.colors`; функція `TeperaTheme` вже існує, тому об'єкт названо інакше; далі в плані `TeperaTheme.colors` читати як `M3Extra.colors`). Коміт.
 - [x] **I05 · Typography (15 хв).** `FontFamily` Golos Text (Regular, Medium; шрифти вже в проєкті, якщо ні — додай з Google Fonts, ліцензія OFL) + `TeperaTypography` за 2.3. Коміт.
-- [ ] **I06 · Shapes і Spacing (10 хв).** `TeperaShapesM3` (Shapes), `TeperaShapes` (extra), `object TeperaSpacing` за 2.4 і 2.5. Коміт.
+- [x] **I06 · Shapes і Spacing (10 хв).** `TeperaShapesM3` (Shapes), `TeperaShapes` (extra), `object TeperaSpacing` за 2.4 і 2.5. Коміт.
 - [ ] **I07 · Підключення теми (20 хв).**
   - `TeperaTheme(darkTheme = isSystemInDarkTheme(), content)` надає `MaterialTheme(colorScheme, typography, shapes)` + `LocalTeperaColors`, `dynamicColor` вимкнено. Підключи в `MainActivity`.
   - `./gradlew assembleDebug`, встанови на S23, перевір, що застосунок запускається в обох темах.
@@ -460,3 +460,4 @@ Hero-картка на головній («До твоєї години / 2 го
 - 2026-11-04 · I03 · `ui/theme/M3ColorSchemes.kt`: `TeperaLightColors`/`TeperaDarkColors` (secondary/tertiary = primary; background = surface; surfaceVariant = surfaceContainerHighest, бо в таблиці 2.1 ролі нема); `compileBetaDebugKotlin` чисто, ніде не підключено. Далі: I04.
 - 2026-11-04 · I04 · `ui/theme/TeperaExtraColors.kt`: `TeperaExtraColors` (+ хелпер `heat(level)` для мапінгу рівнів хітмапи), `LightTeperaExtraColors`/`DarkTeperaExtraColors`, `LocalTeperaExtraColors`, `M3Extra.colors`; `compileBetaDebugKotlin` чисто. Далі: I05.
 - 2026-11-04 · I05 · `ui/theme/TeperaTypography.kt`: `GolosTextFamily` (Regular 400 / Medium 500 з наявного `golos_text.ttf`) + `TeperaTypography` за 2.3; `compileBetaDebugKotlin` чисто, не підключено. Далі: I06.
+- 2026-11-04 · I06 · `ui/theme/TeperaShapesSpacing.kt`: `TeperaShapesM3` (Shapes 4/8/12/16/28), `TeperaExtraShapes` (largeIncreased 20, extraLargeIncreased 32, full, sheetTop, heatCell 2), `TeperaSpacing` (шкала 2…40 + семантичні псевдоніми). Назву `TeperaShapes` з плану замінено на `TeperaExtraShapes`, бо `TeperaShapes` приватне в Theme.kt. `compileBetaDebugKotlin` чисто. Далі: I07 (підключення теми, потрібен пристрій).
