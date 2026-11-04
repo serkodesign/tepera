@@ -370,7 +370,7 @@ Hero-картка на головній («До твоєї години / 2 го
 - [x] **I02 · Палітра (15 хв).** НОВИЙ файл `ui/theme/M3Palette.kt` (назви `TeperaPalette`/`TeperaColors`/`LocalTeperaColors` зайняті наявним кодом, рішення 2026-11-04): усі hex з 2.1 і 2.2 як `val` (лише константи). Коміт.
 - [x] **I03 · ColorScheme (15 хв).** `TeperaLightColors` / `TeperaDarkColors` через `lightColorScheme(...)` / `darkColorScheme(...)` за 2.1. Поки ніде не підключати. Коміт.
 - [x] **I04 · TeperaColors (20 хв).** `data class TeperaExtraColors` + `LightTeperaExtraColors` / `DarkTeperaExtraColors` + `LocalTeperaExtraColors` (staticCompositionLocalOf) + `object M3Extra { val colors @Composable get() = LocalTeperaExtraColors.current }` (у плані це `TeperaTheme.colors`; функція `TeperaTheme` вже існує, тому об'єкт названо інакше; далі в плані `TeperaTheme.colors` читати як `M3Extra.colors`). Коміт.
-- [ ] **I05 · Typography (15 хв).** `FontFamily` Golos Text (Regular, Medium; шрифти вже в проєкті, якщо ні — додай з Google Fonts, ліцензія OFL) + `TeperaTypography` за 2.3. Коміт.
+- [x] **I05 · Typography (15 хв).** `FontFamily` Golos Text (Regular, Medium; шрифти вже в проєкті, якщо ні — додай з Google Fonts, ліцензія OFL) + `TeperaTypography` за 2.3. Коміт.
 - [ ] **I06 · Shapes і Spacing (10 хв).** `TeperaShapesM3` (Shapes), `TeperaShapes` (extra), `object TeperaSpacing` за 2.4 і 2.5. Коміт.
 - [ ] **I07 · Підключення теми (20 хв).**
   - `TeperaTheme(darkTheme = isSystemInDarkTheme(), content)` надає `MaterialTheme(colorScheme, typography, shapes)` + `LocalTeperaColors`, `dynamicColor` вимкнено. Підключи в `MainActivity`.
@@ -459,3 +459,4 @@ Hero-картка на головній («До твоєї години / 2 го
 - 2026-11-04 · I02 · `ui/theme/M3Palette.kt`: `M3Palette.Light/Dark` (ролі M3, 2.1) і `ExtraLight/ExtraDark` (ролі Tepera, 2.2), лише константи; `compileStandardDebugKotlin` чисто. Нотатка: команда плану `compileDebugKotlin` не існує через flavor-и, використовувати `:app:compileBetaDebugKotlin`. Далі: I03.
 - 2026-11-04 · I03 · `ui/theme/M3ColorSchemes.kt`: `TeperaLightColors`/`TeperaDarkColors` (secondary/tertiary = primary; background = surface; surfaceVariant = surfaceContainerHighest, бо в таблиці 2.1 ролі нема); `compileBetaDebugKotlin` чисто, ніде не підключено. Далі: I04.
 - 2026-11-04 · I04 · `ui/theme/TeperaExtraColors.kt`: `TeperaExtraColors` (+ хелпер `heat(level)` для мапінгу рівнів хітмапи), `LightTeperaExtraColors`/`DarkTeperaExtraColors`, `LocalTeperaExtraColors`, `M3Extra.colors`; `compileBetaDebugKotlin` чисто. Далі: I05.
+- 2026-11-04 · I05 · `ui/theme/TeperaTypography.kt`: `GolosTextFamily` (Regular 400 / Medium 500 з наявного `golos_text.ttf`) + `TeperaTypography` за 2.3; `compileBetaDebugKotlin` чисто, не підключено. Далі: I06.
