@@ -795,7 +795,7 @@ fun OnboardingSkipAllButton(onClick: () -> Unit, modifier: Modifier = Modifier) 
         modifier = modifier
             .clickable(onClick = onClick)
             .padding(12.dp),
-        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.6f),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.bodyMedium
     )
 }
@@ -809,19 +809,19 @@ const val ONBOARDING_STEP_COUNT = 6
  */
 @Composable
 fun OnboardingTopBar(step: Int, onSkipAll: () -> Unit, modifier: Modifier = Modifier) {
-    val dark = TeperaPalette.buttonBrandDark
+    // Дизайн-система v3.1 (I18b): кольори з colorScheme, поле екрана 16dp, «N/6» — labelLarge (14/20 Medium).
+    val scheme = MaterialTheme.colorScheme
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 12.dp)
+            .padding(start = TeperaSpacing.screenHorizontal, end = TeperaSpacing.xs)
             .height(48.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "$step/$ONBOARDING_STEP_COUNT",
-            color = dark,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
+            color = scheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.clearAndSetSemantics {
                 contentDescription = "$step / $ONBOARDING_STEP_COUNT"
             }
@@ -836,7 +836,7 @@ fun OnboardingTopBar(step: Int, onSkipAll: () -> Unit, modifier: Modifier = Modi
                         .weight(1f)
                         .height(4.dp)
                         .clip(RoundedCornerShape(100.dp))
-                        .background(if (index < step) TeperaPalette.buttonBrand else dark.copy(alpha = 0.18f))
+                        .background(if (index < step) scheme.primary else scheme.outlineVariant)
                 )
             }
         }
@@ -844,17 +844,17 @@ fun OnboardingTopBar(step: Int, onSkipAll: () -> Unit, modifier: Modifier = Modi
     }
 }
 
-/** Заголовок екрана онбордингу по центру — той самий стиль, що [TeperaScreenTitle] (Golos Medium 27sp, #003926). */
+/**
+ * Заголовок екрана онбордингу по центру. Дизайн-система v3.1 (I18b): `headlineLarge` (Onboarding/Title, 32/40 Medium)
+ * кольору `primary` (text/brand-dark → primary). Раніше — Golos Medium 27sp, #003926.
+ */
 @Composable
 fun TeperaOnboardingTitle(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         modifier = modifier.semantics { heading() },
-        color = TeperaPalette.buttonBrandDark,
-        fontFamily = TeperaPalette.headlineFont,
-        fontWeight = FontWeight.Medium,
-        fontSize = 27.sp,
-        lineHeight = 29.7.sp,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.headlineLarge,
         textAlign = androidx.compose.ui.text.style.TextAlign.Center
     )
 }

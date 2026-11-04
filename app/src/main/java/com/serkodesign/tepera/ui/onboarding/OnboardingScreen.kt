@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,11 +49,13 @@ import com.serkodesign.tepera.ui.gates.AccessibilityDisclosureDialog
 import com.serkodesign.tepera.util.GateAccessibility
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
+import com.serkodesign.tepera.ui.theme.M3Card
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
-import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
-import com.serkodesign.tepera.ui.theme.TeperaPalette
 import kotlinx.coroutines.launch
 
 /**
@@ -150,26 +153,15 @@ fun OnboardingScreen(
                 TeperaOnboardingTitle(text = stringResource(R.string.perm_title))
                 Text(
                     text = stringResource(R.string.perm_body),
-                    color = TeperaPalette.buttonBrandDark.copy(alpha = 0.75f),
-                    fontFamily = TeperaPalette.headlineFont,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    lineHeight = 20.8.sp,
-                    letterSpacing = 0.016.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center
                 )
             }
-            Spacer(Modifier.height(31.dp))
+            Spacer(Modifier.height(TeperaSpacing.xxxl))
 
-            // Figma 292:1756: rgba(255,255,255,0.3) — TeperaPalette.cardTranslucentLight, радіус 16, padding 12, gap 8.
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(TeperaPalette.cardTranslucentLight)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            // Дизайн-система v3.1: картка M3Card (було напівпрозорий білий 30%, радіус 16, padding 12, gap 8) — поле 16, проміжок 8.
+            M3Card(spacing = TeperaSpacing.s) {
                 PermissionRow(
                     label = stringResource(R.string.perm_usage_label),
                     granted = usageGranted,
@@ -185,19 +177,22 @@ fun OnboardingScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(23.dp))
+            Spacer(Modifier.height(TeperaSpacing.xxl))
 
-            TeperaButton(
+            M3Button(
+                type = M3ButtonType.Filled,
+                size = M3ButtonSize.M,
                 text = stringResource(R.string.perm_continue),
                 onClick = onDone,
                 enabled = usageGranted,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(Modifier.height(4.dp))
-            TeperaButton(
+            Spacer(Modifier.height(TeperaSpacing.s))
+            M3Button(
+                type = M3ButtonType.Text,
+                size = M3ButtonSize.S,
                 text = stringResource(R.string.onboarding_skip),
-                onClick = onDone,
-                type = TeperaButtonType.Tertiary
+                onClick = onDone
             )
         }
     }
@@ -220,39 +215,41 @@ fun OnboardingScreen(
     }
 }
 
-/** Рядок дозволу (Figma 292:1757, "tile_small"): плитка 40dp (#DCF6ED з галкою #003926 / rgba(255,255,255,0.1) з ледь помітною білою), підпис 16sp. */
+/**
+ * Рядок дозволу (Figma 292:1757, "tile_small"): плитка 40dp, підпис `bodyLarge`. Дизайн-система v3.1: надано —
+ * `primaryContainer` із галкою `onPrimaryContainer`; не надано — `surfaceContainerHighest` із ледь помітною галкою
+ * `onSurfaceVariant` @40%. Галка — один і той самий вектор, колір задає `tint` (штрихи в самих файлах зашиті й не
+ * підходять для темної теми).
+ */
 @Composable
 private fun PermissionRow(label: String, granted: Boolean, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !granted, role = Role.Button, onClick = onClick),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.s),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(if (granted) TeperaPalette.surfaceBrandLight else TeperaPalette.buttonBrandDark.copy(alpha = 0.1f)),
+                .background(if (granted) scheme.primaryContainer else scheme.surfaceContainerHighest),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(if (granted) R.drawable.ic_perm_check_on else R.drawable.ic_perm_check_off),
+                painter = painterResource(R.drawable.ic_perm_check_on),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = if (granted) scheme.onPrimaryContainer else scheme.onSurfaceVariant.copy(alpha = 0.4f),
                 modifier = Modifier.size(20.dp)
             )
         }
         Text(
             text = label,
             modifier = Modifier.weight(1f),
-            color = TeperaPalette.buttonBrandDark,
-            fontFamily = TeperaPalette.headlineFont,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
-            lineHeight = 17.6.sp,
-            letterSpacing = 0.016.sp
+            color = scheme.onSurface,
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
