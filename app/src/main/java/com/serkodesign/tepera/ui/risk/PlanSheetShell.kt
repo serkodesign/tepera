@@ -26,14 +26,12 @@ import com.serkodesign.tepera.ui.theme.DarkTeperaExtraColors
 import com.serkodesign.tepera.ui.theme.LightTeperaExtraColors
 import com.serkodesign.tepera.ui.theme.LocalTeperaExtraColors
 import com.serkodesign.tepera.ui.theme.M3Extra
-import com.serkodesign.tepera.ui.theme.RedesignScope
 import com.serkodesign.tepera.ui.theme.TeperaDarkColors
 import com.serkodesign.tepera.ui.theme.TeperaExtraShapes
 import com.serkodesign.tepera.ui.theme.TeperaLightColors
 import com.serkodesign.tepera.ui.theme.TeperaShapesM3
 import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaTypography
-import com.serkodesign.tepera.ui.theme.m3BridgeColors
 
 /**
  * Оболонка шторки плану за дизайн-системою v3.1 (розділ 3.4 плану), M3 «нижній лист»: контейнер `surfaceContainerLow`,
@@ -101,20 +99,6 @@ fun PlanSheetAppRow(appLabel: String, subtitle: String, modifier: Modifier = Mod
     }
 }
 
-/**
- * Тимчасово (I14a → I14b): шторка лишається ТЕМНОЮ незалежно від теми, поки вміст кроків (`SuggestionStep`,
- * `WatchingStep`, `DurationStep`, задачки) має жорстко прописаний білий текст і не переведений на токени. У I14b цю
- * обгортку знімають — шторка бере поточну тему системи. M3-схема темна, а старі компоненти кроків (`TeperaButton`)
- * бачать значення v3.1 через [m3BridgeColors].
- */
-@Composable
-internal fun PlanSheetForcedDark(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = TeperaDarkColors, typography = TeperaTypography, shapes = TeperaShapesM3) {
-        CompositionLocalProvider(LocalTeperaExtraColors provides DarkTeperaExtraColors) {
-            RedesignScope(m3BridgeColors(dark = true), useOuterM3Scheme = true, content = content)
-        }
-    }
-}
 
 @Composable
 private fun PlanSheetPreviewBody() {

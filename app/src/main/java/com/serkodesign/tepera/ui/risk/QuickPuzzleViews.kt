@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,13 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.domain.risk.QuickPuzzles
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.util.PlanOverlayStore
 
-private val SoftText = Color(0xFFC5DCD9)
-private val CellFill = Color.White.copy(alpha = 0.10f)
 
 /**
  * Крок «задачка» на темному листі плану: [total] задач підряд (кожна випадкового типу, без повтору типу минулого разу).
@@ -57,14 +60,14 @@ fun PuzzleStep(total: Int, level: QuickPuzzles.Level, onAllSolved: () -> Unit, o
     var attempt by remember { mutableIntStateOf(0) }
     val puzzle = remember(index, attempt) { QuickPuzzles.generate(kinds[index], level = level) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xs), modifier = Modifier.fillMaxWidth()) {
         Text(
-            stringResource(R.string.v3_puzzle_title), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
-            fontWeight = FontWeight.Medium, modifier = Modifier.semantics { heading() }
+            stringResource(R.string.v3_puzzle_title), color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() }
         )
         Text(
             if (total > 1) stringResource(R.string.v3_puzzle_hint_steps, index + 1, kinds.size) else stringResource(R.string.v3_puzzle_hint),
-            color = SoftText, fontSize = 14.sp, lineHeight = 20.sp
+            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium
         )
     }
     key(index, attempt) {
@@ -74,13 +77,7 @@ fun PuzzleStep(total: Int, level: QuickPuzzles.Level, onAllSolved: () -> Unit, o
             onWrong = { attempt++ }
         )
     }
-    TeperaButton(
-        text = stringResource(R.string.v3_watch_leave),
-        onClick = onLeave,
-        size = TeperaButtonSize.Medium,
-        type = TeperaButtonType.Primary,
-        modifier = Modifier.fillMaxWidth()
-    )
+    M3Button(M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_watch_leave), onLeave, Modifier.fillMaxWidth())
 }
 
 @Composable
@@ -104,8 +101,8 @@ private fun PuzzleBody(puzzle: QuickPuzzles.Puzzle, onSolved: () -> Unit, onWron
 @Composable
 private fun ChoiceBody(prompt: String, shown: String, options: List<Int>, answer: Int, onSolved: () -> Unit, onWrong: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Text(prompt, color = SoftText, fontSize = 14.sp, lineHeight = 20.sp)
-        Text(shown, color = Color.White, fontSize = 36.sp, lineHeight = 44.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
+        Text(prompt, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, lineHeight = 20.sp)
+        Text(shown, color = MaterialTheme.colorScheme.onSurface, fontSize = 36.sp, lineHeight = 44.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
         options.chunked(2).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 row.forEach { value ->
@@ -129,7 +126,7 @@ private fun SchulteBody(puzzle: QuickPuzzles.Schulte, onSolved: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Text(
             stringResource(if (puzzle.descending) R.string.v3_puzzle_schulte_desc else R.string.v3_puzzle_schulte_asc),
-            color = SoftText, fontSize = 14.sp, lineHeight = 20.sp
+            color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, lineHeight = 20.sp
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             puzzle.cells.chunked(3).forEach { row ->
@@ -140,7 +137,7 @@ private fun SchulteBody(puzzle: QuickPuzzles.Schulte, onSolved: () -> Unit) {
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (done) Color.White.copy(alpha = 0.04f) else Color.White.copy(alpha = 0.16f))
+                                .background(if (done) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f))
                                 .clickable(role = Role.Button) {
                                     // Хибний дотик мовчки ігнорується: штрафу й червоного немає.
                                     if (!done && value == order[next]) {
@@ -152,7 +149,7 @@ private fun SchulteBody(puzzle: QuickPuzzles.Schulte, onSolved: () -> Unit) {
                         ) {
                             Text(
                                 value.toString(), fontSize = 28.sp, fontWeight = FontWeight.Medium,
-                                color = if (done) Color.White.copy(alpha = 0.25f) else Color.White
+                                color = if (done) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f) else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -170,11 +167,11 @@ private fun MemoryBody(puzzle: QuickPuzzles.DigitMemory, onSolved: () -> Unit, o
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Text(
             stringResource(if (hidden) R.string.v3_puzzle_memory_enter else R.string.v3_puzzle_memory_look),
-            color = SoftText, fontSize = 14.sp, lineHeight = 20.sp
+            color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, lineHeight = 20.sp
         )
         val shown = if (hidden) typed.padEnd(expected.length, '_') else expected
         Text(
-            shown.toList().joinToString("  "), color = Color.White, fontSize = 40.sp, lineHeight = 48.sp,
+            shown.toList().joinToString("  "), color = MaterialTheme.colorScheme.onSurface, fontSize = 40.sp, lineHeight = 48.sp,
             fontWeight = FontWeight.Medium
         )
         if (!hidden) {
@@ -221,7 +218,7 @@ private fun SudokuBody(puzzle: QuickPuzzles.Sudoku, onSolved: () -> Unit, onWron
     var selected by remember { mutableIntStateOf(puzzle.cells.indexOf(0)) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Text(
-            stringResource(R.string.v3_puzzle_sudoku), color = SoftText, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center
+            stringResource(R.string.v3_puzzle_sudoku), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center
         )
         Column {
             for (r in 0..3) {
@@ -235,15 +232,15 @@ private fun SudokuBody(puzzle: QuickPuzzles.Sudoku, onSolved: () -> Unit, onWron
                                 .padding(end = if (c == 1) 8.dp else 2.dp)
                                 .size(56.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (given) Color.White.copy(alpha = 0.04f) else CellFill)
-                                .then(if (isSelected) Modifier.border(2.dp, SoftText, RoundedCornerShape(10.dp)) else Modifier)
+                                .background(if (given) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f))
+                                .then(if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(10.dp)) else Modifier)
                                 .clickable(enabled = !given, role = Role.Button) { selected = i },
                             contentAlignment = Alignment.Center
                         ) {
                             if (cells[i] != 0) {
                                 Text(
                                     cells[i].toString(), fontSize = 26.sp, fontWeight = FontWeight.Medium,
-                                    color = if (given) Color.White.copy(alpha = 0.6f) else Color(0xFF9FE0C8)
+                                    color = if (given) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
@@ -276,7 +273,7 @@ private fun SudokuBody(puzzle: QuickPuzzles.Sudoku, onSolved: () -> Unit, onWron
 @Composable
 private fun IntentionBody(onSolved: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.v3_puzzle_intent_title), color = Color.White, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium)
+        Text(stringResource(R.string.v3_puzzle_intent_title), color = MaterialTheme.colorScheme.onSurface, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium)
         listOf(R.string.v3_puzzle_intent_1, R.string.v3_puzzle_intent_2, R.string.v3_puzzle_intent_3).forEach { res ->
             TeperaButton(
                 text = stringResource(res),

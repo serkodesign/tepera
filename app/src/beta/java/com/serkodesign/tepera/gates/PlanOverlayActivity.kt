@@ -38,9 +38,11 @@ class PlanOverlayActivity : ComponentActivity() {
         // Не в маніфесті: на Android 8.0 прозора activity з screenOrientation падає («Only fullscreen opaque activities can
         // request orientation»); з 8.1 це дозволено.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        // Верх — завжди світлі іконки (екран під шторкою затемнений на 45%). Низ — частина самої шторки, яка тепер йде за
+        // темою (v3.1): auto дає темні іконки на світлій шторці й світлі на темній (за системною темою пристрою).
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
         )
         val puzzles = intent.getIntExtra(EXTRA_SOFT_EXIT_PUZZLES, 0)
         if (puzzles > 0) {

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,11 +43,10 @@ import com.serkodesign.tepera.data.suggestionTextRes
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.ActivitySuggestions
 import com.serkodesign.tepera.domain.risk.QuickPuzzles
-import com.serkodesign.tepera.ui.theme.RedesignDarkColors
-import com.serkodesign.tepera.ui.theme.RedesignScope
-import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaButtonSize
-import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.M3Button
+import com.serkodesign.tepera.ui.theme.M3ButtonSize
+import com.serkodesign.tepera.ui.theme.M3ButtonType
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.util.PlanOverlayStore
 import kotlinx.coroutines.launch
 
@@ -180,40 +180,37 @@ fun PlanOverlayScreen(
     }
 
     val c = content ?: return
-    // Оболонка за дизайн-системою v3.1 (PlanSheetShell). Тимчасово завжди темна (PlanSheetForcedDark) — до I14b, поки
-    // вміст кроків має жорстко прописаний білий текст.
-    PlanSheetForcedDark {
-        PlanSheetShell {
-            PlanSheetAppRow(
-                appLabel = c.appLabel,
-                subtitle = stringResource(R.string.v3_overlay_sheet_sub, formatClock(c.startMinute) + "–" + formatClock(c.endMinute))
+    // Шторка за дизайн-системою v3.1 (3.4): бере поточну тему системи (вечірнє вікно зазвичай темне, обіднє світле).
+    PlanSheetShell {
+        PlanSheetAppRow(
+            appLabel = c.appLabel,
+            subtitle = stringResource(R.string.v3_overlay_sheet_sub, formatClock(c.startMinute) + "–" + formatClock(c.endMinute))
+        )
+        if (solving) {
+            PuzzleStep(
+                total = c.puzzles,
+                level = c.puzzleLevel,
+                onAllSolved = ::openForFiveMinutes,
+                onLeave = { onDecided(); leave() }
             )
-            if (solving) {
-                PuzzleStep(
-                    total = c.puzzles,
-                    level = c.puzzleLevel,
-                    onAllSolved = ::openForFiveMinutes,
-                    onLeave = { onDecided(); leave() }
-                )
-            } else if (c.watching) {
-                WatchingStep(
-                    suggestion = c.suggestion,
-                    onLeave = { onDecided(); leave() },
-                    onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
-                )
-            } else if (choosingDuration) {
-                DurationStep(onPick = ::accept, onBack = { choosingDuration = false })
-            } else {
-                SuggestionStep(
-                    suggestion = c.suggestion,
-                    onYes = {
-                        if (c.suggestion.categoryId != null) choosingDuration = true
-                        else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
-                    },
-                    onAnother = ::anotherIdea,
-                    onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
-                )
-            }
+        } else if (c.watching) {
+            WatchingStep(
+                suggestion = c.suggestion,
+                onLeave = { onDecided(); leave() },
+                onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
+            )
+        } else if (choosingDuration) {
+            DurationStep(onPick = ::accept, onBack = { choosingDuration = false })
+        } else {
+            SuggestionStep(
+                suggestion = c.suggestion,
+                onYes = {
+                    if (c.suggestion.categoryId != null) choosingDuration = true
+                    else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
+                },
+                onAnother = ::anotherIdea,
+                onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
+            )
         }
     }
 }
@@ -232,11 +229,9 @@ fun SoftExitPuzzleScreen(
     onBack: () -> Unit
 ) {
     BackHandler(onBack = onBack)
-    PlanSheetForcedDark {
-        PlanSheetShell {
-            Text(appLabel, color = Color.White, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth())
-            PuzzleStep(total = puzzles, level = level, onAllSolved = onSolved, onLeave = onLeave)
-        }
+    PlanSheetShell {
+        Text(appLabel, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall, modifier = Modifier.fillMaxWidth())
+        PuzzleStep(total = puzzles, level = level, onAllSolved = onSolved, onLeave = onLeave)
     }
 }
 
@@ -247,39 +242,23 @@ private fun SuggestionStep(
     onAnother: () -> Unit,
     onOpenFive: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val variant = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xs), modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.v3_overlay_sheet_title_suggest), color = variant, style = MaterialTheme.typography.bodyMedium)
         Text(
-            stringResource(R.string.v3_overlay_sheet_title_suggest), color = Color(0xFFC5DCD9), fontSize = 14.sp, lineHeight = 20.sp
+            stringResource(suggestionTextRes(suggestion.id)), color = onSurface, style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() }
         )
-        Text(
-            stringResource(suggestionTextRes(suggestion.id)), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
-            fontWeight = FontWeight.Medium, modifier = Modifier.semantics { heading() }
-        )
-        Text(stringResource(R.string.v3_sg_hint), color = Color(0xFFC5DCD9), fontSize = 14.sp, lineHeight = 20.sp)
+        Text(stringResource(R.string.v3_sg_hint), color = variant, style = MaterialTheme.typography.bodyMedium)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        TeperaButton(
-            text = stringResource(R.string.v3_sg_yes),
-            onClick = onYes,
-            size = TeperaButtonSize.Medium,
-            type = TeperaButtonType.Primary,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            TeperaButton(
-                text = stringResource(R.string.v3_sg_another),
-                onClick = onAnother,
-                size = TeperaButtonSize.Medium,
-                type = TeperaButtonType.Secondary,
-                modifier = Modifier.weight(1f)
-            )
-            TeperaButton(
-                text = stringResource(R.string.v3_overlay_open_five),
-                onClick = onOpenFive,
-                size = TeperaButtonSize.Medium,
-                type = TeperaButtonType.Secondary,
-                modifier = Modifier.weight(1f)
-            )
+    // Кнопки за 3.4: головна — Filled M на всю ширину; під нею в рядку Outlined S і Text S. Дії й порядок з коду
+    // збережено: «Так, роблю це» (Filled), «Інша ідея» (Outlined), «Відкрити на 5 хв» (Text — найтихіша, це обхід).
+    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
+        M3Button(M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_sg_yes), onYes, Modifier.fillMaxWidth())
+        Row(horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
+            M3Button(M3ButtonType.Outlined, M3ButtonSize.S, stringResource(R.string.v3_sg_another), onAnother, Modifier.weight(1f))
+            M3Button(M3ButtonType.Text, M3ButtonSize.S, stringResource(R.string.v3_overlay_open_five), onOpenFive, Modifier.weight(1f))
         }
     }
 }
@@ -303,7 +282,7 @@ private fun WatchingStep(
     onOpenFive: () -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xs),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -311,29 +290,18 @@ private fun WatchingStep(
         val variant = remember { WATCH_VARIANTS.random() }
         Text(stringResource(variant.emoji), fontSize = 56.sp, lineHeight = 64.sp)
         Text(
-            stringResource(variant.title), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
-            fontWeight = FontWeight.Medium, modifier = Modifier.semantics { heading() }
+            stringResource(variant.title), color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() }
         )
         Text(
             stringResource(variant.body, stringResource(suggestionTextRes(suggestion.id))),
-            color = Color(0xFFC5DCD9), fontSize = 14.sp, lineHeight = 20.sp
+            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium
         )
     }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        TeperaButton(
-            text = stringResource(R.string.v3_watch_leave),
-            onClick = onLeave,
-            size = TeperaButtonSize.Medium,
-            type = TeperaButtonType.Primary,
-            modifier = Modifier.fillMaxWidth()
-        )
-        TeperaButton(
-            text = stringResource(R.string.v3_overlay_open_five),
-            onClick = onOpenFive,
-            size = TeperaButtonSize.Medium,
-            type = TeperaButtonType.Secondary,
-            modifier = Modifier.fillMaxWidth()
-        )
+    // Як у 3.5: Filled M «Вийти» на всю ширину, під нею Text S на всю ширину.
+    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
+        M3Button(M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_watch_leave), onLeave, Modifier.fillMaxWidth())
+        M3Button(M3ButtonType.Text, M3ButtonSize.S, stringResource(R.string.v3_overlay_open_five), onOpenFive, Modifier.fillMaxWidth())
     }
 }
 
@@ -341,27 +309,19 @@ private fun WatchingStep(
 @Composable
 private fun DurationStep(onPick: (Int) -> Unit, onBack: () -> Unit) {
     Text(
-        stringResource(R.string.v3_sg_duration_title), color = Color.White, fontSize = 27.sp, lineHeight = 34.sp,
-        fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().semantics { heading() }
+        stringResource(R.string.v3_sg_duration_title), color = MaterialTheme.colorScheme.onSurface,
+        style = MaterialTheme.typography.headlineSmall, modifier = Modifier.fillMaxWidth().semantics { heading() }
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+    Row(horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
         DURATIONS_MINUTES.forEach { minutes ->
-            TeperaButton(
-                text = if (minutes >= 60) stringResource(R.string.v3_dur_hours, minutes / 60) else stringResource(R.string.v3_dur_minutes, minutes),
-                onClick = { onPick(minutes) },
-                size = TeperaButtonSize.Medium,
-                type = TeperaButtonType.Primary,
-                modifier = Modifier.weight(1f)
+            M3Button(
+                M3ButtonType.Tonal, M3ButtonSize.S,
+                if (minutes >= 60) stringResource(R.string.v3_dur_hours, minutes / 60) else stringResource(R.string.v3_dur_minutes, minutes),
+                { onPick(minutes) }, Modifier.weight(1f)
             )
         }
     }
-    TeperaButton(
-        text = stringResource(R.string.v3_sg_duration_back),
-        onClick = onBack,
-        size = TeperaButtonSize.Medium,
-        type = TeperaButtonType.Tertiary,
-        modifier = Modifier.fillMaxWidth()
-    )
+    M3Button(M3ButtonType.Text, M3ButtonSize.S, stringResource(R.string.v3_sg_duration_back), onBack, Modifier.fillMaxWidth())
 }
 
 private fun resolveLabel(pm: PackageManager, packageName: String): String = try {
