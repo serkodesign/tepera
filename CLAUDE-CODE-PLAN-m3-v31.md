@@ -356,7 +356,7 @@ Hero-картка на головній («До твоєї години / 2 го
 Позначай `[x]` лише після коміту. Орієнтовний час вказано в дужках.
 
 ### Етап A — підготовка
-- [ ] **I00 · Розвідка (15 хв, без змін коду).** Створи гілку `ui/m3-v31`. Знайди й запиши в «Журнал»:
+- [x] **I00 · Розвідка (15 хв, без змін коду).** Створи гілку `ui/m3-v31`. Знайди й запиши в «Журнал»:
   - файли теми (Color/Theme/Type/Shape);
   - де підключено Golos Text;
   - скільки хардкод-кольорів `Color(0x…)` у кожному файлі UI;
@@ -364,12 +364,12 @@ Hero-картка на головній («До твоєї години / 2 го
   - як влаштовані віджети Glance.
 
   Скопіюй цей файл у корінь репо як `CLAUDE-CODE-PLAN-m3-v31.md`. Коміт.
-- [ ] **I01 · План ітерацій екранів (10 хв).** На основі розвідки допиши в етап D конкретні ітерації: по одній на екран, великі екрани розбий на 2. Коміт.
+- [x] **I01 · План ітерацій екранів (10 хв).** На основі розвідки допиши в етап D конкретні ітерації: по одній на екран, великі екрани розбий на 2. Коміт.
 
 ### Етап B — фундамент (візуально ще нічого не змінюється)
-- [ ] **I02 · Палітра (15 хв).** `ui/theme/TeperaPalette.kt`: усі hex з 2.1 і 2.2 як `val` (лише константи). Коміт.
+- [ ] **I02 · Палітра (15 хв).** НОВИЙ файл `ui/theme/M3Palette.kt` (назви `TeperaPalette`/`TeperaColors`/`LocalTeperaColors` зайняті наявним кодом, рішення 2026-11-04): усі hex з 2.1 і 2.2 як `val` (лише константи). Коміт.
 - [ ] **I03 · ColorScheme (15 хв).** `TeperaLightColors` / `TeperaDarkColors` через `lightColorScheme(...)` / `darkColorScheme(...)` за 2.1. Поки ніде не підключати. Коміт.
-- [ ] **I04 · TeperaColors (20 хв).** `data class TeperaColors` + `LightTeperaColors` / `DarkTeperaColors` + `LocalTeperaColors` (staticCompositionLocalOf) + `object TeperaTheme { val colors @Composable get() = LocalTeperaColors.current }`. Коміт.
+- [ ] **I04 · TeperaColors (20 хв).** `data class TeperaExtraColors` + `LightTeperaExtraColors` / `DarkTeperaExtraColors` + `LocalTeperaExtraColors` (staticCompositionLocalOf) + `object M3Extra { val colors @Composable get() = LocalTeperaExtraColors.current }` (у плані це `TeperaTheme.colors`; функція `TeperaTheme` вже існує, тому об'єкт названо інакше; далі в плані `TeperaTheme.colors` читати як `M3Extra.colors`). Коміт.
 - [ ] **I05 · Typography (15 хв).** `FontFamily` Golos Text (Regular, Medium; шрифти вже в проєкті, якщо ні — додай з Google Fonts, ліцензія OFL) + `TeperaTypography` за 2.3. Коміт.
 - [ ] **I06 · Shapes і Spacing (10 хв).** `TeperaShapesM3` (Shapes), `TeperaShapes` (extra), `object TeperaSpacing` за 2.4 і 2.5. Коміт.
 - [ ] **I07 · Підключення теми (20 хв).**
@@ -402,15 +402,31 @@ Hero-картка на головній («До твоєї години / 2 го
 
 Логіку не змінювати. Кожен екран: `compileDebugKotlin`, потім коміт.
 
-Конкретний список допиши в I01. Орієнтир за макетом v3.1:
-- [ ] I18 · Онбординг: вітання + доступ (L1–L2)
-- [ ] I19 · «День N з 7» — спостереження (L3)
-- [ ] I20 · «Твої години ризику» (L4)
-- [ ] I21 · «План на 22:40» — якщо → то (L5)
-- [ ] I22 · Головна (L6): шапка з полем 16, кнопки-іконки 48, hero-картка за табл. 4
-- [ ] I23 · «Тиждень з планами» (M5)
-- [ ] I24 · «Чому 22:40 – 00:10?» (M6)
-- [ ] I25 · Налаштування та інші наявні екрани (за потреби розбити)
+**Конкретні ітерації (I01, 2026-11-04).** Нумерація I18+ замінює орієнтир макета. Шляхи відносно `app/src/main/java/com/serkodesign/tepera/`.
+- [ ] I18a · v3-онбординг: `ui/risk/V3OnboardingScreens.kt`
+- [ ] I18b · `ui/onboarding/WelcomeOnboardingScreen.kt`, `OnboardingScreen.kt` (екран дозволів завжди темний, зберегти)
+- [ ] I18c · `CategoryOnboardingScreen.kt`, `OnlineEstimateOnboardingScreen.kt`, `TargetOnboardingScreen.kt`, `GatesOnboardingScreen.kt`
+- [ ] I19 · `ui/risk/NowHero.kt`, `V3ModeToggle.kt`
+- [ ] I20a · `ui/risk/V3Components.kt`: HeatWeek, RiskWindowCard (уже існують; поєднати з I12/I13)
+- [ ] I20b · `ui/risk/WindowsCarousel.kt`, `RiskHomeExtras.kt`, `WeeklySummaryBlock.kt`
+- [ ] I21a · `ui/risk/PlanOverlayScreen.kt`: оболонка, ручка, заголовок (PlanSheet, 3.4)
+- [ ] I21b · `PlanOverlayScreen.kt`: картка плану, кнопки; `QuickPuzzleViews.kt`
+- [ ] I22a · `ui/risk/RiskHomeScreen.kt`: перша половина (шапка, hero-картка, кнопки-іконки 48)
+- [ ] I22b · `RiskHomeScreen.kt`: друга половина; `FeedPickerScreen.kt`
+- [ ] I23 · `ui/risk/TesterStatsScreen.kt`, `WindowEditorScreen.kt`
+- [ ] I24 · `ui/risk/WindowWhyScreen.kt`
+- [ ] I25a · Home: `ui/home/HomeHero.kt`, `ActivityList.kt`, `MiniPlayer.kt`
+- [ ] I25b · Home: `HomeScreen.kt`, `SummarySheet.kt`, `SummaryTeasers.kt`
+- [ ] I25c · Home: контекстні картки (`ContextCardStack.kt`, `HomeCardParts.kt` та решта карток)
+- [ ] I25d · `ui/navigation/TeperaNavHost.kt`, `ui/splash/SplashScreen.kt`
+- [ ] I25e · Статистика: `StatsScreen.kt`, `DayStatsUi.kt`, `OnlineTrendChart.kt`, `ui/pattern/HourlyHeatStrip.kt`
+- [ ] I25f · `ui/diary/DiaryScreen.kt`, `ui/calendar/CalendarScreen.kt`, `ui/addentry/AddEntryScreen.kt`
+- [ ] I25g · `ui/category/*`, `ui/knowledge/KnowledgeBaseScreen.kt`
+- [ ] I25h · Налаштування: `SettingsScreen.kt`, `TrackingSettingsScreen.kt`, `WidgetSettingsScreen.kt`
+- [ ] I25i · Налаштування: `BackupRestoreScreen.kt`, `AboutScreen.kt`, `ExclusionListScreen.kt`, `ProInterestScreen.kt`, тумблери
+- [ ] I25j · Ворота: `GatePauseScreen.kt`, `GateScheduleScreen.kt`, `GatesScreen.kt`, `AccessibilityGateUi.kt`
+- [ ] I25k · `app/src/beta/.../gates/SoftExitController.kt`: підключити ExitPill/ExitToast з етапу C (якщо I16/I17 цього не зробили)
+- [ ] I25l · Режими «Світанок»/«За часом» (`HeroMood.kt`, Dawn/Sky набори в `TeperaColors.kt`): НЕ чіпати до окремого рішення власника
 
 ### Етап E — завершення
 - [ ] **I26 · Віджети Glance (20 хв).** Перевести кольори віджетів на ті самі значення через `ColorProvider(day, night)`. Не змінювати розмітку. Коміт.
@@ -438,3 +454,5 @@ Hero-картка на головній («До твоєї години / 2 го
 Формат рядка: `РРРР-ММ-ДД ЧЧ:ММ · I<NN> · що зроблено · що лишилось / нотатки`
 
 - 2026-11-04 · план створено (дизайн v3.1 у Figma затверджено: зелений акцент, сірі поверхні без бежевого, фон-градієнт як у v3.0, поп-апи M3)
+- 2026-11-04 · I00 · розвідка, код не змінювався (гілка `ui/m3-v31` від `feature/v3-mvp`, remote origin є; коренева копія плану — робоча). Тема: `ui/theme/Theme.kt` (MaterialTheme лише з shapes; вибір Системна/Світла/Темна/За часом + «Світанок»), `TeperaColors.kt` (УЖЕ є `data class TeperaColors`, `LocalTeperaColors`, Redesign/Legacy/Dawn/Sky набори, ~230 `Color(0x`), `TeperaPalette.kt` (71), `TeperaComponents.kt`. Шрифт: `res/font/golos_text.ttf` (variable); `MaterialTheme.typography` не задано. Найбільше хардкоду: TeperaColors 230, TeperaPalette 71, widget/TeperaWidget 16, widget/InfoWidgets 7, HeroMood 7, PlanOverlayScreen 7, WeeklyDigestCard 5, решта по 1–3. Віджети Glance: `widget/TeperaWidget.kt` (Responsive), `InfoWidgets.kt`, уже `ColorProvider(day, night)`. Відповідники розд. 3: PlanSheet≈`ui/risk/PlanOverlayScreen.kt`, RiskWindowCard і HeatWeek≈`ui/risk/V3Components.kt`, ExitPill/ExitToast≈`beta/gates/SoftExitController.kt`.
+- 2026-11-04 · I01 · етап D розписано (I18a…I25l). Рішення власника: нові назви (`M3Palette.kt`, `TeperaExtraColors`, `LocalTeperaExtraColors`, `M3Extra.colors`), режими Dawn/Time не чіпати (I25l). `git add -A` не використовувати: в дереві незакомічені `release/` і `docs/play-store.zip`, додавати файли явно. Примітка: `python` на цій машині — заглушка Windows Store, файли правити Edit-ом. Далі: I02.
