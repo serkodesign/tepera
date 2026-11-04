@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,7 +51,8 @@ import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.TeperaChip
+import com.serkodesign.tepera.ui.theme.M3Card
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import java.time.LocalDate
@@ -211,8 +213,8 @@ private fun LegendScale(ramp: List<Color>) {
  */
 @Composable
 fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifier = Modifier) {
-    val primary = TeperaPalette.textPrimary
-    val secondary = TeperaPalette.textSecondary
+    val primary = MaterialTheme.colorScheme.onSurface
+    val secondary = MaterialTheme.colorScheme.onSurfaceVariant
     val recurrence = stringResource(
         if (window.dayType == DayType.WEEKDAYS) R.string.v3_card_recurrence_weekdays else R.string.v3_card_recurrence_days,
         window.recurrenceDays, window.observedDays
@@ -231,53 +233,44 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifi
     }
     val applicable = window.dots.count { it != DotState.NOT_APPLICABLE }
     val dotsDescription = stringResource(R.string.v3_card_dots_cd, window.dots.count { it == DotState.HIT }, applicable)
-    V3Card(modifier = modifier) {
-        // Верхня частина відкриває «Чому це вікно?» (M6), нижня — план (L5) або кнопку «Скласти план».
+    // Дизайн-система v3.1 (3.3 плану): M3Card, час titleLarge + бейдж повторюваності праворуч, мета bodySmall і крапки
+    // через 4dp. Блок «план / немає плану» зі специфікації не додано: у RiskWindowUi даних про план нема, а картка
+    // свідомо про саме вікно (підказка приходить через оверлей і нагадування) — нова функція поза обсягом міграції.
+    M3Card(modifier = modifier) {
+        // Верхня частина відкриває «Чому це вікно?» (M6).
         Column(
             Modifier.fillMaxWidth()
                 .clickable(onClickLabel = stringResource(R.string.v3_why_action), role = Role.Button, onClick = onOpenWhy),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xs)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.s)) {
                 Text(
                     text = formatWindowTime(window.startMinute, window.endMinute),
-                    color = if (window.isDisabled) secondary else primary,
-                    fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = if (window.isDisabled) secondary else primary
                 )
                 // Пауза — тег одразу після годин; зняти її можна лише з «Чому це вікно?».
-                if (window.isPaused && !window.isDisabled) TeperaChip(label = stringResource(R.string.v3_card_paused), compact = true)
+                if (window.isPaused && !window.isDisabled) M3RecurrenceBadge(stringResource(R.string.v3_card_paused))
                 Spacer(Modifier.weight(1f))
                 Icon(TeperaSymbols.ChevronRight, contentDescription = null, tint = secondary, modifier = Modifier.size(24.dp))
             }
-            Text(meta, color = secondary, fontSize = 14.sp, lineHeight = 20.sp)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                TeperaChip(label = chip, compact = true, modifier = Modifier.weight(1f, fill = false))
-                Spacer(Modifier.weight(1f))
-                if (!window.isDisabled && window.dots.isNotEmpty()) {
-                    Row(
-                        Modifier.semantics(mergeDescendants = true) { contentDescription = dotsDescription },
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        window.dots.forEach { dot ->
-                            Box(
-                                Modifier.size(10.dp).clip(CircleShape).background(
-                                    when (dot) {
-                                        DotState.HIT -> TeperaPalette.heatmapAmber
-                                        DotState.MISS -> TeperaPalette.heatmapNoDataFill
-                                        DotState.NOT_APPLICABLE -> TeperaPalette.heatmapNoDataFill.copy(alpha = 0.4f)
-                                    }
-                                )
-                            )
-                        }
-                    }
-                }
+            Text(meta, style = MaterialTheme.typography.bodySmall, color = secondary)
+            // Бейдж повторюваності — в одному рядку з крапками, а не поруч із часом (специфікація 3.3): картки каруселі
+            // вузькі (~260dp), і в одному ряді з часом і шевроном бейдж обрізається. Без FlowRow: карусель вирівнює
+            // висоту через IntrinsicSize.Max, а FlowRow дає для нього хибну висоту (картка обрізалась знизу).
+            Row(
+                Modifier.fillMaxWidth().padding(top = TeperaSpacing.xs),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Без Spacer із вагою: він ділив би вільне місце навпіл із бейджем і обрізав його («4 з 7 днів» → «4 з 7»).
+                M3RecurrenceBadge(chip, modifier = Modifier.weight(1f, fill = false).padding(end = TeperaSpacing.m))
+                if (!window.isDisabled && window.dots.isNotEmpty()) M3RecurrenceDots(window.dots, dotsDescription)
             }
         }
-        // Без плану: підказка «що зробити замість» приходить сама (оверлей і нагадування), тож картка лише про вікно.
         if (window.isDisabled) {
-            HorizontalDivider(color = TeperaPalette.borderDefault)
-            Text(stringResource(R.string.v3_card_disabled), color = secondary, fontSize = 14.sp, lineHeight = 20.sp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Text(stringResource(R.string.v3_card_disabled), style = MaterialTheme.typography.bodyMedium, color = secondary)
         }
     }
 }

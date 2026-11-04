@@ -84,7 +84,11 @@ fun TeperaTheme(
         }
     } else {
         MaterialTheme(shapes = TeperaShapes) {
-            CompositionLocalProvider(LocalOverscrollFactory provides BounceOverscrollFactory) {
+            CompositionLocalProvider(
+                LocalOverscrollFactory provides BounceOverscrollFactory,
+                // Нові компоненти v3.1 (M3Card тощо) мають бути читабельними й тут: темний/світлий набір за isDark.
+                LocalTeperaExtraColors provides (if (colors.isDark) DarkTeperaExtraColors else LightTeperaExtraColors)
+            ) {
                 RedesignScope(colors, content = content)
             }
         }
