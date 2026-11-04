@@ -15,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun M3Card(
     modifier: Modifier = Modifier,
+    spacing: Dp = TeperaSpacing.cardGroups,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = M3Extra.colors
@@ -36,7 +38,7 @@ fun M3Card(
             .background(colors.card)
             .border(1.dp, colors.cardStroke, shape)
             .padding(TeperaSpacing.cardPadding),
-        verticalArrangement = Arrangement.spacedBy(TeperaSpacing.cardGroups),
+        verticalArrangement = Arrangement.spacedBy(spacing),
         content = content
     )
 }

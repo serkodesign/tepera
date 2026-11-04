@@ -52,6 +52,8 @@ import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.M3Card
+import com.serkodesign.tepera.ui.theme.M3Extra
+import com.serkodesign.tepera.ui.theme.TeperaExtraShapes
 import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
@@ -104,16 +106,20 @@ fun HeatWeek(
     modifier: Modifier = Modifier
 ) {
     val locale = LocalConfiguration.current.locales[0]
-    val ramp = TeperaPalette.heatmapRamp
-    val empty = TeperaPalette.heatmapNoDataFill
-    val dashColor = TeperaPalette.brandAccent
-    val secondary = TeperaPalette.textSecondary
+    // Дизайн-система v3.1 (3.8 плану): клітинки dataHeat0–5 (форма 2dp), пунктир «години ризику» — primary, осі й
+    // легенда onSurfaceVariant, контейнер M3Card (поле 16dp, проміжки 8dp). Кошики HeatGrid 0–4 → рівні 0–5 через
+    // HeatLevels (стара прозорість бурштину → рівень, таблиця 2.2). Підписи осей — bodySmall 12sp, а не labelSmall 11sp
+    // зі специфікації: рішення проєкту CH-10 «змістовний текст ≥ 12sp» (години на осі — зміст).
+    val extra = M3Extra.colors
+    val cellColors = List(5) { bucket -> extra.heat(HeatLevels.levelForBucket(bucket)) }
+    val dashColor = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val axisStyle = MaterialTheme.typography.bodySmall
     val rows = dates.size
 
-    V3Card(
+    M3Card(
         modifier = modifier.semantics(mergeDescendants = true) { contentDescription = description },
-        padding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
-        spacing = 8.dp
+        spacing = TeperaSpacing.s
     ) {
         Row {
             Column(Modifier.width(28.dp)) {
@@ -121,7 +127,7 @@ fun HeatWeek(
                     Box(Modifier.height(16.dp)) {
                         Text(
                             text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).replaceFirstChar { it.uppercase() },
-                            color = secondary, fontSize = 12.sp, lineHeight = 16.sp, maxLines = 1
+                            color = secondary, style = axisStyle, maxLines = 1
                         )
                     }
                 }
@@ -135,7 +141,7 @@ fun HeatWeek(
                 for (r in 0 until rows) for (c in 0 until HeatGrid.HOURS) {
                     val bucket = HeatGrid.bucket(grid.getOrNull(r)?.getOrNull(c) ?: 0)
                     drawRoundRect(
-                        color = if (bucket == 0) empty else ramp[bucket - 1],
+                        color = cellColors[bucket],
                         topLeft = Offset(c * pitch, r * rowPitch),
                         size = Size(cellW, cellH),
                         cornerRadius = radius
@@ -163,7 +169,7 @@ fun HeatWeek(
                 val center = maxWidth * ((hour + 0.5f) / HeatGrid.HOURS)
                 Text(
                     text = String.format(Locale.ROOT, "%02d", hour),
-                    color = secondary, fontSize = 12.sp, lineHeight = 16.sp, maxLines = 1,
+                    color = secondary, style = axisStyle, maxLines = 1,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.width(labelWidth).offset(x = (center - labelWidth / 2).coerceIn(0.dp, maxWidth - labelWidth))
                 )
@@ -171,7 +177,7 @@ fun HeatWeek(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             LegendItem(stringResource(R.string.v3_heat_legend_feeds)) {
-                Box(Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(TeperaPalette.heatmapAmber))
+                Box(Modifier.size(10.dp).clip(TeperaExtraShapes.heatCell).background(extra.signalVivid))
             }
             LegendItem(stringResource(R.string.v3_heat_legend_window)) {
                 Canvas(Modifier.size(10.dp)) {
@@ -183,7 +189,7 @@ fun HeatWeek(
                 }
             }
         }
-        LegendScale(ramp)
+        LegendScale(HeatLevels.USED_LEVELS.map { extra.heat(it) })
     }
 }
 
@@ -191,17 +197,18 @@ fun HeatWeek(
 private fun LegendItem(label: String, marker: @Composable () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         marker()
-        Text(label, color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     }
 }
 
-/** Шкала інтенсивності «менше → більше» з тих самих кошиків, що й клітинки карти. */
+/** Шкала інтенсивності «менше → більше» з тих самих рівнів, що й клітинки карти (лише вживані кошиками). */
 @Composable
 private fun LegendScale(ramp: List<Color>) {
+    val secondary = MaterialTheme.colorScheme.onSurfaceVariant
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(stringResource(R.string.v3_heat_legend_less), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
-        ramp.forEach { Box(Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(it)) }
-        Text(stringResource(R.string.v3_heat_legend_more), color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+        Text(stringResource(R.string.v3_heat_legend_less), color = secondary, style = MaterialTheme.typography.bodySmall)
+        ramp.forEach { Box(Modifier.size(10.dp).clip(TeperaExtraShapes.heatCell).background(it)) }
+        Text(stringResource(R.string.v3_heat_legend_more), color = secondary, style = MaterialTheme.typography.bodySmall)
     }
 }
 
