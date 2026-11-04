@@ -582,9 +582,11 @@ val LocalTeperaColors = staticCompositionLocalOf { LegacyTeperaColors }
  * явного кольору, діалоги й поля M3 не лишались чорними на темному фоні) і колір тексту за замовчуванням.
  */
 @Composable
-fun RedesignScope(colors: TeperaColors, content: @Composable () -> Unit) {
+fun RedesignScope(colors: TeperaColors, useOuterM3Scheme: Boolean = false, content: @Composable () -> Unit) {
+    // useOuterM3Scheme (дизайн-система v3.1): не підміняти ColorScheme зовнішнього MaterialTheme — вона вже нова.
+    val outer = MaterialTheme.colorScheme
     val base = if (colors.isDark) darkColorScheme() else lightColorScheme()
-    val scheme = base.copy(
+    val scheme = if (useOuterM3Scheme) outer else base.copy(
         primary = colors.primaryFill,
         onPrimary = colors.onPrimary,
         background = colors.backgroundTop ?: base.background,
@@ -593,9 +595,10 @@ fun RedesignScope(colors: TeperaColors, content: @Composable () -> Unit) {
         onSurface = colors.textPrimary,
         onSurfaceVariant = colors.textSecondary
     )
+    val contentColor = if (useOuterM3Scheme) outer.onSurface else colors.textPrimary
     CompositionLocalProvider(LocalTeperaColors provides colors) {
         MaterialTheme(colorScheme = scheme, shapes = MaterialTheme.shapes, typography = MaterialTheme.typography) {
-            CompositionLocalProvider(LocalContentColor provides colors.textPrimary, content = content)
+            CompositionLocalProvider(LocalContentColor provides contentColor, content = content)
         }
     }
 }

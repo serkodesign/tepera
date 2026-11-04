@@ -65,9 +65,27 @@ fun TeperaTheme(
         dark -> RedesignDarkColors
         else -> RedesignLightColors
     }
-    MaterialTheme(shapes = TeperaShapes) {
-        CompositionLocalProvider(LocalOverscrollFactory provides BounceOverscrollFactory) {
-            RedesignScope(colors, content)
+    // Дизайн-система v3.1 (M3): нова ColorScheme/Typography/Shapes + TeperaExtraColors для звичайних режимів
+    // (Світла/Темна/Системна). «Світанок» і «За часом» лишаються на старих кольорах (план, I25l).
+    val useM3 = !dawn && mode != ThemeStore.Mode.TIME
+    if (useM3) {
+        MaterialTheme(
+            colorScheme = if (dark) TeperaDarkColors else TeperaLightColors,
+            typography = TeperaTypography,
+            shapes = TeperaShapesM3
+        ) {
+            CompositionLocalProvider(
+                LocalOverscrollFactory provides BounceOverscrollFactory,
+                LocalTeperaExtraColors provides (if (dark) DarkTeperaExtraColors else LightTeperaExtraColors)
+            ) {
+                RedesignScope(colors, useOuterM3Scheme = true, content = content)
+            }
+        }
+    } else {
+        MaterialTheme(shapes = TeperaShapes) {
+            CompositionLocalProvider(LocalOverscrollFactory provides BounceOverscrollFactory) {
+                RedesignScope(colors, content = content)
+            }
         }
     }
 }
