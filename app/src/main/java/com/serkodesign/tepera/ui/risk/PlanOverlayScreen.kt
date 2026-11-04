@@ -180,66 +180,39 @@ fun PlanOverlayScreen(
     }
 
     val c = content ?: return
-    // Лист завжди темний, як у макеті (фон #1b1b1d), незалежно від теми застосунку.
-    RedesignScope(RedesignDarkColors) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f))) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                    .background(Color(0xFF1B1B1D))
-                    .navigationBarsPadding()
-                    .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(Modifier.size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.14f)))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(
-                        modifier = Modifier.size(40.dp).clip(CircleShape).background(Color(0xFFA65D7C)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(c.appLabel.take(1).uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    }
-                    Column {
-                        Text(c.appLabel, color = Color.White, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium)
-                        Text(
-                            stringResource(R.string.v3_overlay_sheet_sub, formatClock(c.startMinute) + "–" + formatClock(c.endMinute)),
-                            color = Color(0xFFC5DCD9), fontSize = 12.sp, lineHeight = 16.sp
-                        )
-                    }
-                }
-                if (solving) {
-                    PuzzleStep(
-                        total = c.puzzles,
-                        level = c.puzzleLevel,
-                        onAllSolved = ::openForFiveMinutes,
-                        onLeave = { onDecided(); leave() }
-                    )
-                } else if (c.watching) {
-                    WatchingStep(
-                        suggestion = c.suggestion,
-                        onLeave = { onDecided(); leave() },
-                        onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
-                    )
-                } else if (choosingDuration) {
-                    DurationStep(onPick = ::accept, onBack = { choosingDuration = false })
-                } else {
-                    SuggestionStep(
-                        suggestion = c.suggestion,
-                        onYes = {
-                            if (c.suggestion.categoryId != null) choosingDuration = true
-                            else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
-                        },
-                        onAnother = ::anotherIdea,
-                        onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
-                    )
-                }
+    // Оболонка за дизайн-системою v3.1 (PlanSheetShell). Тимчасово завжди темна (PlanSheetForcedDark) — до I14b, поки
+    // вміст кроків має жорстко прописаний білий текст.
+    PlanSheetForcedDark {
+        PlanSheetShell {
+            PlanSheetAppRow(
+                appLabel = c.appLabel,
+                subtitle = stringResource(R.string.v3_overlay_sheet_sub, formatClock(c.startMinute) + "–" + formatClock(c.endMinute))
+            )
+            if (solving) {
+                PuzzleStep(
+                    total = c.puzzles,
+                    level = c.puzzleLevel,
+                    onAllSolved = ::openForFiveMinutes,
+                    onLeave = { onDecided(); leave() }
+                )
+            } else if (c.watching) {
+                WatchingStep(
+                    suggestion = c.suggestion,
+                    onLeave = { onDecided(); leave() },
+                    onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
+                )
+            } else if (choosingDuration) {
+                DurationStep(onPick = ::accept, onBack = { choosingDuration = false })
+            } else {
+                SuggestionStep(
+                    suggestion = c.suggestion,
+                    onYes = {
+                        if (c.suggestion.categoryId != null) choosingDuration = true
+                        else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
+                    },
+                    onAnother = ::anotherIdea,
+                    onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
+                )
             }
         }
     }
@@ -259,23 +232,10 @@ fun SoftExitPuzzleScreen(
     onBack: () -> Unit
 ) {
     BackHandler(onBack = onBack)
-    RedesignScope(RedesignDarkColors) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f))) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                    .background(Color(0xFF1B1B1D))
-                    .navigationBarsPadding()
-                    .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(Modifier.size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.14f)))
-                Text(appLabel, color = Color.White, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth())
-                PuzzleStep(total = puzzles, level = level, onAllSolved = onSolved, onLeave = onLeave)
-            }
+    PlanSheetForcedDark {
+        PlanSheetShell {
+            Text(appLabel, color = Color.White, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth())
+            PuzzleStep(total = puzzles, level = level, onAllSolved = onSolved, onLeave = onLeave)
         }
     }
 }
