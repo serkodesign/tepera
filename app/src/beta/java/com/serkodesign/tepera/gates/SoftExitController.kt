@@ -243,25 +243,15 @@ class SoftExitController(private val service: AccessibilityService) {
     private fun showConfirm(s: Session) {
         removeView(pillView)
         pillView = null
-        val sheet = LinearLayout(service).apply {
-            orientation = LinearLayout.VERTICAL
-            background = GradientDrawable().apply {
-                setColor(0xFF1B1B1D.toInt())
-                cornerRadii = floatArrayOf(dp(32).toFloat(), dp(32).toFloat(), dp(32).toFloat(), dp(32).toFloat(), 0f, 0f, 0f, 0f)
-            }
-            setPadding(dp(20), dp(20), dp(20), dp(24))
-        }
-        sheet.addView(label(localized().getString(R.string.soft_exit_confirm_title), 27f, Color.WHITE, medium = true))
-        sheet.addView(
-            label(localized().getString(R.string.soft_exit_confirm_body, minutesSinceStart(s)), 14f, 0xFFC5DCD9.toInt()).apply { setPadding(0, dp(6), 0, dp(14)) }
-        )
-        sheet.addView(
-            button(R.string.soft_exit_leave, outlined = false, tall = true, onDark = false) { leave() },
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        )
-        sheet.addView(
-            button(R.string.soft_exit_confirm_more, outlined = false, plain = true, tall = true) { extend() },
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) }
+        // Дизайн-система v3.1 (3.5 плану): шторка на токенах теми, див. SoftExitStyle.
+        val text = localized()
+        val sheet = SoftExitStyle(service).confirmSheet(
+            title = text.getString(R.string.soft_exit_confirm_title),
+            body = text.getString(R.string.soft_exit_confirm_body, minutesSinceStart(s)),
+            leaveText = text.getString(R.string.soft_exit_leave),
+            moreText = text.getString(R.string.soft_exit_confirm_more),
+            onLeave = { leave() },
+            onMore = { extend() }
         )
         val params = touchable(width = WindowManager.LayoutParams.MATCH_PARENT).apply { gravity = Gravity.BOTTOM }
         if (addView(sheet, params)) pillView = sheet
