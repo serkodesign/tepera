@@ -112,6 +112,10 @@ class GateAccessibilityService : AccessibilityService() {
                 delay(LAUNCHER_VERIFY_DELAY_MILLIS)
                 val foreground = realForegroundPackage()
                 if (foreground != null && foreground != pkg && foreground in lastSeenMillis) {
+                    // Samsung шле «подію лаунчера» при закритті шторки (після події systemui на відкритті), а інколи й при
+                    // відкритті без systemui: тому перемикаємо — сховано → повертаємо, видно → ховаємо.
+                    if (softExit.isHiddenForSystemSurface()) softExit.restoreFromSystemSurface()
+                    else if (!softExit.restoredRecently()) softExit.hideForSystemSurface()
                     log("$pkg: подія лаунчера фантомна (на екрані досі $foreground) — сесію не скидаю")
                     return@launch
                 }
@@ -133,13 +137,17 @@ class GateAccessibilityService : AccessibilityService() {
                 softExit.endNow()
                 return
             }
-            PackageAction.IGNORE -> return
+            PackageAction.IGNORE -> {
+                if (pkg == "com.android.systemui") softExit.hideForSystemSurface()
+                return
+            }
             PackageAction.NORMAL -> Unit
         }
         // Лише справжні застосунки (з іконкою запуску): службові вікна виробника (панелі, віджети, спливаючі вікна) не
         // скидають сесію стрічки — раніше саме вони давали «оверлей просто так».
         val isRealApp = packageManager.getLaunchIntentForPackage(pkg) != null
         if (!isRealApp) return
+        softExit.restoreFromSystemSurface()
         if (BuildConfig.V3_MVP) softExit.onForeground(pkg, countsAsLeaving = true)
         if (pkg == lastPackage) {
             lastSeenMillis[pkg] = now

@@ -158,12 +158,10 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
     }
 
     /**
-     * Затемнення під плашкою (3.6): чорний 50% і поверх нього теплий шар `signalVivid` 18%. Дотики крізь нього проходять
+     * Затемнення під плашкою: нейтральний чорний 50% (теплого відтінку немає — за рішенням власника). Дотики крізь нього проходять
      * (прапорці вікна задає контролер).
      */
-    fun dimBackground(): Drawable = LayerDrawable(
-        arrayOf(ColorDrawable(0x80000000.toInt()), ColorDrawable((signalVivid and 0x00FFFFFF) or (0x2E shl 24)))
-    )
+    fun dimBackground(): Drawable = ColorDrawable(0x80000000.toInt())
 
     /**
      * `ExitToast` (3.7, стиль M3 snackbar): фон `inverseSurface`, форма 4dp, поля 12×16dp, висота від 48dp, проміжок 12dp;

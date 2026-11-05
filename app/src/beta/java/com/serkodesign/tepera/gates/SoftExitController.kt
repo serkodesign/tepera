@@ -58,6 +58,10 @@ class SoftExitController(private val service: AccessibilityService) {
     /** Контекст служби з мовою, обраною в застосунку (сама служба її не знає): інакше затемнення лишалось англійським. */
     private fun localized() = com.serkodesign.tepera.util.LocaleStore.wrap(service)
 
+    private var systemSurfaceHidden = false
+    private var lastRestoreMillis = 0L
+    private var fadeRunnable: Runnable? = null
+    private val restoreAfterSystemSurface = Runnable { setOverlayVisible(true) }
     private val onDeadline = Runnable { showReminder() }
     private val onStrong = Runnable { strengthenDim() }
     private val hideToast = Runnable { removeView(toastView).also { toastView = null } }
@@ -103,6 +107,71 @@ class SoftExitController(private val service: AccessibilityService) {
     /** Системний екран або головний екран Tepera: сесію завершено, затемнення й плашка прибираються одразу (без стримування «щойно стартувала»). */
     fun endNow() {
         session?.let { finish(onTime = isOnTime(it)) }
+    }
+
+    /**
+     * Шторка сповіщень, швидкі налаштування чи інша системна панель відкрились поверх застосунку: затемнення й плашка
+     * ховаються (сесія триває), щоб не лежати над системним інтерфейсом. Повертаються, коли застосунок знову на екрані
+     * ([restoreFromSystemSurface]) або через [SYSTEM_SURFACE_MAX_HIDE_MILLIS] — запобіжник, щоб затемнення не зникло назавжди.
+     */
+    fun hideForSystemSurface() {
+        if (session == null || (dimView == null && pillView == null)) return
+        setOverlayVisible(false)
+        handler.removeCallbacks(restoreAfterSystemSurface)
+        handler.postDelayed(restoreAfterSystemSurface, SYSTEM_SURFACE_MAX_HIDE_MILLIS)
+    }
+
+    fun isHiddenForSystemSurface() = systemSurfaceHidden
+
+    /** Затемнення щойно повернулось: наступна «подія лаунчера» — залишок того самого закриття шторки, а не нове відкриття. */
+    fun restoredRecently() = System.currentTimeMillis() - lastRestoreMillis < RESTORE_IGNORE_MILLIS
+
+    fun restoreFromSystemSurface() {
+        if (!systemSurfaceHidden) return
+        handler.removeCallbacks(restoreAfterSystemSurface)
+        setOverlayVisible(true)
+    }
+
+    private fun setOverlayVisible(visible: Boolean) {
+        systemSurfaceHidden = !visible
+        if (visible) lastRestoreMillis = System.currentTimeMillis()
+        val v = if (visible) View.VISIBLE else View.INVISIBLE
+        fadeRunnable?.let { handler.removeCallbacks(it) }
+        fadeRunnable = null
+        val views = listOfNotNull(dimView, pillView)
+        for (view in views) {
+            view.animate().cancel()
+            view.visibility = v
+            view.alpha = if (visible) 0f else 1f
+        }
+        if (visible && views.isNotEmpty()) {
+            // Повернення після шторки — плавне, а не різке. Кроки робимо самі через Handler: ні ViewPropertyAnimator, ні
+            // ValueAnimator на цих вікнах після сховування не просувались, і затемнення лишалось прозорим.
+            val startAt = android.os.SystemClock.uptimeMillis()
+            val step = object : Runnable {
+                override fun run() {
+                    val f = ((android.os.SystemClock.uptimeMillis() - startAt).toFloat() / RESTORE_FADE_MILLIS).coerceIn(0f, 1f)
+                    views.forEach { it.alpha = f }
+                    if (f < 1f) handler.postDelayed(this, 16L) else fadeRunnable = null
+                }
+            }
+            fadeRunnable = step
+            step.run()
+        }
+        // Невидиме вікно лишається в системі й само перехоплює дотики у своїх межах (плашка внизу): поки ховаємо —
+        // робимо його непроникним для дотиків, щоб не блокувати застосунок під ним.
+        pillView?.let { setNotTouchable(it, !visible) }
+    }
+
+    private fun setNotTouchable(view: View, notTouchable: Boolean) {
+        val lp = view.layoutParams as? WindowManager.LayoutParams ?: return
+        val flag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        lp.flags = if (notTouchable) lp.flags or flag else lp.flags and flag.inv()
+        try {
+            windowManager.updateViewLayout(view, lp)
+        } catch (e: RuntimeException) {
+            // Вікно вже знято системою.
+        }
     }
 
     fun destroy() {
@@ -314,6 +383,10 @@ class SoftExitController(private val service: AccessibilityService) {
     }
 
     private fun removeAll() {
+        systemSurfaceHidden = false
+        handler.removeCallbacks(restoreAfterSystemSurface)
+        fadeRunnable?.let { handler.removeCallbacks(it) }
+        fadeRunnable = null
         removeView(dimView); dimView = null; strongLayer = null
         removeView(pillView); pillView = null; exitPill = null
     }
@@ -329,5 +402,8 @@ class SoftExitController(private val service: AccessibilityService) {
         const val START_GRACE_MILLIS = 4_000L
         const val FADE_MILLIS = 3_000L
         const val TOAST_MILLIS = 2_500L
+        const val RESTORE_FADE_MILLIS = 700L
+        const val RESTORE_IGNORE_MILLIS = 2_000L
+        const val SYSTEM_SURFACE_MAX_HIDE_MILLIS = 30_000L
     }
 }
