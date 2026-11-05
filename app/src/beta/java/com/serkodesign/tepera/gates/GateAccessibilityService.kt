@@ -15,6 +15,7 @@ import com.serkodesign.tepera.data.local.entity.isPausedAt
 import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PlanOverlayRule
+import com.serkodesign.tepera.util.A11yConsentStore
 import com.serkodesign.tepera.util.PlanOverlayStore
 import com.serkodesign.tepera.util.queryEventsOrNull
 import java.time.Instant
@@ -66,11 +67,18 @@ class GateAccessibilityService : AccessibilityService() {
     private val lastSeenMillis: HashMap<String, Long> get() = sLastSeenMillis
     private lateinit var softExit: SoftExitController
     private var pendingListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
+    private var consentListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
+
+    /** Згода на розкриття (кеш; оновлюється слухачем). Без неї служба нічого не читає, не показує і не запускає. */
+    @Volatile private var consentAccepted = false
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        consentAccepted = A11yConsentStore.isAccepted(this)
+        consentListener = A11yConsentStore.listen(this) { consentAccepted = A11yConsentStore.isAccepted(this) }
         softExit = SoftExitController(this)
         pendingListener = PlanOverlayStore.listenForPendingSoftExit(this) {
+            if (!consentAccepted) return@listenForPendingSoftExit
             softExit.onPendingSessionWritten()
             softExit.startingPackage()?.let {
                 sOpenFivePackage = it
@@ -88,6 +96,8 @@ class GateAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Без згоди на розкриття служба одразу виходить: пакет не читається, нічого не показується й не запускається.
+        if (!consentAccepted) return
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
         val now = System.currentTimeMillis()
@@ -228,6 +238,7 @@ class GateAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         pendingListener?.let { PlanOverlayStore.stopListening(this, it) }
+        consentListener?.let { A11yConsentStore.stopListening(this, it) }
         if (::softExit.isInitialized) softExit.destroy()
         scope.cancel()
         super.onDestroy()

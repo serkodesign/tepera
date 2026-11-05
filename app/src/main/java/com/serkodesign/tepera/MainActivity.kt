@@ -93,6 +93,7 @@ class MainActivity : ComponentActivity() {
             ProvideAppLocale {
             TeperaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
+                    com.serkodesign.tepera.ui.gates.ConsentPromptOnLaunch()
                     TeperaNavHost(
                         categoryRepository = app.categoryRepository,
                         activityRepository = app.activityRepository,

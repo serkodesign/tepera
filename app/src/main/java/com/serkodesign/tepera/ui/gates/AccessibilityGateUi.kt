@@ -120,3 +120,22 @@ fun FreeOpensCard(perDay: Int, usedToday: Int, onChange: (Int) -> Unit, modifier
 }
 
 private const val MAX_FREE_OPENS = 10
+
+private var consentPromptShownThisLaunch = false
+
+/**
+ * Службу ввімкнено, а згоди на розкриття немає (ввімкнули вручну в налаштуваннях або до версії 1.1): один раз за запуск
+ * застосунку показуємо екран розкриття. Єдиний випадок, коли він з'являється без натискання. Без автоповторів.
+ */
+@Composable
+fun ConsentPromptOnLaunch() {
+    val context = LocalContext.current
+    val request = rememberAccessibilityRequest()
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (consentPromptShownThisLaunch) return@LaunchedEffect
+        if (GateAccessibility.isEnabled(context) && !A11yConsentStore.isAccepted(context)) {
+            consentPromptShownThisLaunch = true
+            request()
+        }
+    }
+}
