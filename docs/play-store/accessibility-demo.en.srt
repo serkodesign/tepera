@@ -1,103 +1,53 @@
 1
-00:00:00,300 --> 00:00:05,500
-Tepera "Scrolling hours" beta
-AccessibilityService demo
+00:00:00,500 --> 00:00:03,000
+Opening Tepera
 
 2
-00:00:07,800 --> 00:00:10,800
-Settings: "Idea over the feed"
-needs the Accessibility permission
+00:00:03,500 --> 00:00:08,000
+Turning on "Idea over the feed"
 
 3
-00:00:11,000 --> 00:00:20,800
-Prominent disclosure: what the service sees, why,
-and that Tepera sends nothing anywhere
+00:00:08,500 --> 00:00:18,000
+Prominent disclosure shown before
+the permission request
 
 4
-00:00:21,300 --> 00:00:26,300
-User declines ("Not now").
-Accessibility stays off
+00:00:18,500 --> 00:00:26,000
+User declines: the feature stays off,
+the app keeps working
 
 5
-00:00:27,300 --> 00:00:32,800
-The disclosure can be opened again
+00:00:26,500 --> 00:00:33,000
+Disclosure shown again when the user retries
 
 6
-00:00:33,800 --> 00:00:44,800
-User agrees ("I agree") and is sent to
-Android's own Accessibility settings
+00:00:33,500 --> 00:00:55,000
+User agrees and turns on the service
+in Android settings
 
 7
-00:00:45,800 --> 00:00:55,300
-The service description in Android settings
-explains exactly what it does
+00:00:55,500 --> 00:01:03,000
+Feature is now active
 
 8
-00:00:55,800 --> 00:01:02,800
-User turns it on and confirms
-in the system dialog
+00:01:03,500 --> 00:01:20,000
+App opened during a scrolling hour:
+a suggestion instead of the feed
 
 9
-00:01:03,300 --> 00:01:15,300
-Access granted by the user: the service is on
+00:01:20,500 --> 00:01:23,000
+5 minutes later
 
 10
-00:01:21,000 --> 00:01:24,500
-Back in Tepera
+00:01:23,500 --> 00:01:38,000
+After 5 minutes: gentle dim, touches still work,
+the user decides ("5 more" / "Leave")
 
 11
-00:01:24,500 --> 00:01:34,500
-The user decides if "Idea over the feed" is on
-and which apps count as feeds
-
-12
-00:01:35,000 --> 00:01:39,000
-Feed apps: chosen by the user
-(here: Calculator)
-
-13
-00:01:39,500 --> 00:01:45,000
-Scrolling hour set by the user: 10:00-13:00
-
-14
-00:01:46,000 --> 00:01:53,500
-Opening a chosen feed inside that hour:
-Tepera shows its own suggestion over the app
-
-15
-00:01:53,900 --> 00:02:03,000
-The user can always continue:
-"Open for 5 min" opens the app
-
-16
-00:02:04,200 --> 00:02:07,700
-Five minutes later, the app is still open
-
-17
-00:02:07,900 --> 00:02:18,700
-After the timer the user chose: a dimming layer
-with "5 more" / "Leave" buttons
-
-18
-00:02:19,600 --> 00:02:23,200
-The user taps "Leave" and returns
-to the home screen
-
-19
-00:02:23,600 --> 00:02:30,200
-Other apps are not affected:
-no suggestion appears
-
-20
-00:02:31,700 --> 00:02:41,200
-The user can turn the service off
+00:01:38,500 --> 00:01:48,000
+The service can be turned off
 at any time in Android settings
 
-21
-00:02:41,700 --> 00:02:47,700
-The service is turned off
-
-22
-00:02:48,200 --> 00:02:50,500
+12
+00:01:48,500 --> 00:01:51,000
 End of demo
-
