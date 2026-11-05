@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="a11y_service_label">Tepera: delay before apps</string>
-    <string name="a11y_service_description">Notices which app was opened and shows a short pause or a Tepera suggestion over the apps and feeds you picked in Tepera (and a dimming with "5 more" / "Leave" after a timer you set). Screen content is not read. Tepera does not send data about opened apps anywhere or share it.</string>
+    <string name="a11y_service_label">Tepera: pauses and ideas</string>
+    <string name="a11y_service_description">Only detects which app is open, so it can show a short pause before the apps you chose, or an idea instead of the feed during your scrolling hours, and gently dim the screen after 5 minutes. Doesn\'t read screen content. Tepera doesn\'t send data about opened apps anywhere.</string>
     <string name="soft_exit_title">%1$d min have passed</string>
     <string name="soft_exit_body">Time to close %1$s. %2$s</string>
     <string name="soft_exit_more">5 more</string>

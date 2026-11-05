@@ -91,7 +91,7 @@ class GateAccessibilityService : AccessibilityService() {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
         val now = System.currentTimeMillis()
-        log("подія: $pkg / ${event.className} (lastPackage=$lastPackage)")
+        log("подія: $pkg (lastPackage=$lastPackage)")
 
         if (pkg in launcherPackages) {
             // Робочий стіл: сесія закінчилась. Але Samsung шле «подію лаунчера» і без виходу на стіл (закрили шторку
