@@ -1,53 +1,67 @@
 1
-00:00:00,500 --> 00:00:03,000
+00:00:00,500 --> 00:00:03,800
 Opening Tepera
 
 2
-00:00:03,500 --> 00:00:08,000
+00:00:04,000 --> 00:00:07,800
 Turning on "Idea over the feed"
 
 3
-00:00:08,500 --> 00:00:18,000
+00:00:08,000 --> 00:00:15,800
 Prominent disclosure shown before
 the permission request
 
 4
-00:00:18,500 --> 00:00:26,000
-User declines: the feature stays off,
+00:00:16,000 --> 00:00:19,800
+User declines ("Not now"): the feature stays off,
 the app keeps working
 
 5
-00:00:26,500 --> 00:00:33,000
+00:00:20,000 --> 00:00:25,500
 Disclosure shown again when the user retries
 
 6
-00:00:33,500 --> 00:00:55,000
-User agrees and turns on the service
-in Android settings
+00:00:25,800 --> 00:00:43,800
+User agrees ("I agree") and turns on the service
+in Android's own Accessibility settings
 
 7
-00:00:55,500 --> 00:01:03,000
-Feature is now active
+00:00:44,000 --> 00:00:52,500
+Back in Tepera: the feature is now active
 
 8
-00:01:03,500 --> 00:01:20,000
-App opened during a scrolling hour:
-a suggestion instead of the feed
+00:00:53,000 --> 00:01:09,500
+A chosen app opens during a scrolling hour:
+a suggestion appears instead of the feed
 
 9
-00:01:20,500 --> 00:01:23,000
+00:01:10,000 --> 00:01:13,000
 5 minutes later
 
 10
-00:01:23,500 --> 00:01:38,000
-After 5 minutes: gentle dim, touches still work,
-the user decides ("5 more" / "Leave")
+00:01:13,500 --> 00:01:31,500
+After 5 minutes: a gentle dim with
+"5 more" / "Leave" buttons
 
 11
-00:01:38,500 --> 00:01:48,000
-The service can be turned off
-at any time in Android settings
+00:01:32,000 --> 00:01:38,500
+Touches still work through the dim:
+the user decides
 
 12
-00:01:48,500 --> 00:01:51,000
+00:01:39,000 --> 00:01:45,500
+The user taps "Leave" and returns
+to the home screen
+
+13
+00:01:46,000 --> 00:02:01,000
+The service can be turned off at any time
+in Android settings
+
+14
+00:02:01,500 --> 00:02:08,000
+The service is turned off
+
+15
+00:02:08,500 --> 00:02:10,800
 End of demo
