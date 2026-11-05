@@ -100,6 +100,11 @@ class SoftExitController(private val service: AccessibilityService) {
     /** Перші секунди після старту йде перехід листа плану → стрічка: проміжні вікна виходом не вважаємо. */
     private fun justStarted(s: Session) = System.currentTimeMillis() - s.startedAt < START_GRACE_MILLIS
 
+    /** Системний екран або головний екран Tepera: сесію завершено, затемнення й плашка прибираються одразу (без стримування «щойно стартувала»). */
+    fun endNow() {
+        session?.let { finish(onTime = isOnTime(it)) }
+    }
+
     fun destroy() {
         session = null
         handler.removeCallbacksAndMessages(null)

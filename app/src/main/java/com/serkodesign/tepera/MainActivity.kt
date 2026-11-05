@@ -125,6 +125,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Головний екран Tepera: затемнення м'якого виходу не лишається над ним. Пауза воріт (запуск службою з ключем цілі) — частина сценарію, сесію не чіпає.
+        if (pendingGateRequest == null) com.serkodesign.tepera.util.SoftExitSessionBridge.endSession?.invoke()
+    }
+
     override fun onStart() {
         super.onStart()
         // Назва ярлика паузи зі станом і мова — перебудовуємо при кожному відкритті (зміна мови дає recreate).

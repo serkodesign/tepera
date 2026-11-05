@@ -16,6 +16,9 @@ import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PlanOverlayRule
 import com.serkodesign.tepera.util.A11yConsentStore
+import com.serkodesign.tepera.util.PackageAction
+import com.serkodesign.tepera.util.ScreenPackageRule
+import com.serkodesign.tepera.util.SoftExitSessionBridge
 import com.serkodesign.tepera.util.PlanOverlayStore
 import com.serkodesign.tepera.util.queryEventsOrNull
 import java.time.Instant
@@ -51,7 +54,6 @@ class GateAccessibilityService : AccessibilityService() {
 
     @Volatile private var gatedPackages: Set<String> = emptySet()
     private var launcherPackages: Set<String> = emptySet()
-    private var ignoredPackages: Set<String> = emptySet()
 
     // Стан сесій живе в companion (на рівні процесу): Samsung іноді перестворює екземпляр служби між кроками, і тоді
     // «останній застосунок» скидався в null — відкриття стрічки з листа плану вважалось новим і давало ще один лист.
@@ -89,7 +91,7 @@ class GateAccessibilityService : AccessibilityService() {
         }
         gateRepository = (application as TeperaApp).gateRepository
         launcherPackages = resolveLauncherPackages()
-        ignoredPackages = buildIgnoredPackages()
+        SoftExitSessionBridge.endSession = { softExit.endNow() }
         scope.launch {
             gateRepository.gates.collectLatest { gates -> gatedPackages = gates.map { it.packageName }.toSet() }
         }
@@ -125,7 +127,15 @@ class GateAccessibilityService : AccessibilityService() {
             // Сесію закінчує лише робочий стіл (вихід з листа/паузи веде туди) або інший справжній застосунок.
             return
         }
-        if (pkg in ignoredPackages || pkg in inputMethodPackages()) return
+        when (ScreenPackageRule.classify(pkg, packageName, inputMethodPackages = inputMethodPackages())) {
+            PackageAction.END_SESSION -> {
+                // Налаштування, Google Play, інсталятор, діалоги дозволів: затемнення й плашка зникають одразу, нових листів нема.
+                softExit.endNow()
+                return
+            }
+            PackageAction.IGNORE -> return
+            PackageAction.NORMAL -> Unit
+        }
         // Лише справжні застосунки (з іконкою запуску): службові вікна виробника (панелі, віджети, спливаючі вікна) не
         // скидають сесію стрічки — раніше саме вони давали «оверлей просто так».
         val isRealApp = packageManager.getLaunchIntentForPackage(pkg) != null
@@ -239,6 +249,7 @@ class GateAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         pendingListener?.let { PlanOverlayStore.stopListening(this, it) }
         consentListener?.let { A11yConsentStore.stopListening(this, it) }
+        SoftExitSessionBridge.endSession = null
         if (::softExit.isInitialized) softExit.destroy()
         scope.cancel()
         super.onDestroy()
@@ -251,19 +262,6 @@ class GateAccessibilityService : AccessibilityService() {
 
     private fun inputMethodPackages(): Set<String> =
         getSystemService(InputMethodManager::class.java)?.enabledInputMethodList?.map { it.packageName }?.toSet().orEmpty()
-
-    private fun buildIgnoredPackages(): Set<String> = setOf(
-        "com.android.systemui",
-        "android",
-        "com.google.android.permissioncontroller",
-        "com.android.permissioncontroller",
-        "com.android.packageinstaller",
-        "com.google.android.packageinstaller",
-        "com.android.intentresolver",
-        "com.google.android.gms",
-        // Samsung: панель жестів/навігації — службове вікно, не застосунок.
-        "com.samsung.android.sidegesturepad"
-    )
 
     private companion object {
         @Volatile var sLastPackage: String? = null
