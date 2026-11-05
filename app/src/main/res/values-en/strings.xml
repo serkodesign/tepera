@@ -573,7 +573,16 @@
     <string name="a11y_gate_card_on">On. The pause appears when you open a chosen app. If you are already inside it, it is not shown again.</string>
     <string name="a11y_gate_enable_action">Turn on</string>
     <string name="a11y_gate_manage_action">Settings</string>
-    <string name="a11y_disclosure_title">Accessibility access</string>
+    <string name="a11y_disclosure_title">Pauses and ideas need Android\'s accessibility service</string>
+    <string name="a11y_disclosure_why_label">Why</string>
+    <string name="a11y_disclosure_why">This Android service (Accessibility Service API) lets Tepera know when you open an app. That\'s the only way Tepera can show a short pause before the apps you chose, or an idea instead of the feed during your scrolling hours, right when you open them, and gently dim the screen after 5 minutes.</string>
+    <string name="a11y_disclosure_sees_label">What Tepera sees</string>
+    <string name="a11y_disclosure_sees">Only the name of the app that\'s currently open.</string>
+    <string name="a11y_disclosure_not_label">What Tepera doesn\'t see or do</string>
+    <string name="a11y_disclosure_not">It doesn\'t read messages, text, passwords or anything on your screen. It doesn\'t tap anything for you. It never stops you from closing or uninstalling any app.</string>
+    <string name="a11y_disclosure_data_label">Where the data goes</string>
+    <string name="a11y_disclosure_data">Nowhere. Tepera processes the names of opened apps only on your phone and doesn\'t send them anywhere.</string>
+    <string name="a11y_disclosure_footer">You can turn it off anytime in Android settings. Without it, the rest of Tepera works as usual.</string>
     <string name="a11y_disclosure_body">Tepera uses an Accessibility service only to see the name of the app that has just opened and show a short pause or a Tepera suggestion over the apps and feeds you chose yourself (and, after a timer you set, a dimming with "5 more" / "Leave" buttons).\n\nThe service does not read screen content, text, passwords or messages. Tepera does not send data about opened apps anywhere or share it with anyone. You can turn the service off any time in Android settings.</string>
     <string name="a11y_disclosure_continue">I agree</string>
     <string name="a11y_disclosure_cancel">Not now</string>
