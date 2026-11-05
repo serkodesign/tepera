@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.serkodesign.tepera.util.PlanOverlayStore
+import com.serkodesign.tepera.util.A11yFeatureState
 import com.serkodesign.tepera.util.GateAccessibility
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -58,9 +59,10 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
             onActive = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) },
             onAgreed = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) }
         )
-        var a11yOn by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
+        // Функція працює лише коли є згода й службу ввімкнено; службу могли вимкнути в налаштуваннях — перечитуємо при поверненні.
+        var a11yOn by remember { mutableStateOf(a11yReady(context)) }
         LifecycleResumeEffect(Unit) {
-            a11yOn = GateAccessibility.isEnabled(context)
+            a11yOn = a11yReady(context)
             onPauseOrDispose { }
         }
         GlassRow(
@@ -68,7 +70,7 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
             leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
             trailing = {
                 Switch(
-                    checked = overlayOn,
+                    checked = overlayOn && a11yOn,
                     onCheckedChange = { on ->
                         if (on) {
                             // Вмикається лише в стані Active або після «Погоджуюсь»; «Не зараз» лишає вимкненим.
@@ -83,7 +85,7 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
             }
         )
         TeperaHint(text = stringResource(R.string.v3_overlay_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
-        if (overlayOn && GateAccessibility.isAvailable && !a11yOn) {
+        if (GateAccessibility.isAvailable && !a11yOn) {
             TeperaButton(
                 text = stringResource(R.string.v3_overlay_enable_access),
                 onClick = requestA11y,
@@ -109,3 +111,6 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
         TeperaHint(text = stringResource(R.string.v3_puzzle_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
     }
 }
+
+private fun a11yReady(context: android.content.Context): Boolean =
+    A11yFeatureState.current(context).let { it == A11yFeatureState.Active || it == A11yFeatureState.Unavailable }

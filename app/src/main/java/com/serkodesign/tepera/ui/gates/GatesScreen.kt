@@ -68,6 +68,7 @@ import com.serkodesign.tepera.ui.theme.TeperaDatePickerDialog
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaHint
 import androidx.compose.ui.platform.LocalContext
+import com.serkodesign.tepera.util.A11yFeatureState
 import com.serkodesign.tepera.util.GateAccessibility
 import com.serkodesign.tepera.util.PauseWindow
 import com.serkodesign.tepera.util.startOfTodayMillis
@@ -111,7 +112,7 @@ fun GatesScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     // Тестова збірка a11y: чи ввімкнена служба доступності (змінюється в системних налаштуваннях — перечитуємо при поверненні).
-    var a11yEnabled by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
+    var a11yEnabled by remember { mutableStateOf(A11yFeatureState.current(context) == A11yFeatureState.Active) }
     val requestA11y = rememberAccessibilityRequest()
     // Спосіб воріт: ярлик або доступність (таб). Лише в збірці a11y; у standard завжди ярлик.
     var viaA11y by rememberSaveable { mutableStateOf(GateAccessibility.isAvailable) }
@@ -123,7 +124,7 @@ fun GatesScreen(
     // цього ефекту список лишався б "активним" до наступного повного перестворення ViewModel.
     LifecycleResumeEffect(Unit) {
         viewModel.refresh()
-        a11yEnabled = GateAccessibility.isEnabled(context)
+        a11yEnabled = A11yFeatureState.current(context) == A11yFeatureState.Active
         onPauseOrDispose { }
     }
 
