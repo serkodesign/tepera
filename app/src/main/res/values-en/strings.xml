@@ -583,7 +583,6 @@
     <string name="a11y_disclosure_data_label">Where the data goes</string>
     <string name="a11y_disclosure_data">Nowhere. Tepera processes the names of opened apps only on your phone and doesn\'t send them anywhere.</string>
     <string name="a11y_disclosure_footer">You can turn it off anytime in Android settings. Without it, the rest of Tepera works as usual.</string>
-    <string name="a11y_disclosure_body">Tepera uses an Accessibility service only to see the name of the app that has just opened and show a short pause or a Tepera suggestion over the apps and feeds you chose yourself (and, after a timer you set, a dimming with "5 more" / "Leave" buttons).\n\nThe service does not read screen content, text, passwords or messages. Tepera does not send data about opened apps anywhere or share it with anyone. You can turn the service off any time in Android settings.</string>
     <string name="a11y_disclosure_continue">I agree</string>
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>

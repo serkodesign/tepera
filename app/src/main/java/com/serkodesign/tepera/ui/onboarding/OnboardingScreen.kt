@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.ui.gates.AccessibilityDisclosureDialog
+import com.serkodesign.tepera.ui.gates.rememberAccessibilityRequest
 import com.serkodesign.tepera.util.GateAccessibility
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.data.repository.BalanceRepository
@@ -101,7 +101,7 @@ fun OnboardingScreen(
     var usageGranted by remember { mutableStateOf(false) }
     // Тестова збірка (a11y): другий, НЕобов'язковий рядок — доступність для воріт; «Продовжити» від нього не залежить.
     var a11yGranted by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
-    var showA11yDisclosure by remember { mutableStateOf(false) }
+    val requestA11y = rememberAccessibilityRequest()
 
     // Дозволи змінюються поза застосунком (системні налаштування) — перечитуємо при поверненні.
     LifecycleResumeEffect(Unit) {
@@ -173,7 +173,7 @@ fun OnboardingScreen(
                     PermissionRow(
                         label = stringResource(R.string.a11y_perm_label),
                         granted = a11yGranted,
-                        onClick = { showA11yDisclosure = true }
+                        onClick = { requestA11y() }
                     )
                 }
             }
@@ -196,15 +196,6 @@ fun OnboardingScreen(
             )
         }
     }
-        if (showA11yDisclosure) {
-            AccessibilityDisclosureDialog(
-                onDismiss = { showA11yDisclosure = false },
-                onContinue = {
-                    showA11yDisclosure = false
-                    GateAccessibility.openSettings(context)
-                }
-            )
-        }
         OnboardingTopBar(
             step = 6,
             onSkipAll = onSkipAll,

@@ -19,7 +19,7 @@ import com.serkodesign.tepera.util.GateAccessibility
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
-import com.serkodesign.tepera.ui.gates.AccessibilityDisclosureDialog
+import com.serkodesign.tepera.ui.gates.rememberAccessibilityRequest
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
@@ -54,7 +54,10 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
         TeperaHint(text = stringResource(R.string.v3_mode_hint), modifier = Modifier.padding(horizontal = 12.dp))
         val context = LocalContext.current
         var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
-        var showA11yDisclosure by remember { mutableStateOf(false) }
+        val requestA11y = rememberAccessibilityRequest(
+            onActive = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) },
+            onAgreed = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) }
+        )
         var a11yOn by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
         LifecycleResumeEffect(Unit) {
             a11yOn = GateAccessibility.isEnabled(context)
@@ -67,31 +70,23 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
                 Switch(
                     checked = overlayOn,
                     onCheckedChange = { on ->
-                        overlayOn = on
-                        PlanOverlayStore.setEnabled(context, on)
-                        // Play: помітне розкриття ПЕРЕД відправкою в системні налаштування Accessibility.
-                        if (on && GateAccessibility.isAvailable && !GateAccessibility.isEnabled(context)) {
-                            showA11yDisclosure = true
+                        if (on) {
+                            // Вмикається лише в стані Active або після «Погоджуюсь»; «Не зараз» лишає вимкненим.
+                            requestA11y()
+                        } else {
+                            overlayOn = false
+                            PlanOverlayStore.setEnabled(context, false)
                         }
                     },
                     colors = teperaSwitchColors()
                 )
             }
         )
-        if (showA11yDisclosure) {
-            AccessibilityDisclosureDialog(
-                onDismiss = { showA11yDisclosure = false },
-                onContinue = {
-                    showA11yDisclosure = false
-                    GateAccessibility.openSettings(context)
-                }
-            )
-        }
         TeperaHint(text = stringResource(R.string.v3_overlay_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
         if (overlayOn && GateAccessibility.isAvailable && !a11yOn) {
             TeperaButton(
                 text = stringResource(R.string.v3_overlay_enable_access),
-                onClick = { showA11yDisclosure = true },
+                onClick = requestA11y,
                 type = TeperaButtonType.Secondary,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )

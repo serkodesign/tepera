@@ -112,7 +112,7 @@ fun GatesScreen(
     val context = LocalContext.current
     // Тестова збірка a11y: чи ввімкнена служба доступності (змінюється в системних налаштуваннях — перечитуємо при поверненні).
     var a11yEnabled by remember { mutableStateOf(GateAccessibility.isEnabled(context)) }
-    var showA11yDisclosure by remember { mutableStateOf(false) }
+    val requestA11y = rememberAccessibilityRequest()
     // Спосіб воріт: ярлик або доступність (таб). Лише в збірці a11y; у standard завжди ярлик.
     var viaA11y by rememberSaveable { mutableStateOf(GateAccessibility.isAvailable) }
     val tabGates = if (GateAccessibility.isAvailable) state.gates.filter { (it.gate.shortcutId.isEmpty()) == viaA11y } else state.gates
@@ -179,7 +179,7 @@ fun GatesScreen(
                             )
                         }
                         if (viaA11y && !a11yEnabled) item {
-                            AccessibilityGateCard(enabled = a11yEnabled, onOpen = { showA11yDisclosure = true })
+                            AccessibilityGateCard(enabled = a11yEnabled, onOpen = requestA11y)
                         }
                         item {
                             FreeOpensCard(
@@ -310,15 +310,6 @@ fun GatesScreen(
         }
     }
 
-    if (showA11yDisclosure) {
-        AccessibilityDisclosureDialog(
-            onDismiss = { showA11yDisclosure = false },
-            onContinue = {
-                showA11yDisclosure = false
-                GateAccessibility.openSettings(context)
-            }
-        )
-    }
 
     if (showPauseDialog) {
         PauseDialog(
