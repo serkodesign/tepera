@@ -1,6 +1,8 @@
 package com.serkodesign.tepera.ui.risk
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import com.serkodesign.tepera.ui.theme.TeperaPalette
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -38,15 +40,16 @@ import com.serkodesign.tepera.ui.theme.TeperaTypography
  */
 @Composable
 fun M3RecurrenceBadge(text: String, modifier: Modifier = Modifier) {
-    val colors = M3Extra.colors
+    // Колір чіпа — той самий, що в TeperaChip (замість коричневого signalContainer M3-палітри).
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        color = colors.onSignalContainer,
+        color = TeperaPalette.textPrimary,
         maxLines = 1,
         modifier = modifier
             .clip(TeperaExtraShapes.full)
-            .background(colors.signalContainer)
+            .background(TeperaPalette.labelChipFill)
+            .border(1.dp, TeperaPalette.labelChipBorder, TeperaExtraShapes.full)
             .padding(horizontal = TeperaSpacing.m, vertical = TeperaSpacing.xs)
     )
 }

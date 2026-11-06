@@ -148,7 +148,9 @@ object TeperaPalette {
      */
     val heatmapRamp: List<Color> @Composable @ReadOnlyComposable get() =
         if (LocalTeperaColors.current.isDark) {
-            listOf(Color(0xFF4D4219), Color(0xFF846B17), Color(0xFFD0A00C), Color(0xFFFFD21F))
+            // За запитом власника: один колір із різною прозорістю (щільність часу за годину). Кремовий акцент
+            // темної теми, а не жовтий: жовтий із низькою альфою на фіолетовій картці давав брудний коричнево-оливковий.
+            listOf(0.3f, 0.5f, 0.75f, 1f).map { Color(0xFFFEFFEF).copy(alpha = it) }
         } else {
             listOf(0.15f, 0.45f, 0.7f, 1f).map { heatmapAmber.copy(alpha = it) }
         }

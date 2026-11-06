@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -55,7 +56,10 @@ fun OnlineTrendChart(
     minutesPerDay: List<Int>,
     dayLabels: List<String>,
     hoursFormat: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // Остання точка — сьогодні (день ще не закінчився): останній відрізок пунктиром і порожня точка, щоб різке
+    // падіння не читалось як справжній спад; під графіком — короткий пояснювальний підпис.
+    lastIsPartial: Boolean = false
 ) {
     val maxHours = (minutesPerDay.maxOrNull() ?: 0) / 60f
     val topHours = max(12, (ceil(maxHours / 3f) * 3f).toInt())
@@ -94,7 +98,7 @@ fun OnlineTrendChart(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val lineColor = TeperaPalette.buttonBrand
                     Canvas(modifier = Modifier.fillMaxWidth().height(PLOT_HEIGHT)) {
-                        drawTrend(minutesPerDay, topHours, step.toPx(), density, lineColor)
+                        drawTrend(minutesPerDay, topHours, step.toPx(), density, lineColor, lastIsPartial)
                     }
                     // Підписи днів — по центру під своїми вертикалями.
                     androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxWidth().height(16.dp)) {
@@ -120,6 +124,15 @@ fun OnlineTrendChart(
                 }
             }
         }
+        if (lastIsPartial && minutesPerDay.size > 1) {
+            Text(
+                text = stringResource(R.string.stats_trend_partial_note),
+                color = labelStyleColor.copy(alpha = 0.7f),
+                fontFamily = TeperaPalette.headlineFont,
+                fontSize = 12.sp,
+                lineHeight = 16.sp
+            )
+        }
     }
 }
 
@@ -137,7 +150,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTrend(
     topHours: Int,
     stepPx: Float,
     d: Float,
-    lineColor: Color
+    lineColor: Color,
+    lastIsPartial: Boolean = false
 ) {
     val axisColor = Color(0xFFADADAD)
     val dash = PathEffect.dashPathEffect(floatArrayOf(2f * d, 4f * d))
@@ -187,11 +201,33 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTrend(
             endY = h
         )
     )
-    drawPath(
-        line,
-        color = lineColor,
-        style = Stroke(width = 4f * d, cap = StrokeCap.Round, join = StrokeJoin.Round)
-    )
+    val partial = lastIsPartial && count > 1
+    // Та сама крива двічі: суцільна до передостанньої точки і пунктирна від неї — шов безперервний.
+    val seamX = if (partial) pts[count - 2].x else w
+    clipRect(left = 0f, top = 0f, right = seamX, bottom = h) {
+        drawPath(
+            line,
+            color = lineColor,
+            style = Stroke(width = 4f * d, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        )
+    }
+    if (partial) {
+        clipRect(left = seamX, top = 0f, right = w, bottom = h) {
+            drawPath(
+                line,
+                color = lineColor,
+                style = Stroke(
+                    width = 4f * d,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f * d, 8f * d))
+                )
+            )
+        }
+        // Порожня точка «сьогодні»: контур кольору лінії, всередині — світла плашка.
+        drawCircle(Color.White.copy(alpha = 0.9f), radius = 5f * d, center = pts.last())
+        drawCircle(lineColor, radius = 5f * d, center = pts.last(), style = Stroke(width = 2.5f * d))
+    }
     // Відрізок від осі до першого дня — пунктиром (крапки-штрихи з заокругленими кінцями).
     val extension = Path().apply {
         moveTo(axisX, pts.first().y)

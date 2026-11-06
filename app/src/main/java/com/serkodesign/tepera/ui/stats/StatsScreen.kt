@@ -4,6 +4,7 @@ import android.content.Intent
 import com.serkodesign.tepera.ui.theme.bottomNavClearance
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -307,18 +308,18 @@ private fun CategoryBreakdownCard(
                 )
             }
         }
-        // "Офлайн" — залишок періоду (не Online і не відмічене), як "Офлайн-життя" на Home; ніколи
-        // не від'ємний. Без доступу до статистики (offlineMinutes == null) рядка нема.
-        // (за об'єднанням Online й записів, без ночі — див. offlineUnloggedMinutes).
-        if (offlineMinutes != null && offlineMinutes > 0) {
-            add(BarRow(stringResource(R.string.stats_offline_label), offlineMinutes, TeperaPalette.restOfDayCard))
-        }
     }
+    // "Решта дня" — залишок періоду (не Online і не відмічене), як "Офлайн-життя" на Home; ніколи не від'ємний.
+    // Це не активність, а залишок: окремий рядок унизу БЕЗ смуги (довга смуга залишку затьмарювала б усе інше
+    // й змушувала порівнювати Online зі «спробою заповнити добу»). Без доступу до статистики рядка нема.
+    // (за об'єднанням Online й записів, без ночі — див. offlineUnloggedMinutes).
+    val restMinutes = offlineMinutes?.takeIf { it > 0 }
     val visible = rows.filter { it.minutes > 0 || it.belowThreshold }.sortedByDescending { it.minutes }
+    // Смуги — відносно найбільшої активності (Online чи категорії), без залишку.
     val maxMinutes = visible.maxOfOrNull { it.minutes } ?: 0
 
     TeperaCard(title = stringResource(R.string.stats_category_breakdown_title)) {
-        if (visible.isEmpty()) {
+        if (visible.isEmpty() && restMinutes == null) {
             Text(stringResource(R.string.stats_no_data), style = MaterialTheme.typography.bodyMedium)
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -378,6 +379,44 @@ private fun CategoryBreakdownCard(
                         }
                     }
                 }
+                if (restMinutes != null) {
+                    if (visible.isNotEmpty()) {
+                        Box(
+                            Modifier.fillMaxWidth().height(1.dp)
+                                .background(TeperaPalette.buttonBrandDark.copy(alpha = 0.12f))
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(Modifier.size(12.dp).clip(CircleShape).background(TeperaPalette.restOfDayCard))
+                        Text(
+                            text = stringResource(R.string.stats_offline_label),
+                            modifier = Modifier.weight(1f),
+                            color = TeperaPalette.buttonBrandDark,
+                            fontFamily = TeperaPalette.headlineFont,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            letterSpacing = 0.25.sp
+                        )
+                        val (h, m) = if (restMinutes < 15) 0 to restMinutes else roundToQuarterHour(restMinutes)
+                        Text(
+                            text = when {
+                                h <= 0 -> stringResource(R.string.minutes_short_format, m)
+                                m == 0 -> stringResource(R.string.hours_short_format, h)
+                                else -> stringResource(R.string.hours_minutes_short_format, h, m)
+                            },
+                            color = TeperaPalette.buttonBrandDark,
+                            fontFamily = TeperaPalette.headlineFont,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            letterSpacing = 0.25.sp
+                        )
+                    }
+                }
                 // Online ≠ екранний час у системі: пояснюємо різницю там, де число видно (лише коли рядок Online є).
                 if (rows.any { it.label == onlineLabel }) {
                     Text(
@@ -427,7 +466,9 @@ private fun WeeklyTrendCard(
             OnlineTrendChart(
                 minutesPerDay = points.map { it.onlineMinutes },
                 dayLabels = points.map { dayFormat.format(Date(it.dayStartMillis)) },
-                hoursFormat = hoursFormat
+                hoursFormat = hoursFormat,
+                // Тиждень закінчується сьогоднішнім (неповним) днем.
+                lastIsPartial = period == StatsPeriod.WEEK
             )
         }
     }

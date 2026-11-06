@@ -85,7 +85,7 @@
          відчуття провини. Тепер три нейтральні складові: Online, категорії "Ти відмітив",
          "Решта дня" — без окремої відсоткової оцінки (FR-P.6). -->
     <string name="balance_online_label">Online</string>
-    <string name="stats_offline_label">Без телефону</string>
+    <string name="stats_offline_label">Решта дня</string>
     <string name="stats_below_five_min">&lt;5 хв</string>
     <string name="activities_title">Активності</string>
     <string name="v3_online_today_title">Online сьогодні</string>
@@ -197,7 +197,9 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">Після 01:00</string>
-    <string name="stats_last_phone_use_week_label">Зазвичай відкладали телефон о</string>
+    <string name="stats_last_phone_use_week_label">Зазвичай відкладали телефон</string>
+    <string name="stats_day_last_use_label">Телефон відклали</string>
+    <string name="stats_trend_partial_note">Останній день ще триває, тому його відрізок пунктирний.</string>
 
     <!-- Тижнева рефлексія "оцінка → реальність" (FR-P.1) -->
     <string name="weekly_reflection_question">Скільки, на вашу думку, ви в середньому були онлайн на день цього тижня?</string>
@@ -480,7 +482,7 @@
     <string name="stats_history_yesterday">Вчора</string>
     <string name="stats_day_timeline_title">Вчорашня доба</string>
     <string name="stats_day_legend_pause">Пауза</string>
-    <string name="stats_day_legend_offline">Без телефону, без запису</string>
+    <string name="stats_day_legend_offline">Решта дня</string>
     <string name="stats_day_pauses_title">Паузи без телефону</string>
     <string name="stats_day_pauses_count_chip_label">Кількість</string>
     <string name="stats_day_pauses_longest_chip_label">Найдовша</string>

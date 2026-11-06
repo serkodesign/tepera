@@ -78,7 +78,7 @@
     <!-- Day structure (FR-3.1–3.12) — formerly "Online/Offline balance"; renamed because
          directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
     <string name="balance_online_label">Online</string>
-    <string name="stats_offline_label">Away from the phone</string>
+    <string name="stats_offline_label">Rest of day</string>
     <string name="stats_below_five_min">&lt;5 min</string>
     <string name="activities_title">Activities</string>
     <string name="v3_online_today_title">Online today</string>
@@ -184,7 +184,9 @@
     <string name="last_phone_use_estimate_range_23_00">23:00–00:00</string>
     <string name="last_phone_use_estimate_range_00_01">00:00–01:00</string>
     <string name="last_phone_use_estimate_range_after_01">After 01:00</string>
-    <string name="stats_last_phone_use_week_label">Usually put the phone down at</string>
+    <string name="stats_last_phone_use_week_label">Usually put the phone down</string>
+    <string name="stats_day_last_use_label">Phone put down</string>
+    <string name="stats_trend_partial_note">The last day is still in progress, so its segment is dashed.</string>
 
     <!-- Weekly "guess vs reality" reflection (FR-P.1) -->
     <string name="weekly_reflection_question">On average, how much do you think you were online per day this week?</string>
@@ -463,7 +465,7 @@
     <string name="stats_history_yesterday">Yesterday</string>
     <string name="stats_day_timeline_title">Yesterday</string>
     <string name="stats_day_legend_pause">Break</string>
-    <string name="stats_day_legend_offline">Away from the phone, not logged</string>
+    <string name="stats_day_legend_offline">Rest of day</string>
     <string name="stats_day_pauses_title">Breaks from the phone</string>
     <string name="stats_day_pauses_count_chip_label">Count</string>
     <string name="stats_day_pauses_longest_chip_label">Longest</string>

@@ -24,7 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +68,18 @@ private val SlotBeforeStart: Color @Composable @ReadOnlyComposable get() = Teper
 // Пауза без телефону — глибший відтінок зеленого за "Офлайн-життя" (#C5E2CB), бо пауза — його підвид.
 private val SlotPause = Color(0xFF8AC396)
 
+/** Рядок таблиці під стрічкою доби: ключ збігається з [slotKey] слотів, яким він відповідає. */
+private data class LegendEntry(val key: String, val color: Color, val name: String, val minutes: Int)
+
+/** Ключ слота для підсвічування й злиття сусідніх клітинок; порожні/«до початку» — `null` (не підсвічуються). */
+private fun slotKey(slot: TimelineSlot): String? = when (slot) {
+    is TimelineSlot.Category -> slot.categoryId
+    is TimelineSlot.Online -> "online"
+    is TimelineSlot.Offline -> "offline"
+    is TimelineSlot.Pause -> "pause"
+    is TimelineSlot.BeforeStart, is TimelineSlot.Blank -> null
+}
+
 /**
  * Статистика → День (вчора): картки меж дня, тепловий патерн, хронологія доби, паузи, тихий
  * рядок порівняння з власною типовою добою. Усе — нейтральні факти (принцип "застосунок не
@@ -96,7 +112,7 @@ fun DayDetailsSection(
     // За прямим запитом користувача — три картки в ряд (`StatTile`), не чипи в FlowRow.
     val boundaryStats = buildList {
         details.firstUseMillis?.let { add(stringResource(R.string.home_card_first_unlock_label) to timeFormat.format(Date(it))) }
-        details.lastUseMillis?.let { add(stringResource(R.string.diary_last_phone_use_yesterday_label) to timeFormat.format(Date(it))) }
+        details.lastUseMillis?.let { add(stringResource(R.string.stats_day_last_use_label) to timeFormat.format(Date(it))) }
         details.unlockCount?.let { add(stringResource(R.string.diary_unlock_yesterday_label) to it.toString()) }
     }
     if (boundaryStats.isNotEmpty()) TeperaStatsBar(stats = boundaryStats)
@@ -169,46 +185,94 @@ private fun DayTimelineCard(details: DayDetailsUiState) {
     val partsText = parts.map { (name, minutes) -> "$name ${durationText(minutes)}" }.joinToString("; ")
     val timelineDescription = stringResource(R.string.timeline_description_prefix, partsText)
 
+    // Обраний рядок таблиці підсвічується на стрічці (решта тьмяніє); повторний тап знімає вибір.
+    var selectedKey by remember { mutableStateOf<String?>(null) }
+    val slotColors = timeline.map { slotColor(it, details) }
+    val axisColor = TeperaPalette.buttonBrandDark.copy(alpha = 0.75f)
+
+    // Рядки таблиці: колір, назва, сумарний час за добу — за спаданням часу.
+    val rows = buildList {
+        timeline.count { it is TimelineSlot.Online }.takeIf { it > 0 }?.let {
+            add(LegendEntry("online", TeperaPalette.onlineCard, onlineLabel, it * 30))
+        }
+        presentCategories.forEach { c ->
+            val n = timeline.count { it is TimelineSlot.Category && it.categoryId == c.id }
+            if (n > 0) add(LegendEntry(c.id, categoryColor(c.colorHex), categoryDisplayName(c), n * 30))
+        }
+        timeline.count { it is TimelineSlot.Offline }.takeIf { it > 0 }?.let {
+            add(LegendEntry("offline", TeperaPalette.restOfDayCard, offlineLabel, it * 30))
+        }
+        timeline.count { it is TimelineSlot.Pause }.takeIf { it > 0 }?.let {
+            add(LegendEntry("pause", SlotPause, pauseLabel, it * 30))
+        }
+    }.sortedByDescending { it.minutes }
+
     TeperaCard(title = stringResource(R.string.stats_day_timeline_title), subtitle = dateText) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .clearAndSetSemantics { contentDescription = timelineDescription },
-                horizontalArrangement = Arrangement.spacedBy(1.dp)
-            ) {
-                // Кожен прямокутник (півгодинний слот) заокруглений окремо — радіус 8dp.
-                timeline.forEach { slot ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(slotColor(slot, details))
-                    )
+        // Стрічка в два ряди (00–12 і 12–24): кожна година вдвічі ширша, сусідні однакові слоти зливаються в один блок.
+        Column(
+            modifier = Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = timelineDescription },
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            listOf(0 to listOf("00", "03", "06", "09", "12"), 24 to listOf("12", "15", "18", "21", "24")).forEach { (from, labels) ->
+                val half = (from until from + 24).toList()
+                androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().height(28.dp)) {
+                    val slotW = size.width / 24f
+                    val gap = 2.dp.toPx()
+                    val radius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx())
+                    var i = 0
+                    while (i < half.size) {
+                        val key = slotKey(timeline[half[i]])
+                        val color = slotColors[half[i]]
+                        var j = i
+                        while (j + 1 < half.size && slotKey(timeline[half[j + 1]]) == key && slotColors[half[j + 1]] == color) j++
+                        val dim = selectedKey != null && key != selectedKey
+                        val x0 = i * slotW + if (i == 0) 0f else gap / 2
+                        val x1 = (j + 1) * slotW - if (j == half.size - 1) 0f else gap / 2
+                        drawRoundRect(
+                            color = if (dim) color.copy(alpha = color.alpha * 0.25f) else color,
+                            topLeft = androidx.compose.ui.geometry.Offset(x0, 0f),
+                            size = androidx.compose.ui.geometry.Size(x1 - x0, size.height),
+                            cornerRadius = radius
+                        )
+                        i = j + 1
+                    }
                 }
-            }
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                listOf("00", "06", "12", "18", "24").forEach {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = TeperaPalette.buttonBrandDark.copy(alpha = 0.75f))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    labels.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = axisColor) }
                 }
             }
         }
 
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (timeline.any { it is TimelineSlot.Online }) {
-                LegendChip(TeperaPalette.onlineCard, stringResource(R.string.balance_online_label))
-            }
-            presentCategories.forEach { LegendChip(categoryColor(it.colorHex), categoryDisplayName(it)) }
-            if (timeline.any { it is TimelineSlot.Offline }) {
-                LegendChip(TeperaPalette.restOfDayCard, stringResource(R.string.stats_day_legend_offline))
-            }
-            if (timeline.any { it is TimelineSlot.Pause }) {
-                LegendChip(SlotPause, stringResource(R.string.stats_day_legend_pause))
+        // Таблиця замість чіпів: кружок, назва, час за добу. Тап підсвічує категорію на стрічці.
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            rows.forEach { r ->
+                val selected = selectedKey == r.key
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (selected) TeperaPalette.buttonBrandDark.copy(alpha = 0.10f) else Color.Transparent)
+                        .selectable(selected = selected, role = androidx.compose.ui.semantics.Role.Button) {
+                            selectedKey = if (selected) null else r.key
+                        }
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(r.color))
+                    Text(
+                        r.name,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TeperaPalette.buttonBrandDark
+                    )
+                    Text(
+                        durationText(r.minutes),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                        color = TeperaPalette.buttonBrandDark
+                    )
+                }
             }
         }
 
