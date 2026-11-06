@@ -67,6 +67,55 @@ class ThemeByTimeTest {
     }
 
     @Test
+    fun eveningShift_peaksAtWinterSolstice_zeroInSummer_invertedInSouth() {
+        fun d(month: Int, day: Int) = java.time.LocalDate.of(2026, month, day)
+        assertEquals(MAX_EVENING_SHIFT_MINUTES, eveningShiftMinutes(d(12, 21), southern = false))
+        assertEquals(0, eveningShiftMinutes(d(6, 21), southern = false))
+        assertEquals(0, eveningShiftMinutes(d(7, 15), southern = false))
+        // Південна півкуля — навпаки: максимум у червні, нуль у грудні.
+        assertEquals(MAX_EVENING_SHIFT_MINUTES, eveningShiftMinutes(d(6, 21), southern = true))
+        assertEquals(0, eveningShiftMinutes(d(12, 21), southern = true))
+        // Листопад — уже помітно раніше, але ще не максимум; ріст і спад плавні (без стрибків між днями).
+        assertTrue(eveningShiftMinutes(d(11, 6), southern = false) in 60..110)
+        var prev = eveningShiftMinutes(java.time.LocalDate.of(2026, 1, 1), southern = false)
+        var date = java.time.LocalDate.of(2026, 1, 2)
+        while (date.year == 2026) {
+            val cur = eveningShiftMinutes(date, southern = false)
+            assertTrue("стрибок зсуву ${cur - prev} хв $date", kotlin.math.abs(cur - prev) <= 6)
+            prev = cur
+            date = date.plusDays(1)
+        }
+    }
+
+    @Test
+    fun classicEveningStartsEarlierWithShift_nightStartUnchanged() {
+        assertEquals(TimePhase.DAY, timePhaseAt(m(16, 59), shift = 120))
+        assertEquals(TimePhase.EVENING, timePhaseAt(m(17), shift = 120))
+        assertEquals(TimePhase.DAY, timePhaseAt(m(17), shift = 0))
+        assertEquals(TimePhase.NIGHT, timePhaseAt(m(23), shift = 120))
+        assertEquals(TimePhase.EVENING, timePhaseAt(m(22, 59), shift = 120))
+    }
+
+    @Test
+    fun dawnDarkensEarlierWithShift_andStaysSmooth() {
+        assertFalse(dawnColorsForMinute(m(17, 30), shift = 0).isDark)
+        assertTrue(dawnColorsForMinute(m(17, 30), shift = 120).isDark)
+        var prev = dawnColorsForMinute(0, shift = 120).backgroundStops!!
+        for (minute in 5 until 24 * 60 step 5) {
+            val cur = dawnColorsForMinute(minute, shift = 120).backgroundStops!!
+            cur.indices.forEach { i ->
+                val dd = maxOf(
+                    kotlin.math.abs(cur[i].red - prev[i].red),
+                    kotlin.math.abs(cur[i].green - prev[i].green),
+                    kotlin.math.abs(cur[i].blue - prev[i].blue)
+                )
+                assertTrue("стрибок неба $dd о $minute хв", dd < 0.12f)
+            }
+            prev = cur
+        }
+    }
+
+    @Test
     fun dawn_dayEndsAsEveningStarts_midnightWrapsToNight() {
         // Кінець доби збігається з початком: 23:55 і 00:00 — однаково нічні.
         val a = dawnColorsForMinute(m(23, 55)).backgroundStops!!

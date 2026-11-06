@@ -58,9 +58,15 @@ fun TeperaTheme(
         if (mode == ThemeStore.Mode.TIME) while (true) { delay(60_000); value = minuteBucketNow() }
     }
     val timeBucket = debugMinute?.div(5)?.times(5) ?: realBucket
+    // Взимку вечір настає раніше: зсув залежить від дати й обраної півкулі (без геолокації).
+    val southern = ThemeStore.hemisphere() == ThemeStore.Hemisphere.SOUTH
     val colors = when {
-        mode == ThemeStore.Mode.TIME && dawn -> remember(timeBucket) { dawnColorsForMinute(timeBucket) }
-        mode == ThemeStore.Mode.TIME -> remember(timeBucket) { classicTimeColors(timeBucket) }
+        mode == ThemeStore.Mode.TIME && dawn -> remember(timeBucket, southern) {
+            dawnColorsForMinute(timeBucket, eveningShiftMinutes(java.time.LocalDate.now(), southern))
+        }
+        mode == ThemeStore.Mode.TIME -> remember(timeBucket, southern) {
+            classicTimeColors(timeBucket, eveningShiftMinutes(java.time.LocalDate.now(), southern))
+        }
         dawn -> remember(dark, hour) { dawnColors(dark, hour) }
         // Мостик I08: старі екрани бачать значення v3.1 (таблиця 4 плану), див. M3LegacyBridge.kt.
         dark -> remember { m3BridgeColors(dark = true) }

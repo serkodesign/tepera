@@ -261,7 +261,10 @@
     <string name="settings_debug_clock_real">real time</string>
     <string name="settings_debug_clock_reset">Back to real time</string>
     <string name="settings_theme_time">By time</string>
-    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night.</string>
+    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night. Evening comes earlier in winter.</string>
+    <string name="settings_hemisphere_label">Hemisphere</string>
+    <string name="settings_hemisphere_north">Northern</string>
+    <string name="settings_hemisphere_south">Southern</string>
     <string name="settings_mood_title">App mood</string>
     <string name="settings_mood_classic">Current</string>
     <string name="settings_mood_dawn">Dawn</string>

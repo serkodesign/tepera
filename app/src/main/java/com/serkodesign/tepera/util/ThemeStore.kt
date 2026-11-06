@@ -21,6 +21,23 @@ object ThemeStore {
     /** TIME — за часом доби: вдень світла, ввечері темна, вночі найтемніша ("Світанок" змінюється плавно). */
     enum class Mode { SYSTEM, LIGHT, DARK, TIME }
 
+    /** Півкуля для теми «За часом»: від неї залежить, коли в році вечір настає раніше (взимку). */
+    enum class Hemisphere { NORTH, SOUTH }
+
+    private const val KEY_HEMISPHERE = "theme_hemisphere"
+    private val hemisphereState = mutableStateOf(Hemisphere.NORTH)
+
+    /** Поточна півкуля; читання в композиції перемальовує її при зміні. */
+    fun hemisphere(): Hemisphere = hemisphereState.value
+
+    fun setHemisphere(context: Context, hemisphere: Hemisphere) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_HEMISPHERE, hemisphere.name)
+            .apply()
+        hemisphereState.value = hemisphere
+    }
+
     /** За замовчуванням — системна тема: слідує за темою телефона, як вирішив власник. */
     private val defaultMode = Mode.SYSTEM
     private val state = mutableStateOf(defaultMode)
@@ -30,9 +47,11 @@ object ThemeStore {
     fun load(context: Context) {
         if (loaded) return
         loaded = true
-        val stored = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_MODE, defaultMode.name)
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val stored = prefs.getString(KEY_MODE, defaultMode.name)
         state.value = runCatching { Mode.valueOf(stored ?: defaultMode.name) }.getOrDefault(defaultMode)
+        hemisphereState.value = runCatching { Hemisphere.valueOf(prefs.getString(KEY_HEMISPHERE, null) ?: "") }
+            .getOrDefault(Hemisphere.NORTH)
     }
 
     /** Поточний вибір; читання в композиції перемальовує її при зміні. */

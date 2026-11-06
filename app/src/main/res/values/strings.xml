@@ -276,7 +276,10 @@
     <string name="settings_debug_clock_real">справжній час</string>
     <string name="settings_debug_clock_reset">Повернути справжній час</string>
     <string name="settings_theme_time">За часом</string>
-    <string name="settings_theme_time_hint">Вдень світла, ввечері темна, вночі найтемніша.</string>
+    <string name="settings_theme_time_hint">Вдень світла, ввечері темна, вночі найтемніша. Взимку вечір настає раніше.</string>
+    <string name="settings_hemisphere_label">Півкуля</string>
+    <string name="settings_hemisphere_north">Північна</string>
+    <string name="settings_hemisphere_south">Південна</string>
     <string name="settings_mood_title">Настрій застосунку</string>
     <string name="settings_mood_classic">Поточний</string>
     <string name="settings_mood_dawn">Світанок</string>

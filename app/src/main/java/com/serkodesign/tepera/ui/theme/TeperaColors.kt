@@ -469,15 +469,33 @@ val RedesignNightColors = RedesignDarkColors.copy(
 /** Ступені теми за часом для «Поточного» настрою: день — світла, вечір — темна, ніч — найтемніша. */
 enum class TimePhase { DAY, EVENING, NIGHT }
 
-/** День 05:00–19:00, вечір 19:00–23:00, ніч 23:00–05:00. */
-fun timePhaseAt(minuteOfDay: Int): TimePhase = when {
+/** Найбільший зсув вечора на початку зими: темна тема починається не о 19:00, а о 17:00. */
+const val MAX_EVENING_SHIFT_MINUTES = 120
+
+/**
+ * На скільки хвилин раніше за 19:00 починається вечір у цей день. Без геолокації (проєкт без локаційних дозволів) —
+ * лише за датою й півкулею: плавна крива з максимумом ([MAX_EVENING_SHIFT_MINUTES]) біля зимового сонцестояння й
+ * нулем приблизно від весняного до осіннього рівнодення. Північна півкуля — максимум 21 грудня, південна — 21 червня.
+ * Годинник телефона вже враховує перехід на зимовий час, окремо його не обробляємо.
+ */
+fun eveningShiftMinutes(date: java.time.LocalDate, southern: Boolean): Int {
+    val peakDay = if (southern) 172 else 355 // 21 червня / 21 грудня
+    val angle = 2.0 * Math.PI * (date.dayOfYear - peakDay) / 365.0
+    return (MAX_EVENING_SHIFT_MINUTES * kotlin.math.max(0.0, kotlin.math.cos(angle))).toInt()
+}
+
+/**
+ * День 05:00–(19:00 − [shift]), вечір до 23:00, ніч 23:00–05:00. Початок ночі не зсувається — вона лишається
+ * такою самою взимку й влітку.
+ */
+fun timePhaseAt(minuteOfDay: Int, shift: Int = 0): TimePhase = when {
     minuteOfDay < 5 * 60 -> TimePhase.NIGHT
-    minuteOfDay < 19 * 60 -> TimePhase.DAY
+    minuteOfDay < 19 * 60 - shift -> TimePhase.DAY
     minuteOfDay < 23 * 60 -> TimePhase.EVENING
     else -> TimePhase.NIGHT
 }
 
-fun classicTimeColors(minuteOfDay: Int): TeperaColors = when (timePhaseAt(minuteOfDay)) {
+fun classicTimeColors(minuteOfDay: Int, shift: Int = 0): TeperaColors = when (timePhaseAt(minuteOfDay, shift)) {
     TimePhase.DAY -> RedesignLightColors
     TimePhase.EVENING -> RedesignDarkColors
     TimePhase.NIGHT -> RedesignNightColors
@@ -501,12 +519,14 @@ private val SkyEveningLight = sky(0xFFFFD9C0, 0xFFF7C6D9, 0xFFCFC6F5, 0xFFD7EBFF
 private val SkyEveningDark = sky(0xFF1B1B3A, 0xFF2A2147, 0xFF3A2A55, 0xFF11322E)
 
 /** Небо за хвилиною доби: повільне перетікання між опорними кадрами (повертається до ночі наприкінці доби). */
-private fun skyAt(minute: Int): List<Color> {
+private fun skyAt(minute: Int, shift: Int = 0): List<Color> {
     // Захід сонця тримається до 18:30 і темніє за ~45 хв, щоб небо швидко проходило середню яскравість, на якій
     // текст не читається (момент зміни кольору тексту — 18:50–19:00, див. [uiDarkness]).
+    // Вечірні кадри зсуваються на [shift] хв раніше взимку; ранок, день і ніч (23:00) — ні.
     val frames = listOf(
         0 to SkyNight, 4 * 60 to SkyNight, 6 * 60 to SkyMorning, 11 * 60 to SkyDay,
-        17 * 60 to SkyEveningLight, 18 * 60 + 30 to SkyEveningLight, 19 * 60 + 15 to SkyEveningDark,
+        17 * 60 - shift to SkyEveningLight, 18 * 60 + 30 - shift to SkyEveningLight,
+        19 * 60 + 15 - shift to SkyEveningDark,
         23 * 60 to SkyNight, 24 * 60 to SkyNight
     )
     val i = frames.indexOfLast { it.first <= minute }.coerceIn(0, frames.size - 2)
@@ -521,13 +541,13 @@ private fun skyAt(minute: Int): List<Color> {
  * і припадають на момент, коли небо пройшло ~55% шляху між світлим і темним, щоб текст на небі не «тонув» (перевірено
  * на пристрої: при зміні тексту о 19:00–19:20, коли небо вже темне, заголовки зникали).
  */
-private fun uiDarkness(minute: Int): Float {
+private fun uiDarkness(minute: Int, shift: Int = 0): Float {
     fun ramp(from: Int, to: Int) = ((minute - from).toFloat() / (to - from)).coerceIn(0f, 1f)
     return when {
         minute < 5 * 60 + 10 -> 2f
         minute < 5 * 60 + 25 -> 2f * (1f - ramp(5 * 60 + 10, 5 * 60 + 25))
-        minute < 18 * 60 + 50 -> 0f
-        minute < 19 * 60 -> ramp(18 * 60 + 50, 19 * 60)
+        minute < 18 * 60 + 50 - shift -> 0f
+        minute < 19 * 60 - shift -> ramp(18 * 60 + 50 - shift, 19 * 60 - shift)
         minute < 22 * 60 + 30 -> 1f
         minute < 23 * 60 + 30 -> 1f + ramp(22 * 60 + 30, 23 * 60 + 30)
         else -> 2f
@@ -535,10 +555,10 @@ private fun uiDarkness(minute: Int): Float {
 }
 
 /** «Світанок» + тема «За часом»: небо й кольори інтерфейсу плавно змінюються протягом доби. */
-fun dawnColorsForMinute(minute: Int): TeperaColors {
-    val d = uiDarkness(minute)
+fun dawnColorsForMinute(minute: Int, shift: Int = 0): TeperaColors {
+    val d = uiDarkness(minute, shift)
     val ui = if (d <= 1f) lerpTeperaColors(DawnLightBase, DawnDarkBase, d) else lerpTeperaColors(DawnDarkBase, DawnNightBase, d - 1f)
-    val skyColors = skyAt(minute)
+    val skyColors = skyAt(minute, shift)
     return ui.copy(backgroundTop = skyColors.first(), backgroundBottom = skyColors.last(), backgroundStops = skyColors)
 }
 

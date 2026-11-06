@@ -252,6 +252,20 @@ fun SettingsGroupScreen(
                                 stringResource(R.string.settings_theme_time_hint),
                                 color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
                             )
+                            // Півкуля визначає, коли в році вечір настає раніше (взимку); без геолокації.
+                            Text(
+                                stringResource(R.string.settings_hemisphere_label),
+                                color = TeperaPalette.textPrimary, fontSize = 14.sp, lineHeight = 20.sp,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                            )
+                            PillSegmentedControl(
+                                options = listOf(
+                                    ThemeStore.Hemisphere.NORTH to stringResource(R.string.settings_hemisphere_north),
+                                    ThemeStore.Hemisphere.SOUTH to stringResource(R.string.settings_hemisphere_south)
+                                ),
+                                selected = ThemeStore.hemisphere(),
+                                onSelect = { ThemeStore.setHemisphere(context, it) }
+                            )
                         }
                     }
                 }
