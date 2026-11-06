@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -50,6 +51,7 @@ import com.serkodesign.tepera.domain.risk.ActivitySuggestions
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.ui.category.categoryDisplayName
 import com.serkodesign.tepera.ui.category.categoryIcon
+import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.home.HomeViewModel
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.ui.theme.heroMoodBackground
@@ -217,7 +219,12 @@ fun ActivityChips(onAddEntry: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
+                    val lineArt = categoryLineArtIconRes(item.category.iconName)
+                    if (lineArt != null) {
+                        Icon(painterResource(lineArt), contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
+                    } else {
+                        Icon(categoryIcon(item.category.iconName), contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
+                    }
                     Text(categoryDisplayName(item.category), color = content, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium)
                     if (active) Box(Modifier.size(8.dp).clip(CircleShape).background(content))
                 }

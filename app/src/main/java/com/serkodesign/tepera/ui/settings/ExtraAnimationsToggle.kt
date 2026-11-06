@@ -11,7 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.GlassRow
-import com.serkodesign.tepera.ui.theme.TeperaHint
+import com.serkodesign.tepera.ui.theme.TeperaInfoButton
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
@@ -27,16 +27,13 @@ fun ExtraAnimationsToggle(modifier: Modifier = Modifier) {
             label = stringResource(R.string.extra_animations_label),
             leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
             trailing = {
+                TeperaInfoButton(stringResource(R.string.extra_animations_label), stringResource(R.string.extra_animations_explanation))
                 Switch(
                     checked = MotionStore.extraAnimations(),
                     onCheckedChange = { MotionStore.setExtraAnimations(context, it) },
                     colors = teperaSwitchColors()
                 )
             }
-        )
-        TeperaHint(
-            text = stringResource(R.string.extra_animations_explanation),
-            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 }

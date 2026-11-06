@@ -119,7 +119,8 @@ fun HeatWeek(
 
     M3Card(
         modifier = modifier.semantics(mergeDescendants = true) { contentDescription = description },
-        spacing = TeperaSpacing.s
+        spacing = TeperaSpacing.s,
+        appStyle = true
     ) {
         Row {
             Column(Modifier.width(28.dp)) {
@@ -220,8 +221,8 @@ private fun LegendScale(ramp: List<Color>) {
  */
 @Composable
 fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifier = Modifier) {
-    val primary = MaterialTheme.colorScheme.onSurface
-    val secondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val primary = TeperaPalette.textPrimary
+    val secondary = TeperaPalette.textSecondary
     val recurrence = stringResource(
         if (window.dayType == DayType.WEEKDAYS) R.string.v3_card_recurrence_weekdays else R.string.v3_card_recurrence_days,
         window.recurrenceDays, window.observedDays
@@ -243,7 +244,7 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifi
     // Дизайн-система v3.1 (3.3 плану): M3Card, час titleLarge + бейдж повторюваності праворуч, мета bodySmall і крапки
     // через 4dp. Блок «план / немає плану» зі специфікації не додано: у RiskWindowUi даних про план нема, а картка
     // свідомо про саме вікно (підказка приходить через оверлей і нагадування) — нова функція поза обсягом міграції.
-    M3Card(modifier = modifier) {
+    M3Card(modifier = modifier, appStyle = true) {
         // Верхня частина відкриває «Чому це вікно?» (M6).
         Column(
             Modifier.fillMaxWidth()

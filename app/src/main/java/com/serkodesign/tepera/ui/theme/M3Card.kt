@@ -27,16 +27,20 @@ import androidx.compose.ui.unit.dp
 fun M3Card(
     modifier: Modifier = Modifier,
     spacing: Dp = TeperaSpacing.cardGroups,
+    // true — той самий колір і вигляд, що в TeperaCard (підсумок тижня, Online сьогодні): у темній темі й «Світанку»
+    // M3-палітра давала нейтрально-сірий фон, що не збігався з гамою застосунку.
+    appStyle: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = M3Extra.colors
-    val shape = MaterialTheme.shapes.large
+    val shape = if (appStyle) androidx.compose.foundation.shape.RoundedCornerShape(16.dp) else MaterialTheme.shapes.large
+    val cardColor = if (appStyle) TeperaPalette.cardSurface else colors.card
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(colors.card)
-            .border(1.dp, colors.cardStroke, shape)
+            .background(cardColor)
+            .then(if (appStyle) Modifier else Modifier.border(1.dp, colors.cardStroke, shape))
             .padding(TeperaSpacing.cardPadding),
         verticalArrangement = Arrangement.spacedBy(spacing),
         content = content

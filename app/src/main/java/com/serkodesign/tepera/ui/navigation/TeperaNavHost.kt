@@ -120,6 +120,8 @@ import com.serkodesign.tepera.ui.risk.WindowWhyScreen
 import com.serkodesign.tepera.ui.risk.WindowEditorScreen
 import com.serkodesign.tepera.ui.risk.V3AccessScreen
 import com.serkodesign.tepera.ui.risk.V3WelcomeScreen
+import com.serkodesign.tepera.ui.settings.SettingsGroup
+import com.serkodesign.tepera.ui.settings.SettingsGroupScreen
 import com.serkodesign.tepera.ui.settings.SettingsScreen
 import com.serkodesign.tepera.ui.settings.TrackingSettingsScreen
 import com.serkodesign.tepera.ui.stats.StatsScreen
@@ -153,6 +155,7 @@ private object Routes {
     const val WELCOME_ONBOARDING = "welcome_onboarding"
     const val GATES_ONBOARDING = "gates_onboarding"
     const val SETTINGS = "settings"
+    const val SETTINGS_GROUP = "settings_group/{group}"
     const val TRACKING_SETTINGS = "tracking_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
@@ -195,7 +198,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
@@ -645,14 +648,26 @@ fun TeperaNavHost(
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
-                    onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
+                    onOpenGroup = { navController.navigate("settings_group/${it.name}") },
                     onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                Routes.SETTINGS_GROUP,
+                arguments = listOf(navArgument("group") { type = NavType.StringType })
+            ) { entry ->
+                val group = runCatching { SettingsGroup.valueOf(entry.arguments?.getString("group").orEmpty()) }
+                    .getOrDefault(SettingsGroup.GENERAL)
+                SettingsGroupScreen(
+                    group = group,
+                    onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
+                    onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
-                    onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
                     settingsStore = settingsStore,
                     onBack = { navController.popBackStack() }

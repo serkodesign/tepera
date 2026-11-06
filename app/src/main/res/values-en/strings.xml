@@ -138,7 +138,7 @@
     <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments — just a question. Tell us what would help.</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="extra_animations_label">Extra animations</string>
-    <string name="extra_animations_explanation">Liquid motion in the “without phone” circle, smoothly counting numbers and soft button transitions. Turn off to save battery or remove animation.</string>
+    <string name="extra_animations_explanation">Motion in the “without phone” circle, counting numbers and soft transitions. Turn off to save battery.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, activities or app time. Turn it off anytime.</string>
 
@@ -259,7 +259,7 @@
     <string name="settings_debug_clock_real">real time</string>
     <string name="settings_debug_clock_reset">Back to real time</string>
     <string name="settings_theme_time">By time</string>
-    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night. Smooth change in Dawn, three steps in Current.</string>
+    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night.</string>
     <string name="settings_mood_title">App mood</string>
     <string name="settings_mood_classic">Current</string>
     <string name="settings_mood_dawn">Dawn</string>
@@ -394,7 +394,7 @@
     </string-array>
     <string name="gate_pause_open_format">Open %1$s</string>
     <string name="gates_growing_delay_label">Growing delay</string>
-    <string name="gates_growing_delay_hint">The delay grows a little with each repeat open — up to 20s — and resets after half an hour of quiet.</string>
+    <string name="gates_growing_delay_hint">The delay grows with each open (up to 20s) and resets after half an hour.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Activities</string>
@@ -587,7 +587,7 @@
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>
     <string name="free_opens_title">Opens without delay</string>
-    <string name="free_opens_hint">How many times a day the chosen apps open right away, without a pause. 0 means off.</string>
+    <string name="free_opens_hint">How many times a day apps open without a pause. 0 means off.</string>
     <string name="free_opens_used_format">Used today: %1$d of %2$d</string>
     <string name="free_opens_off">Off</string>
     <string name="free_opens_count_format">%d per day</string>
@@ -626,7 +626,7 @@
     <string name="v3_section_title">Scrolling hours (beta)</string>
     <string name="v3_feed_picker_action">Feed apps</string>
     <string name="v3_feed_title">Feed apps</string>
-    <string name="v3_feed_hint">Choose the apps where you usually get stuck scrolling. Tepera will only count time in them. We do not suggest messengers, but you can add them if you want.</string>
+    <string name="v3_feed_hint">Choose the apps where you usually get stuck scrolling. Tepera will only count time in them.</string>
     <string name="v3_feed_section_suggested">Often opened in the evening</string>
     <string name="v3_feed_section_all">All apps</string>
     <string name="v3_feed_empty">No app usage data yet. Grant usage access first.</string>
@@ -646,7 +646,7 @@
     <string name="v3_overlay_title">It\'s your hour now, until %1$s</string>
     <string name="v3_overlay_enable_access">Turn on access</string>
     <string name="v3_overlay_toggle_label">Idea over the feed</string>
-    <string name="v3_overlay_toggle_hint">When you open a chosen feed inside your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission; every time you open the feed anew.</string>
+    <string name="v3_overlay_toggle_hint">When you open a feed during your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission.</string>
     <string name="v3_report_overlay">Suggestion over the feed: shown %1$d, \"Yes\" %2$d, \"Open for 5 min\" %3$d, closed without a choice %4$d</string>
     <string name="v3_report_tag_manual">manual</string>
     <string name="v3_report_tag_weekdays">weekdays</string>
@@ -681,7 +681,7 @@
     <string name="v3_home_need_access_body">Without it Tepera cannot see when you are in feeds.</string>
     <string name="v3_home_need_feeds_title">Choose your feed apps</string>
     <string name="v3_home_need_feeds_body">Tepera will only count time in the apps you choose.</string>
-    <string name="v3_observing_hint">There is nothing to do: use your phone as usual. It is more honest if you do not change your habits this week.</string>
+    <string name="v3_observing_hint">Nothing to do: use your phone as usual.</string>
     <string name="v3_heat_legend_feeds">feeds</string>
     <string name="v3_heat_legend_window">scrolling hour</string>
     <string name="v3_heat_description">Heat map: time in feeds over the last 7 days, by hour.</string>
@@ -700,7 +700,7 @@
     <string name="v3_part_evening">Evening</string>
     <string name="v3_part_night">Night</string>
     <string name="v3_mode_label">v3 mode (beta)</string>
-    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”, but Online today, activities, the Diary and Stats stay. Old data is not deleted: turn it off to get the usual look back.</string>
+    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”. Old data is not deleted — turn it off to get the usual look back.</string>
     <string name="v3_tester_restart">Redo v3 onboarding</string>
 
     <!-- v3.0 MVP, stage 3: L5 "If - then" plan (Figma 911:1066). Evening/lunch suggestions come from the design, morning/day are neutral. -->
@@ -820,7 +820,7 @@
     <string name="v3_watch_5_body">You picked it yourself: \"%1$s\". Let\'s keep your word — the feed can wait.</string>
     <string name="v3_watch_leave">Fine, I\'m going</string>
     <string name="v3_puzzle_toggle_label">Puzzles on re-entry</string>
-    <string name="v3_puzzle_toggle_hint">From the third re-entry to the feed after \"Yes, I\'ll do it\", Tepera asks for a short puzzle (up to 30 seconds) before opening. If you stayed away from the feed for a while, the puzzles are easier. You can always leave instead.</string>
+    <string name="v3_puzzle_toggle_hint">From the third re-entry to the feed, Tepera asks for a short puzzle (up to 30 s). You can always leave instead.</string>
     <string name="v3_puzzle_title">A moment of attention</string>
     <string name="v3_puzzle_hint">Solve it to open the feed. Or leave — that\'s a choice too.</string>
     <string name="v3_puzzle_hint_steps">Puzzle %1$d of %2$d. Or leave — that\'s a choice too.</string>

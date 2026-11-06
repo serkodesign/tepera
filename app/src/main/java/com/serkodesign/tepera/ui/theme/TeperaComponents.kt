@@ -148,10 +148,12 @@ fun GlassRow(
     onClick: (() -> Unit)? = null,
     // 24dp — для рядків категорій (та сама форма, що рядок активності на Home); решта рядків Налаштувань — 16dp.
     cornerRadius: Dp = 16.dp,
+    // Необов'язковий блок під рядком, усередині тієї самої картки (напр. кнопка «Увімкнути доступ»).
+    below: (@Composable () -> Unit)? = null,
     leading: @Composable () -> Unit,
     trailing: @Composable () -> Unit
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(cornerRadius))
@@ -159,17 +161,23 @@ fun GlassRow(
             // Обводка 1dp білим 100% (за запитом) — лише світла тема, як у картках активностей.
             .then(TeperaPalette.activityCardIdleBorder?.let { Modifier.border(1.dp, it, RoundedCornerShape(cornerRadius)) } ?: Modifier)
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        leading()
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge
-        )
-        trailing()
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            leading()
+            Text(
+                text = label,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            trailing()
+        }
+        if (below != null) {
+            Box(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 12.dp)) { below() }
+        }
     }
 }
 
@@ -980,6 +988,31 @@ fun TeperaHint(text: String, modifier: Modifier = Modifier) {
             text = text,
             style = MaterialTheme.typography.bodySmall,
             color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+        )
+    }
+}
+
+/**
+ * Кнопка ⓘ: пояснення до налаштування — у попапі, а не текстом під рядком. Ставиться в `trailing` рядка перед перемикачем.
+ */
+@Composable
+fun TeperaInfoButton(title: String, text: String, modifier: Modifier = Modifier) {
+    var open by remember { mutableStateOf(false) }
+    androidx.compose.material3.IconButton(onClick = { open = true }, modifier = modifier.size(40.dp)) {
+        Icon(
+            TeperaSymbols.Info,
+            contentDescription = title,
+            modifier = Modifier.size(20.dp),
+            tint = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+        )
+    }
+    if (open) {
+        TeperaDialog(
+            onDismissRequest = { open = false },
+            confirmText = stringResource(R.string.v3_dialog_close),
+            onConfirm = { open = false },
+            title = title,
+            text = text
         )
     }
 }

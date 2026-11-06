@@ -3,6 +3,7 @@ package com.serkodesign.tepera.ui.risk
 import com.serkodesign.tepera.BuildConfig
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
@@ -26,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.data.local.SettingsStore
 import com.serkodesign.tepera.ui.theme.GlassRow
-import com.serkodesign.tepera.ui.theme.TeperaHint
+import com.serkodesign.tepera.ui.theme.TeperaInfoButton
 import com.serkodesign.tepera.ui.theme.TeperaIconCircle
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.teperaSwitchColors
@@ -45,6 +46,7 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
             label = stringResource(R.string.v3_mode_label),
             leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
             trailing = {
+                TeperaInfoButton(stringResource(R.string.v3_mode_label), stringResource(R.string.v3_mode_hint))
                 Switch(
                     checked = enabled,
                     onCheckedChange = { on -> scope.launch { settingsStore.setV3ModeEnabled(on) } },
@@ -52,7 +54,6 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
                 )
             }
         )
-        TeperaHint(text = stringResource(R.string.v3_mode_hint), modifier = Modifier.padding(horizontal = 12.dp))
         val context = LocalContext.current
         var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
         val requestA11y = rememberAccessibilityRequest(
@@ -67,8 +68,19 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
         }
         GlassRow(
             label = stringResource(R.string.v3_overlay_toggle_label),
+            below = if (GateAccessibility.isAvailable && !a11yOn) {
+                {
+                    TeperaButton(
+                        text = stringResource(R.string.v3_overlay_enable_access),
+                        onClick = requestA11y,
+                        type = TeperaButtonType.Secondary,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            } else null,
             leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
             trailing = {
+                TeperaInfoButton(stringResource(R.string.v3_overlay_toggle_label), stringResource(R.string.v3_overlay_toggle_hint))
                 Switch(
                     checked = overlayOn && a11yOn,
                     onCheckedChange = { on ->
@@ -84,20 +96,12 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
                 )
             }
         )
-        TeperaHint(text = stringResource(R.string.v3_overlay_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
-        if (GateAccessibility.isAvailable && !a11yOn) {
-            TeperaButton(
-                text = stringResource(R.string.v3_overlay_enable_access),
-                onClick = requestA11y,
-                type = TeperaButtonType.Secondary,
-                modifier = Modifier.padding(horizontal = 12.dp)
-            )
-        }
         var puzzlesOn by remember { mutableStateOf(PlanOverlayStore.arePuzzlesEnabled(context)) }
         GlassRow(
             label = stringResource(R.string.v3_puzzle_toggle_label),
             leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
             trailing = {
+                TeperaInfoButton(stringResource(R.string.v3_puzzle_toggle_label), stringResource(R.string.v3_puzzle_toggle_hint))
                 Switch(
                     checked = puzzlesOn,
                     onCheckedChange = { on ->
@@ -108,7 +112,6 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
                 )
             }
         )
-        TeperaHint(text = stringResource(R.string.v3_puzzle_toggle_hint), modifier = Modifier.padding(horizontal = 12.dp))
     }
 }
 

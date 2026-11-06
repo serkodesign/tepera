@@ -147,7 +147,7 @@
     <string name="pro_interest_body">Думаємо, чи потрібна розширена версія Tepera. Без цін і оплат — просто питання до вас. Розкажіть, що було б корисним.</string>
     <string name="pro_interest_action">Хочу дізнатись</string>
     <string name="extra_animations_label">Додаткові анімації</string>
-    <string name="extra_animations_explanation">Рух рідини в колі «без телефону», числа, що плавно докручуються, і м’які переходи кнопок. Вимкніть, щоб заощадити заряд або прибрати анімацію.</string>
+    <string name="extra_animations_explanation">Рух у колі «без телефону», числа, що докручуються, і м’які переходи. Вимкніть, щоб заощадити заряд.</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, активностей і часу в застосунках. Можна вимкнути будь-коли.</string>
 
@@ -274,7 +274,7 @@
     <string name="settings_debug_clock_real">справжній час</string>
     <string name="settings_debug_clock_reset">Повернути справжній час</string>
     <string name="settings_theme_time">За часом</string>
-    <string name="settings_theme_time_hint">Вдень світла, ввечері темна, вночі найтемніша. У «Світанку» зміна плавна, у «Поточному» — три ступені.</string>
+    <string name="settings_theme_time_hint">Вдень світла, ввечері темна, вночі найтемніша.</string>
     <string name="settings_mood_title">Настрій застосунку</string>
     <string name="settings_mood_classic">Поточний</string>
     <string name="settings_mood_dawn">Світанок</string>
@@ -409,7 +409,7 @@
     </string-array>
     <string name="gate_pause_open_format">Відкрити %1$s</string>
     <string name="gates_growing_delay_label">Зростаюча затримка</string>
-    <string name="gates_growing_delay_hint">Затримка трохи росте з кожним відкриттям — до 20 с — і скидається за пів години тиші.</string>
+    <string name="gates_growing_delay_hint">Затримка росте з кожним відкриттям (до 20 с) і скидається за пів години.</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Активності</string>
@@ -604,7 +604,7 @@
     <string name="a11y_disclosure_cancel">Не зараз</string>
     <string name="a11y_perm_label">Затримка перед застосунками</string>
     <string name="free_opens_title">Відкриття без затримки</string>
-    <string name="free_opens_hint">Скільки разів на день обрані застосунки відкриваються одразу, без паузи. 0 — вимкнено.</string>
+    <string name="free_opens_hint">Скільки разів на день застосунки відкриваються без паузи. 0 — вимкнено.</string>
     <string name="free_opens_used_format">Сьогодні використано %1$d з %2$d</string>
     <string name="free_opens_off">Вимкнено</string>
     <string name="free_opens_count_format">%d на день</string>
@@ -643,7 +643,7 @@
     <string name="v3_section_title">Години скролінгу (beta)</string>
     <string name="v3_feed_picker_action">Застосунки-стрічки</string>
     <string name="v3_feed_title">Застосунки-стрічки</string>
-    <string name="v3_feed_hint">Оберіть застосунки, у яких зазвичай «зависаєте». Tepera рахуватиме час лише в них. Месенджери не пропонуємо, але за бажанням їх можна додати.</string>
+    <string name="v3_feed_hint">Оберіть застосунки, де зазвичай «зависаєте». Tepera рахуватиме час лише в них.</string>
     <string name="v3_feed_section_suggested">Часто відкриваєте ввечері</string>
     <string name="v3_feed_section_all">Усі застосунки</string>
     <string name="v3_feed_empty">Поки немає даних про користування застосунками. Надайте доступ до статистики використання.</string>
@@ -663,7 +663,7 @@
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
     <string name="v3_overlay_enable_access">Увімкнути доступ</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
-    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте обрану стрічку всередині своєї години, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості»; при кожному новому відкритті стрічки.</string>
+    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте стрічку у свою годину, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості».</string>
     <string name="v3_report_overlay">Підказка поверх стрічки: показано %1$d, «Так» %2$d, «Відкрити на 5 хв» %3$d, закрито без вибору %4$d</string>
     <string name="v3_report_tag_manual">вручну</string>
     <string name="v3_report_tag_weekdays">будні</string>
@@ -698,7 +698,7 @@
     <string name="v3_home_need_access_body">Без нього Tepera не бачить, коли ви у стрічках.</string>
     <string name="v3_home_need_feeds_title">Оберіть застосунки-стрічки</string>
     <string name="v3_home_need_feeds_body">Tepera рахуватиме час лише в застосунках, які ви оберете.</string>
-    <string name="v3_observing_hint">Нічого робити не треба — користуйся телефоном як завжди. Чесніше, якщо цього тижня ти не змінюєш звичок.</string>
+    <string name="v3_observing_hint">Нічого робити не треба — користуйся телефоном як завжди.</string>
     <string name="v3_heat_legend_feeds">стрічки</string>
     <string name="v3_heat_legend_window">година скролінгу</string>
     <string name="v3_heat_description">Теплова карта: час у стрічках за останні 7 днів по годинах.</string>
@@ -717,7 +717,7 @@
     <string name="v3_part_evening">Увечері</string>
     <string name="v3_part_night">Уночі</string>
     <string name="v3_mode_label">Режим v3 (beta)</string>
-    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу», але Online сьогодні, активності, Щоденник і Статистика лишаються. Старі дані не видаляються: вимкніть, щоб повернути звичайний вигляд.</string>
+    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу». Старі дані не видаляються — вимкніть, щоб повернути звичайний вигляд.</string>
     <string name="v3_tester_restart">Пройти онбординг v3 знову</string>
 
     <!-- v3.0 MVP, Етап 3: L5 «План якщо — то» (Figma 911:1066). Підказки вечора/обіду — з макета, ранку/дня — нейтральні. -->
@@ -837,7 +837,7 @@
     <string name="v3_watch_5_body">Ти сам обрав: «%1$s». Дотримаймо слова — стрічка почекає.</string>
     <string name="v3_watch_leave">Гаразд, іду</string>
     <string name="v3_puzzle_toggle_label">Задачки при повторному вході</string>
-    <string name="v3_puzzle_toggle_hint">З третього повторного відкриття стрічки після «Так, роблю це» Tepera просить розв\'язати коротку задачку (до 30 секунд), перш ніж відкрити. Якщо ви довго не поверталися до стрічки, задачки легші. Піти можна завжди.</string>
+    <string name="v3_puzzle_toggle_hint">З третього повторного відкриття стрічки Tepera просить розв\'язати коротку задачку (до 30 с). Піти можна завжди.</string>
     <string name="v3_puzzle_title">Секунда уваги</string>
     <string name="v3_puzzle_hint">Розв\'яжи, щоб відкрити стрічку. Або піти — це теж вибір.</string>
     <string name="v3_puzzle_hint_steps">Задача %1$d з %2$d. Або піти — це теж вибір.</string>
