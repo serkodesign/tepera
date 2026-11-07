@@ -202,7 +202,10 @@ private val BADGE_SIZE = 215.dp
 // цифра — темно-зелена, як у світлій темі, для контрасту на світлій квітці.
 // Світла тема — біла квітка; темна — #DCF6ED (світла, як узгоджено раніше).
 private val BADGE_FILL: Color @Composable get() = if (LocalTeperaColors.current.isDark) Color(0xFFDCF6ED) else Color.White
-private val BADGE_NUMBER: Color = Color(0xFF006944)
+// Цифра — акцент теми/настрою. У темних темах акцент кремовий, а заливка бейджа світла, тож беремо парний темний
+// колір акцента (onPrimary), інакше цифра не читається.
+private val BADGE_NUMBER: Color @Composable get() =
+    if (LocalTeperaColors.current.isDark) TeperaPalette.primaryButtonContent else TeperaPalette.brandAccent
 
 // Зовнішня напівпрозора «квітка» (Figma node 2:3526, Star 2): та сама форма, 50% прозорості, повернута на 15°; розмір як в основної
 // (263.32/215) за основну. Дихає в тому самому ритмі, але з відставанням — виглядає як хвиля, що розходиться від центру.

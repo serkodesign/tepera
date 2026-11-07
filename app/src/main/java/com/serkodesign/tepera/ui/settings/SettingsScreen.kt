@@ -52,7 +52,7 @@ import com.serkodesign.tepera.util.ThemeStore
  * Групи Налаштувань: головний екран — лише рядки-переходи, кожна група відкривається окремим екраном
  * ([SettingsGroupScreen]). Згруповано за прямим запитом власника (06.11.2026), було 18 пунктів на одному екрані.
  */
-enum class SettingsGroup { TIME, SCROLLING, GENERAL, ABOUT }
+enum class SettingsGroup { DETOX, TIME, SCROLLING, GENERAL, ABOUT }
 
 /**
  * Головний екран Налаштувань (Figma-фрейм Everyday_Designs, node 1951:1106: власний заголовок, "скляні" рядки).
@@ -62,31 +62,26 @@ enum class SettingsGroup { TIME, SCROLLING, GENERAL, ABOUT }
 @Composable
 fun SettingsScreen(
     onOpenGroup: (SettingsGroup) -> Unit,
-    onOpenGates: () -> Unit,
+    settingsStore: com.serkodesign.tepera.data.local.SettingsStore,
     onOpenDataPrivacy: () -> Unit,
     onOpenProInterest: () -> Unit,
     onBack: () -> Unit
 ) {
+    // Облік часу тепер містить лише "Категорії", які в режимі v3 приховані — тоді рядок не показуємо.
+    val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
+    val v3Active = BuildConfig.V3_MVP && v3Mode
     SettingsList(title = stringResource(R.string.settings_screen_title), onBack = onBack) {
+        // Цифровий детокс (07.11.2026, за запитом власника): Відстеження + Години скролінгу + Застосунки з затримкою.
         GlassRow(
+            label = stringResource(R.string.settings_detox_section),
+            onClick = { onOpenGroup(SettingsGroup.DETOX) },
+            leading = { TeperaIconCircle(TeperaSymbols.TrackChanges) },
+            trailing = { NavChevron() }
+        )
+        if (!v3Active) GlassRow(
             label = stringResource(R.string.settings_time_tracking_section),
             onClick = { onOpenGroup(SettingsGroup.TIME) },
             leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
-            trailing = { NavChevron() }
-        )
-        // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): лише beta-збірка.
-        if (BuildConfig.V3_MVP) {
-            GlassRow(
-                label = stringResource(R.string.v3_section_title),
-                onClick = { onOpenGroup(SettingsGroup.SCROLLING) },
-                leading = { TeperaIconCircle(TeperaSymbols.Apps) },
-                trailing = { NavChevron() }
-            )
-        }
-        GlassRow(
-            label = stringResource(R.string.settings_gates_action),
-            onClick = onOpenGates,
-            leading = { TeperaIconCircle(TeperaSymbols.Timer) },
             trailing = { NavChevron() }
         )
         GlassRow(
@@ -150,6 +145,8 @@ private fun SettingsList(title: String, onBack: () -> Unit, content: @Composable
 fun SettingsGroupScreen(
     group: SettingsGroup,
     onOpenTracking: () -> Unit,
+    onOpenGates: () -> Unit,
+    onOpenGroup: (SettingsGroup) -> Unit,
     onOpenCategories: () -> Unit,
     onOpenWidgetSettings: () -> Unit,
     onOpenKnowledgeBase: () -> Unit,
@@ -186,6 +183,7 @@ fun SettingsGroupScreen(
 
     val title = stringResource(
         when (group) {
+            SettingsGroup.DETOX -> R.string.settings_detox_section
             SettingsGroup.TIME -> R.string.settings_time_tracking_section
             SettingsGroup.SCROLLING -> R.string.v3_section_title
             SettingsGroup.GENERAL -> R.string.settings_general_section
@@ -194,13 +192,31 @@ fun SettingsGroupScreen(
     )
     SettingsList(title = title, onBack = onBack) {
         when (group) {
-            SettingsGroup.TIME -> {
+            SettingsGroup.DETOX -> {
                 GlassRow(
                     label = stringResource(R.string.settings_tracking_action),
                     onClick = onOpenTracking,
                     leading = { TeperaIconCircle(TeperaSymbols.TrackChanges) },
                     trailing = { NavChevron() }
                 )
+                // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): лише beta-збірка.
+                if (BuildConfig.V3_MVP) {
+                    GlassRow(
+                        label = stringResource(R.string.v3_section_title),
+                        onClick = { onOpenGroup(SettingsGroup.SCROLLING) },
+                        leading = { TeperaIconCircle(TeperaSymbols.Apps) },
+                        trailing = { NavChevron() }
+                    )
+                }
+                GlassRow(
+                    label = stringResource(R.string.settings_gates_action),
+                    onClick = onOpenGates,
+                    leading = { TeperaIconCircle(TeperaSymbols.Timer) },
+                    trailing = { NavChevron() }
+                )
+            }
+
+            SettingsGroup.TIME -> {
                 if (!v3Active) GlassRow(
                     label = stringResource(R.string.settings_categories_action),
                     onClick = onOpenCategories,

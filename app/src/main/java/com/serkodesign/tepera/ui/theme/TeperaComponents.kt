@@ -546,7 +546,14 @@ fun HourStepper(
                 .height(44.dp)
                 .clip(RoundedCornerShape(28.dp))
                 // Світла тема — Surface/surface-brand-light з макета (#DCF6ED); surfaceBrandLight тут білий (#FEFEFE).
-                .background(if (LocalTeperaColors.current.isDark) TeperaPalette.surfaceBrandLight else Color(0xFFDCF6ED)),
+                // «Світанок» (світлий): білий чіп замість м'ятного (07.11.2026, за запитом власника).
+                .background(
+                    LocalTeperaColors.current.let {
+                        if (it.isDark) TeperaPalette.surfaceBrandLight
+                        else if (it.isDawn) Color.White
+                        else Color(0xFFDCF6ED)
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(

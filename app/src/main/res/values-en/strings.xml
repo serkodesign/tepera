@@ -242,6 +242,7 @@
     <string name="settings_language_en">English</string>
     <string name="settings_general_section">General</string>
     <string name="settings_time_tracking_section">Time tracking</string>
+    <string name="settings_detox_section">Digital detox</string>
     <string name="settings_habits_section">Habits and home screen</string>
     <string name="settings_about_section">About Tepera</string>
     <string name="settings_data_privacy_action">Data and privacy</string>

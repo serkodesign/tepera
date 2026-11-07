@@ -101,6 +101,7 @@ import com.serkodesign.tepera.ui.category.categoryGlyphColor
 import com.serkodesign.tepera.ui.category.categoryLineArtIconRes
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.TeperaPalette
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import com.serkodesign.tepera.ui.theme.TeperaSpecs
 import com.serkodesign.tepera.util.localStartOfDayToUtcMidnight
 import com.serkodesign.tepera.util.utcMidnightToLocalStartOfDay
@@ -297,7 +298,12 @@ fun AddEntryScreen(
                                 modifier = Modifier
                                     .height(32.dp)
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(Color(0xFFC5E2CB))
+                                    // «Світанок» — світло-фіолетовий (moreTimeFill #E9D7F2 / 25% у темній); інші теми як було.
+                                    .background(
+                                        LocalTeperaColors.current.let {
+                                            if (it.isDawn) TeperaPalette.activityMoreTime else Color(0xFFC5E2CB)
+                                        }
+                                    )
                                     .clickable(role = Role.Button, onClick = { viewModel.setNote(suggestion) })
                                     .padding(start = 4.dp, end = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,

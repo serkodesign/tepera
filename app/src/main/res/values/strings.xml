@@ -257,6 +257,7 @@
     <string name="settings_language_en">English</string>
     <string name="settings_general_section">Загальні</string>
     <string name="settings_time_tracking_section">Облік часу</string>
+    <string name="settings_detox_section">Цифровий детокс</string>
     <string name="settings_habits_section">Звички й екран</string>
     <string name="settings_about_section">Про Tepera</string>
     <string name="settings_data_privacy_action">Дані й приватність</string>

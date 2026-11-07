@@ -650,7 +650,7 @@ fun TeperaNavHost(
                 SettingsScreen(
                     onOpenGroup = { navController.navigate("settings_group/${it.name}") },
                     onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
-                    onOpenGates = { navController.navigate(Routes.GATES) },
+                    settingsStore = settingsStore,
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onBack = { navController.popBackStack() }
                 )
@@ -664,6 +664,8 @@ fun TeperaNavHost(
                 SettingsGroupScreen(
                     group = group,
                     onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
+                    onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenGroup = { navController.navigate("settings_group/${it.name}") },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
