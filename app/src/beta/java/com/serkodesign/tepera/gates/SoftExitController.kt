@@ -61,7 +61,14 @@ class SoftExitController(private val service: AccessibilityService) {
     private var systemSurfaceHidden = false
     private var lastRestoreMillis = 0L
     private var fadeRunnable: Runnable? = null
-    private val restoreAfterSystemSurface = Runnable { setOverlayVisible(true) }
+    private var hiddenAsShade = false
+    private val restoreAfterSystemSurface = Runnable {
+        val s = session
+        val fg = foregroundCheck?.invoke()
+        // Людина вже не в застосунку сесії (була на робочому столі/в іншому) — оверлей не повертаємо, сесію завершуємо.
+        if (s != null && fg != null && fg != s.packageName && fg != service.packageName) finish(onTime = isOnTime(s))
+        else setOverlayVisible(true)
+    }
     private val onDeadline = Runnable { showReminder() }
     private val onStrong = Runnable { strengthenDim() }
     private val hideToast = Runnable { removeView(toastView).also { toastView = null } }
@@ -114,12 +121,26 @@ class SoftExitController(private val service: AccessibilityService) {
      * ховаються (сесія триває), щоб не лежати над системним інтерфейсом. Повертаються, коли застосунок знову на екрані
      * ([restoreFromSystemSurface]) або через [SYSTEM_SURFACE_MAX_HIDE_MILLIS] — запобіжник, щоб затемнення не зникло назавжди.
      */
-    fun hideForSystemSurface() {
+    fun hideForSystemSurface(shadeLike: Boolean = true) {
         if (session == null || (dimView == null && pillView == null)) return
-        setOverlayVisible(false)
+        if (!systemSurfaceHidden) {
+            // Шторка — довго (повернемось по закриттю); решта подій systemui (жест «назад» тощо) — лише на мить.
+            setOverlayVisible(false)
+            hiddenAsShade = shadeLike
+        } else if (shadeLike && !hiddenAsShade) {
+            hiddenAsShade = true
+        } else {
+            return // уже сховано: повторні події таймер не продовжують
+        }
         handler.removeCallbacks(restoreAfterSystemSurface)
-        handler.postDelayed(restoreAfterSystemSurface, SYSTEM_SURFACE_MAX_HIDE_MILLIS)
+        handler.postDelayed(
+            restoreAfterSystemSurface,
+            if (hiddenAsShade) SYSTEM_SURFACE_MAX_HIDE_MILLIS else SYSTEM_SURFACE_SHORT_HIDE_MILLIS
+        )
     }
+
+    /** Перевірка реального переднього плану (задає служба): `null` — не вдалось визначити. */
+    var foregroundCheck: (() -> String?)? = null
 
     fun isHiddenForSystemSurface() = systemSurfaceHidden
 
@@ -405,5 +426,6 @@ class SoftExitController(private val service: AccessibilityService) {
         const val RESTORE_FADE_MILLIS = 700L
         const val RESTORE_IGNORE_MILLIS = 2_000L
         const val SYSTEM_SURFACE_MAX_HIDE_MILLIS = 30_000L
+        const val SYSTEM_SURFACE_SHORT_HIDE_MILLIS = 2_500L
     }
 }

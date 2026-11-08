@@ -92,6 +92,7 @@ class GateAccessibilityService : AccessibilityService() {
         gateRepository = (application as TeperaApp).gateRepository
         launcherPackages = resolveLauncherPackages()
         SoftExitSessionBridge.endSession = { softExit.endNow() }
+        softExit.foregroundCheck = { realForegroundPackage() }
         scope.launch {
             gateRepository.gates.collectLatest { gates -> gatedPackages = gates.map { it.packageName }.toSet() }
         }
@@ -115,7 +116,7 @@ class GateAccessibilityService : AccessibilityService() {
                     // Samsung шле «подію лаунчера» при закритті шторки (після події systemui на відкритті), а інколи й при
                     // відкритті без systemui: тому перемикаємо — сховано → повертаємо, видно → ховаємо.
                     if (softExit.isHiddenForSystemSurface()) softExit.restoreFromSystemSurface()
-                    else if (!softExit.restoredRecently()) softExit.hideForSystemSurface()
+                    else if (!softExit.restoredRecently()) softExit.hideForSystemSurface(shadeLike = false) // жест «назад»: лише на мить
                     log("$pkg: подія лаунчера фантомна (на екрані досі $foreground) — сесію не скидаю")
                     return@launch
                 }
@@ -138,7 +139,12 @@ class GateAccessibilityService : AccessibilityService() {
                 return
             }
             PackageAction.IGNORE -> {
-                if (pkg == "com.android.systemui") softExit.hideForSystemSurface()
+                if (pkg == "com.android.systemui") {
+                    val cls = event.className?.toString().orEmpty()
+                    log("systemui: className=$cls")
+                    // className у systemui завжди FrameLayout (перевірено на S23) — відрізнити шторку нема за чим.
+                    softExit.hideForSystemSurface(shadeLike = true)
+                }
                 return
             }
             PackageAction.NORMAL -> Unit
