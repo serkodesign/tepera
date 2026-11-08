@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.risk
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -100,7 +101,9 @@ fun IdeaHero(
     val left = (total - passed).coerceAtLeast(0)
 
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).heroMoodBackground().padding(20.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).heroMoodBackground()
+            .then(if (TeperaPalette.colors.isDawn) Modifier.border(1.dp, TeperaPalette.heroBorder, RoundedCornerShape(24.dp)) else Modifier)
+            .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

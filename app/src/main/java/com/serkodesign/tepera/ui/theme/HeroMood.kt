@@ -50,8 +50,8 @@ fun Modifier.heroMoodBackground(showBody: Boolean = true): Modifier {
         // «Світанок»: hero без картки, у куті сонце (5–17 год) або місяць; «дихає» разом із ореолом.
         val isMoon = hour !in 5..17
         return drawBehind {
-            // Картка без диска (NextCard) отримує скляну заливку, щоб її було чітко видно на небі.
-            if (!showBody) drawRect(surface)
+            // Скляна заливка потрібна обом варіантам (з диском — IdeaHero, без — NextCard): без неї текст лежить просто на небі.
+            drawRect(surface)
             val scale = breath?.value ?: 1f
             val r = 46.dp.toPx()
             val c = Offset(size.width - r - 4.dp.toPx(), r - 2.dp.toPx())
