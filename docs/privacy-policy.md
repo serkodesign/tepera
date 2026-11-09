@@ -4,7 +4,7 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 05.11.2026*
+*Останнє оновлення / Last updated: 09.11.2026*
 
 ---
 
@@ -37,7 +37,7 @@ title: Privacy Policy — Tepera
   ніколи не передаються на сервер і не включаються в crash-звіти. Ви можете виключити окремі
   застосунки зі списку врахованих (Exclusion List) або взагалі не надавати цей доступ — офлайн-
   логування активностей залишиться повністю робочим.
-- **Лише у тестовій версії 1.1 (Open testing) — служба Спеціальних можливостей (Accessibility) для «Застосунків
+- **Лише у тестовій версії 1.1.x (Open testing) — служба Спеціальних можливостей (Accessibility) для «Застосунків
   з затримкою».** Якщо ви самі її вмикаєте, служба бачить **тільки назву пакета** застосунку, що
   вийшов на передній план, і показує коротку паузу перед тими застосунками, які ви обрали в Tepera.
   Вона **не читає** вміст екрана, текст, паролі, повідомлення чи введення. Рішення на екрані паузи
@@ -47,7 +47,7 @@ title: Privacy Policy — Tepera
   дія або таймер), а через 5 хвилин — тимчасове затемнення з кнопками «Ще 5» / «Вийти».
   Служба так само бачить лише назву пакета й малює тільки елементи Tepera; вона не читає вміст чужих
   застосунків і не керує ними. Службу можна вимкнути будь-коли в Налаштуваннях Android →
-  Спеціальні можливості. Служба вмикається лише після вашої згоди на окремому екрані в застосунку; без згоди вона нічого не робить. Без неї застосунок працює повністю; у звичайній (не beta) збірці цієї служби немає.
+  Спеціальні можливості. Служба вмикається лише після вашої згоди на окремому екрані в застосунку (він показується при першому запуску й доступний знову в Налаштування → Цифровий детокс); якщо натиснути «Не зараз», нічого не вмикається, а без згоди служба нічого не робить. Без неї застосунок працює повністю; у звичайній (не beta) збірці цієї служби немає.
 - Ми **не** запитуємо дозвіл на геолокацію (в жодній формі, включно з фоновою).
 - Ми **не** створюємо облікових записів і не вимагаємо реєстрації.
 
@@ -95,7 +95,7 @@ with third parties.
   Settings). This data is processed **entirely on-device**, never transmitted to a server, and never
   included in crash reports. You can exclude specific apps from being counted (Exclusion List), or
   choose not to grant this access at all — offline activity logging remains fully functional either way.
-- **Test version 1.1 (Open testing) only — an Accessibility service for "Delayed apps".** If you turn it on
+- **Test version 1.1.x (Open testing) only — an Accessibility service for "Delayed apps".** If you turn it on
   yourself, the service sees **only the package name** of the app that came to the foreground and
   shows a short pause before the apps you picked in Tepera. It does **not** read screen content,
   text, passwords, messages or anything you type. Your choices on the pause screen ("Continue" /
@@ -104,7 +104,7 @@ with third parties.
   your own scrolling hour, shows a Tepera suggestion over the screen (an alternative action or a timer)
   and, after 5 minutes, a temporary dimming with "5 more" / "Leave" buttons. It still sees only
   the package name and only draws Tepera's own elements; it does not read the content of other apps or
-  control them. You can turn the service off at any time in Android Settings → Accessibility. The service turns on only after you agree on a separate screen in the app; without consent it does nothing. The app
+  control them. You can turn the service off at any time in Android Settings → Accessibility. The service turns on only after you agree on a separate screen in the app (it is shown when you first open the app, and can be opened again in Settings → Digital detox); if you tap "Not now", nothing is turned on, and without consent the service does nothing. The app
   works fully without it; the regular (non-beta) build contains no such service.
 - We do **not** request location permissions, in any form, including background location.
 - We do **not** create user accounts or require registration.
