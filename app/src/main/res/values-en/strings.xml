@@ -589,6 +589,7 @@
     <string name="a11y_disclosure_data_label">Where the data goes</string>
     <string name="a11y_disclosure_data">Nowhere. Tepera processes the names of opened apps only on your phone and doesn\'t send them anywhere.</string>
     <string name="a11y_disclosure_footer">You can turn it off anytime in Android settings. Without it, the rest of Tepera works as usual.</string>
+    <string name="a11y_disclosure_where">After you tap “I agree”, Android Accessibility settings will open. Find “Tepera: pauses and ideas” in the list (it may be under “Installed apps” or “Downloaded apps”) and turn it on.</string>
     <string name="a11y_disclosure_continue">I agree</string>
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>

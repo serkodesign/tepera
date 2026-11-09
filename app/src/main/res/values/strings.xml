@@ -606,6 +606,7 @@
     <string name="a11y_disclosure_data_label">Куди йдуть дані</string>
     <string name="a11y_disclosure_data">Нікуди. Tepera обробляє назви відкритих застосунків лише на вашому телефоні й нікуди їх не передає.</string>
     <string name="a11y_disclosure_footer">Вимкнути службу можна будь-коли в налаштуваннях Android. Без неї решта Tepera працює як звичайно.</string>
+    <string name="a11y_disclosure_where">Після «Погоджуюсь» відкриються налаштування спеціальних можливостей Android. Знайдіть у списку «Tepera: паузи й підказки» (можливо, у розділі «Установлені застосунки» або «Завантажені застосунки») і ввімкніть її.</string>
     <string name="a11y_disclosure_continue">Погоджуюсь</string>
     <string name="a11y_disclosure_cancel">Не зараз</string>
     <string name="a11y_perm_label">Затримка перед застосунками</string>

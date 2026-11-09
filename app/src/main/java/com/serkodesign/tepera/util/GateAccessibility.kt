@@ -3,6 +3,7 @@ package com.serkodesign.tepera.util
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.provider.Settings
 import com.serkodesign.tepera.BuildConfig
 
@@ -26,6 +27,14 @@ object GateAccessibility {
 
     /** Системний екран «Спеціальні можливості»; користувач сам знаходить там Tepera. */
     fun openSettings(context: Context) {
-        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        // Публічного прямого переходу на сторінку конкретної служби немає. Недокументовані аргументи фрагмента
+        // (працюють на AOSP/Pixel) прокручують список до Tepera й підсвічують рядок; інші оболонки їх ігнорують
+        // і просто показують список — тому підказку «де шукати» дає й сам екран розкриття.
+        val component = ComponentName(context.packageName, SERVICE_CLASS).flattenToString()
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(":settings:fragment_args_key", component)
+            .putExtra(":settings:show_fragment_args", Bundle().apply { putString(":settings:fragment_args_key", component) })
+        context.startActivity(intent)
     }
 }
