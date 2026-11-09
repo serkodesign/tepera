@@ -44,7 +44,7 @@ title: Privacy Policy — Tepera
   («Продовжити» / «Не зараз») зберігаються **лише локально** на пристрої, нічого не передається на
   сервер і нікому не надається. **У режимі «Години скролінгу»** та сама служба, коли ви відкриваєте
   обрану вами стрічку у власну годину скролінгу, показує поверх екрана підказку Tepera (альтернативна
-  дія або таймер), а через 5 хвилин — тимчасове затемнення з кнопками «Ще 5» / «Вийти».
+  дія, таймер або — з третього повторного відкриття, якщо ви не вимкнули цю опцію — коротка головоломка до 30 секунд; вийти можна завжди), а через 5 хвилин — тимчасове затемнення з кнопками «Ще 5» / «Вийти».
   Служба так само бачить лише назву пакета й малює тільки елементи Tepera; вона не читає вміст чужих
   застосунків і не керує ними. Службу можна вимкнути будь-коли в Налаштуваннях Android →
   Спеціальні можливості. Служба вмикається лише після вашої згоди на окремому екрані в застосунку (він показується при першому запуску й доступний знову в Налаштування → Цифровий детокс); якщо натиснути «Не зараз», нічого не вмикається, а без згоди служба нічого не робить. Без неї застосунок працює повністю; у звичайній (не beta) збірці цієї служби немає.
@@ -101,7 +101,7 @@ with third parties.
   text, passwords, messages or anything you type. Your choices on the pause screen ("Continue" /
   "Not now") are stored **only locally** on the device; nothing is sent to a server or shared with
   anyone. **With the "Scrolling hours" mode**, the same service, when you open a feed you chose during
-  your own scrolling hour, shows a Tepera suggestion over the screen (an alternative action or a timer)
+  your own scrolling hour, shows a Tepera suggestion over the screen (an alternative action, a timer or, from the third repeated opening and unless you turn this option off, a short puzzle of up to 30 seconds; you can always leave instead)
   and, after 5 minutes, a temporary dimming with "5 more" / "Leave" buttons. It still sees only
   the package name and only draws Tepera's own elements; it does not read the content of other apps or
   control them. You can turn the service off at any time in Android Settings → Accessibility. The service turns on only after you agree on a separate screen in the app (it is shown when you first open the app, and can be opened again in Settings → Digital detox); if you tap "Not now", nothing is turned on, and without consent the service does nothing. The app

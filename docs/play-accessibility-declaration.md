@@ -12,23 +12,32 @@
 | `canRetrieveWindowContent` | `false` — вміст екрана недоступний |
 | `isAccessibilityTool` | не виставлено (Tepera не інструмент для людей з інвалідністю) |
 | Що читається | лише `packageName` вікна, що вийшло на передній план |
-| Що робиться | якщо пакет у списку, обраному користувачем, — запускається екран паузи Tepera (кнопки «Продовжити»/«Вийти») |
+| Що робиться | (1) «Застосунки з затримкою»: якщо пакет у списку, обраному користувачем, — запускається екран паузи Tepera (кнопки «Не зараз»/«Відкрити»); (2) «Години скролінгу» (v3): коли відкрито обрану стрічку у власну годину ризику — підказка Tepera поверх екрана (з 3-го повторного відкриття — коротка головоломка до 30 с, якщо ввімкнено «Puzzles on re-entry»; завжди можна вийти), а після обраного таймера на 5 хв — тимчасове затемнення (`TYPE_ACCESSIBILITY_OVERLAY`) з кнопками «5 more»/«Leave» |
 | Зберігається | локально: пакет + результат (PROCEEDED/CANCELLED) у `gate_events` |
 | Передається | нічого, нікому |
-| Вмикається | лише користувачем: екран «Застосунки з затримкою» або онбординг → розкриття → системні налаштування |
+| Вмикається | лише користувачем. Екран розкриття з'являється сам при першому запуску (і повторно, якщо згоди нема, а службу ввімкнено вручну), далі — з Налаштувань → Digital detox → «Apps with a delay» → «Turn on». «I agree» → системні налаштування доступності, де службу названо «Tepera: pauses and ideas» (Installed apps) |
 
 ## 2. Відповіді для форми (EN — форма англомовна)
 
 **Core functionality that requires the AccessibilityService API**
-> Tepera is a digital-wellbeing app. Its "Delayed apps" feature shows a short, calm pause screen before apps that the user
-> has chosen themselves (for example a social network). To do this on the moment an app opens, the app needs to know the
-> package name of the app that just came to the foreground. The AccessibilityService is used only for this.
+> Tepera is a digital-wellbeing app with two features that depend on the moment an app opens. "Apps with a delay" shows a
+> short, calm pause screen before apps that the user has chosen themselves (for example a social network). "Scrolling hours"
+> shows a short suggestion instead of the feed when the user opens a feed app they chose, during an hour they marked as
+> risky, and gently dims the screen after a timer the user chose. To do this at the moment an app opens, the app needs to know
+> the package name of the app that just came to the foreground. The AccessibilityService is used only for this.
 
 **How the API is used**
 > The service listens only to TYPE_WINDOW_STATE_CHANGED and reads only the package name of the window. It has
 > canRetrieveWindowContent=false, so it cannot read text, views, passwords or messages, and it does not perform gestures or
 > change any settings. If the package is on the user's own list, Tepera opens its own pause screen with "Not now" and
 > "Open <app>" buttons (the open button becomes active after a short countdown). The user can always continue to the app.
+>
+> In the "Scrolling hours" mode, when the user opens a feed app they selected during an hour they marked as risky, Tepera
+> shows its own suggestion screen over the app (an alternative action, a timer, or, from the third repeated opening, a short
+> puzzle of up to 30 seconds if the user has that option on; the user can always leave instead). After a timer chosen by the user ends, Tepera draws a temporary dimming layer with two
+> buttons ("5 more" / "Leave") using TYPE_ACCESSIBILITY_OVERLAY. These elements belong to Tepera only; the service still reads
+> nothing but the package name, does not read other apps' content, and does not click, scroll or type in other apps. The user can
+> close every element, continue to the app, and turn the feature off in Tepera or the service off in Android Settings.
 
 **Why other APIs are not enough**
 > UsageStatsManager reports usage only after the fact (with a delay) and cannot trigger a pause at the moment of opening.
@@ -40,16 +49,23 @@
 > locally. Nothing is transmitted or shared with third parties.
 
 **User control / disclosure**
-> The service is off by default. Before sending the user to system settings, the app shows a prominent in-app disclosure
-> dialog (what is seen, why, that Tepera sends nothing anywhere) with "I agree" and "Not now". Declining keeps the feature off;
-> the dialog can be opened again. The service can be disabled any time in Android Settings → Accessibility.
+> The service is off by default. The prominent in-app disclosure appears automatically on first launch, before any request for
+> the permission (and again if consent is missing while the service was turned on manually). It explains why the service is
+> needed, what Tepera sees (only the app name), what it does not see or do, and where the data goes (nowhere), and also tells
+> the user which entry to look for in Android settings ("Tepera: pauses and ideas"). It has "I agree" and "Not now" buttons;
+> only "I agree" opens Android Accessibility settings. Declining records nothing and turns nothing on; the dialog can be opened
+> again from Settings → Digital detox → Apps with a delay → "Turn on". The service can be disabled any time in Android Settings → Accessibility.
 
 **Is the service designed to help people with disabilities?** — No (`isAccessibilityTool` is not set).
 
 ## 3. Текст розкриття в застосунку (як у демо)
 
-- UA: «Tepera використовує службу Спеціальних можливостей лише для того, щоб побачити назву застосунку, який щойно відкрився, і показати коротку паузу перед тими, що ви самі обрали. Служба не читає вміст екрана, текст, паролі чи повідомлення. Tepera не передає дані про відкриті застосунки нікуди й нікому. …» — кнопки «Погоджуюсь» / «Не зараз».
-- EN: «Tepera uses an Accessibility service only to see the name of the app that has just opened … I agree / Not now».
+Фактичний текст (`a11y_disclosure_*`, build 35): заголовок + розділи Why / What Tepera sees / What Tepera doesn't see or do / Where the data goes + два підсумкові абзаци.
+
+- EN: «Pauses and ideas need Android's accessibility service. **Why:** This Android service (Accessibility Service API) lets Tepera know when you open an app. That's the only way Tepera can show a short pause before the apps you chose, or an idea instead of the feed during your scrolling hours, right when you open them, and gently dim the screen after 5 minutes. **What Tepera sees:** Only the name of the app that's currently open. **What Tepera doesn't see or do:** It doesn't read messages, text, passwords or anything on your screen. It doesn't tap anything for you. It never stops you from closing or uninstalling any app. **Where the data goes:** Nowhere. Tepera processes the names of opened apps only on your phone and doesn't send them anywhere. You can turn it off anytime in Android settings. Without it, the rest of Tepera works as usual. After you tap "I agree", Android Accessibility settings will open. Find "Tepera: pauses and ideas" in the list (it may be under "Installed apps" or "Downloaded apps") and turn it on.» — кнопки «I agree» / «Not now».
+- UA: те саме в `values/strings.xml` (`a11y_disclosure_*`, кнопки «Погоджуюсь» / «Не зараз»).
+
+Показується саме при першому запуску (`ConsentPromptOnLaunch`, один раз), далі — лише з Налаштувань. Тексти тут і в застосунку мають збігатися; якщо міняєш один — міняй обидва.
 
 ## 4. Сценарій відео (≈ 2 хв; мова застосунку — English; субтитри EN)
 

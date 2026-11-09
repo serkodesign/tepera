@@ -1,6 +1,6 @@
 # Store listing — English
 
-*Updated 03.11.2026 for build 1.0.5-beta (v3 "Scrolling hours" + the optional Accessibility service). Screenshots — `play-store/marketing/v3/en/` (1080×2160).*
+*Updated 09.11.2026 for build 1.1.1-beta (35) (v3 "Scrolling hours" + the optional Accessibility service). Screenshots — `play-store/marketing/v3/en/` (1080×2160).*
 
 ## App name (≤30 chars)
 Tepera: Screen Time & Offline
@@ -22,7 +22,9 @@ We rarely pick up the phone by accident: it mostly happens at the same hours and
 
 ⏰ **Scrolling hours** — after a week of observation Tepera shows the hours when you usually get stuck in the feeds you choose yourself. You can also add your own windows by hand.
 
-💡 **A suggestion at the right moment** — open a chosen feed during your hour and Tepera briefly suggests something else: "Maybe go for a walk?". Say yes, ask for another idea, or open the feed for 5 minutes. The choice is always yours.
+⏸️ **A pause before apps you choose** — pick the apps that pull you in most. When you open one, Tepera shows a short, calm pause with "Not now" or "Open". You can always continue.
+
+💡 **A suggestion at the right moment** — open a chosen feed during your hour and Tepera briefly suggests something else: "Maybe go for a walk?". Say yes, ask for another idea, or open the feed for 5 minutes. If you keep coming back to the feed, Tepera may ask for a short puzzle first (up to 30 seconds; you can switch this off, and you can always leave instead). The choice is always yours.
 
 🌗 **Gentle exit** — after "Open for 5 min" the screen dims a little and Tepera quietly reminds you of the time: "5 more" or "Leave". Nothing is blocked, no penalties.
 
@@ -46,7 +48,7 @@ We rarely pick up the phone by accident: it mostly happens at the same hours and
 
 **Permissions and Accessibility:**
 • **Usage access** (Settings → Special access) — needed to count Online time and find scrolling hours. Without it the offline log still works fully.
-• **The Accessibility service is optional.** It is needed only to show a suggestion or a reminder over a feed you chose. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages. You turn it on yourself after an explanation in the app and can turn it off any time in Android settings. Tepera does not send this data anywhere.
+• **The Accessibility service is optional** (listed in Android settings as "Tepera: pauses and ideas"). It is needed only to show a pause before apps you chose, a suggestion over a feed you chose during your scrolling hours, or a gentle dim and reminder after the timer you set. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages. Tepera explains this in the app when you first open it; the service turns on only if you tap "I agree" and enable it yourself in Android settings. You can turn it off any time there. Tepera does not send this data anywhere.
 • **Notifications** — optional, for the weekly summary.
 
 Built in a "monastic" style: no badges, no streaks, no points for usage. Just a calm look at your day for people who want a healthier balance between the phone and real life.
