@@ -48,7 +48,7 @@ We rarely pick up the phone by accident: it mostly happens at the same hours and
 
 **Permissions and Accessibility:**
 • **Usage access** (Settings → Special access) — needed to count Online time and find scrolling hours. Without it the offline log still works fully.
-• **The Accessibility service is optional** (listed in Android settings as "Tepera: pauses and ideas"). It is needed only to show a pause before apps you chose, a suggestion over a feed you chose during your scrolling hours, or a gentle dim and reminder after the timer you set. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages. Tepera explains this in the app when you first open it; the service turns on only if you tap "I agree" and enable it yourself in Android settings. You can turn it off any time there. Tepera does not send this data anywhere.
+• **The Accessibility service is optional** (listed in Android settings as "Tepera: pauses and ideas"). It is needed only to show a pause before apps you chose, a suggestion over a feed you chose during your scrolling hours, or a gentle dim and reminder after the timer you set. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages. Tepera explains this on the second screen of the initial setup; the service turns on only if you tap "I agree" and enable it yourself in Android settings. You can turn it off any time there. Tepera does not send this data anywhere.
 • **Notifications** — optional, for the weekly summary.
 
 Built in a "monastic" style: no badges, no streaks, no points for usage. Just a calm look at your day for people who want a healthier balance between the phone and real life.

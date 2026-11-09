@@ -15,7 +15,7 @@
 | Що робиться | (1) «Застосунки з затримкою»: якщо пакет у списку, обраному користувачем, — запускається екран паузи Tepera (кнопки «Не зараз»/«Відкрити»); (2) «Години скролінгу» (v3): коли відкрито обрану стрічку у власну годину ризику — підказка Tepera поверх екрана (з 3-го повторного відкриття — коротка головоломка до 30 с, якщо ввімкнено «Puzzles on re-entry»; завжди можна вийти), а після обраного таймера на 5 хв — тимчасове затемнення (`TYPE_ACCESSIBILITY_OVERLAY`) з кнопками «5 more»/«Leave» |
 | Зберігається | локально: пакет + результат (PROCEEDED/CANCELLED) у `gate_events` |
 | Передається | нічого, нікому |
-| Вмикається | лише користувачем. Екран розкриття з'являється сам при першому запуску (і повторно, якщо згоди нема, а службу ввімкнено вручну), далі — з Налаштувань → Digital detox → «Apps with a delay» → «Turn on». «I agree» → системні налаштування доступності, де службу названо «Tepera: pauses and ideas» (Installed apps) |
+| Вмикається | лише користувачем. Екран розкриття — другий крок онбордингу (одразу після вступного екрана «Start», до будь-яких дозволів); тим, хто оновився з попередньої версії, він показується один раз з Home; далі — з Налаштувань → Digital detox → «Apps with a delay» → «Turn on». «I agree» → системні налаштування доступності, де службу названо «Tepera: pauses and ideas» (Installed apps) |
 
 ## 2. Відповіді для форми (EN — форма англомовна)
 
@@ -49,8 +49,9 @@
 > locally. Nothing is transmitted or shared with third parties.
 
 **User control / disclosure**
-> The service is off by default. The prominent in-app disclosure appears automatically on first launch, before any request for
-> the permission (and again if consent is missing while the service was turned on manually). It explains why the service is
+> The service is off by default. The prominent in-app disclosure is the second step of the app's onboarding (right after the
+> welcome screen with the "Start" button), before any permission is requested. Users who updated from an earlier version see it once
+> from the home screen. It explains why the service is
 > needed, what Tepera sees (only the app name), what it does not see or do, and where the data goes (nowhere), and also tells
 > the user which entry to look for in Android settings ("Tepera: pauses and ideas"). It has "I agree" and "Not now" buttons;
 > only "I agree" opens Android Accessibility settings. Declining records nothing and turns nothing on; the dialog can be opened
@@ -65,7 +66,7 @@
 - EN: «Pauses and ideas need Android's accessibility service. **Why:** This Android service (Accessibility Service API) lets Tepera know when you open an app. That's the only way Tepera can show a short pause before the apps you chose, or an idea instead of the feed during your scrolling hours, right when you open them, and gently dim the screen after 5 minutes. **What Tepera sees:** Only the name of the app that's currently open. **What Tepera doesn't see or do:** It doesn't read messages, text, passwords or anything on your screen. It doesn't tap anything for you. It never stops you from closing or uninstalling any app. **Where the data goes:** Nowhere. Tepera processes the names of opened apps only on your phone and doesn't send them anywhere. You can turn it off anytime in Android settings. Without it, the rest of Tepera works as usual. After you tap "I agree", Android Accessibility settings will open. Find "Tepera: pauses and ideas" in the list (it may be under "Installed apps" or "Downloaded apps") and turn it on.» — кнопки «I agree» / «Not now».
 - UA: те саме в `values/strings.xml` (`a11y_disclosure_*`, кнопки «Погоджуюсь» / «Не зараз»).
 
-Показується саме при першому запуску (`ConsentPromptOnLaunch`, один раз), далі — лише з Налаштувань. Тексти тут і в застосунку мають збігатися; якщо міняєш один — міняй обидва.
+Показується як другий крок онбордингу (`AccessibilityOnboardingStep`, після Welcome у режимі v3), один раз; далі — лише з Налаштувань → Digital detox → Apps with a delay → Turn on і з перемикача режиму v3. Тим, хто оновився, — один раз з Home. Тексти тут і в застосунку мають збігатися; якщо міняєш один — міняй обидва.
 
 ## 4. Сценарій відео (≈ 2 хв; мова застосунку — English; субтитри EN)
 
@@ -161,3 +162,11 @@
 `play-store/accessibility-demo.en.srt` цих кадрів ще не має — дописати після запису. Також звірити розділ 3 з реальним
 `a11y_disclosure_*`: поточний текст розкриття згадує лише «коротку паузу», а не підказку поверх стрічки й затемнення —
 **це потрібно виправити в коді/рядках до запису відео** (розкриття має описувати всі дії служби).
+
+## 8. Інструкція для рецензента (поле в декларації, EN) — оновлено для build 36
+
+> How to find the prominent disclosure: install the app and open it. Tap "Start" on the first screen. The next screen is the
+> disclosure for the Accessibility service ("Pauses and ideas need Android's accessibility service"), with "I agree" and "Not now"
+> buttons. Nothing is requested before the user taps "I agree". The service can be turned on later in Settings (gear icon) →
+> Digital detox → Apps with a delay → Accessibility tab → "Turn on", which shows the same disclosure first. In Android settings
+> the service is listed as "Tepera: pauses and ideas" (Installed apps).
