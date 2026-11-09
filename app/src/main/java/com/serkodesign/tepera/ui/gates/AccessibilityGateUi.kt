@@ -121,26 +121,24 @@ fun FreeOpensCard(perDay: Int, usedToday: Int, onChange: (Int) -> Unit, modifier
 
 private const val MAX_FREE_OPENS = 10
 
-private var consentPromptShownThisLaunch = false
 
 /**
- * Розкриття має бути видно під час звичайного користування (вимога Play), тож екран з'являється сам:
- * - згоди немає, службу ввімкнено (вручну чи до версії 1.1) — один раз за запуск;
- * - згоди немає, службу не ввімкнено — один раз після встановлення/оновлення (далі лише з налаштувань).
- * «Не зараз» згодою не вважається й нічого не вмикає.
+ * Крок онбордингу з розкриттям (вимога Play: prominent disclosure у звичайному потоці, до запиту дозволу). Стоїть після
+ * короткого пояснення, що таке Tepera (Welcome → категорії → оцінка → орієнтир), перед екраном дозволів, тож рецензент
+ * проходить повз нього. «Показано» фіксується одразу. «Погоджуюсь» → згода + системні налаштування доступності, крок
+ * завершується; «Не зараз» / «Назад» → нічого не записується й не вмикається, онбординг іде далі.
+ * Інші входи (Налаштування → Digital detox → Apps with a delay, режим v3) використовують [rememberAccessibilityRequest].
  */
 @Composable
-fun ConsentPromptOnLaunch() {
+fun AccessibilityOnboardingStep(settingsStore: com.serkodesign.tepera.data.local.SettingsStore, onDone: () -> Unit) {
     val context = LocalContext.current
-    val request = rememberAccessibilityRequest()
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        if (consentPromptShownThisLaunch) return@LaunchedEffect
-        if (!GateAccessibility.isAvailable || A11yConsentStore.isAccepted(context)) return@LaunchedEffect
-        val serviceOn = GateAccessibility.isEnabled(context)
-        if (serviceOn || !A11yConsentStore.isAutoPromptShown(context)) {
-            consentPromptShownThisLaunch = true
-            A11yConsentStore.markAutoPromptShown(context)
-            request()
-        }
-    }
+    androidx.compose.runtime.LaunchedEffect(Unit) { settingsStore.setA11yOnboardingSeen() }
+    AccessibilityDisclosureScreen(
+        onAgree = {
+            A11yConsentStore.accept(context)
+            GateAccessibility.openSettings(context)
+            onDone()
+        },
+        onDismiss = onDone
+    )
 }

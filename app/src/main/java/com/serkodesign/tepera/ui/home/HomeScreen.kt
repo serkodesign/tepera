@@ -387,8 +387,12 @@ fun HomeScreen(
     val gatesOnboardingSeen = BuildConfig.V3_MVP || gatesSeenStored
     val onboardingSeen by settingsStore.onboardingUsageAccessSeen.collectAsState(initial = true)
     val permissionStepPending = balanceState.hasUsageAccess == false && !onboardingSeen
+    val a11ySeenStored by settingsStore.a11yOnboardingSeen.collectAsState(initial = true)
+    val a11yContext = androidx.compose.ui.platform.LocalContext.current
+    val a11yStepPending = com.serkodesign.tepera.util.GateAccessibility.isAvailable && !a11ySeenStored &&
+        !com.serkodesign.tepera.util.A11yConsentStore.isAccepted(a11yContext)
     val onboardingPending = !welcomeSeen || !categoryOnboardingSeen || !onlineEstimateOnboardingSeen ||
-        !targetOnboardingSeen || !gatesOnboardingSeen || permissionStepPending
+        !targetOnboardingSeen || a11yStepPending || !gatesOnboardingSeen || permissionStepPending
     LaunchedEffect(onboardingPending, welcomeSeen) {
         if (onboardingPending) {
             // Race "Home оживає між popBackStack()/navigate()": після кроку Home на мить композиться й бачить уже

@@ -55,6 +55,7 @@ private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids"
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
 private val WELCOME_ONBOARDING_SEEN_KEY = booleanPreferencesKey("welcome_onboarding_seen")
+private val A11Y_ONBOARDING_SEEN_KEY = booleanPreferencesKey("a11y_onboarding_seen")
 // P-3 (CLAUDE-CODE-PLAN-pro.md): grandfathering — versionCode, на якому Tepera вперше побачила
 // цей код (не плутати з FIRST_LAUNCH_AT_KEY вище — інша семантика, інший поріг, та сама ідея
 // "сіяти один раз і не перезаписувати").
@@ -196,6 +197,17 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setGatesOnboardingSeen() {
         context.settingsDataStore.edit { it[GATES_ONBOARDING_SEEN_KEY] = true }
+    }
+
+    /**
+     * Крок онбордингу з розкриттям служби доступності (лише збірка з сервісом). "Показано" фіксується одразу при
+     * відкритті; не скидається "Пропустити все" — розкриття має бути видно кожному, хто ще не давав згоди.
+     */
+    val a11yOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[A11Y_ONBOARDING_SEEN_KEY] ?: false }
+
+    suspend fun setA11yOnboardingSeen() {
+        context.settingsDataStore.edit { it[A11Y_ONBOARDING_SEEN_KEY] = true }
     }
 
     /**

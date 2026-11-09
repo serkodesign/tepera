@@ -154,6 +154,7 @@ private object Routes {
     const val TARGET_ONBOARDING = "target_onboarding"
     const val WELCOME_ONBOARDING = "welcome_onboarding"
     const val GATES_ONBOARDING = "gates_onboarding"
+    const val A11Y_ONBOARDING = "a11y_onboarding"
     const val SETTINGS = "settings"
     const val SETTINGS_GROUP = "settings_group/{group}"
     const val TRACKING_SETTINGS = "tracking_settings"
@@ -201,7 +202,7 @@ private object Routes {
         SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
-        WELCOME_ONBOARDING, GATES_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
+        WELCOME_ONBOARDING, GATES_ONBOARDING, A11Y_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
     )
 
     fun addEntry(categoryId: String? = null) =
@@ -326,9 +327,10 @@ fun TeperaNavHost(
     // Home між кроками не показується. Порядок і умови (доступ до статистики визначає, чи буде
     // крок дозволу або орієнтиру) — у [nextOnboardingRoute]; коли кроків не лишилось — назад на Home.
     val onboardingScope = rememberCoroutineScope()
+    val appContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
     fun advanceOnboarding(from: String) {
         onboardingScope.launch {
-            val next = nextOnboardingRoute(settingsStore, balanceRepository)
+            val next = nextOnboardingRoute(settingsStore, balanceRepository, appContext)
             if (next == null) {
                 navController.popBackStack(Routes.HOME, inclusive = false)
             } else {
@@ -460,6 +462,16 @@ fun TeperaNavHost(
                 } else if (BuildConfig.V3_MVP && v3Mode == true) {
                     val v3Seen by settingsStore.v3OnboardingSeen.collectAsState(initial = null)
                     LaunchedEffect(v3Seen) { if (v3Seen == false) navController.navigate(Routes.V3_WELCOME) }
+                    // Той, хто вже пройшов онбординг до появи кроку з розкриттям, бачить його один раз (без згоди й без «Не зараз» раніше).
+                    val a11ySeen by settingsStore.a11yOnboardingSeen.collectAsState(initial = true)
+                    LaunchedEffect(v3Seen, a11ySeen) {
+                        if (v3Seen == true && !a11ySeen && com.serkodesign.tepera.util.GateAccessibility.isAvailable &&
+                            !com.serkodesign.tepera.util.A11yConsentStore.isAccepted(appContext)
+                        ) {
+                            delay(400)
+                            navController.navigate(Routes.A11Y_ONBOARDING)
+                        }
+                    }
                     RiskHomeScreen(
                         onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                         onOpenCalendar = { navController.navigate(Routes.CALENDAR) },
@@ -497,7 +509,7 @@ fun TeperaNavHost(
                     onOpenCategoryHistory = { categoryId -> navController.navigate(Routes.categoryHistory(categoryId)) },
                     onShowOnboardingStep = {
                         onboardingScope.launch {
-                            nextOnboardingRoute(settingsStore, balanceRepository)?.let { navController.navigate(it) }
+                            nextOnboardingRoute(settingsStore, balanceRepository, appContext)?.let { navController.navigate(it) }
                         }
                     },
                     scrollToTopSignal = homeScrollToTopSignal,
@@ -639,6 +651,24 @@ fun TeperaNavHost(
                     onSkipAll = ::skipAllOnboarding
                 )
             }
+            composable(Routes.A11Y_ONBOARDING) {
+                com.serkodesign.tepera.ui.gates.AccessibilityOnboardingStep(
+                    settingsStore = settingsStore,
+                    onDone = {
+                        onboardingScope.launch {
+                            when {
+                                // Режим v3, онбординг ще триває: далі доступ до статистики; Welcome прибираємо зі стека.
+                                BuildConfig.V3_MVP && settingsStore.v3ModeEnabled.first() && !settingsStore.v3OnboardingSeen.first() ->
+                                    navController.navigate(Routes.V3_ACCESS) { popUpTo(Routes.V3_WELCOME) { inclusive = true } }
+                                // Режим v3, онбординг пройдено раніше (оновлення): назад на Home.
+                                BuildConfig.V3_MVP && settingsStore.v3ModeEnabled.first() ->
+                                    navController.popBackStack(Routes.HOME, inclusive = false)
+                                else -> advanceOnboarding(Routes.A11Y_ONBOARDING)
+                            }
+                        }
+                    }
+                )
+            }
             composable(Routes.GATES_ONBOARDING) {
                 GatesOnboardingScreen(
                     settingsStore = settingsStore,
@@ -736,7 +766,15 @@ fun TeperaNavHost(
                     generateSequence(ctx) { (it as? android.content.ContextWrapper)?.baseContext }.filterIsInstance<android.app.Activity>().firstOrNull()
                 }
                 androidx.activity.compose.BackHandler { activity?.finish() }
-                V3WelcomeScreen(onStart = { navController.navigate(Routes.V3_ACCESS) })
+                V3WelcomeScreen(onStart = {
+                    onboardingScope.launch {
+                        // Розкриття служби доступності — другий крок: після пояснення, що таке Tepera, і до будь-яких дозволів.
+                        val a11yPending = com.serkodesign.tepera.util.GateAccessibility.isAvailable &&
+                            !com.serkodesign.tepera.util.A11yConsentStore.isAccepted(appContext) &&
+                            !settingsStore.a11yOnboardingSeen.first()
+                        navController.navigate(if (a11yPending) Routes.A11Y_ONBOARDING else Routes.V3_ACCESS)
+                    }
+                })
             }
             composable(Routes.V3_ACCESS) {
                 V3AccessScreen(
@@ -855,13 +893,18 @@ fun TeperaNavHost(
 
 /**
  * Наступний непройдений крок онбордингу або null, коли всі пройдені: Welcome → категорії → оцінка Online →
- * орієнтир → ворота → дозвіл (останній, лише без доступу). Пропозиція віджета — тепер картка Home, не крок.
+ * орієнтир → розкриття доступності (лише beta) → ворота → дозвіл (останній, лише без доступу). Пропозиція віджета — тепер картка Home, не крок.
  */
-private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository): String? {
+private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository, context: android.content.Context): String? {
     if (!settingsStore.welcomeOnboardingSeen.first()) return Routes.WELCOME_ONBOARDING
     if (!settingsStore.categoryOnboardingSeen.first()) return Routes.CATEGORY_ONBOARDING
     if (!settingsStore.onlineEstimateOnboardingSeen.first()) return Routes.ONLINE_ESTIMATE_ONBOARDING
     if (!settingsStore.targetOnboardingSeen.first()) return Routes.TARGET_ONBOARDING
+    // Розкриття служби доступності (лише збірка з сервісом): після пояснення цінності, до дозволів; без згоди й один раз.
+    if (com.serkodesign.tepera.util.GateAccessibility.isAvailable &&
+        !com.serkodesign.tepera.util.A11yConsentStore.isAccepted(context) &&
+        !settingsStore.a11yOnboardingSeen.first()
+    ) return Routes.A11Y_ONBOARDING
     if (!BuildConfig.V3_MVP && !settingsStore.gatesOnboardingSeen.first()) return Routes.GATES_ONBOARDING
     // Дозвіл — останній крок, і лише якщо доступу ще нема.
     if (!balanceRepository.hasUsageAccess() && !settingsStore.onboardingUsageAccessSeen.first()) return Routes.ONBOARDING

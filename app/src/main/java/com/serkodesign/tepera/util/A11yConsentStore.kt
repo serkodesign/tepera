@@ -11,18 +11,10 @@ object A11yConsentStore {
     private const val PREFS = "a11y_consent"
     const val KEY_ACCEPTED = "a11y_disclosure_accepted"
     const val KEY_ACCEPTED_AT = "a11y_disclosure_accepted_at"
-    private const val KEY_AUTO_PROMPT_SHOWN = "a11y_disclosure_auto_shown"
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun isAccepted(context: Context): Boolean = prefs(context).getBoolean(KEY_ACCEPTED, false)
-
-    /** Чи екран розкриття вже показувався сам (один раз після встановлення/оновлення). Згодою це не є. */
-    fun isAutoPromptShown(context: Context): Boolean = prefs(context).getBoolean(KEY_AUTO_PROMPT_SHOWN, false)
-
-    fun markAutoPromptShown(context: Context) {
-        prefs(context).edit().putBoolean(KEY_AUTO_PROMPT_SHOWN, true).apply()
-    }
 
     fun accept(context: Context, nowMillis: Long = System.currentTimeMillis()) {
         prefs(context).edit().putBoolean(KEY_ACCEPTED, true).putLong(KEY_ACCEPTED_AT, nowMillis).apply()
