@@ -16,6 +16,11 @@ object A11yConsentStore {
 
     fun isAccepted(context: Context): Boolean = prefs(context).getBoolean(KEY_ACCEPTED, false)
 
+    /** Скидає запис згоди (службовий «Перезапустити онбординг»): розкриття знову показується як при першому запуску. */
+    fun reset(context: Context) {
+        prefs(context).edit().remove(KEY_ACCEPTED).remove(KEY_ACCEPTED_AT).apply()
+    }
+
     fun accept(context: Context, nowMillis: Long = System.currentTimeMillis()) {
         prefs(context).edit().putBoolean(KEY_ACCEPTED, true).putLong(KEY_ACCEPTED_AT, nowMillis).apply()
     }

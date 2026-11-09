@@ -823,6 +823,9 @@ fun TeperaNavHost(
                         onboardingScope.launch {
                             settingsStore.setV3OnboardingSeen(false)
                             settingsStore.setV3ModeEnabled(true)
+                            // Щоб пройти й розкриття служби доступності ще раз (без цього крок вважається побаченим).
+                            settingsStore.setA11yOnboardingSeen(false)
+                            com.serkodesign.tepera.util.A11yConsentStore.reset(appContext)
                             navController.navigate(Routes.V3_WELCOME)
                         }
                     }

@@ -206,8 +206,8 @@ class SettingsStore(private val context: Context) {
     val a11yOnboardingSeen: Flow<Boolean> = context.settingsDataStore.data
         .map { it[A11Y_ONBOARDING_SEEN_KEY] ?: false }
 
-    suspend fun setA11yOnboardingSeen() {
-        context.settingsDataStore.edit { it[A11Y_ONBOARDING_SEEN_KEY] = true }
+    suspend fun setA11yOnboardingSeen(seen: Boolean = true) {
+        context.settingsDataStore.edit { it[A11Y_ONBOARDING_SEEN_KEY] = seen }
     }
 
     /**
