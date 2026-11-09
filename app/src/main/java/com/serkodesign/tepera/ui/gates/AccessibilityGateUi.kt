@@ -124,8 +124,10 @@ private const val MAX_FREE_OPENS = 10
 private var consentPromptShownThisLaunch = false
 
 /**
- * Службу ввімкнено, а згоди на розкриття немає (ввімкнули вручну в налаштуваннях або до версії 1.1): один раз за запуск
- * застосунку показуємо екран розкриття. Єдиний випадок, коли він з'являється без натискання. Без автоповторів.
+ * Розкриття має бути видно під час звичайного користування (вимога Play), тож екран з'являється сам:
+ * - згоди немає, службу ввімкнено (вручну чи до версії 1.1) — один раз за запуск;
+ * - згоди немає, службу не ввімкнено — один раз після встановлення/оновлення (далі лише з налаштувань).
+ * «Не зараз» згодою не вважається й нічого не вмикає.
  */
 @Composable
 fun ConsentPromptOnLaunch() {
@@ -133,8 +135,11 @@ fun ConsentPromptOnLaunch() {
     val request = rememberAccessibilityRequest()
     androidx.compose.runtime.LaunchedEffect(Unit) {
         if (consentPromptShownThisLaunch) return@LaunchedEffect
-        if (GateAccessibility.isEnabled(context) && !A11yConsentStore.isAccepted(context)) {
+        if (!GateAccessibility.isAvailable || A11yConsentStore.isAccepted(context)) return@LaunchedEffect
+        val serviceOn = GateAccessibility.isEnabled(context)
+        if (serviceOn || !A11yConsentStore.isAutoPromptShown(context)) {
             consentPromptShownThisLaunch = true
+            A11yConsentStore.markAutoPromptShown(context)
             request()
         }
     }
