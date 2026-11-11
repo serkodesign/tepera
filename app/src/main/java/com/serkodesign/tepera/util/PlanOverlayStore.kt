@@ -27,6 +27,7 @@ object PlanOverlayStore {
     private const val KEY_SE_ON_TIME = "se_on_time"
     private const val KEY_SE_EXTENDED = "se_extended"
     private const val KEY_PUZZLES_ENABLED = "puzzles_enabled"
+    private const val KEY_DIM_STRONG = "dim_strong"
     private const val KEY_REENTRY_PREFIX = "reentry_"
     private const val KEY_REENTRY_AT_PREFIX = "reentry_t_"
     private const val KEY_LAST_PUZZLE = "last_puzzle"
@@ -54,6 +55,14 @@ object PlanOverlayStore {
     fun arePuzzlesEnabled(context: Context): Boolean = prefs(context).getBoolean(KEY_PUZZLES_ENABLED, true)
 
     fun setPuzzlesEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_PUZZLES_ENABLED, enabled).apply()
+
+    /**
+     * «Приглушення» в Налаштуваннях (Figma T2 · Налаштування): як сильно темніє екран, коли 5 хв минуло.
+     * М'яке (за замовчуванням) — колишнє затемнення; Помітне — сильніше вже з першої секунди.
+     */
+    fun isDimStrong(context: Context): Boolean = prefs(context).getBoolean(KEY_DIM_STRONG, false)
+
+    fun setDimStrong(context: Context, strong: Boolean) = prefs(context).edit().putBoolean(KEY_DIM_STRONG, strong).apply()
 
     /** Це вже який за рахунком показ екрана «я за тобою слідкую» для цих воріт у межах поточної обіцянки (повертає новий номер). */
     fun recordReentry(context: Context, packageName: String, nowMillis: Long = System.currentTimeMillis()): Reentry {

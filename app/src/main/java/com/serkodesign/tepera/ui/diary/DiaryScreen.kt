@@ -110,7 +110,11 @@ fun DiaryScreen(
     onAddEntry: () -> Unit,
     // Повторний тап по вкладці "Щоденник" у навбарі, коли вже на ній (TeperaNavHost) — прокручує
     // список наверх; значення саме по собі не важливе, лише його зміна.
-    scrollToTopSignal: Int = 0
+    scrollToTopSignal: Int = 0,
+    // Кнопка календаря в заголовку (режим годин скролінгу: на Головній v2 її більше нема); `null` — без кнопки.
+    onOpenCalendar: (() -> Unit)? = null,
+    // Ряд чіпів активностей над історією (режим годин скролінгу: на Головній v2 їх більше нема).
+    showActivities: Boolean = false
 ) {
     val viewModel: DiaryViewModel = viewModel(
         factory = DiaryViewModel.Factory(
@@ -132,22 +136,39 @@ fun DiaryScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TeperaScreenTitle(stringResource(R.string.diary_screen_title))
+            TeperaScreenTitle(stringResource(R.string.diary_screen_title)) {
+                // Календар переїхав сюди з шапки Головної (Головна v2, рішення власника 11.11.2026).
+                if (onOpenCalendar != null) {
+                    com.serkodesign.tepera.ui.theme.TeperaIconButton(
+                        icon = com.serkodesign.tepera.ui.theme.TeperaIcons.Calendar,
+                        contentDescription = stringResource(R.string.calendar_screen_title),
+                        onClick = onOpenCalendar,
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        containerColor = com.serkodesign.tepera.ui.theme.TeperaPalette.headerButtonFill,
+                        contentColor = com.serkodesign.tepera.ui.theme.TeperaPalette.textPrimary
+                    )
+                }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
                     // Запас під кнопку "+" (16 + 64 + 16dp над таблеткою): інакше на низьких екранах
                     // (Sony XZ1 Compact) остання картка запису назавжди лишалась під кнопкою.
-                    .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = bottomNavClearance() + 96.dp),
+                    .padding(top = 32.dp, bottom = bottomNavClearance() + 96.dp),
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                HistoryContent(
-                    groups = state.history,
-                    unlockCountsByDay = state.unlockCountsByDay,
-                    lastPhoneUseYesterdayMillis = state.lastPhoneUseYesterdayMillis,
-                    onEditEntry = onEditEntry
-                )
+                // Активності (старт/стоп таймера) переїхали сюди з Головної v2 (рішення власника, 11.11.2026). Ряд чіпів
+                // на всю ширину з власними відступами, тому бічні 16dp — лише в історії нижче.
+                if (showActivities) com.serkodesign.tepera.ui.risk.ActivityChips(onAddEntry)
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(32.dp)) {
+                    HistoryContent(
+                        groups = state.history,
+                        unlockCountsByDay = state.unlockCountsByDay,
+                        lastPhoneUseYesterdayMillis = state.lastPhoneUseYesterdayMillis,
+                        onEditEntry = onEditEntry
+                    )
+                }
             }
         }
 

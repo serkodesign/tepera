@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Прев'ю віджета «Online: кільце доби» (2x1) у меню віджетів, Android 12+ — та сама будова, що InfoOnlineRing2x1. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="72dp" android:layout_gravity="center"
+        android:background="@drawable/widget_preview_capsule" android:gravity="center_vertical"
+        android:orientation="horizontal" android:paddingStart="12dp" android:paddingEnd="12dp">
+        <ImageView android:layout_width="48dp" android:layout_height="48dp" android:src="@drawable/widget_preview_ring"
+            android:importantForAccessibility="no" />
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="10dp" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/balance_online_label"
+                android:textColor="@color/widget_preview_sub" android:textSize="12sp" android:textStyle="bold" android:maxLines="1" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_preview_online_value"
+                android:textColor="@color/widget_preview_text" android:textSize="17sp" android:textStyle="bold" android:maxLines="1" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

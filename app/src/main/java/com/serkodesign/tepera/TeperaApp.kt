@@ -5,15 +5,6 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import com.serkodesign.tepera.widget.InfoActive2x1Receiver
-import com.serkodesign.tepera.widget.InfoLast4x1Receiver
-import com.serkodesign.tepera.widget.InfoOnlineBar4x1Receiver
-import com.serkodesign.tepera.widget.InfoOnlineRing2x1Receiver
-import com.serkodesign.tepera.widget.InfoOrb1x1Receiver
-import com.serkodesign.tepera.widget.InfoStart2x1Receiver
-import com.serkodesign.tepera.widget.InfoWeek4x1Receiver
-import com.serkodesign.tepera.widget.TeperaWidget1x1Receiver
-import com.serkodesign.tepera.widget.TeperaWidget2x1Receiver
 import com.serkodesign.tepera.widget.TeperaWidget4x2Receiver
 import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 import androidx.room.Room
@@ -311,7 +302,9 @@ class TeperaApp : Application() {
      * оновлення пакета (`lastUpdateTime`), а не лише версія. Виклик обмежений системою за частотою
      * (кілька на годину) і при перевищенні повертає ненульовий результат замість помилки — тому успіх запам'ятовується
      * ОКРЕМО для кожного провайдера (4x1/4x2), а невдалий повторюється при наступному запуску.
-     * На Android < 15 діє статичний `previewImage`.
+     * Генерується лише для 4x1/4x2 (11.11.2026): решта віджетів (1x1, 2x1, Online-кільце, орб) має статичний
+     * `previewLayout` — менше викликів під ліміт, а генероване прев'ю 2x1 малювало кнопки одна на одній.
+     * На Android 12–14 діє `previewLayout`, нижче — `previewImage`.
      */
     private fun registerWidgetPreviewIfNeeded() {
         if (Build.VERSION.SDK_INT < 35) return
@@ -323,15 +316,6 @@ class TeperaApp : Application() {
             val receivers = listOf(
                 "preview_key_4x1" to TeperaWidgetReceiver::class,
                 "preview_key_4x2" to TeperaWidget4x2Receiver::class,
-                "preview_key_1x1" to TeperaWidget1x1Receiver::class,
-                "preview_key_2x1" to TeperaWidget2x1Receiver::class,
-                "preview_key_info_online_ring" to InfoOnlineRing2x1Receiver::class,
-                "preview_key_info_online_bar" to InfoOnlineBar4x1Receiver::class,
-                "preview_key_info_active" to InfoActive2x1Receiver::class,
-                "preview_key_info_start" to InfoStart2x1Receiver::class,
-                "preview_key_info_orb" to InfoOrb1x1Receiver::class,
-                "preview_key_info_last" to InfoLast4x1Receiver::class,
-                "preview_key_info_week" to InfoWeek4x1Receiver::class
             )
             for ((prefKey, receiver) in receivers) {
                 if (prefs.getString(prefKey, null) == key) continue
@@ -348,6 +332,6 @@ class TeperaApp : Application() {
     }
 
     private companion object {
-        const val WIDGET_PREVIEW_VERSION = 5
+        const val WIDGET_PREVIEW_VERSION = 6
     }
 }

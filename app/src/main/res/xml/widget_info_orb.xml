@@ -10,4 +10,5 @@
     android:widgetCategory="home_screen"
     android:initialLayout="@layout/widget_loading"
     android:description="@string/widget_info_orb_description"
+    android:previewLayout="@layout/widget_preview_orb"
     android:previewImage="@drawable/widget_preview_info_orb" />

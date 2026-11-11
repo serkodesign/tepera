@@ -13,4 +13,5 @@
     android:widgetCategory="home_screen"
     android:initialLayout="@layout/widget_loading"
     android:description="@string/widget_4x1_description"
+    android:previewLayout="@layout/widget_preview_buttons_4x1"
     android:previewImage="@drawable/widget_preview" />

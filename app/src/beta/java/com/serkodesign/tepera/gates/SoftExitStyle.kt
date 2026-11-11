@@ -161,7 +161,7 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
      * Затемнення під плашкою: нейтральний чорний 50% (теплого відтінку немає — за рішенням власника). Дотики крізь нього проходять
      * (прапорці вікна задає контролер).
      */
-    fun dimBackground(): Drawable = ColorDrawable(0x80000000.toInt())
+    fun dimBackground(strong: Boolean = false): Drawable = ColorDrawable(if (strong) 0xB3000000.toInt() else 0x80000000.toInt())
 
     /**
      * `ExitToast` (3.7, стиль M3 snackbar): фон `inverseSurface`, форма 4dp, поля 12×16dp, висота від 48dp, проміжок 12dp;

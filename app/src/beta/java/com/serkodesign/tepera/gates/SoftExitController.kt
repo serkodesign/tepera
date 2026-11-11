@@ -70,6 +70,69 @@ class SoftExitController(private val service: AccessibilityService) {
         else setOverlayVisible(true)
     }
     private val onDeadline = Runnable { showReminder() }
+
+    // --- Екран блокування ---
+    // Вікна TYPE_ACCESSIBILITY_OVERLAY Android малює й поверх екрана блокування (відтворено на Moto G84: заблокував екран
+    // у стрічці, натиснув кнопку живлення — плашка «5 хв минуло» на локскріні). Тому поки екран вимкнений чи заблокований,
+    // затемнення й плашка сховані, а нагадування, що настало в цей час, чекає розблокування.
+    private val powerManager = service.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
+    private val keyguardManager = service.getSystemService(android.content.Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
+    private var hiddenWhileLocked = false
+    private var reminderWaitsForUnlock = false
+
+    private fun screenUsable(): Boolean = powerManager.isInteractive && !keyguardManager.isKeyguardLocked
+
+    private val screenReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
+            when (intent.action) {
+                android.content.Intent.ACTION_SCREEN_OFF -> onScreenLocked()
+                // Без блокування USER_PRESENT може не прийти — тоді вистачає SCREEN_ON із уже знятим keyguard.
+                android.content.Intent.ACTION_USER_PRESENT, android.content.Intent.ACTION_SCREEN_ON -> onScreenMaybeUsable()
+            }
+        }
+    }
+
+    init {
+        val filter = android.content.IntentFilter().apply {
+            addAction(android.content.Intent.ACTION_SCREEN_OFF)
+            addAction(android.content.Intent.ACTION_SCREEN_ON)
+            addAction(android.content.Intent.ACTION_USER_PRESENT)
+        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            service, screenReceiver, filter, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    private fun onScreenLocked() {
+        if (session == null) return
+        handler.removeCallbacks(restoreAfterSystemSurface)
+        if (dimView != null || pillView != null) {
+            setOverlayVisible(false)
+            hiddenWhileLocked = true
+        }
+    }
+
+    private fun onScreenMaybeUsable() {
+        if (!screenUsable()) return
+        val s = session ?: run { hiddenWhileLocked = false; reminderWaitsForUnlock = false; return }
+        if (!hiddenWhileLocked && !reminderWaitsForUnlock) return
+        val fg = foregroundCheck?.invoke()
+        // Після розблокування людина вже не в стрічці сесії — сесію завершуємо, оверлей не повертаємо.
+        if (fg != null && fg != s.packageName && fg != service.packageName) {
+            hiddenWhileLocked = false
+            reminderWaitsForUnlock = false
+            finish(onTime = isOnTime(s))
+            return
+        }
+        if (reminderWaitsForUnlock) {
+            reminderWaitsForUnlock = false
+            hiddenWhileLocked = false
+            showReminder()
+        } else {
+            hiddenWhileLocked = false
+            setOverlayVisible(true)
+        }
+    }
     private val onStrong = Runnable { strengthenDim() }
     private val hideToast = Runnable { removeView(toastView).also { toastView = null } }
 
@@ -154,6 +217,11 @@ class SoftExitController(private val service: AccessibilityService) {
     }
 
     private fun setOverlayVisible(visible: Boolean) {
+        // Повернути на екрані блокування не можна: лишаємо схованим до розблокування (onScreenMaybeUsable).
+        if (visible && !screenUsable()) {
+            hiddenWhileLocked = true
+            return
+        }
         systemSurfaceHidden = !visible
         if (visible) lastRestoreMillis = System.currentTimeMillis()
         val v = if (visible) View.VISIBLE else View.INVISIBLE
@@ -199,6 +267,11 @@ class SoftExitController(private val service: AccessibilityService) {
         session = null
         handler.removeCallbacksAndMessages(null)
         removeAll()
+        try {
+            service.unregisterReceiver(screenReceiver)
+        } catch (e: IllegalArgumentException) {
+            // Уже знято.
+        }
     }
 
     private fun start(pending: PlanOverlayStore.PendingSoftExit) {
@@ -221,6 +294,11 @@ class SoftExitController(private val service: AccessibilityService) {
 
     private fun showReminder() {
         val s = session ?: return
+        // 5 хв минуло, поки екран заблокований: покажемо після розблокування, якщо людина повернеться в цю стрічку.
+        if (!screenUsable()) {
+            reminderWaitsForUnlock = true
+            return
+        }
         s.strong = false
         removeAll()
         showDim()
@@ -232,7 +310,8 @@ class SoftExitController(private val service: AccessibilityService) {
     private fun showDim() {
         val base = FrameLayout(service).apply {
             // Дизайн-система v3.1 (3.6): чорний 50% + теплий шар signalVivid 18%.
-            background = SoftExitStyle(service, dark = true).dimBackground()
+            // «Приглушення» в Налаштуваннях: М'яке — 50%, Помітне — 70% (далі +2 хв додає той самий шар, що й раніше).
+            background = SoftExitStyle(service, dark = true).dimBackground(strong = PlanOverlayStore.isDimStrong(service))
             alpha = 0f
         }
         val extra = View(service).apply {

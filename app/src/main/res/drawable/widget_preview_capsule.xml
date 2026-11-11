@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Капсула інформаційних віджетів для прев'ю (колір за темою через @color/widget_preview_capsule). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_preview_capsule" />
+    <corners android:radius="100dp" />
+</shape>

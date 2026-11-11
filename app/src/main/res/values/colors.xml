@@ -9,4 +9,9 @@
          запікається в момент оновлення віджета). -->
     <color name="widget_circle_unselected">#FFFFFFFF</color>
     <color name="widget_glyph_unselected">#FF505050</color>
+    <!-- Прев'ю віджетів у меню віджетів (previewLayout), світла тема; темна — values-night/colors.xml. Значення — InfoColors. -->
+    <color name="widget_preview_capsule">#E0FFFFFF</color>
+    <color name="widget_preview_text">#FF003926</color>
+    <color name="widget_preview_sub">#FF4D6B60</color>
+    <color name="widget_preview_track">#1F003926</color>
 </resources>

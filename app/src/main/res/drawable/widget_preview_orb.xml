@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Орб «без телефону» для прев'ю: темне коло й вода ~70%, ті самі кольори, що renderOrb у InfoWidgets. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp" android:height="72dp" android:viewportWidth="72" android:viewportHeight="72">
+    <path android:pathData="M36,0 A36,36 0 1,1 35.99,0 Z" android:fillColor="#FF0F4A38" />
+    <clip-path android:pathData="M36,0 A36,36 0 1,1 35.99,0 Z" />
+    <path android:pathData="M0,23 Q9,19 18,23 T36,23 T54,23 T72,23 L72,72 L0,72 Z" android:fillColor="#F26FD3A8" />
+</vector>

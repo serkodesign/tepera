@@ -45,7 +45,8 @@ object NudgeScheduler {
         val candidates = app.riskWindowRepository.getAll().map { w ->
             NudgePlanner.Candidate(
                 w.id, w.startMinute, w.endMinute, w.dayType,
-                enabled = !w.isUserDisabled && !w.isPausedAt(nowMillis)
+                enabled = !w.isUserDisabled && !w.isPausedAt(nowMillis) &&
+                    !com.serkodesign.tepera.util.WindowSkipStore.isSkipped(context, w.id, nowMillis)
             )
         }
         val blocked = app.nudgeEventDao.getShownSince(nowMillis - 2 * DAY_MILLIS)

@@ -244,7 +244,7 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifi
     // Дизайн-система v3.1 (3.3 плану): M3Card, час titleLarge + бейдж повторюваності праворуч, мета bodySmall і крапки
     // через 4dp. Блок «план / немає плану» зі специфікації не додано: у RiskWindowUi даних про план нема, а картка
     // свідомо про саме вікно (підказка приходить через оверлей і нагадування) — нова функція поза обсягом міграції.
-    M3Card(modifier = modifier, appStyle = true) {
+    M3Card(modifier = modifier, glass = true) {
         // Верхня частина відкриває «Чому це вікно?» (M6).
         Column(
             Modifier.fillMaxWidth()

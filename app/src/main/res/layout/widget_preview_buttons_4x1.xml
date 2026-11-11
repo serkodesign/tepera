@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Прев'ю віджета «Швидкі кнопки активностей» (4x1), Android 12–14 і коли генероване прев'ю недоступне: капсула з п'ятьма кнопками, перша вибрана. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="72dp" android:layout_gravity="center"
+        android:background="@drawable/widget_preview_pill" android:gravity="center_vertical" android:orientation="horizontal"
+        android:paddingStart="8dp" android:paddingEnd="8dp">
+        <FrameLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1">
+            <FrameLayout android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
+                android:background="@drawable/widget_preview_button_reading">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center"
+                    android:src="@drawable/ic_widget2_reading_selected" android:tint="#FF783D83" android:importantForAccessibility="no" />
+            </FrameLayout>
+        </FrameLayout>
+        <FrameLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1">
+            <FrameLayout android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
+                android:background="@drawable/widget_preview_button">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center"
+                    android:src="@drawable/ic_widget2_nature" android:tint="@color/widget_glyph_unselected" android:importantForAccessibility="no" />
+            </FrameLayout>
+        </FrameLayout>
+        <FrameLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1">
+            <FrameLayout android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
+                android:background="@drawable/widget_preview_button">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center"
+                    android:src="@drawable/ic_widget2_hobby" android:tint="@color/widget_glyph_unselected" android:importantForAccessibility="no" />
+            </FrameLayout>
+        </FrameLayout>
+        <FrameLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1">
+            <FrameLayout android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
+                android:background="@drawable/widget_preview_button">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center"
+                    android:src="@drawable/ic_widget2_movement" android:tint="@color/widget_glyph_unselected" android:importantForAccessibility="no" />
+            </FrameLayout>
+        </FrameLayout>
+        <FrameLayout android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1">
+            <FrameLayout android:layout_width="56dp" android:layout_height="56dp" android:layout_gravity="center"
+                android:background="@drawable/widget_preview_button">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center"
+                    android:src="@drawable/ic_widget2_social" android:tint="@color/widget_glyph_unselected" android:importantForAccessibility="no" />
+            </FrameLayout>
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

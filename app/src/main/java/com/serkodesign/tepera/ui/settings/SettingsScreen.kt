@@ -54,65 +54,6 @@ import com.serkodesign.tepera.util.ThemeStore
  */
 enum class SettingsGroup { DETOX, TIME, SCROLLING, GENERAL, ABOUT }
 
-/**
- * Головний екран Налаштувань (Figma-фрейм Everyday_Designs, node 1951:1106: власний заголовок, "скляні" рядки).
- * Рядки: Облік часу, Години скролінгу (лише beta), Застосунки з затримкою, Загальні, Дані й приватність,
- * Tepera Pro (за прямою вимогою власника лишається видимим тут) і Про Tepera.
- */
-@Composable
-fun SettingsScreen(
-    onOpenGroup: (SettingsGroup) -> Unit,
-    settingsStore: com.serkodesign.tepera.data.local.SettingsStore,
-    onOpenDataPrivacy: () -> Unit,
-    onOpenProInterest: () -> Unit,
-    onBack: () -> Unit
-) {
-    // Облік часу тепер містить лише "Категорії", які в режимі v3 приховані — тоді рядок не показуємо.
-    val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
-    val v3Active = BuildConfig.V3_MVP && v3Mode
-    SettingsList(title = stringResource(R.string.settings_screen_title), onBack = onBack) {
-        // Цифровий детокс (07.11.2026, за запитом власника): Відстеження + Години скролінгу + Застосунки з затримкою.
-        GlassRow(
-            label = stringResource(R.string.settings_detox_section),
-            onClick = { onOpenGroup(SettingsGroup.DETOX) },
-            leading = { TeperaIconCircle(TeperaSymbols.TrackChanges) },
-            trailing = { NavChevron() }
-        )
-        if (!v3Active) GlassRow(
-            label = stringResource(R.string.settings_time_tracking_section),
-            onClick = { onOpenGroup(SettingsGroup.TIME) },
-            leading = { TeperaIconCircle(TeperaSymbols.Schedule) },
-            trailing = { NavChevron() }
-        )
-        GlassRow(
-            label = stringResource(R.string.settings_general_section),
-            onClick = { onOpenGroup(SettingsGroup.GENERAL) },
-            leading = { TeperaIconCircle(TeperaSymbols.Palette) },
-            trailing = { NavChevron() }
-        )
-        GlassRow(
-            label = stringResource(R.string.settings_data_privacy_action),
-            onClick = onOpenDataPrivacy,
-            leading = { TeperaIconCircle(TeperaSymbols.PrivacyTip) },
-            trailing = { NavChevron() }
-        )
-        // CC-11: fake door — «Tepera Pro — у розробці», без цін і оплат. За прямою вимогою власника — видимий
-        // рядок на головному екрані Налаштувань, не всередині "Про Tepera".
-        GlassRow(
-            label = stringResource(R.string.settings_pro_interest_action),
-            onClick = onOpenProInterest,
-            leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
-            trailing = { NavChevron() }
-        )
-        GlassRow(
-            label = stringResource(R.string.settings_about_section),
-            onClick = { onOpenGroup(SettingsGroup.ABOUT) },
-            leading = { TeperaIconCircle(TeperaSymbols.Info) },
-            trailing = { NavChevron() }
-        )
-    }
-}
-
 /** Спільний каркас екранів Налаштувань: заголовок + прокручуваний список рядків. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

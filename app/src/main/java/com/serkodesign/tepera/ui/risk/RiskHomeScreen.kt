@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -80,7 +81,6 @@ import java.util.Date
 @Composable
 fun RiskHomeScreen(
     onOpenSettings: () -> Unit,
-    onOpenCalendar: () -> Unit,
     onOpenFeedPicker: () -> Unit,
     onOpenAccess: () -> Unit,
     onOpenWhy: (String) -> Unit,
@@ -102,26 +102,16 @@ fun RiskHomeScreen(
         factory = PauseViewModel.Factory(app.pauseRepository, app.balanceRepository, app.activityRepository, app.settingsStore, app.sleepWindowRepository)
     )
     val pauseState by pauseViewModel.uiState.collectAsState()
-    val patternViewModel: PatternViewModel = viewModel(
-        // Вчорашня доба (1 день), як у шторці підсумків звичайного Home.
-        factory = PatternViewModel.Factory(
-            app.patternRepository, app.balanceRepository, app.settingsStore, initialPeriodDays = 1,
-            sleepWindowRepository = app.sleepWindowRepository
-        )
-    )
-    val patternState by patternViewModel.uiState.collectAsState()
     val categories by app.categoryRepository.observeActiveCategories().collectAsState(initial = emptyList())
 
     LifecycleResumeEffect(Unit) {
         vm.refresh()
         balanceViewModel.refresh()
         pauseViewModel.refresh()
-        patternViewModel.refresh()
         onPauseOrDispose {}
     }
 
     val observing = state.hasAccess && state.feedCount > 0 && state.windows.none { !it.isManual } && !state.enoughData
-    val planned = state.hasAccess && state.feedCount > 0 && state.windows.isNotEmpty()
     val locale = LocalConfiguration.current.locales[0]
     val nowMillis by rememberNowMillis()
     val now = remember(nowMillis) { LocalDateTime.ofInstant(Instant.ofEpochMilli(nowMillis), ZoneId.systemDefault()) }
@@ -129,94 +119,83 @@ fun RiskHomeScreen(
         // Вікна на паузі не рахуємо: «Зараз твоя година» для вікна без нагадувань і підказок вводило б в оману.
         NextWindow.occurrences(state.windows.filter { !it.isPaused }.map { NextWindow.Spec(it.id, it.startMinute, it.endMinute, it.dayType) }, now)
     }
-    val dateText = remember(locale) { SimpleDateFormat("d MMMM", locale).format(Date()) }
-    val label = when {
-        observing -> stringResource(R.string.v3_home_label_observing)
-        planned -> stringResource(R.string.v3_home_today_weekday, now.dayOfWeek.getDisplayName(TextStyle.FULL, locale).lowercase(locale))
-        else -> stringResource(R.string.v3_home_label_today)
+    // Шапка Головної v2: «Четвер, 8 жовтня» над «Сьогодні» (у тиждень спостереження — «День N з 7»).
+    val dateText = remember(locale, now.toLocalDate()) {
+        SimpleDateFormat("EEEE, d MMMM", locale).format(Date()).replaceFirstChar { it.titlecase(locale) }
     }
-    // Заголовок — день/дата; відлік до наступної години живе в `NextCard`, а не дублюється тут.
-    val title = when {
-        observing -> stringResource(R.string.v3_home_day_format, state.observedDays.coerceIn(1, 7))
-        else -> dateText
-    }
+    val headerDate = if (observing) stringResource(R.string.v3_home_day_format, state.observedDays.coerceIn(1, 7)) else dateText
+    val logicalToday = remember(now) { now.minusHours(com.serkodesign.tepera.domain.risk.RiskConfig().dayCutoffHour.toLong()).toLocalDate() }
     val ready = !state.loading && state.hasAccess && state.feedCount > 0
     val insideOcc = occurrences.firstOrNull { it.isInside(now) }
-    val nextOcc = occurrences.firstOrNull { !it.isInside(now) }
-    val hero = RiskHeroPicker.pick(
-        insideWindow = insideOcc != null, hasPauses = pauseState.visible, hasNextWindow = nextOcc != null,
-        hasPattern = patternState.hasEnoughData
-    )
+    val heroOcc = insideOcc ?: occurrences.firstOrNull()
+    val byId = state.windows.associateBy { it.id }
+    val heroWindow = heroOcc?.let { byId[it.id] }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
             Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
                 .padding(top = 12.dp, bottom = 32.dp),
-            // Закон близькості: пов'язане — ближче (шапка з героєм 16dp, заголовок із вмістом 8dp, картки одного блоку 12dp),
-            // окремі блоки — помітно далі (40dp).
-            verticalArrangement = Arrangement.spacedBy(40.dp)
+            // Порядок (рішення власника, 11.11.2026): ідея → Online сьогодні → сьогоднішні години → години скролінгу →
+            // тиждень у години детоксу. Активності — у Щоденнику. Блоки одного змісту через 12dp, розділи — через 24dp.
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-          Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            RiskHeader(label, title, onOpenCalendar, onOpenSettings)
-            if (state.loading || !state.hasAccess || state.feedCount == 0) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                HomeV2Header(headerDate, onOpenSettings)
                 Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     when {
                         state.loading -> HomeSkeleton()
                         !state.hasAccess -> NoticeCard(
                             R.string.v3_home_need_access_title, R.string.v3_home_need_access_body, R.string.v3_access_grant, onOpenAccess
                         )
-                        else -> NoticeCard(
+                        state.feedCount == 0 -> NoticeCard(
                             R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                         )
-                    }
-                }
-            }
-            // Герой: одна головна картка за пріоритетом. Паузи мають власний відступ, решта — загальні 16dp.
-            if (ready) {
-                val byId = state.windows.associateBy { it.id }
-                when (hero) {
-                    RiskHero.IN_WINDOW -> byId[insideOcc?.id]?.let { w ->
-                        Box(Modifier.padding(horizontal = 16.dp)) {
-                            // Тиждень спостереження мовчить: без ідей, лише відлік.
-                            if (observing) NextCard(w, insideOcc!!, now, onClick = { onOpenWhy(w.id) })
-                            else IdeaHero(w.id, insideOcc!!, now, categories)
-                        }
-                    }
-                    RiskHero.PAUSES -> PauseCard(
-                        state = pauseState, categories = categories, onLabel = pauseViewModel::labelGap,
-                        onDismissGap = pauseViewModel::dismissGap, onDismissCard = pauseViewModel::dismissCard
-                    )
-                    RiskHero.NEXT_WINDOW -> byId[nextOcc?.id]?.let { w ->
-                        Box(Modifier.padding(horizontal = 16.dp)) { NextCard(w, nextOcc!!, now, onClick = { onOpenWhy(w.id) }) }
-                    }
-                    RiskHero.PATTERN -> Box(Modifier.padding(horizontal = 16.dp)) { PatternMiniCard(patternState) }
-                    RiskHero.NONE -> Unit
-                }
-            }
-          }
-            if (!state.loading) ActivityChips(onAddEntry)
-            // Без бічного відступу: його мають окремі блоки, а ряд карток вікон — на всю ширину (див. WindowsCarousel).
-            Column(verticalArrangement = Arrangement.spacedBy(40.dp)) {
-                Box(Modifier.padding(horizontal = 16.dp)) { OnlineTodayCard(balanceState) }
-                if (ready) {
-                    // Деталі: вікна й тиждень. NextCard вже є героєм, якщо вікно ближче за все; інакше він тут не потрібен.
-                    when {
-                        observing -> {
-                            Box(Modifier.padding(horizontal = 16.dp)) { ObservingContent(state) }
-                            // Ручні вікна видно одразу, не чекаючи тиждень даних.
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
-                                WindowsCarousel(state.windows + state.disabledWindows, onOpenWhy)
+                        observing -> ObservingContent(state)
+                        else -> {
+                            // 1. Картка ідеї: наступна година (або та, що триває; коли сьогодні все — перша завтра).
+                            if (heroWindow != null && heroOcc != null) {
+                                NextHourCard(heroWindow, heroOcc, now, logicalToday, onChanged = vm::refresh)
                             }
                         }
-                        planned -> PlannedContent(state, occurrences, now, onOpenWhy, onAddWindow, showNext = hero != RiskHero.IN_WINDOW && hero != RiskHero.NEXT_WINDOW)
-                        else -> FoundContent(state, onOpenWhy, onAddWindow)
                     }
-                    if (!observing) {
-                        Box(Modifier.padding(horizontal = 16.dp)) {
-                            WeeklySummaryBlock(state.windows, state.softExit, vm::applyShift, vm::dismissShift)
-                        }
+                    // Паузи — лише коли є що назвати, одразу під карткою ідеї.
+                    if (ready && pauseState.visible) {
+                        PauseCard(
+                            state = pauseState, categories = categories, onLabel = pauseViewModel::labelGap,
+                            onDismissGap = pauseViewModel::dismissGap, onDismissCard = pauseViewModel::dismissCard
+                        )
                     }
+                    // 2. Online сьогодні.
+                    if (!state.loading) OnlineTodayCard(balanceState)
+                    // 3. Сьогоднішні години рядками: «Сьогодні вже було» / «Далі сьогодні».
+                    if (ready && !observing) {
+                        TodayRows(state.windows, now, logicalToday, heroWindowId = heroOcc?.id, onOpenWhy = onOpenWhy)
+                    }
+                }
+            }
+            if (ready) {
+                // 4. Години скролінгу каруселлю з «+»: ручні вікна видно й у тиждень спостереження.
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
+                    if (state.windows.isEmpty() && !observing) {
+                        Text(
+                            stringResource(if (state.disabledWindows.isNotEmpty()) R.string.v3_windows_all_off else R.string.v3_windows_empty),
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 32.dp)
+                        )
+                    }
+                    val ordered = occurrences.mapNotNull { byId[it.id] }.distinctBy { it.id }
+                    WindowsCarousel(ordered + state.windows.filter { w -> ordered.none { it.id == w.id } } + state.disabledWindows, onOpenWhy)
+                }
+            }
+            if (ready && !observing) {
+                // 5. Тиждень у години детоксу; під ним пропозиція зсунути вікно — лише коли вона є.
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    WeekCard(
+                        state.windows, state.daysSinceObservation,
+                        onOpen = state.windows.firstOrNull()?.let { w -> { onOpenWhy(w.id) } }
+                    )
+                    ShiftSuggestions(state.windows, vm::applyShift, vm::dismissShift)
                 }
             }
             // Запас під навбар-«таблетку», щоб останній рядок прокручувався над нею.
@@ -228,14 +207,15 @@ fun RiskHomeScreen(
 /** Заголовок розділу зі списком вікон і кнопкою «+» поруч — додавання власного вікна було знайти важко внизу екрана. */
 @Composable
 private fun WindowsHeader(onAddWindow: () -> Unit) {
+    // Новий стиль (Головна v2): підпис групи — Title Small кольору primary, «+» на склі, як кнопка налаштувань у шапці.
     Row(
-        Modifier.fillMaxWidth().padding(start = 8.dp),
+        Modifier.fillMaxWidth().padding(start = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            stringResource(R.string.v3_windows_section), color = TeperaPalette.textPrimary,
-            fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium,
+            stringResource(R.string.v3_windows_section), style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.semantics { heading() }
         )
         TeperaIconButton(
@@ -243,8 +223,8 @@ private fun WindowsHeader(onAddWindow: () -> Unit) {
             contentDescription = stringResource(R.string.v3_add_window),
             onClick = onAddWindow,
             shape = CircleShape,
-            containerColor = TeperaPalette.headerButtonFill,
-            contentColor = TeperaPalette.textPrimary
+            containerColor = com.serkodesign.tepera.ui.theme.M3Extra.colors.glass,
+            contentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -260,40 +240,6 @@ private fun HomeSkeleton() {
     }
 }
 
-@Composable
-private fun RiskHeader(label: String, title: String, onOpenCalendar: () -> Unit, onOpenSettings: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(Modifier.weight(1f).padding(end = 8.dp)) {
-            Text(label, color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
-            Text(
-                title, color = TeperaPalette.textPrimary, fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium,
-                modifier = Modifier.semantics { heading() }
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TeperaIconButton(
-                icon = TeperaIcons.Calendar,
-                contentDescription = stringResource(R.string.calendar_screen_title),
-                onClick = onOpenCalendar,
-                shape = CircleShape,
-                containerColor = TeperaPalette.headerButtonFill,
-                contentColor = TeperaPalette.textPrimary
-            )
-            TeperaIconButton(
-                icon = TeperaIcons.Settings,
-                contentDescription = stringResource(R.string.settings_nav_action),
-                onClick = onOpenSettings,
-                shape = CircleShape,
-                containerColor = TeperaPalette.headerButtonFill,
-                contentColor = TeperaPalette.textPrimary
-            )
-        }
-    }
-}
 
 @Composable
 private fun NoticeCard(titleRes: Int, bodyRes: Int, buttonRes: Int, onClick: () -> Unit) {
@@ -334,39 +280,6 @@ private fun ObservingContent(state: RiskHomeState) = Column(verticalArrangement 
     }
 }
 
-/** L4: пояснення, теплова карта з пунктирними вікнами й картки вікон; без вікон — спокійне «і це теж добре». */
-@Composable
-private fun FoundContent(state: RiskHomeState, onOpenWhy: (String) -> Unit, onAddWindow: () -> Unit) {
-    val windows = state.windows
-    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-    Text(
-        text = if (windows.isEmpty() && state.disabledWindows.isNotEmpty()) {
-            stringResource(R.string.v3_windows_all_off)
-        } else if (windows.isEmpty()) {
-            stringResource(R.string.v3_windows_empty)
-        } else {
-            stringResource(R.string.v3_windows_intro_format, windows.size)
-        },
-        color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp,
-        modifier = Modifier.padding(horizontal = 8.dp)
-    )
-    val desc = if (windows.isEmpty()) {
-        stringResource(R.string.v3_heat_description)
-    } else {
-        stringResource(
-            R.string.v3_heat_window_description,
-            stringResource(R.string.v3_heat_description),
-            windows.joinToString(", ") { formatWindowTime(it.startMinute, it.endMinute) }
-        )
-    }
-    HeatWeek(state.dates, state.grid, windows.map { it.startMinute to it.endMinute }, desc)
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
-        WindowsCarousel(windows + state.disabledWindows, onOpenWhy)
-    }
-}
-
 /** Поточний час, що оновлюється раз на 30 с: відлік до наступної години на L6 не застигає. */
 @Composable
 private fun rememberNowMillis(): State<Long> = produceState(System.currentTimeMillis()) {
@@ -376,73 +289,3 @@ private fun rememberNowMillis(): State<Long> = produceState(System.currentTimeMi
     }
 }
 
-private fun clock(dt: LocalDateTime): String = String.format(Locale.ROOT, "%02d:%02d", dt.hour, dt.minute)
-
-/** L6 (Figma 911:1192): «До твоєї години» і картки вікон з планами, найближче — першим. Без теплової карти (вона — в «Чому це вікно?»). */
-@Composable
-private fun PlannedContent(
-    state: RiskHomeState,
-    occurrences: List<NextWindow.Occurrence>,
-    now: LocalDateTime,
-    onOpenWhy: (String) -> Unit,
-    onAddWindow: () -> Unit,
-    showNext: Boolean
-) {
-    val byId = state.windows.associateBy { it.id }
-    val ordered = occurrences.mapNotNull { o -> byId[o.id]?.let { it to o } }
-    val rest = state.windows.filter { w -> ordered.none { it.first.id == w.id } }
-    if (showNext) ordered.firstOrNull()?.let { (w, o) ->
-        Box(Modifier.padding(horizontal = 16.dp)) { NextCard(w, o, now, onClick = { onOpenWhy(w.id) }) }
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
-        WindowsCarousel(ordered.map { it.first } + rest + state.disabledWindows, onOpenWhy)
-    }
-}
-
-/** `next`: темна картка з відліком до години або «до кінця» для години, що триває; значки й підписи — токени hero. */
-@Composable
-private fun NextCard(window: RiskWindowUi, occurrence: NextWindow.Occurrence, now: LocalDateTime, onClick: () -> Unit) {
-    val inside = occurrence.isInside(now)
-    val onDark = TeperaPalette.textOnDark
-    val big = if (inside) {
-        stringResource(R.string.v3_next_until_format, clock(occurrence.endAt))
-    } else {
-        durationText(Duration.between(now, occurrence.startAt).toMinutes().coerceAtLeast(1))
-    }
-    val sub = when {
-        !inside -> stringResource(R.string.v3_next_sub_starts, clock(occurrence.startAt))
-        else -> stringResource(R.string.v3_next_sub_inside_hint)
-    }
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).heroMoodBackground(showBody = false)
-            .then(if (TeperaPalette.colors.isDawn) Modifier.border(1.dp, TeperaPalette.heroBorder, RoundedCornerShape(24.dp)) else Modifier)
-            .clickable(role = Role.Button, onClick = onClick).padding(20.dp)
-            .semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                stringResource(if (inside) R.string.v3_next_label_inside else R.string.v3_next_label_upcoming),
-                color = onDark.copy(alpha = 0.8f), fontSize = 14.sp, lineHeight = 20.sp
-            )
-            Text(big, color = onDark, fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Medium)
-            Text(sub, color = onDark.copy(alpha = 0.8f), fontSize = 14.sp, lineHeight = 20.sp)
-        }
-        Icon(TeperaSymbols.ChevronRight, contentDescription = null, tint = onDark.copy(alpha = 0.8f), modifier = Modifier.size(24.dp))
-    }
-}
-
-@Composable
-private fun durationText(totalMinutes: Long): String {
-    val days = totalMinutes / (24 * 60)
-    val hours = (totalMinutes / 60) % 24
-    val minutes = totalMinutes % 60
-    return when {
-        days > 0 -> stringResource(R.string.v3_dur_days_hours, days.toInt(), hours.toInt())
-        hours > 0 && minutes > 0 -> stringResource(R.string.v3_dur_hours_minutes, hours.toInt(), minutes.toInt())
-        hours > 0 -> stringResource(R.string.v3_dur_hours, hours.toInt())
-        else -> stringResource(R.string.v3_dur_minutes, minutes.toInt())
-    }
-}

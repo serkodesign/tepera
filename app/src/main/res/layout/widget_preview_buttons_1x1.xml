@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Прев'ю віджета «Одна кнопка активності» (1x1), Android 12+: кругла капсула 84dp і вибрана кнопка 60dp, як SmallWidgetContent. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <FrameLayout android:layout_width="64dp" android:layout_height="64dp" android:layout_gravity="center"
+        android:background="@drawable/widget_preview_pill" android:padding="6dp">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+            android:background="@drawable/widget_preview_button_reading">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center"
+                android:src="@drawable/ic_widget2_reading_selected" android:tint="#FF783D83" android:importantForAccessibility="no" />
+        </FrameLayout>
+    </FrameLayout>
+</FrameLayout>

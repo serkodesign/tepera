@@ -30,11 +30,17 @@ fun M3Card(
     // true — той самий колір і вигляд, що в TeperaCard (підсумок тижня, Online сьогодні): у темній темі й «Світанку»
     // M3-палітра давала нейтрально-сірий фон, що не збігався з гамою застосунку.
     appStyle: Boolean = false,
+    // true — скляна картка Головної v2 і Налаштувань (Figma "Tepera" 1066:4191 / 1081:2166): `glass` 62% з обвідкою `cardStroke`.
+    glass: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = M3Extra.colors
     val shape = if (appStyle) androidx.compose.foundation.shape.RoundedCornerShape(16.dp) else MaterialTheme.shapes.large
-    val cardColor = if (appStyle) TeperaPalette.cardSurface else colors.card
+    val cardColor = when {
+        glass -> colors.glass
+        appStyle -> TeperaPalette.cardSurface
+        else -> colors.card
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()

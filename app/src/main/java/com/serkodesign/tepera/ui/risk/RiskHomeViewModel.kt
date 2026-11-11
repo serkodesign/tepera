@@ -60,7 +60,9 @@ data class RiskWindowUi(
     val okThisWeek: Int = 0,
     /** Запропонований зсув вікна (етап 2, п. 8) або `null`. */
     val shiftStart: Int? = null,
-    val shiftEnd: Int? = null
+    val shiftEnd: Int? = null,
+    /** Хвилини в стрічках у цьому вікні за поточну логічну добу (Головна v2, рядки «Сьогодні»); `null` — не цей день тижня. */
+    val todayMinutes: Double? = null
 )
 
 /** Підказка на екрані спостереження, коли вже видно щось схоже (≥ 3 дні даних). */
@@ -81,6 +83,11 @@ data class RiskHomeState(
     val teaser: RiskTeaser? = null,
     /** М'який вихід за 7 діб (beta): сесій «на 5 хв» розпочато / завершено вчасно; `null`, поки сесій не було. */
     val softExit: Pair<Int, Int>? = null,
+    /**
+     * Скільки завершених діб минуло після тижня спостереження (Головна v2): менше за тиждень — картка тижня показує лише
+     * «Точку відліку», бо порівнювати ще нема з чим. `null` — періоду ще нема.
+     */
+    val daysSinceObservation: Int? = null,
     /** Показати м'яку підказку, що без сповіщень нагадувань не буде (не частіше разу на тиждень). */
     /** Категорія, чий таймер зараз іде (запущений з підказки чи будь-де), або `null`. */
     val activeCategory: CategoryEntity? = null
@@ -138,6 +145,10 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             val baselineRecords = if (baselineDays.isEmpty()) emptyList() else
                 app.usageSlotRepository.readRecords(baselineDays.first(), lastLogicalDay.plusDays(1), feed)
             val weekFromMillis = logicalDays.first().atStartOfDay(zone).toInstant().toEpochMilli()
+            val logicalToday = lastLogicalDay.plusDays(1)
+            val daysSinceObservation = period?.endDate?.let { end ->
+                java.time.temporal.ChronoUnit.DAYS.between(LocalDate.ofEpochDay(end), lastLogicalDay).toInt().coerceAtLeast(0)
+            }
             // Для ручних вікон повторюваність, середнє й застосунки рахуються зі слотів (збереженої статистики в них нема).
             val manualRows = if (entities.any { it.isManual }) {
                 app.database.usageSlotDao().getRange(minOf(dates.first(), logicalDays.first()).toEpochDay(), today.plusDays(1).toEpochDay())
@@ -164,6 +175,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     currentMinutes = WindowMinutes.averagePerDay(records, logicalDays, w.startMinute, w.endMinute, w.dayType, cfg),
                     okThisWeek = app.database.nudgeEventDao().countByActionForWindow(w.id, NudgeAction.OK, weekFromMillis, now + 1),
                     shiftStart = w.suggestedStartMinute, shiftEnd = w.suggestedEndMinute,
+                    todayMinutes = WindowMinutes.averagePerDay(records, listOf(logicalToday), w.startMinute, w.endMinute, w.dayType, cfg),
                     dots = logicalDays.map { day ->
                         when {
                             w.dayType == DayType.WEEKDAYS && day.dayOfWeek.value > 5 -> DotState.NOT_APPLICABLE
@@ -179,6 +191,7 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
             _state.update {
                 it.copy(
                     softExit = if (seStarted > 0) seStarted to seOnTime else null,
+                    daysSinceObservation = daysSinceObservation,
                     loading = false, hasAccess = hasAccess, feedCount = feed.size, observedDays = observed,
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
                     grid = HeatGrid.minutesByHour(records, dates), windows = windows,

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кільце Online для прев'ю: доріжка + дуга ~27% (2:10 з 8 год), як renderRing у InfoWidgets. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M24,3.5 A20.5,20.5 0 1,1 23.99,3.5" android:strokeColor="@color/widget_preview_track"
+        android:strokeWidth="5" android:fillColor="#00000000" />
+    <path android:pathData="M24,3.5 A20.5,20.5 0 0,1 44.35,26.5" android:strokeColor="#FFF5C401"
+        android:strokeWidth="5" android:strokeLineCap="round" android:fillColor="#00000000" />
+</vector>

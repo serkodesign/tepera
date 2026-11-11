@@ -678,7 +678,7 @@ fun TeperaIconButton(
  * padding зліва 24 / справа 16, під статус-баром.
  */
 @Composable
-fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
+fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier, trailing: @Composable () -> Unit = {}) {
     Row(
         modifier = modifier
             .statusBarsPadding()
@@ -689,7 +689,8 @@ fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = title,
-            modifier = Modifier.semantics { heading() },
+            // Вага: дія праворуч (напр. календар у Щоденнику) притискається до краю.
+            modifier = Modifier.weight(1f).semantics { heading() },
             color = TeperaPalette.buttonBrandDark,
             fontFamily = TeperaPalette.headlineFont,
             fontWeight = FontWeight.Medium,
@@ -697,6 +698,7 @@ fun TeperaScreenTitle(title: String, modifier: Modifier = Modifier) {
             lineHeight = 29.7.sp,
             letterSpacing = 0.027.sp
         )
+        trailing()
     }
 }
 

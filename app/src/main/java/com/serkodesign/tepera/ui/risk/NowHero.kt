@@ -204,8 +204,10 @@ fun ActivityChips(onAddEntry: () -> Unit) {
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            stringResource(R.string.activities_title), color = TeperaPalette.textPrimary, fontSize = 18.sp, lineHeight = 24.sp,
-            fontWeight = FontWeight.Medium, modifier = Modifier.padding(start = 24.dp).semantics { heading() }
+            // Підпис групи в стилі Головної v2 (Title Small, primary), на одній лінії з «Твоїми годинами».
+            stringResource(R.string.activities_title), style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+            color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 32.dp).semantics { heading() }
         )
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),

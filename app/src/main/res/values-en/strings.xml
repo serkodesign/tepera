@@ -605,18 +605,8 @@
     <!-- Info widgets (Figma "Widgets v2"): names in the widget picker, descriptions and in-widget labels -->
     <string name="widget_info_online_ring_label">Online: day ring</string>
     <string name="widget_info_online_ring_description">How long you were online today and how much of the day that is</string>
-    <string name="widget_info_online_bar_label">Online: day structure</string>
-    <string name="widget_info_online_bar_description">Online today and the day-structure bar</string>
-    <string name="widget_info_active_label">Running now</string>
-    <string name="widget_info_active_description">What is running now, stop with one tap</string>
-    <string name="widget_info_start_label">Start of day</string>
-    <string name="widget_info_start_description">When your day started today</string>
     <string name="widget_info_orb_label">Phone-free</string>
     <string name="widget_info_orb_description">Phone-free time today in an orb</string>
-    <string name="widget_info_last_label">Last activity</string>
-    <string name="widget_info_last_description">Your last activity today and a repeat button</string>
-    <string name="widget_info_week_label">Most time this week</string>
-    <string name="widget_info_week_description">The two activities that took the most time this week</string>
     <string name="widget_info_no_access">Access needed</string>
     <string name="widget_info_idle">Not running</string>
     <string name="widget_info_running">Running</string>
@@ -892,4 +882,49 @@
     <string name="v3_summary_show_less">Show less</string>
     <string name="v3_why_pause">Pause for 2 weeks</string>
     <string name="v3_why_pause_hint">No hints or plan sheet; the window comes back on its own</string>
+
+    <!-- Settings, Figma "Tepera" T2 · Settings (1066:4191) -->
+    <string name="settings_group_hours">Detox hours</string>
+    <string name="settings_group_opening">When you open a feed</string>
+    <string name="settings_group_app">App</string>
+    <string name="settings_group_more">More</string>
+    <string name="settings_overlay_title">Show an idea when a feed opens</string>
+    <string name="settings_overlay_supporting">Only during detox hours</string>
+    <string name="settings_a11y_title">Accessibility</string>
+    <string name="settings_a11y_on">on</string>
+    <string name="settings_a11y_off">off</string>
+    <string name="settings_dim_title">Dimming</string>
+    <string name="settings_dim_hint">How much the screen dims when 5 minutes are up.</string>
+    <string name="settings_dim_info">After “Open for 5 min” the screen dims to remind you of the time. Nothing is blocked: you can keep using the feed.</string>
+    <string name="settings_dim_soft">Soft</string>
+    <string name="settings_dim_strong">Noticeable</string>
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_suggest_supporting">Opens a form in your browser</string>
+    <string name="settings_footer_format">Tepera %1$s · your detox time</string>
+
+    <!-- Home v2, Figma "Tepera" 07 · Home v2 (1081:2166) -->
+    <string name="v2_home_title">Today</string>
+    <string name="v2_next_title_upcoming">%1$s · %2$s</string>
+    <string name="v2_next_title_inside">%1$s · until %2$s</string>
+    <string name="v2_next_title_tomorrow">Tomorrow · %1$s · %2$s</string>
+    <string name="v2_when_in">in %1$s</string>
+    <string name="v2_when_now">now</string>
+    <string name="v2_next_idea_fallback">When you open a feed, Tepera will suggest something to do instead</string>
+    <string name="v2_next_fact">In feeds this hour: %1$d min</string>
+    <string name="v2_next_reminder">A quiet reminder at %1$s</string>
+    <string name="v2_next_skipped">No ideas for this hour today</string>
+    <string name="v2_not_today">Not today</string>
+    <string name="v2_not_today_undo">Undo</string>
+    <string name="v2_week_title">This week in your detox hours</string>
+    <string name="v2_week_unit">a day in feeds</string>
+    <string name="v2_week_baseline">observation</string>
+    <string name="v2_week_current">this week</string>
+    <string name="v2_week_reference_title">Starting point</string>
+    <string name="v2_week_reference_unit">a day in feeds in your detox hours</string>
+    <string name="v2_today_was">Earlier today</string>
+    <string name="v2_today_next">Later today</string>
+    <string name="v2_today_all">Today</string>
+    <string name="v2_row_fact">%1$d min in feeds · usually %2$d</string>
+    <string name="widget_preview_online_value">2:10 h</string>
+    <string name="widget_preview_orb_value">5:40</string>
 </resources>

@@ -221,7 +221,9 @@ class GateAccessibilityService : AccessibilityService() {
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(
                 NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
-                enabled = !w.isUserDisabled && !w.isPausedAt(System.currentTimeMillis())
+                // «Не сьогодні» з Головної: вікно мовчить до кінця свого найближчого проходу.
+                enabled = !w.isUserDisabled && !w.isPausedAt(System.currentTimeMillis()) &&
+                    !com.serkodesign.tepera.util.WindowSkipStore.isSkipped(this, w.id)
             )
         }
         val nowMillis = System.currentTimeMillis()

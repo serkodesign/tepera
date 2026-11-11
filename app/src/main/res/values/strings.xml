@@ -622,18 +622,8 @@
     <!-- Інформаційні віджети (Figma "Widgets v2"): назви в меню віджетів, описи й підписи всередині -->
     <string name="widget_info_online_ring_label">Online: кільце доби</string>
     <string name="widget_info_online_ring_description">Скільки ви сьогодні онлайн і яку частину доби це займає</string>
-    <string name="widget_info_online_bar_label">Online: структура доби</string>
-    <string name="widget_info_online_bar_description">Online сьогодні та смуга структури доби</string>
-    <string name="widget_info_active_label">Активна зараз</string>
-    <string name="widget_info_active_description">Що триває зараз, зупинити одним тапом</string>
-    <string name="widget_info_start_label">Початок дня</string>
-    <string name="widget_info_start_description">Коли сьогодні почався ваш день</string>
     <string name="widget_info_orb_label">Без телефону</string>
     <string name="widget_info_orb_description">Час без телефону сьогодні в орбі</string>
-    <string name="widget_info_last_label">Остання активність</string>
-    <string name="widget_info_last_description">Остання активність сьогодні та кнопка повторити</string>
-    <string name="widget_info_week_label">Найбільше часу за тиждень</string>
-    <string name="widget_info_week_description">Дві активності, що забрали найбільше часу за тиждень</string>
     <string name="widget_info_no_access">Потрібен доступ</string>
     <string name="widget_info_idle">Не запущено</string>
     <string name="widget_info_running">Триває</string>
@@ -909,4 +899,49 @@
     <string name="v3_summary_show_less">Згорнути</string>
     <string name="v3_why_pause">Пауза на 2 тижні</string>
     <string name="v3_why_pause_hint">Без підказок і листа плану; потім вікно поверне себе саме</string>
+
+    <!-- Налаштування, Figma "Tepera" T2 · Налаштування (1066:4191) -->
+    <string name="settings_group_hours">Години детоксу</string>
+    <string name="settings_group_opening">У момент відкриття</string>
+    <string name="settings_group_app">Застосунок</string>
+    <string name="settings_group_more">Ще</string>
+    <string name="settings_overlay_title">Показувати ідею при відкритті стрічки</string>
+    <string name="settings_overlay_supporting">Лише в години детоксу</string>
+    <string name="settings_a11y_title">Спеціальні можливості</string>
+    <string name="settings_a11y_on">увімкнено</string>
+    <string name="settings_a11y_off">вимкнено</string>
+    <string name="settings_dim_title">Приглушення</string>
+    <string name="settings_dim_hint">Як сильно темніє екран, коли 5 хв минуло.</string>
+    <string name="settings_dim_info">Після «Відкрити на 5 хв» екран темніє, щоб нагадати про час. Нічого не блокується: стрічкою можна користуватись далі.</string>
+    <string name="settings_dim_soft">М’яке</string>
+    <string name="settings_dim_strong">Помітне</string>
+    <string name="settings_appearance_title">Вигляд</string>
+    <string name="settings_suggest_supporting">Відкриє форму в браузері</string>
+    <string name="settings_footer_format">Tepera %1$s · твій детокс час</string>
+
+    <!-- Головна v2, Figma "Tepera" 07 · Головна v2 (1081:2166) -->
+    <string name="v2_home_title">Сьогодні</string>
+    <string name="v2_next_title_upcoming">%1$s · %2$s</string>
+    <string name="v2_next_title_inside">%1$s · до %2$s</string>
+    <string name="v2_next_title_tomorrow">Завтра · %1$s · %2$s</string>
+    <string name="v2_when_in">через %1$s</string>
+    <string name="v2_when_now">зараз</string>
+    <string name="v2_next_idea_fallback">Коли відкриєш стрічку, Tepera запропонує, що зробити замість</string>
+    <string name="v2_next_fact">У стрічках цієї години: %1$d хв</string>
+    <string name="v2_next_reminder">Тихо нагадаю о %1$s</string>
+    <string name="v2_next_skipped">Сьогодні ця година без підказок</string>
+    <string name="v2_not_today">Не сьогодні</string>
+    <string name="v2_not_today_undo">Повернути</string>
+    <string name="v2_week_title">Цей тиждень у години детоксу</string>
+    <string name="v2_week_unit">на день у стрічках</string>
+    <string name="v2_week_baseline">спостереження</string>
+    <string name="v2_week_current">цей тиждень</string>
+    <string name="v2_week_reference_title">Точка відліку</string>
+    <string name="v2_week_reference_unit">на день у стрічках у години детоксу</string>
+    <string name="v2_today_was">Сьогодні вже було</string>
+    <string name="v2_today_next">Далі сьогодні</string>
+    <string name="v2_today_all">Сьогодні</string>
+    <string name="v2_row_fact">%1$d хв у стрічках · зазвичай %2$d</string>
+    <string name="widget_preview_online_value">2:10 год</string>
+    <string name="widget_preview_orb_value">5:40</string>
 </resources>

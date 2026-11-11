@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Темні значення для прев'ю віджетів у меню віджетів (previewLayout); ті самі, що InfoColors у темній темі. -->
+<resources>
+    <color name="widget_preview_capsule">#E60B2B25</color>
+    <color name="widget_preview_text">#FFFEFFEF</color>
+    <color name="widget_preview_sub">#FFA9C7BD</color>
+    <color name="widget_preview_track">#24FFFFFF</color>
+</resources>

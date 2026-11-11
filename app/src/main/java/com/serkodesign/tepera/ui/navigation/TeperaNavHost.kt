@@ -474,7 +474,6 @@ fun TeperaNavHost(
                     }
                     RiskHomeScreen(
                         onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                        onOpenCalendar = { navController.navigate(Routes.CALENDAR) },
                         onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
                         onOpenAccess = { navController.navigate(Routes.V3_ACCESS) },
                         onOpenWhy = { windowId -> navController.navigate(Routes.v3Why(windowId)) },
@@ -530,6 +529,7 @@ fun TeperaNavHost(
                 )
             }
             composable(Routes.DIARY) {
+                val v3ModeDiary by settingsStore.v3ModeEnabled.collectAsState(initial = false)
                 DiaryScreen(
                     activityRepository = activityRepository,
                     categoryRepository = categoryRepository,
@@ -539,7 +539,10 @@ fun TeperaNavHost(
                     pauseRepository = pauseRepository,
                     onEditEntry = { entryId -> navController.navigate(Routes.editEntry(entryId)) },
                     onAddEntry = { navController.navigate(Routes.addEntry()) },
-                    scrollToTopSignal = diaryScrollToTopSignal
+                    scrollToTopSignal = diaryScrollToTopSignal,
+                    // Календар — у Щоденнику, коли Головна в режимі годин скролінгу (там кнопки в шапці вже нема).
+                    onOpenCalendar = if (BuildConfig.V3_MVP && v3ModeDiary) ({ navController.navigate(Routes.CALENDAR) }) else null,
+                    showActivities = BuildConfig.V3_MVP && v3ModeDiary
                 )
             }
             composable(Routes.ADD_ENTRY) {
@@ -678,10 +681,16 @@ fun TeperaNavHost(
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
-                    onOpenGroup = { navController.navigate("settings_group/${it.name}") },
-                    onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
                     settingsStore = settingsStore,
+                    onOpenGroup = { navController.navigate("settings_group/${it.name}") },
+                    onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
+                    onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
+                    onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
+                    onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
+                    onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
+                    onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onBack = { navController.popBackStack() }
                 )
             }
