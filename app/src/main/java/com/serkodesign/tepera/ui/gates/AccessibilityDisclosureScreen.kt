@@ -60,12 +60,6 @@ fun AccessibilityDisclosureScreen(onAgree: () -> Unit, onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.a11y_disclosure_where),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
             M3Button(
                 type = M3ButtonType.Filled,

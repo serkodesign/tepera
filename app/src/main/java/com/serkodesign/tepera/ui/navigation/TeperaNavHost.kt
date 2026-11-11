@@ -779,7 +779,11 @@ fun TeperaNavHost(
             composable(Routes.V3_ACCESS) {
                 V3AccessScreen(
                     onGranted = {
-                        navController.navigate(Routes.V3_FEEDS) { popUpTo(Routes.V3_WELCOME) { inclusive = true } }
+                        // Сам екран доступу теж прибираємо зі стека: після кроку розкриття Welcome уже знятий, і без цього
+                        // «Продовжити» на виборі застосунків поверталось на V3_ACCESS, який одразу відкривав вибір знову.
+                        navController.navigate(Routes.V3_FEEDS) {
+                            popUpTo(Routes.V3_ACCESS) { inclusive = true }
+                        }
                     }
                 )
             }
@@ -789,7 +793,8 @@ fun TeperaNavHost(
                     onDone = {
                         onboardingScope.launch {
                             settingsStore.setV3OnboardingSeen(true)
-                            navController.popBackStack()
+                            // Завжди на Home, незалежно від того, чи Welcome ще в стеку.
+                            if (!navController.popBackStack(Routes.HOME, inclusive = false)) navController.popBackStack()
                         }
                     }
                 )
