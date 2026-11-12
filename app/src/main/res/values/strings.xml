@@ -672,7 +672,7 @@
 
     <!-- v3.0 MVP, Етап 3: онбординг L1–L2, головний екран L3/L4 (Figma "App concept", сторінка v3.0). -->
     <string name="v3_welcome_title">Ти береш телефон не випадково</string>
-    <string name="v3_welcome_body">Здебільшого в ті самі години й ситуації. Tepera за тиждень знайде твої і допоможе мати на них план — твоїми словами. Решту дня вона мовчить.</string>
+    <string name="v3_welcome_body">Здебільшого в ті самі години й ситуації. Tepera за тиждень знайде твої і саме тоді тихо запропонує щось інше. Решту дня вона мовчить.</string>
     <string name="v3_welcome_start">Почати</string>
     <string name="v3_access_title">Щоб знайти твої години, потрібен доступ до статистики використання</string>
     <string name="v3_access_sees_title">Що Tepera бачить</string>

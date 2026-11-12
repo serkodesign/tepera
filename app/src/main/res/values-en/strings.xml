@@ -655,7 +655,7 @@
 
     <!-- v3.0 MVP, stage 3: onboarding L1-L2, home screen L3/L4 (Figma "App concept", page v3.0). -->
     <string name="v3_welcome_title">You do not pick up your phone by accident</string>
-    <string name="v3_welcome_body">Mostly at the same hours and in the same situations. Within a week Tepera will find yours and help you have a plan for them, in your own words. The rest of the day it stays quiet.</string>
+    <string name="v3_welcome_body">Mostly at the same hours and in the same situations. Within a week Tepera will find yours and, just then, quietly suggest something else. The rest of the day it stays quiet.</string>
     <string name="v3_welcome_start">Start</string>
     <string name="v3_access_title">To find your hours, Tepera needs access to usage statistics</string>
     <string name="v3_access_sees_title">What Tepera sees</string>
