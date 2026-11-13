@@ -76,7 +76,11 @@ fun M3ListDivider() {
 @Composable
 fun M3ListIcon(icon: ImageVector, modifier: Modifier = Modifier) {
     Box(
-        modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest),
+        modifier.size(40.dp).clip(CircleShape).background(
+            // Темна тема: біле з 15% непрозорості замість сірого (1.2.1, за запитом власника).
+            if (LocalTeperaColors.current.isDark) androidx.compose.ui.graphics.Color.White.copy(alpha = 0.15f)
+            else MaterialTheme.colorScheme.surfaceContainerHighest
+        ),
         contentAlignment = Alignment.Center
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))

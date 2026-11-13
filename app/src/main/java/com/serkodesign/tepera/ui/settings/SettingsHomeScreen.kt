@@ -130,27 +130,16 @@ fun SettingsScreen(
                 if (BuildConfig.V3_MVP) {
                     M3GroupLabel(stringResource(R.string.settings_group_hours))
                     M3ListGroup {
-                        // Режим годин скролінгу (beta): вимкнення повертає звичайну Головну; дані не видаляються.
                         M3ListItem(
-                            title = stringResource(R.string.v3_mode_label),
-                            icon = TeperaSymbols.AutoAwesome,
-                            trailing = {
-                                Switch(
-                                    checked = v3Mode,
-                                    onCheckedChange = { on -> scope.launch { settingsStore.setV3ModeEnabled(on) } },
-                                    colors = teperaSwitchColors()
-                                )
-                            }
+                            title = stringResource(R.string.v3_feed_picker_action),
+                            icon = TeperaIcons.Smartphone,
+                            value = feeds.size.toString(),
+                            onClick = onOpenFeedPicker
                         )
-                        if (v3Active) {
-                            M3ListDivider()
-                            M3ListItem(
-                                title = stringResource(R.string.v3_feed_picker_action),
-                                icon = TeperaIcons.Smartphone,
-                                value = feeds.size.toString(),
-                                onClick = onOpenFeedPicker
-                            )
-                        }
+                        M3ListDivider()
+                        M3ListItem(stringResource(R.string.settings_tracking_action), icon = TeperaSymbols.TrackChanges, onClick = onOpenTracking)
+                        M3ListDivider()
+                        M3ListItem(stringResource(R.string.settings_gates_action), icon = TeperaSymbols.PauseCircle, onClick = onOpenGates)
                     }
                 }
                 if (v3Active) {
@@ -220,24 +209,20 @@ fun SettingsScreen(
                         icon = TeperaSymbols.Feedback,
                         onClick = { showSuggest = true }
                     )
+                    M3ListDivider()
+                    M3ListItem(stringResource(R.string.settings_data_privacy_action), icon = TeperaSymbols.PrivacyTip, onClick = onOpenDataPrivacy)
+                    M3ListDivider()
+                    M3ListItem(stringResource(R.string.settings_knowledge_base_action), icon = TeperaSymbols.MenuBook, onClick = onOpenKnowledgeBase)
                 }
 
                 M3GroupLabel(stringResource(R.string.settings_group_more))
                 M3ListGroup {
-                    M3ListItem(stringResource(R.string.settings_tracking_action), icon = TeperaSymbols.TrackChanges, onClick = onOpenTracking)
-                    M3ListDivider()
-                    M3ListItem(stringResource(R.string.settings_gates_action), icon = TeperaSymbols.PauseCircle, onClick = onOpenGates)
                     if (!v3Active) {
-                        M3ListDivider()
                         M3ListItem(stringResource(R.string.settings_categories_action), icon = TeperaSymbols.Category, onClick = onOpenCategories)
+                        M3ListDivider()
                     }
-                    M3ListDivider()
-                    M3ListItem(stringResource(R.string.settings_data_privacy_action), icon = TeperaSymbols.PrivacyTip, onClick = onOpenDataPrivacy)
-                    M3ListDivider()
                     // CC-11: fake door «Tepera Pro — у розробці», без цін і оплат; за вимогою власника — видимий рядок.
                     M3ListItem(stringResource(R.string.settings_pro_interest_action), icon = TeperaSymbols.Star, onClick = onOpenProInterest)
-                    M3ListDivider()
-                    M3ListItem(stringResource(R.string.settings_knowledge_base_action), icon = TeperaSymbols.MenuBook, onClick = onOpenKnowledgeBase)
                     M3ListDivider()
                     M3ListItem(
                         stringResource(R.string.settings_rate_action), icon = TeperaSymbols.Favorite,

@@ -240,7 +240,7 @@
     <string name="settings_language_system">System</string>
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
-    <string name="settings_general_section">General</string>
+    <string name="settings_general_section">Appearance</string>
     <string name="settings_time_tracking_section">Time tracking</string>
     <string name="settings_detox_section">Digital detox</string>
     <string name="settings_habits_section">Habits and home screen</string>
@@ -884,7 +884,7 @@
     <string name="v3_why_pause_hint">No hints or plan sheet; the window comes back on its own</string>
 
     <!-- Settings, Figma "Tepera" T2 · Settings (1066:4191) -->
-    <string name="settings_group_hours">Detox hours</string>
+    <string name="settings_group_hours">Digital detox</string>
     <string name="settings_group_opening">When you open a feed</string>
     <string name="settings_group_app">App</string>
     <string name="settings_group_more">More</string>
@@ -927,4 +927,22 @@
     <string name="v2_row_fact">%1$d min in feeds · usually %2$d</string>
     <string name="widget_preview_online_value">2:10 h</string>
     <string name="widget_preview_orb_value">5:40</string>
+    <!-- 1.2.1: "What changed" dialog for updated users (compared with 1.0.5) -->
+    <string name="whats_new_title">Tepera has changed</string>
+    <string name="whats_new_intro">We have changed a lot since version 1.0.5. In short:</string>
+    <string name="whats_new_home_lead">New Home</string>
+    <string name="whats_new_home_body">a card for your next scrolling hour, today’s hours and this week at a glance.</string>
+    <string name="whats_new_hours_lead">Scrolling hours</string>
+    <string name="whats_new_hours_body">you pick the feed apps and the hours when you usually get stuck scrolling.</string>
+    <string name="whats_new_pause_lead">A gentle pause when you open a feed</string>
+    <string name="whats_new_pause_body">a prompt and a dimmed screen. It needs the Accessibility permission, which is optional — you decide.</string>
+    <string name="whats_new_detox_lead">Digital detox in Settings</string>
+    <string name="whats_new_detox_body">tracking, apps with a delay, dimming settings.</string>
+    <string name="whats_new_stats_lead">Redesigned Stats</string>
+    <string name="whats_new_stats_body">yesterday as a ribbon, with a separate “Rest of day” row.</string>
+    <string name="whats_new_look_lead">Appearance</string>
+    <string name="whats_new_look_body">light and dark themes, a theme by time of day, the “Dawn” mood.</string>
+    <string name="whats_new_widgets_lead">Fewer widgets, but better ones</string>
+    <string name="whats_new_widgets_body">a few old widgets are gone.</string>
+    <string name="whats_new_confirm">Got it</string>
 </resources>

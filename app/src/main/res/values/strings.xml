@@ -255,7 +255,7 @@
     <string name="settings_language_system">Системна</string>
     <string name="settings_language_uk">Українська</string>
     <string name="settings_language_en">English</string>
-    <string name="settings_general_section">Загальні</string>
+    <string name="settings_general_section">Оформлення</string>
     <string name="settings_time_tracking_section">Облік часу</string>
     <string name="settings_detox_section">Цифровий детокс</string>
     <string name="settings_habits_section">Звички й екран</string>
@@ -901,10 +901,10 @@
     <string name="v3_why_pause_hint">Без підказок і листа плану; потім вікно поверне себе саме</string>
 
     <!-- Налаштування, Figma "Tepera" T2 · Налаштування (1066:4191) -->
-    <string name="settings_group_hours">Години детоксу</string>
+    <string name="settings_group_hours">Цифровий детокс</string>
     <string name="settings_group_opening">У момент відкриття</string>
     <string name="settings_group_app">Застосунок</string>
-    <string name="settings_group_more">Ще</string>
+    <string name="settings_group_more">Додатково</string>
     <string name="settings_overlay_title">Показувати ідею при відкритті стрічки</string>
     <string name="settings_overlay_supporting">Лише в години детоксу</string>
     <string name="settings_a11y_title">Спеціальні можливості</string>
@@ -915,7 +915,7 @@
     <string name="settings_dim_info">Після «Відкрити на 5 хв» екран темніє, щоб нагадати про час. Нічого не блокується: стрічкою можна користуватись далі.</string>
     <string name="settings_dim_soft">М’яке</string>
     <string name="settings_dim_strong">Помітне</string>
-    <string name="settings_appearance_title">Вигляд</string>
+    <string name="settings_appearance_title">Оформлення</string>
     <string name="settings_suggest_supporting">Відкриє форму в браузері</string>
     <string name="settings_footer_format">Tepera %1$s · твій детокс час</string>
 
@@ -944,4 +944,22 @@
     <string name="v2_row_fact">%1$d хв у стрічках · зазвичай %2$d</string>
     <string name="widget_preview_online_value">2:10 год</string>
     <string name="widget_preview_orb_value">5:40</string>
+    <!-- 1.2.1: вікно «Що змінилось» для оновлених користувачів (відносно 1.0.5) -->
+    <string name="whats_new_title">Tepera стала іншою</string>
+    <string name="whats_new_intro">Ми багато змінили з версії 1.0.5. Коротко:</string>
+    <string name="whats_new_home_lead">Нова Головна</string>
+    <string name="whats_new_home_body">картка наступної години скролінгу, сьогоднішні години й тиждень коротко.</string>
+    <string name="whats_new_hours_lead">Години скролінгу</string>
+    <string name="whats_new_hours_body">ви обираєте застосунки-стрічки й години, коли зазвичай застрягаєте в скролінгу.</string>
+    <string name="whats_new_pause_lead">М’яка пауза в момент відкриття стрічки</string>
+    <string name="whats_new_pause_body">підказка й приглушення екрана. Потрібен дозвіл Спеціальних можливостей; він необов’язковий, і ви вирішуєте самі.</string>
+    <string name="whats_new_detox_lead">Цифровий детокс у Налаштуваннях</string>
+    <string name="whats_new_detox_body">відстеження, застосунки з затримкою, налаштування приглушення.</string>
+    <string name="whats_new_stats_lead">Оновлена Статистика</string>
+    <string name="whats_new_stats_body">вчорашній день стрічкою, окремий рядок «Решта дня».</string>
+    <string name="whats_new_look_lead">Оформлення</string>
+    <string name="whats_new_look_body">світла й темна теми, тема за часом доби, настрій «Світанок».</string>
+    <string name="whats_new_widgets_lead">Віджетів стало менше, але кращих</string>
+    <string name="whats_new_widgets_body">кілька старих віджетів зникли.</string>
+    <string name="whats_new_confirm">Зрозуміло</string>
 </resources>

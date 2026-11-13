@@ -177,20 +177,6 @@ fun SettingsGroupScreen(
             }
 
             SettingsGroup.GENERAL -> {
-                // Мова застосовується на місці (AppLocale — Compose-state + ProvideAppLocale у MainActivity), без
-                // Activity.recreate(): перезапуск обривав анімацію перемикача й давав мигання. LocaleStore, а не
-                // AppCompatDelegate — пояснення в util/LocaleStore.kt і CLAUDE.md.
-                TeperaCard(title = stringResource(R.string.settings_language_label)) {
-                    PillSegmentedControl(
-                        options = listOf(
-                            "" to stringResource(R.string.settings_language_system),
-                            "uk" to stringResource(R.string.settings_language_uk),
-                            "en" to stringResource(R.string.settings_language_en)
-                        ),
-                        selected = AppLocale.tag(context),
-                        onSelect = { tag -> AppLocale.set(context, tag) }
-                    )
-                }
                 // Тема — Системна / Світла / Темна / За часом (ThemeStore). Вимикається одним прапорем (THEME_CHOICE_ENABLED).
                 if (ThemeStore.THEME_CHOICE_ENABLED) {
                     TeperaCard(title = stringResource(R.string.settings_theme_action)) {

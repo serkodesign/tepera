@@ -461,7 +461,23 @@ fun TeperaNavHost(
                     androidx.compose.foundation.layout.Box(Modifier.fillMaxSize())
                 } else if (BuildConfig.V3_MVP && v3Mode == true) {
                     val v3Seen by settingsStore.v3OnboardingSeen.collectAsState(initial = null)
-                    LaunchedEffect(v3Seen) { if (v3Seen == false) navController.navigate(Routes.V3_WELCOME) }
+                    // 1.2.1: оновленим користувачам спершу «Що змінилось», потім звичайний хід (вітання/онбординг).
+                    val whatsNewSeen by settingsStore.whatsNew121Seen.collectAsState(initial = null)
+                    val isUpdatedInstall = remember {
+                        runCatching {
+                            val info = appContext.packageManager.getPackageInfo(appContext.packageName, 0)
+                            info.lastUpdateTime > info.firstInstallTime
+                        }.getOrDefault(false)
+                    }
+                    val whatsNewScope = rememberCoroutineScope()
+                    // Свіжа установка: нічого показувати, лише закриваємо прапорець.
+                    LaunchedEffect(whatsNewSeen) { if (whatsNewSeen == false && !isUpdatedInstall) settingsStore.setWhatsNew121Seen() }
+                    if (whatsNewSeen == false && isUpdatedInstall) {
+                        com.serkodesign.tepera.ui.onboarding.WhatsNewDialog(
+                            onDismiss = { whatsNewScope.launch { settingsStore.setWhatsNew121Seen() } }
+                        )
+                    }
+                    LaunchedEffect(v3Seen, whatsNewSeen) { if (v3Seen == false && whatsNewSeen == true) navController.navigate(Routes.V3_WELCOME) }
                     // Той, хто вже пройшов онбординг до появи кроку з розкриттям, бачить його один раз (без згоди й без «Не зараз» раніше).
                     val a11ySeen by settingsStore.a11yOnboardingSeen.collectAsState(initial = true)
                     LaunchedEffect(v3Seen, a11ySeen) {

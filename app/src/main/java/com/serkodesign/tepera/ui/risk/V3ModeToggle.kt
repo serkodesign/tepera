@@ -42,18 +42,6 @@ fun V3ModeToggle(settingsStore: SettingsStore, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val enabled by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
     Column(modifier = modifier.padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        GlassRow(
-            label = stringResource(R.string.v3_mode_label),
-            leading = { TeperaIconCircle(TeperaSymbols.AutoAwesome) },
-            trailing = {
-                TeperaInfoButton(stringResource(R.string.v3_mode_label), stringResource(R.string.v3_mode_hint))
-                Switch(
-                    checked = enabled,
-                    onCheckedChange = { on -> scope.launch { settingsStore.setV3ModeEnabled(on) } },
-                    colors = teperaSwitchColors()
-                )
-            }
-        )
         val context = LocalContext.current
         var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
         val requestA11y = rememberAccessibilityRequest(

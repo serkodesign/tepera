@@ -51,6 +51,7 @@ private val USAGE_SLOT_COVERED_DAYS_KEY = stringSetPreferencesKey("v3_usage_slot
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
+private val WHATS_NEW_121_SEEN_KEY = booleanPreferencesKey("whats_new_121_seen")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
@@ -167,6 +168,14 @@ class SettingsStore(private val context: Context) {
      */
     val widgetSuggestionSeen: Flow<Boolean> = context.settingsDataStore.data
         .map { it[WIDGET_SUGGESTION_SEEN_KEY] ?: false }
+
+    /** 1.2.1: вікно «Що змінилось» для оновлених користувачів показується рівно раз. */
+    val whatsNew121Seen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[WHATS_NEW_121_SEEN_KEY] ?: false }
+
+    suspend fun setWhatsNew121Seen() {
+        context.settingsDataStore.edit { it[WHATS_NEW_121_SEEN_KEY] = true }
+    }
 
     suspend fun setWidgetSuggestionSeen() {
         context.settingsDataStore.edit { it[WIDGET_SUGGESTION_SEEN_KEY] = true }
@@ -404,7 +413,8 @@ class SettingsStore(private val context: Context) {
     }
 
     /** v3.0 MVP (beta): режим «Години ризику» замість звичайного Home. У beta увімкнений за замовчуванням (01.11.2026, для відкритого тесту); хто вимкнув сам — лишається вимкненим. */
-    val v3ModeEnabled: Flow<Boolean> = context.settingsDataStore.data.map { it[V3_MODE_KEY] ?: BuildConfig.V3_MVP }
+    // 1.2.1: режим годин скролінгу — єдиний інтерфейс (перемикач прибрано); збережене «вимкнено» ігнорується.
+    val v3ModeEnabled: Flow<Boolean> = kotlinx.coroutines.flow.flowOf(true)
 
     suspend fun setV3ModeEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { it[V3_MODE_KEY] = enabled }
