@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -125,9 +127,19 @@ internal fun NextHourCard(
     var skipped by remember(window.id, occurrence.startAt) { mutableStateOf(WindowSkipStore.isSkipped(context, window.id)) }
     val zone = ZoneId.systemDefault()
 
+    // Темна тема (звичайна й «Світанок»): не чорна, а м'яка підсвітка кольором акценту — трохи відрізняється від скляних
+    // карток, але лишається в гамі фону. Світла тема без змін.
+    val teperaColors = LocalTeperaColors.current
+    val cardTint = when {
+        !teperaColors.isDark -> null
+        teperaColors.isDawn -> teperaColors.brand
+        else -> Color(0xFF71CCA4)
+    }
+    val cardFill = cardTint?.copy(alpha = 0.16f) ?: MaterialTheme.colorScheme.surfaceContainerLowest
+    val cardStroke = cardTint?.copy(alpha = 0.40f) ?: MaterialTheme.colorScheme.outlineVariant
     Column(
-        Modifier.fillMaxWidth().clip(HeroShape).background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, HeroShape)
+        Modifier.fillMaxWidth().clip(HeroShape).background(cardFill)
+            .border(1.dp, cardStroke, HeroShape)
             .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -177,7 +189,7 @@ internal fun NextHourCard(
             if (!inside) {
                 TeperaButton(
                     text = stringResource(if (skipped) R.string.v2_not_today_undo else R.string.v2_not_today),
-                    type = TeperaButtonType.Tertiary,
+                    type = TeperaButtonType.Secondary,
                     onClick = {
                         if (skipped) WindowSkipStore.undo(context, window.id)
                         else WindowSkipStore.skipUntil(context, window.id, occurrence.endAt.atZone(zone).toInstant().toEpochMilli())
