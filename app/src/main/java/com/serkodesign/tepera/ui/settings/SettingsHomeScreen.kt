@@ -203,13 +203,6 @@ fun SettingsScreen(
                         onClick = { onOpenGroup(SettingsGroup.GENERAL) }
                     )
                     M3ListDivider()
-                    M3ListItem(
-                        title = stringResource(R.string.settings_suggest_feature_action),
-                        supporting = stringResource(R.string.settings_suggest_supporting),
-                        icon = TeperaSymbols.Feedback,
-                        onClick = { showSuggest = true }
-                    )
-                    M3ListDivider()
                     M3ListItem(stringResource(R.string.settings_data_privacy_action), icon = TeperaSymbols.PrivacyTip, onClick = onOpenDataPrivacy)
                     M3ListDivider()
                     M3ListItem(stringResource(R.string.settings_knowledge_base_action), icon = TeperaSymbols.MenuBook, onClick = onOpenKnowledgeBase)
@@ -221,6 +214,13 @@ fun SettingsScreen(
                         M3ListItem(stringResource(R.string.settings_categories_action), icon = TeperaSymbols.Category, onClick = onOpenCategories)
                         M3ListDivider()
                     }
+                    M3ListItem(
+                        title = stringResource(R.string.settings_suggest_feature_action),
+                        supporting = stringResource(R.string.settings_suggest_supporting),
+                        icon = TeperaSymbols.Feedback,
+                        onClick = { showSuggest = true }
+                    )
+                    M3ListDivider()
                     // CC-11: fake door «Tepera Pro — у розробці», без цін і оплат; за вимогою власника — видимий рядок.
                     M3ListItem(stringResource(R.string.settings_pro_interest_action), icon = TeperaSymbols.Star, onClick = onOpenProInterest)
                     M3ListDivider()
