@@ -4,14 +4,14 @@
 - "Scrolling hours" is now the main mode; the switch is gone
 - Settings regrouped: "Digital detox" (tracking, apps with a delay), "App" (now with Data & privacy and Knowledge base), "More"
 - "Look" is now "Appearance"; language is in one place only
-- Dark theme: icon circles in Settings are lighter
+- Dark theme: the idea card on Home is no longer black, "Not today" is easier to see, icon circles in Settings are lighter
 - After updating from an older version, a short note explains what has changed since 1.0.5
 
 ## Що нового (UA) — «Примітки до випуску» в Play, ≤ 500 символів
 - «Години скролінгу» тепер основний режим, перемикач прибрано
 - Налаштування перегруповано: «Цифровий детокс» (відстеження, застосунки з затримкою), «Застосунок» (тепер із «Дані й приватність» і «Базою знань»), «Додатково»
 - «Вигляд» → «Оформлення»; мова лише в одному місці
-- У темній темі кружки іконок у налаштуваннях світліші
+- У темній темі картка ідеї на Головній більше не чорна, «Не сьогодні» помітніша, кружки іконок у налаштуваннях світліші
 - Після оновлення зі старої версії — коротке вікно про те, що змінилось від 1.0.5
 
 ## For the developer (not for Play)
