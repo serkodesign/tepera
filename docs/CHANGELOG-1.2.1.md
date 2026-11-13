@@ -1,4 +1,4 @@
-# Tepera 1.2.1 (versionCode 41) — flavor `beta`, build: `:app:bundleBetaRelease` (copy: `release/tepera-1.2.1-beta-41.aab`)
+# Tepera 1.2.1 (versionCode 41) — flavor `beta`, build: `:app:bundleBetaRelease` (copy: `release/tepera-1.2.1-41.aab`)
 
 ## What's new (EN) — Play "Release notes", ≤ 500 characters
 - "Scrolling hours" is now the main mode; the switch is gone
