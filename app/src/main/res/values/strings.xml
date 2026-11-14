@@ -129,7 +129,7 @@
     <string name="welcome_back_logged_format">Відмічено: %1$s</string>
     <string name="welcome_back_online_format">Online в середньому: %1$s на день</string>
     <string name="weekly_summary_label">Тижневий підсумок</string>
-    <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері, — одне тихе сповіщення з підсумком. Без інших сповіщень.</string>
+    <string name="weekly_summary_hint">Раз на тиждень, у неділю ввечері — одне тихе сповіщення. Інших немає.</string>
     <string name="weekly_summary_permission_hint">Без дозволу на сповіщення підсумок не прийде. Дозволити можна в налаштуваннях системи.</string>
     <string name="weekly_summary_channel_name">Тижневий підсумок</string>
     <string name="weekly_summary_notification_text">Підсумок вашого тижня готовий.</string>
@@ -144,10 +144,10 @@
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — у розробці</string>
-    <string name="pro_interest_body">Думаємо, чи потрібна розширена версія Tepera. Без цін і оплат — просто питання до вас. Розкажіть, що було б корисним.</string>
+    <string name="pro_interest_body">Думаємо над розширеною версією. Без цін і оплат — лише питання до вас: що було б корисним?</string>
     <string name="pro_interest_action">Хочу дізнатись</string>
     <string name="extra_animations_label">Додаткові анімації</string>
-    <string name="extra_animations_explanation">Рух у колі «без телефону», числа, що докручуються, і м’які переходи. Вимкніть, щоб заощадити заряд.</string>
+    <string name="extra_animations_explanation">Рух кола, числа, що докручуються, м’які переходи. Вимкніть для економії заряду.</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, активностей і часу в застосунках. Можна вимкнути будь-коли.</string>
 
@@ -164,7 +164,7 @@
          перед Home, після пропозиції віджета. Функція лишається доступною й без цього кроку
          (Налаштування → Застосунки з затримкою) — це лише повідомлення про існування. -->
     <string name="gates_onboarding_title">Застосунки з затримкою</string>
-    <string name="gates_onboarding_body">Можна поставити коротку паузу перед обраними застосунками — щоб вирішити свідомо, а не за звичкою. Налаштувати можна пізніше: Налаштування → Застосунки з затримкою.</string>
+    <string name="gates_onboarding_body">Коротка пауза перед обраними застосунками — щоб вирішити свідомо. Пізніше: Налаштування → Застосунки з затримкою.</string>
     <string name="gates_onboarding_action">Зрозуміло</string>
 
 
@@ -331,8 +331,8 @@
     <string name="settings_gates_action">Застосунки з затримкою</string>
     <string name="settings_widget_action">Кнопки віджета</string>
     <string name="widget_settings_title">Кнопки віджета</string>
-    <string name="widget_settings_hint">Порядок кнопок — як у списку: 1x1 — перша, 2x1 — дві, великі — до п’яти. Тягніть за ручку, щоб змінити.</string>
-    <string name="widget_settings_auto_hint">Порядок поки автоматичний — залежить від пори доби. Оберіть активності, щоб задати свій.</string>
+    <string name="widget_settings_hint">1x1 — перша кнопка, 2x1 — дві, великі — до п’яти. Тягніть за ручку, щоб змінити порядок.</string>
+    <string name="widget_settings_auto_hint">Порядок автоматичний — за порою доби. Оберіть активності, щоб задати свій.</string>
     <string name="widget_settings_selected_section">На віджеті</string>
     <string name="widget_settings_available_section">Додати на віджет</string>
     <string name="widget_settings_limit">На віджеті може бути до %1$d кнопок. Приберіть одну, щоб додати іншу.</string>
@@ -365,8 +365,8 @@
     <string name="gate_schedule_to">Кінець</string>
     <string name="gate_schedule_note_whole_day">Весь день</string>
     <string name="gate_schedule_note_next_day">Закінчується наступного дня</string>
-    <string name="gates_hint">Обрані застосунки відкриваються через новий ярлик — із паузою перед запуском</string>
-    <string name="gates_unsupported">Цей лаунчер не підтримує закріплені ярлики — затримка недоступна на цьому пристрої</string>
+    <string name="gates_hint">Обрані застосунки відкриваються через новий ярлик із паузою.</string>
+    <string name="gates_unsupported">Лаунчер не підтримує закріплені ярлики — затримка недоступна.</string>
     <string name="gates_section_active">Застосунки з затримкою</string>
     <string name="gates_section_add">Додати застосунок</string>
     <string name="gates_empty">Ще немає застосунків із затримкою</string>
@@ -519,7 +519,7 @@
     <string name="home_card_first_unlock_label">Початок</string>
     <string name="hero_structure_info_action">Про смугу дня</string>
     <string name="hero_structure_info_title">Смуга дня</string>
-    <string name="hero_structure_info_body">Смуга показує, з чого складається ваш день від початку: Online, відмічені активності й решта дня. Штрихи в кінці — час, що ще попереду.</string>
+    <string name="hero_structure_info_body">Смуга — з чого складається ваш день: Online, відмічені активності, решта. Штрихи — час, що ще попереду.</string>
     <string name="hero_structure_info_body_target">Смуга показує, з чого складається ваш день від початку: Online, відмічені активності й решта дня. Штрихи в кінці — час, що ще попереду.\n\nТиха риска — ваш орієнтир Online-часу (змінити можна в Налаштуваннях → Відстеження). Вона не змінює колір, якщо Online його перейшов: це лише точка відліку, не межа.</string>
     <string name="home_card_info_action">Про цю картку</string>
     <string name="home_card_info_close">Зрозуміло</string>
@@ -638,10 +638,10 @@
     <string name="v3_section_title">Години скролінгу (beta)</string>
     <string name="v3_feed_picker_action">Застосунки-стрічки</string>
     <string name="v3_feed_title">Застосунки-стрічки</string>
-    <string name="v3_feed_hint">Оберіть застосунки, де зазвичай «зависаєте». Tepera рахуватиме час лише в них.</string>
+    <string name="v3_feed_hint">Оберіть застосунки, де «зависаєте». Час рахується лише в них.</string>
     <string name="v3_feed_section_suggested">Часто відкриваєте ввечері</string>
     <string name="v3_feed_section_all">Усі застосунки</string>
-    <string name="v3_feed_empty">Поки немає даних про користування застосунками. Надайте доступ до статистики використання.</string>
+    <string name="v3_feed_empty">Немає даних про використання. Надайте доступ до статистики.</string>
     <string name="v3_tester_title">Статистика для тестувальників</string>
     <string name="v3_tester_copy">Скопіювати як текст</string>
     <string name="v3_tester_copied">Скопійовано</string>
@@ -658,7 +658,7 @@
     <string name="v3_overlay_title">Зараз твоя година, до %1$s</string>
     <string name="v3_overlay_enable_access">Увімкнути доступ</string>
     <string name="v3_overlay_toggle_label">Підказка поверх стрічки</string>
-    <string name="v3_overlay_toggle_hint">Коли ви відкриваєте стрічку у свою годину, Tepera на мить пропонує, що зробити замість. Потрібен дозвіл «Спеціальні можливості».</string>
+    <string name="v3_overlay_toggle_hint">У твою годину Tepera на мить запропонує, що зробити замість стрічки. Потрібні «Спеціальні можливості».</string>
     <string name="v3_report_overlay">Підказка поверх стрічки: показано %1$d, «Так» %2$d, «Відкрити на 5 хв» %3$d, закрито без вибору %4$d</string>
     <string name="v3_report_tag_manual">вручну</string>
     <string name="v3_report_tag_weekdays">будні</string>
@@ -672,7 +672,7 @@
 
     <!-- v3.0 MVP, Етап 3: онбординг L1–L2, головний екран L3/L4 (Figma "App concept", сторінка v3.0). -->
     <string name="v3_welcome_title">Ти береш телефон не випадково</string>
-    <string name="v3_welcome_body">Здебільшого в ті самі години й ситуації. Tepera за тиждень знайде твої і саме тоді тихо запропонує щось інше. Решту дня вона мовчить.</string>
+    <string name="v3_welcome_body">Здебільшого в ті самі години. За тиждень Tepera знайде твої і саме тоді тихо запропонує щось інше. Решту дня мовчить.</string>
     <string name="v3_welcome_start">Почати</string>
     <string name="v3_access_title">Щоб знайти твої години, потрібен доступ до статистики використання</string>
     <string name="v3_access_sees_title">Що Tepera бачить</string>
@@ -712,7 +712,7 @@
     <string name="v3_part_evening">Увечері</string>
     <string name="v3_part_night">Уночі</string>
     <string name="v3_mode_label">Режим v3 (beta)</string>
-    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу». Старі дані не видаляються — вимкніть, щоб повернути звичайний вигляд.</string>
+    <string name="v3_mode_hint">Замінює головний екран на «Години скролінгу». Дані не видаляються.</string>
     <string name="v3_tester_restart">Пройти онбординг v3 знову</string>
 
     <!-- v3.0 MVP, Етап 3: L5 «План якщо — то» (Figma 911:1066). Підказки вечора/обіду — з макета, ранку/дня — нейтральні. -->
@@ -786,7 +786,7 @@
     <string name="v3_card_manual_format">Власне · %1$s</string>
     <string name="v3_editor_title_new">Нове вікно</string>
     <string name="v3_editor_title_edit">Своє вікно</string>
-    <string name="v3_editor_intro">Задай години, у які ти зазвичай застрягаєш у стрічках. Tepera покаже, як часто це збігається з реальним використанням.</string>
+    <string name="v3_editor_intro">Задай години, коли зазвичай застрягаєш у стрічках. Tepera покаже, як це збігається з реальністю.</string>
     <string name="v3_editor_start">Початок</string>
     <string name="v3_editor_end">Кінець</string>
     <string name="v3_editor_days">Дні</string>
@@ -798,7 +798,7 @@
     <string name="v3_editor_delete">Видалити вікно</string>
     <string name="v3_editor_edit_action">Змінити вікно</string>
     <string name="v3_summary_title">Підсумок тижня</string>
-    <string name="v3_summary_intro">Скільки часу за добу ти проводив у стрічках у свої години — порівняно з першим тижнем спостереження.</string>
+    <string name="v3_summary_intro">Час у стрічках за добу в твої години — порівняно з першим тижнем.</string>
     <string name="v3_summary_was">було %1$d хв</string>
     <string name="v3_summary_soft_title">Сесії «на 5 хв» за тиждень</string>
     <string name="v3_summary_delta_less">На %1$d хв менше за добу, ніж у перший тиждень</string>
@@ -832,7 +832,7 @@
     <string name="v3_watch_5_body">Ти сам обрав: «%1$s». Дотримаймо слова — стрічка почекає.</string>
     <string name="v3_watch_leave">Гаразд, іду</string>
     <string name="v3_puzzle_toggle_label">Задачки при повторному вході</string>
-    <string name="v3_puzzle_toggle_hint">З третього повторного відкриття стрічки Tepera просить розв\'язати коротку задачку (до 30 с). Піти можна завжди.</string>
+    <string name="v3_puzzle_toggle_hint">З третього повторного відкриття — коротка задачка (до 30 с). Піти можна завжди.</string>
     <string name="v3_puzzle_title">Секунда уваги</string>
     <string name="v3_puzzle_hint">Розв\'яжи, щоб відкрити стрічку. Або піти — це теж вибір.</string>
     <string name="v3_puzzle_hint_steps">Задача %1$d з %2$d. Або піти — це теж вибір.</string>
@@ -912,7 +912,7 @@
     <string name="settings_a11y_off">вимкнено</string>
     <string name="settings_dim_title">Приглушення</string>
     <string name="settings_dim_hint">Як сильно темніє екран, коли 5 хв минуло.</string>
-    <string name="settings_dim_info">Після «Відкрити на 5 хв» екран темніє, щоб нагадати про час. Нічого не блокується: стрічкою можна користуватись далі.</string>
+    <string name="settings_dim_info">Після «Відкрити на 5 хв» екран темніє — нагадування про час. Нічого не блокується.</string>
     <string name="settings_dim_soft">М’яке</string>
     <string name="settings_dim_strong">Помітне</string>
     <string name="settings_appearance_title">Вигляд</string>
@@ -926,7 +926,7 @@
     <string name="v2_next_title_tomorrow">Завтра · %1$s · %2$s</string>
     <string name="v2_when_in">через %1$s</string>
     <string name="v2_when_now">зараз</string>
-    <string name="v2_next_idea_fallback">Коли відкриєш стрічку, Tepera запропонує, що зробити замість</string>
+    <string name="v2_next_idea_fallback">Відкриєш стрічку — Tepera підкаже, що робити замість</string>
     <string name="v2_next_fact">У стрічках цієї години: %1$d хв</string>
     <string name="v2_next_reminder">Тихо нагадаю о %1$s</string>
     <string name="v2_next_skipped">Сьогодні ця година без підказок</string>
@@ -952,22 +952,22 @@
     <string name="tutorial_done">Готово</string>
     <string name="tutorial_got_it">Зрозуміло</string>
     <string name="tutorial_observing_title">Тиждень знайомства</string>
-    <string name="tutorial_observing_body">Протягом тижня Tepera вивчає, коли ти найчастіше скролиш стрічки. Нічого робити не треба — користуйся телефоном як завжди.</string>
+    <string name="tutorial_observing_body">Тиждень Tepera вивчає, коли ти скролиш стрічки. Роби все як завжди.</string>
     <string name="tutorial_idea_title">Ідея замість стрічки</string>
-    <string name="tutorial_idea_body">Перед годиною скролінгу тут з’явиться підказка, чим зайнятись замість стрічки. Якщо сьогодні не потрібно — натисни «Не сьогодні».</string>
+    <string name="tutorial_idea_body">Перед годиною скролінгу тут буде ідея, чим зайнятись замість стрічки.</string>
     <string name="tutorial_hours_title">Години скролінгу</string>
-    <string name="tutorial_hours_body">У ці години застосунки-стрічки під м’яким наглядом: при відкритті — ідея й пауза. Tepera знайде їх сама за тиждень, а свої можна обрати вже зараз.</string>
+    <string name="tutorial_hours_body">У ці години стрічки під м’яким наглядом. Tepera знайде їх за тиждень — або обери свої вже зараз.</string>
     <string name="tutorial_add_title">Додай свою годину</string>
-    <string name="tutorial_add_body">Натисни «+» і вкажи, коли тобі важливо, щоб застосунки-стрічки працювали. Це можна зробити, поки Tepera ще збирає дані.</string>
+    <string name="tutorial_add_body">Натисни «+» й вкажи, коли тобі важливо, щоб стрічки працювали.</string>
     <string name="tutorial_diary_title">Щоденник</string>
-    <string name="tutorial_diary_body">У вкладці «Щоденник» внизу — твої записи про активності без стрічок і календар.</string>
+    <string name="tutorial_diary_body">Тут — твої активності без стрічок і календар.</string>
     <string name="tutorial_settings_title">Налаштування</string>
-    <string name="tutorial_settings_body">Тут обираєш застосунки-стрічки, налаштовуєш цифровий детокс, мову й тему. Підказки можна показати знову.</string>
+    <string name="tutorial_settings_body">Стрічки, цифровий детокс, мова й тема. Підказки можна показати знову.</string>
     <string name="tutorial_diary_hint_title">Як користуватись Щоденником</string>
-    <string name="tutorial_diary_hint_body">Запиши, чим займався замість стрічки: натисни активність, щоб запустити таймер, або «+», щоб додати час вручну.</string>
+    <string name="tutorial_diary_hint_body">Запиши, чим займався замість стрічки: натисни активність для таймера або «+».</string>
     <string name="tutorial_settings_hint_title">З чого почати</string>
-    <string name="tutorial_settings_hint_body">У «Цифровому детоксі» обери застосунки-стрічки й що відбувається, коли ти їх відкриваєш. Решту можна лишити як є.</string>
+    <string name="tutorial_settings_hint_body">У «Цифровому детоксі» обери стрічки й що відбувається, коли ти їх відкриваєш.</string>
     <string name="settings_replay_tutorial">Показати підказки знову</string>
-    <string name="v3_observing_manual_hint">Не хочеш чекати тиждень? Обери години, коли тобі важливо, щоб застосунки-стрічки працювали, — вони запрацюють одразу.</string>
+    <string name="v3_observing_manual_hint">Не хочеш чекати? Обери години сам — вони запрацюють одразу.</string>
     <string name="v3_observing_manual_action">Обрати години</string>
 </resources>
