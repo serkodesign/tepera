@@ -84,6 +84,7 @@ fun SettingsScreen(
     onOpenDataPrivacy: () -> Unit,
     onOpenProInterest: () -> Unit,
     onOpenKnowledgeBase: () -> Unit,
+    onOpenLanguage: () -> Unit,
     onOpenAbout: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -107,9 +108,7 @@ fun SettingsScreen(
         onAgreed = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) }
     )
 
-    var showLanguage by remember { mutableStateOf(false) }
     var showSuggest by remember { mutableStateOf(false) }
-    if (showLanguage) LanguageDialog(onDismiss = { showLanguage = false })
     if (showSuggest) {
         // FR-6.4/6.5: чесне попередження, що зараз відкриється браузер (форму приймає Google).
         TeperaDialog(
@@ -218,7 +217,7 @@ fun SettingsScreen(
                         title = stringResource(R.string.settings_language_label),
                         icon = TeperaSymbols.Language,
                         value = languageName(AppLocale.tag(context)),
-                        onClick = { showLanguage = true }
+                        onClick = onOpenLanguage
                     )
                     M3ListDivider()
                     M3ListItem(
@@ -303,34 +302,6 @@ private fun DimSetting() {
             selected = strong,
             onSelect = { strong = it; PlanOverlayStore.setDimStrong(context, it) }
         )
-    }
-}
-
-/** Вибір мови з рядка «Мова»: «Системна» і список мов (рідними назвами), застосовується на місці. */
-@Composable
-private fun LanguageDialog(onDismiss: () -> Unit) {
-    val context = LocalContext.current
-    val current = AppLocale.tag(context)
-    TeperaDialog(
-        onDismissRequest = onDismiss,
-        title = stringResource(R.string.settings_language_label),
-        confirmText = stringResource(R.string.dialog_ok),
-        onConfirm = onDismiss
-    ) {
-        Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-            val options = listOf("" to stringResource(R.string.settings_language_system)) +
-                AppLanguages.all.map { it.tag to it.endonym }
-            options.forEach { (tag, label) ->
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                        .selectable(selected = current == tag, role = Role.RadioButton, onClick = { AppLocale.set(context, tag) }),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(selected = current == tag, onClick = null)
-                    Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 12.dp))
-                }
-            }
-        }
     }
 }
 
