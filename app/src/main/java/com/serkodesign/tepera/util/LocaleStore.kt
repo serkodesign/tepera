@@ -77,13 +77,25 @@ object AppLocale {
         state.value = tag
     }
 
+    /** Перша мова пристрою зі списку [AppLanguages], інакше англійська (мова за замовчуванням у ресурсах). */
+    fun supportedSystemLocale(): Locale {
+        val list = Resources.getSystem().configuration.locales
+        for (i in 0 until list.size()) {
+            val l = list[i]
+            if (AppLanguages.all.any { it.tag.substringBefore('-') == l.language }) return l
+        }
+        return Locale.ENGLISH
+    }
+
     fun localeFor(tag: String): Locale =
         if (tag.isEmpty()) Resources.getSystem().configuration.locales[0] else Locale.forLanguageTag(tag)
 
     /** Контекст-обгортка над [base] (Activity лишається досяжною через baseContext) з ресурсами потрібної локалі. */
     fun localizedContext(base: Context, tag: String): Context {
         val config = Configuration(base.resources.configuration)
-        config.setLocale(localeFor(tag))
+        // «Системна»: перша мова зі списку пристрою, яку підтримує застосунок (для [be, uk] — українська), інакше англійська.
+        // Платформне зіставлення за списком тут ненадійне, тож обираємо самі.
+        config.setLocale(if (tag.isEmpty()) supportedSystemLocale() else localeFor(tag))
         return LocalizedContext(base, base.createConfigurationContext(config).resources)
     }
 
