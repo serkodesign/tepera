@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.serkodesign.tepera.ui.tutorial.TutorialHintCard
+import com.serkodesign.tepera.util.TutorialStore
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -127,12 +132,22 @@ fun SettingsScreen(
                 Modifier.verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                if (v3Active) {
+                    var hintSeen by remember { mutableStateOf(TutorialStore.isSeen(context, TutorialStore.SETTINGS_HINT)) }
+                    if (!hintSeen) {
+                        TutorialHintCard(
+                            R.string.tutorial_settings_hint_title, R.string.tutorial_settings_hint_body,
+                            onDismiss = { hintSeen = true; TutorialStore.markSeen(context, TutorialStore.SETTINGS_HINT) }
+                        )
+                    }
+                }
+                // Одна група «Цифровий детокс» (рішення власника, 14.11.2026): що рахуємо й що відбувається при відкритті стрічки.
                 if (BuildConfig.V3_MVP) {
                     M3GroupLabel(stringResource(R.string.settings_group_hours))
                     M3ListGroup {
                         M3ListItem(
                             title = stringResource(R.string.v3_feed_picker_action),
-                            icon = TeperaIcons.Smartphone,
+                            icon = TeperaSymbols.Smartphone,
                             value = feeds.size.toString(),
                             onClick = onOpenFeedPicker
                         )
@@ -143,7 +158,12 @@ fun SettingsScreen(
                     }
                 }
                 if (v3Active) {
-                    M3GroupLabel(stringResource(R.string.settings_group_opening))
+                    // Підгрупа тієї самої секції: тихіший підпис без відступу, як продовження «Цифрового детоксу».
+                    Text(
+                        stringResource(R.string.settings_group_opening),
+                        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 8.dp).semantics { heading() }
+                    )
                     M3ListGroup {
                         M3ListItem(
                             title = stringResource(R.string.settings_overlay_title),
@@ -229,6 +249,14 @@ fun SettingsScreen(
                         onClick = { PlayStore.openListing(context, forReview = true) }
                     )
                     M3ListDivider()
+                    if (v3Active) {
+                        // Скидає всі підказки; повертаємось на Головну, де ланцюжок стартує знову.
+                        M3ListItem(
+                            stringResource(R.string.settings_replay_tutorial), icon = TeperaSymbols.Info,
+                            onClick = { TutorialStore.reset(context); onBack() }
+                        )
+                        M3ListDivider()
+                    }
                     M3ListItem(stringResource(R.string.settings_about_action), icon = TeperaSymbols.Info, onClick = onOpenAbout)
                 }
 
@@ -249,22 +277,22 @@ fun SettingsScreen(
 private fun DimSetting() {
     val context = LocalContext.current
     var strong by remember { mutableStateOf(PlanOverlayStore.isDimStrong(context)) }
-    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+    // Ті самі поля, проміжок і висота рядка, що в M3ListItem (16×8dp, 12dp між іконкою й текстом, 56dp мінімум), без
+    // додаткового проміжку між назвою й підписом; ⓘ — праворуч окремим слотом (як шеврон), тож не збільшує висоту тексту.
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             M3ListIcon(TeperaSymbols.PauseCircle)
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        stringResource(R.string.settings_dim_title),
-                        style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
-                    )
-                    TeperaInfoButton(stringResource(R.string.settings_dim_title), stringResource(R.string.settings_dim_info))
-                }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.settings_dim_title),
+                    style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
+                )
                 Text(
                     stringResource(R.string.settings_dim_hint),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            TeperaInfoButton(stringResource(R.string.settings_dim_title), stringResource(R.string.settings_dim_info))
         }
         PillSegmentedControl(
             options = listOf(false to stringResource(R.string.settings_dim_soft), true to stringResource(R.string.settings_dim_strong)),

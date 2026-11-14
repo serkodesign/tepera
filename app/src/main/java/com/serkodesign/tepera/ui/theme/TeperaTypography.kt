@@ -38,9 +38,10 @@ val TeperaTypography = Typography(
     titleLarge = m3Style(22, 28, -0.11f, FontWeight.Medium),
     titleMedium = m3Style(16, 24, 0f, FontWeight.Medium),
     titleSmall = m3Style(14, 20, 0f, FontWeight.Medium),
-    bodyLarge = m3Style(16, 24, 0f, FontWeight.Normal),
-    bodyMedium = m3Style(14, 20, 0f, FontWeight.Normal),
-    bodySmall = m3Style(12, 16, 0f, FontWeight.Normal),
+    // Body: міжрядковий інтервал ~1.25 (було 1.43–1.5): дворядкові підписи в списках виглядали розрідженими.
+    bodyLarge = m3Style(16, 20, 0f, FontWeight.Normal),
+    bodyMedium = m3Style(14, 18, 0f, FontWeight.Normal),
+    bodySmall = m3Style(12, 15, 0f, FontWeight.Normal),
     labelLarge = m3Style(14, 20, 0f, FontWeight.Medium),
     labelMedium = m3Style(12, 16, 0f, FontWeight.Medium),
     labelSmall = m3Style(11, 16, 0.11f, FontWeight.Medium)

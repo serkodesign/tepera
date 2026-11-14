@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
@@ -160,7 +161,25 @@ fun DiaryScreen(
             ) {
                 // Активності (старт/стоп таймера) переїхали сюди з Головної v2 (рішення власника, 11.11.2026). Ряд чіпів
                 // на всю ширину з власними відступами, тому бічні 16dp — лише в історії нижче.
-                if (showActivities) com.serkodesign.tepera.ui.risk.ActivityChips(onAddEntry)
+                if (showActivities) {
+                    val diaryContext = androidx.compose.ui.platform.LocalContext.current
+                    var diaryHintSeen by androidx.compose.runtime.remember {
+                        androidx.compose.runtime.mutableStateOf(
+                            com.serkodesign.tepera.util.TutorialStore.isSeen(diaryContext, com.serkodesign.tepera.util.TutorialStore.DIARY_HINT)
+                        )
+                    }
+                    if (!diaryHintSeen) {
+                        com.serkodesign.tepera.ui.tutorial.TutorialHintCard(
+                            R.string.tutorial_diary_hint_title, R.string.tutorial_diary_hint_body,
+                            onDismiss = {
+                                diaryHintSeen = true
+                                com.serkodesign.tepera.util.TutorialStore.markSeen(diaryContext, com.serkodesign.tepera.util.TutorialStore.DIARY_HINT)
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                    com.serkodesign.tepera.ui.risk.ActivityChips(onAddEntry)
+                }
                 Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(32.dp)) {
                     HistoryContent(
                         groups = state.history,

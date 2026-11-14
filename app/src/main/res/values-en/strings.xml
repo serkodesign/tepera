@@ -945,4 +945,30 @@
     <string name="whats_new_widgets_lead">Fewer widgets, but better ones</string>
     <string name="whats_new_widgets_body">a few old widgets are gone.</string>
     <string name="whats_new_confirm">Got it</string>
+
+    <!-- Tooltip tutorial (14.11.2026) -->
+    <string name="tutorial_step_counter">%1$d of %2$d</string>
+    <string name="tutorial_next">Next</string>
+    <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_done">Done</string>
+    <string name="tutorial_got_it">Got it</string>
+    <string name="tutorial_observing_title">A week to get to know you</string>
+    <string name="tutorial_observing_body">For a week Tepera learns when you scroll feeds most. There is nothing to do: use your phone as usual.</string>
+    <string name="tutorial_idea_title">An idea instead of a feed</string>
+    <string name="tutorial_idea_body">Before a scrolling hour, a suggestion for what to do instead of the feed will show up here. If you do not need it today, tap “Not today”.</string>
+    <string name="tutorial_hours_title">Scrolling hours</string>
+    <string name="tutorial_hours_body">During these hours feed apps get gentle care: an idea and a pause when you open them. Tepera finds them itself within a week, and you can pick your own right now.</string>
+    <string name="tutorial_add_title">Add your own hour</string>
+    <string name="tutorial_add_body">Tap “+” and choose when it matters to you that feed apps are looked after. You can do it while Tepera is still collecting data.</string>
+    <string name="tutorial_diary_title">Diary</string>
+    <string name="tutorial_diary_body">The Diary tab at the bottom holds your offline activities and the calendar.</string>
+    <string name="tutorial_settings_title">Settings</string>
+    <string name="tutorial_settings_body">Here you choose feed apps, set up digital detox, language and theme. You can show these tips again.</string>
+    <string name="tutorial_diary_hint_title">How to use the Diary</string>
+    <string name="tutorial_diary_hint_body">Log what you did instead of the feed: tap an activity to start a timer, or “+” to add time by hand.</string>
+    <string name="tutorial_settings_hint_title">Where to start</string>
+    <string name="tutorial_settings_hint_body">In “Digital detox” pick feed apps and what happens when you open them. The rest can stay as it is.</string>
+    <string name="settings_replay_tutorial">Show tips again</string>
+    <string name="v3_observing_manual_hint">Do not want to wait a week? Choose the hours when it matters to you that feed apps are looked after, and they start working right away.</string>
+    <string name="v3_observing_manual_action">Choose hours</string>
 </resources>
