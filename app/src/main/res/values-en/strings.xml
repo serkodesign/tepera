@@ -120,7 +120,7 @@
     <string name="welcome_back_logged_format">Noted: %1$s</string>
     <string name="welcome_back_online_format">Online on average: %1$s per day</string>
     <string name="weekly_summary_label">Weekly summary</string>
-    <string name="weekly_summary_hint">Once a week, Sunday evening — one quiet summary notification. No other notifications.</string>
+    <string name="weekly_summary_hint">Once a week, Sunday evening: one quiet notification. No others.</string>
     <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
@@ -135,10 +135,10 @@
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — in development</string>
-    <string name="pro_interest_body">We\'re wondering whether Tepera needs an extended version. No prices or payments — just a question. Tell us what would help.</string>
+    <string name="pro_interest_body">We are considering an extended version. No prices or payments, just a question: what would help?</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="extra_animations_label">Extra animations</string>
-    <string name="extra_animations_explanation">Motion in the “without phone” circle, counting numbers and soft transitions. Turn off to save battery.</string>
+    <string name="extra_animations_explanation">Circle motion, counting numbers, soft transitions. Turn off to save battery.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, activities or app time. Turn it off anytime.</string>
 
@@ -151,7 +151,7 @@
     <string name="onboarding_skip_all">Skip all</string>
 
     <string name="gates_onboarding_title">Apps with a delay</string>
-    <string name="gates_onboarding_body">Add a short pause before chosen apps — to decide on purpose, not out of habit. Set it up later in Settings → Apps with a delay.</string>
+    <string name="gates_onboarding_body">A short pause before chosen apps, to decide on purpose. Later: Settings → Apps with a delay.</string>
     <string name="gates_onboarding_action">Got it</string>
 
 
@@ -316,8 +316,8 @@
     <string name="settings_gates_action">Apps with a delay</string>
     <string name="settings_widget_action">Widget buttons</string>
     <string name="widget_settings_title">Widget buttons</string>
-    <string name="widget_settings_hint">Buttons follow the list order: 1x1 shows the first, 2x1 two, larger ones up to five. Drag the handle to reorder.</string>
-    <string name="widget_settings_auto_hint">The order is automatic for now, based on time of day. Pick activities to set your own.</string>
+    <string name="widget_settings_hint">1x1 shows the first button, 2x1 two, larger up to five. Drag the handle to reorder.</string>
+    <string name="widget_settings_auto_hint">Order is automatic, by time of day. Pick activities to set your own.</string>
     <string name="widget_settings_selected_section">On the widget</string>
     <string name="widget_settings_available_section">Add to widget</string>
     <string name="widget_settings_limit">The widget holds up to %1$d buttons. Remove one to add another.</string>
@@ -350,8 +350,8 @@
     <string name="gate_schedule_to">To</string>
     <string name="gate_schedule_note_whole_day">All day</string>
     <string name="gate_schedule_note_next_day">Ends the next day</string>
-    <string name="gates_hint">Selected apps open through a new shortcut, with a pause before launch</string>
-    <string name="gates_unsupported">This launcher doesn\'t support pinned shortcuts — the delay isn\'t available on this device</string>
+    <string name="gates_hint">Chosen apps open through a new shortcut with a pause.</string>
+    <string name="gates_unsupported">This launcher does not support pinned shortcuts, so the delay is unavailable.</string>
     <string name="gates_section_active">Apps with a delay</string>
     <string name="gates_section_add">Add an app</string>
     <string name="gates_empty">No apps with a delay yet</string>
@@ -502,7 +502,7 @@
     <string name="home_card_first_unlock_label">First unlock</string>
     <string name="hero_structure_info_action">About the day bar</string>
     <string name="hero_structure_info_title">Day bar</string>
-    <string name="hero_structure_info_body">The bar shows what your day is made of since it started: Online, the activities you logged, and the rest of the day. The hatched end is time still ahead.</string>
+    <string name="hero_structure_info_body">The bar shows what your day is made of: Online, logged activities, the rest. Hatching is time still ahead.</string>
     <string name="hero_structure_info_body_target">The bar shows what your day is made of since it started: Online, the activities you logged, and the rest of the day. The hatched end is time still ahead.\n\nThe quiet tick is your Online reference (change it in Settings → Tracking). It doesn\'t change colour if Online passes it: it\'s a point of reference, not a limit.</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
@@ -621,10 +621,10 @@
     <string name="v3_section_title">Scrolling hours (beta)</string>
     <string name="v3_feed_picker_action">Feed apps</string>
     <string name="v3_feed_title">Feed apps</string>
-    <string name="v3_feed_hint">Choose the apps where you usually get stuck scrolling. Tepera will only count time in them.</string>
+    <string name="v3_feed_hint">Choose the apps where you get stuck. Only they are counted.</string>
     <string name="v3_feed_section_suggested">Often opened in the evening</string>
     <string name="v3_feed_section_all">All apps</string>
-    <string name="v3_feed_empty">No app usage data yet. Grant usage access first.</string>
+    <string name="v3_feed_empty">No usage data yet. Grant usage access.</string>
     <string name="v3_tester_title">Tester statistics</string>
     <string name="v3_tester_copy">Copy as text</string>
     <string name="v3_tester_copied">Copied</string>
@@ -641,7 +641,7 @@
     <string name="v3_overlay_title">It\'s your hour now, until %1$s</string>
     <string name="v3_overlay_enable_access">Turn on access</string>
     <string name="v3_overlay_toggle_label">Idea over the feed</string>
-    <string name="v3_overlay_toggle_hint">When you open a feed during your hour, Tepera briefly suggests what to do instead. Needs the \"Accessibility\" permission.</string>
+    <string name="v3_overlay_toggle_hint">In your hour Tepera briefly suggests what to do instead of the feed. Needs Accessibility.</string>
     <string name="v3_report_overlay">Suggestion over the feed: shown %1$d, \"Yes\" %2$d, \"Open for 5 min\" %3$d, closed without a choice %4$d</string>
     <string name="v3_report_tag_manual">manual</string>
     <string name="v3_report_tag_weekdays">weekdays</string>
@@ -655,7 +655,7 @@
 
     <!-- v3.0 MVP, stage 3: onboarding L1-L2, home screen L3/L4 (Figma "App concept", page v3.0). -->
     <string name="v3_welcome_title">You do not pick up your phone by accident</string>
-    <string name="v3_welcome_body">Mostly at the same hours and in the same situations. Within a week Tepera will find yours and, just then, quietly suggest something else. The rest of the day it stays quiet.</string>
+    <string name="v3_welcome_body">Mostly at the same hours. Within a week Tepera finds yours and quietly suggests something else then. The rest of the day it stays quiet.</string>
     <string name="v3_welcome_start">Start</string>
     <string name="v3_access_title">To find your hours, Tepera needs access to usage statistics</string>
     <string name="v3_access_sees_title">What Tepera sees</string>
@@ -695,7 +695,7 @@
     <string name="v3_part_evening">Evening</string>
     <string name="v3_part_night">Night</string>
     <string name="v3_mode_label">v3 mode (beta)</string>
-    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”. Old data is not deleted — turn it off to get the usual look back.</string>
+    <string name="v3_mode_hint">Replaces the home screen with “Scrolling hours”. No data is deleted.</string>
     <string name="v3_tester_restart">Redo v3 onboarding</string>
 
     <!-- v3.0 MVP, stage 3: L5 "If - then" plan (Figma 911:1066). Evening/lunch suggestions come from the design, morning/day are neutral. -->
@@ -769,7 +769,7 @@
     <string name="v3_card_manual_format">Own · %1$s</string>
     <string name="v3_editor_title_new">New window</string>
     <string name="v3_editor_title_edit">Own window</string>
-    <string name="v3_editor_intro">Set the hours when you usually get stuck in feeds. Tepera will show how often this matches your real usage.</string>
+    <string name="v3_editor_intro">Set the hours when you usually get stuck in feeds. Tepera shows how that matches reality.</string>
     <string name="v3_editor_start">Start</string>
     <string name="v3_editor_end">End</string>
     <string name="v3_editor_days">Days</string>
@@ -781,7 +781,7 @@
     <string name="v3_editor_delete">Delete window</string>
     <string name="v3_editor_edit_action">Edit window</string>
     <string name="v3_summary_title">Weekly summary</string>
-    <string name="v3_summary_intro">How much time per day you spent in feeds during your windows — compared with your first week of observation.</string>
+    <string name="v3_summary_intro">Daily time in feeds during your hours, compared with the first week.</string>
     <string name="v3_summary_was">was %1$d min</string>
     <string name="v3_summary_soft_title">\"5-minute\" sessions this week</string>
     <string name="v3_summary_delta_less">%1$d min less per day than in the first week</string>
@@ -815,7 +815,7 @@
     <string name="v3_watch_5_body">You picked it yourself: \"%1$s\". Let\'s keep your word — the feed can wait.</string>
     <string name="v3_watch_leave">Fine, I\'m going</string>
     <string name="v3_puzzle_toggle_label">Puzzles on re-entry</string>
-    <string name="v3_puzzle_toggle_hint">From the third re-entry to the feed, Tepera asks for a short puzzle (up to 30 s). You can always leave instead.</string>
+    <string name="v3_puzzle_toggle_hint">From the third re-entry: a short puzzle (up to 30 s). You can always leave.</string>
     <string name="v3_puzzle_title">A moment of attention</string>
     <string name="v3_puzzle_hint">Solve it to open the feed. Or leave — that\'s a choice too.</string>
     <string name="v3_puzzle_hint_steps">Puzzle %1$d of %2$d. Or leave — that\'s a choice too.</string>
@@ -895,7 +895,7 @@
     <string name="settings_a11y_off">off</string>
     <string name="settings_dim_title">Dimming</string>
     <string name="settings_dim_hint">How much the screen dims when 5 minutes are up.</string>
-    <string name="settings_dim_info">After “Open for 5 min” the screen dims to remind you of the time. Nothing is blocked: you can keep using the feed.</string>
+    <string name="settings_dim_info">After “Open for 5 min” the screen dims as a reminder. Nothing is blocked.</string>
     <string name="settings_dim_soft">Soft</string>
     <string name="settings_dim_strong">Noticeable</string>
     <string name="settings_appearance_title">Appearance</string>
@@ -909,7 +909,7 @@
     <string name="v2_next_title_tomorrow">Tomorrow · %1$s · %2$s</string>
     <string name="v2_when_in">in %1$s</string>
     <string name="v2_when_now">now</string>
-    <string name="v2_next_idea_fallback">When you open a feed, Tepera will suggest something to do instead</string>
+    <string name="v2_next_idea_fallback">Open a feed and Tepera will suggest what to do instead</string>
     <string name="v2_next_fact">In feeds this hour: %1$d min</string>
     <string name="v2_next_reminder">A quiet reminder at %1$s</string>
     <string name="v2_next_skipped">No ideas for this hour today</string>
@@ -953,22 +953,22 @@
     <string name="tutorial_done">Done</string>
     <string name="tutorial_got_it">Got it</string>
     <string name="tutorial_observing_title">A week to get to know you</string>
-    <string name="tutorial_observing_body">For a week Tepera learns when you scroll feeds most. There is nothing to do: use your phone as usual.</string>
+    <string name="tutorial_observing_body">For a week Tepera learns when you scroll feeds. Just use your phone as usual.</string>
     <string name="tutorial_idea_title">An idea instead of a feed</string>
-    <string name="tutorial_idea_body">Before a scrolling hour, a suggestion for what to do instead of the feed will show up here. If you do not need it today, tap “Not today”.</string>
+    <string name="tutorial_idea_body">Before a scrolling hour, an idea for what to do instead of the feed appears here.</string>
     <string name="tutorial_hours_title">Scrolling hours</string>
-    <string name="tutorial_hours_body">During these hours feed apps get gentle care: an idea and a pause when you open them. Tepera finds them itself within a week, and you can pick your own right now.</string>
+    <string name="tutorial_hours_body">During these hours feeds get gentle care. Tepera finds them within a week, or pick yours now.</string>
     <string name="tutorial_add_title">Add your own hour</string>
-    <string name="tutorial_add_body">Tap “+” and choose when it matters to you that feed apps are looked after. You can do it while Tepera is still collecting data.</string>
+    <string name="tutorial_add_body">Tap “+” and set when feeds matter to you.</string>
     <string name="tutorial_diary_title">Diary</string>
-    <string name="tutorial_diary_body">The Diary tab at the bottom holds your offline activities and the calendar.</string>
+    <string name="tutorial_diary_body">Your offline activities and the calendar live here.</string>
     <string name="tutorial_settings_title">Settings</string>
-    <string name="tutorial_settings_body">Here you choose feed apps, set up digital detox, language and theme. You can show these tips again.</string>
+    <string name="tutorial_settings_body">Feeds, digital detox, language and theme. You can show these tips again.</string>
     <string name="tutorial_diary_hint_title">How to use the Diary</string>
-    <string name="tutorial_diary_hint_body">Log what you did instead of the feed: tap an activity to start a timer, or “+” to add time by hand.</string>
+    <string name="tutorial_diary_hint_body">Log what you did instead of the feed: tap an activity for a timer, or “+”.</string>
     <string name="tutorial_settings_hint_title">Where to start</string>
-    <string name="tutorial_settings_hint_body">In “Digital detox” pick feed apps and what happens when you open them. The rest can stay as it is.</string>
+    <string name="tutorial_settings_hint_body">In “Digital detox” pick feeds and what happens when you open them.</string>
     <string name="settings_replay_tutorial">Show tips again</string>
-    <string name="v3_observing_manual_hint">Do not want to wait a week? Choose the hours when it matters to you that feed apps are looked after, and they start working right away.</string>
+    <string name="v3_observing_manual_hint">Do not want to wait? Pick the hours yourself, they start working right away.</string>
     <string name="v3_observing_manual_action">Choose hours</string>
 </resources>
