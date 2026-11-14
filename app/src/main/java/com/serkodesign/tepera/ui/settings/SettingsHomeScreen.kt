@@ -18,7 +18,11 @@ import com.serkodesign.tepera.util.TutorialStore
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
+import com.serkodesign.tepera.util.AppLanguages
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -317,33 +321,33 @@ private fun DimSetting() {
     }
 }
 
-/** Вибір мови з рядка «Мова»: той самий перемикач Системна / Українська / English, застосовується на місці. */
+/** Вибір мови з рядка «Мова»: «Системна» і список мов (рідними назвами), застосовується на місці. */
 @Composable
 private fun LanguageDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
+    val current = AppLocale.tag(context)
     TeperaDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.settings_language_label),
         confirmText = stringResource(R.string.dialog_ok),
         onConfirm = onDismiss
     ) {
-        PillSegmentedControl(
-            options = listOf(
-                "" to stringResource(R.string.settings_language_system),
-                "uk" to stringResource(R.string.settings_language_uk),
-                "en" to stringResource(R.string.settings_language_en)
-            ),
-            selected = AppLocale.tag(context),
-            onSelect = { tag -> AppLocale.set(context, tag) }
-        )
+        Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+            val options = listOf("" to stringResource(R.string.settings_language_system)) +
+                AppLanguages.all.map { it.tag to it.endonym }
+            options.forEach { (tag, label) ->
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                        .selectable(selected = current == tag, role = Role.RadioButton, onClick = { AppLocale.set(context, tag) }),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(selected = current == tag, onClick = null)
+                    Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 12.dp))
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun languageName(tag: String): String = stringResource(
-    when (tag) {
-        "uk" -> R.string.settings_language_uk
-        "en" -> R.string.settings_language_en
-        else -> R.string.settings_language_system
-    }
-)
+private fun languageName(tag: String): String = AppLanguages.endonym(tag) ?: stringResource(R.string.settings_language_system)

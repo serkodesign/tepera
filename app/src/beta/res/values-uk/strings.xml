@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_service_label">Tepera: паузи й підказки</string>
+    <string name="a11y_service_description">Визначає лише, який застосунок відкрито, щоб показати коротку паузу перед застосунками, які ви обрали, або ідею замість стрічки у ваші години скролінгу, і через 5 хвилин м\'яко затемнити екран. Не читає вміст екрана. Tepera нікуди не передає дані про відкриті застосунки.</string>
+    <string name="soft_exit_title">%1$d хв минуло</string>
+    <string name="soft_exit_body">Час закрити %1$s. %2$s</string>
+    <string name="soft_exit_more">Ще 5</string>
+    <string name="soft_exit_leave">Вийти</string>
+    <string name="soft_exit_confirm_title">Ще 5 хвилин?</string>
+    <string name="soft_exit_confirm_body">Сесія триває вже %1$d хв замість 5. Можна — просто вирішуєш свідомо.</string>
+    <string name="soft_exit_confirm_more">Так, ще 5 хв</string>
+    <string name="soft_exit_toast_on_time">Вчасно · %1$d хв із %2$d</string>
+    <string name="soft_exit_toast_late">Готово · %1$d хв із %2$d</string>
+</resources>

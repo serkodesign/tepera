@@ -29,6 +29,12 @@ android {
     // Google Play політику з 31.08.2026 (SRS PUB-4, CLAUDE.md).
     compileSdk = 37
 
+    // Список мов для системних «Мов застосунку» (Android 13+): locales_config.xml генерується з папок values-<мова>.
+    // Нова мова = нова папка res/values-xx; мова за замовчуванням (values/) — англійська, див. resources.properties.
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.serkodesign.tepera"
         minSdk = 26        // Android 8.0 — нижня межа сумісності (SRS 5.6)
