@@ -26,6 +26,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.State
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.width
+import com.serkodesign.tepera.ui.tutorial.TutorialOverlay
+import com.serkodesign.tepera.ui.tutorial.TutorialStep
+import com.serkodesign.tepera.ui.tutorial.TutorialTargets
+import com.serkodesign.tepera.ui.tutorial.tutorialTarget
+import com.serkodesign.tepera.util.TutorialStore
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -131,16 +140,30 @@ fun RiskHomeScreen(
     val byId = state.windows.associateBy { it.id }
     val heroWindow = heroOcc?.let { byId[it.id] }
 
+    // Туторіал підказками (14.11.2026): ланцюжок один раз, коли Головна вже «жива» (є доступ і стрічки); затримка, щоб
+    // не перекрити онбординг і діалоги, що відкриваються поверх Головної.
+    val tutorialContext = LocalContext.current
+    val targets = remember { TutorialTargets() }
+    val scroll = rememberScrollState()
+    var tutorialOn by remember { mutableStateOf(false) }
+    LaunchedEffect(ready) {
+        if (ready && !TutorialStore.isSeen(tutorialContext, TutorialStore.HOME_CHAIN)) {
+            delay(1500)
+            tutorialOn = true
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(
-            Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
+            Modifier.padding(padding).fillMaxSize().verticalScroll(scroll)
                 .padding(top = 12.dp, bottom = 32.dp),
-            // Порядок (рішення власника, 11.11.2026): ідея → Online сьогодні → сьогоднішні години → години скролінгу →
-            // тиждень у години детоксу. Активності — у Щоденнику. Блоки одного змісту через 12dp, розділи — через 24dp.
+            // Порядок (рішення власника, 14.11.2026): ідея → години скролінгу (головна функція, тож одразу під ідеєю) →
+            // Online сьогодні → сьогоднішні години → тиждень у години детоксу. Активності — у Щоденнику.
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                HomeV2Header(headerDate, onOpenSettings)
+                HomeV2Header(headerDate, onOpenSettings, settingsModifier = Modifier.tutorialTarget(targets, "settings"))
                 Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     when {
                         state.loading -> HomeSkeleton()
@@ -150,11 +173,13 @@ fun RiskHomeScreen(
                         state.feedCount == 0 -> NoticeCard(
                             R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                         )
-                        observing -> ObservingContent(state)
+                        observing -> ObservingContent(state, onAddWindow, Modifier.tutorialTarget(targets, "observing"))
                         else -> {
                             // 1. Картка ідеї: наступна година (або та, що триває; коли сьогодні все — перша завтра).
                             if (heroWindow != null && heroOcc != null) {
-                                NextHourCard(heroWindow, heroOcc, now, logicalToday, onChanged = vm::refresh)
+                                Box(Modifier.tutorialTarget(targets, "idea")) {
+                                    NextHourCard(heroWindow, heroOcc, now, logicalToday, onChanged = vm::refresh)
+                                }
                             }
                         }
                     }
@@ -165,18 +190,14 @@ fun RiskHomeScreen(
                             onDismissGap = pauseViewModel::dismissGap, onDismissCard = pauseViewModel::dismissCard
                         )
                     }
-                    // 2. Online сьогодні.
-                    if (!state.loading) OnlineTodayCard(balanceState)
-                    // 3. Сьогоднішні години рядками: «Сьогодні вже було» / «Далі сьогодні».
-                    if (ready && !observing) {
-                        TodayRows(state.windows, now, logicalToday, heroWindowId = heroOcc?.id, onOpenWhy = onOpenWhy)
-                    }
                 }
             }
             if (ready) {
-                // 4. Години скролінгу каруселлю з «+»: ручні вікна видно й у тиждень спостереження.
+                // 2. Години скролінгу каруселлю з «+»: ручні вікна видно й у тиждень спостереження.
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.padding(horizontal = 16.dp)) { WindowsHeader(onAddWindow) }
+                    Box(Modifier.padding(horizontal = 16.dp)) {
+                        WindowsHeader(onAddWindow, addModifier = Modifier.tutorialTarget(targets, "add"))
+                    }
                     if (state.windows.isEmpty() && !observing) {
                         Text(
                             stringResource(if (state.disabledWindows.isNotEmpty()) R.string.v3_windows_all_off else R.string.v3_windows_empty),
@@ -185,7 +206,18 @@ fun RiskHomeScreen(
                         )
                     }
                     val ordered = occurrences.mapNotNull { byId[it.id] }.distinctBy { it.id }
-                    WindowsCarousel(ordered + state.windows.filter { w -> ordered.none { it.id == w.id } } + state.disabledWindows, onOpenWhy)
+                    Box(Modifier.tutorialTarget(targets, "hours")) {
+                        WindowsCarousel(ordered + state.windows.filter { w -> ordered.none { it.id == w.id } } + state.disabledWindows, onOpenWhy)
+                    }
+                }
+            }
+            if (ready && observing) Box(Modifier.padding(horizontal = 16.dp)) { ObservingHeat(state) }
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // 3. Online сьогодні.
+                if (!state.loading) OnlineTodayCard(balanceState)
+                // 4. Сьогоднішні години рядками: «Сьогодні вже було» / «Далі сьогодні».
+                if (ready && !observing) {
+                    TodayRows(state.windows, now, logicalToday, heroWindowId = heroOcc?.id, onOpenWhy = onOpenWhy)
                 }
             }
             if (ready && !observing) {
@@ -202,11 +234,40 @@ fun RiskHomeScreen(
             Spacer(Modifier.height(bottomNavClearance()))
         }
     }
+    if (tutorialOn) {
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        TutorialOverlay(
+            steps = HOME_TUTORIAL,
+            targets = targets,
+            scrollTo = { target, viewport ->
+                // Ціль має бути у видимій зоні й не під карткою підказки внизу.
+                val margin = 120f
+                if (target.top < viewport.top + margin || target.bottom > viewport.bottom - 360f) {
+                    val wanted = scroll.value + (target.top - viewport.top - margin)
+                    scroll.animateScrollTo(wanted.toInt().coerceIn(0, scroll.maxValue))
+                }
+            },
+            onFinish = {
+                tutorialOn = false
+                TutorialStore.markSeen(tutorialContext, TutorialStore.HOME_CHAIN)
+            }
+        )
+    }
+    }
 }
+
+private val HOME_TUTORIAL = listOf(
+    TutorialStep("observing", R.string.tutorial_observing_title, R.string.tutorial_observing_body),
+    TutorialStep("idea", R.string.tutorial_idea_title, R.string.tutorial_idea_body),
+    TutorialStep("hours", R.string.tutorial_hours_title, R.string.tutorial_hours_body),
+    TutorialStep("add", R.string.tutorial_add_title, R.string.tutorial_add_body),
+    TutorialStep(null, R.string.tutorial_diary_title, R.string.tutorial_diary_body),
+    TutorialStep("settings", R.string.tutorial_settings_title, R.string.tutorial_settings_body)
+)
 
 /** Заголовок розділу зі списком вікон і кнопкою «+» поруч — додавання власного вікна було знайти важко внизу екрана. */
 @Composable
-private fun WindowsHeader(onAddWindow: () -> Unit) {
+private fun WindowsHeader(onAddWindow: () -> Unit, addModifier: Modifier = Modifier) {
     // Новий стиль (Головна v2): підпис групи — Title Small кольору primary, «+» на склі, як кнопка налаштувань у шапці.
     Row(
         Modifier.fillMaxWidth().padding(start = 16.dp),
@@ -222,6 +283,7 @@ private fun WindowsHeader(onAddWindow: () -> Unit) {
             icon = TeperaSymbols.Add,
             contentDescription = stringResource(R.string.v3_add_window),
             onClick = onAddWindow,
+            modifier = androidx.compose.ui.Modifier.width(44.dp).then(addModifier),
             shape = CircleShape,
             containerColor = com.serkodesign.tepera.ui.theme.M3Extra.colors.glass,
             contentColor = MaterialTheme.colorScheme.onSurface
@@ -251,8 +313,8 @@ private fun NoticeCard(titleRes: Int, bodyRes: Int, buttonRes: Int, onClick: () 
 
 /** L3: прогрес 7 днів, пояснення «нічого робити не треба», теплова карта й, якщо вже щось видно, підказка. */
 @Composable
-private fun ObservingContent(state: RiskHomeState) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    V3Card(spacing = 12.dp) {
+private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, cardModifier: Modifier = Modifier) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    V3Card(modifier = cardModifier, spacing = 12.dp) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             repeat(7) { i ->
                 Box(
@@ -263,6 +325,19 @@ private fun ObservingContent(state: RiskHomeState) = Column(verticalArrangement 
         }
         Text(stringResource(R.string.v3_observing_hint), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
     }
+    V3Card(spacing = 12.dp) {
+        // Поки збираються дані, годину можна обрати самому — стрічки працюватимуть у неї вже зараз.
+        Text(stringResource(R.string.v3_observing_manual_hint), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
+        TeperaButton(
+            text = stringResource(R.string.v3_observing_manual_action), onClick = onAddWindow,
+            type = TeperaButtonType.Secondary, modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+/** Теплова карта тижня спостереження й підказка про першу знайдену годину: нижче за години скролінгу. */
+@Composable
+private fun ObservingHeat(state: RiskHomeState) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
     HeatWeek(state.dates, state.grid, emptyList(), stringResource(R.string.v3_heat_description))
     state.teaser?.let { t ->
         Row(

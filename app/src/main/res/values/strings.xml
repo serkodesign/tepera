@@ -902,7 +902,7 @@
 
     <!-- Налаштування, Figma "Tepera" T2 · Налаштування (1066:4191) -->
     <string name="settings_group_hours">Години детоксу</string>
-    <string name="settings_group_opening">У момент відкриття</string>
+    <string name="settings_group_opening">Коли відкриваєш стрічку</string>
     <string name="settings_group_app">Застосунок</string>
     <string name="settings_group_more">Ще</string>
     <string name="settings_overlay_title">Показувати ідею при відкритті стрічки</string>
@@ -944,4 +944,30 @@
     <string name="v2_row_fact">%1$d хв у стрічках · зазвичай %2$d</string>
     <string name="widget_preview_online_value">2:10 год</string>
     <string name="widget_preview_orb_value">5:40</string>
+
+    <!-- Туторіал підказками (14.11.2026) -->
+    <string name="tutorial_step_counter">%1$d з %2$d</string>
+    <string name="tutorial_next">Далі</string>
+    <string name="tutorial_skip">Пропустити</string>
+    <string name="tutorial_done">Готово</string>
+    <string name="tutorial_got_it">Зрозуміло</string>
+    <string name="tutorial_observing_title">Тиждень знайомства</string>
+    <string name="tutorial_observing_body">Протягом тижня Tepera вивчає, коли ти найчастіше скролиш стрічки. Нічого робити не треба — користуйся телефоном як завжди.</string>
+    <string name="tutorial_idea_title">Ідея замість стрічки</string>
+    <string name="tutorial_idea_body">Перед годиною скролінгу тут з’явиться підказка, чим зайнятись замість стрічки. Якщо сьогодні не потрібно — натисни «Не сьогодні».</string>
+    <string name="tutorial_hours_title">Години скролінгу</string>
+    <string name="tutorial_hours_body">У ці години застосунки-стрічки під м’яким наглядом: при відкритті — ідея й пауза. Tepera знайде їх сама за тиждень, а свої можна обрати вже зараз.</string>
+    <string name="tutorial_add_title">Додай свою годину</string>
+    <string name="tutorial_add_body">Натисни «+» і вкажи, коли тобі важливо, щоб застосунки-стрічки працювали. Це можна зробити, поки Tepera ще збирає дані.</string>
+    <string name="tutorial_diary_title">Щоденник</string>
+    <string name="tutorial_diary_body">У вкладці «Щоденник» внизу — твої записи про активності без стрічок і календар.</string>
+    <string name="tutorial_settings_title">Налаштування</string>
+    <string name="tutorial_settings_body">Тут обираєш застосунки-стрічки, налаштовуєш цифровий детокс, мову й тему. Підказки можна показати знову.</string>
+    <string name="tutorial_diary_hint_title">Як користуватись Щоденником</string>
+    <string name="tutorial_diary_hint_body">Запиши, чим займався замість стрічки: натисни активність, щоб запустити таймер, або «+», щоб додати час вручну.</string>
+    <string name="tutorial_settings_hint_title">З чого почати</string>
+    <string name="tutorial_settings_hint_body">У «Цифровому детоксі» обери застосунки-стрічки й що відбувається, коли ти їх відкриваєш. Решту можна лишити як є.</string>
+    <string name="settings_replay_tutorial">Показати підказки знову</string>
+    <string name="v3_observing_manual_hint">Не хочеш чекати тиждень? Обери години, коли тобі важливо, щоб застосунки-стрічки працювали, — вони запрацюють одразу.</string>
+    <string name="v3_observing_manual_action">Обрати години</string>
 </resources>

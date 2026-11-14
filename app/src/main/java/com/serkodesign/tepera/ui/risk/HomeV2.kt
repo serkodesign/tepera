@@ -73,7 +73,7 @@ private val HeroShape = RoundedCornerShape(28.dp)
 
 /** `HomeHeader`: дата (Body Small) над «Сьогодні» (Headline Small) і кругла кнопка налаштувань 44dp на склі. */
 @Composable
-internal fun HomeV2Header(date: String, onOpenSettings: () -> Unit) {
+internal fun HomeV2Header(date: String, onOpenSettings: () -> Unit, settingsModifier: Modifier = Modifier) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -90,6 +90,7 @@ internal fun HomeV2Header(date: String, onOpenSettings: () -> Unit) {
             icon = TeperaIcons.Settings,
             contentDescription = stringResource(R.string.settings_nav_action),
             onClick = onOpenSettings,
+            modifier = Modifier.width(44.dp).then(settingsModifier),
             shape = CircleShape,
             containerColor = M3Extra.colors.glass,
             contentColor = MaterialTheme.colorScheme.onSurface
