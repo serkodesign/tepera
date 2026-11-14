@@ -161,6 +161,7 @@ private object Routes {
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
     const val ABOUT = "about"
+    const val LANGUAGE_SETTINGS = "language_settings"
     const val RISK_SPIKE = "risk_spike"
     const val FEED_PICKER = "feed_picker"
     const val TESTER_STATS = "tester_stats"
@@ -199,7 +200,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, LANGUAGE_SETTINGS, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, A11Y_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
@@ -690,6 +691,7 @@ fun TeperaNavHost(
                     onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },
                     onOpenKnowledgeBase = { navController.navigate(Routes.KNOWLEDGE_BASE) },
+                    onOpenLanguage = { navController.navigate(Routes.LANGUAGE_SETTINGS) },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onBack = { navController.popBackStack() }
                 )
@@ -762,6 +764,9 @@ fun TeperaNavHost(
             }
             composable(Routes.PRO_INTEREST) {
                 ProInterestScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.LANGUAGE_SETTINGS) {
+                com.serkodesign.tepera.ui.settings.LanguageSettingsScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.ABOUT) {
                 AboutScreen(
