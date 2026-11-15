@@ -28,7 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.TeperaApp
+import com.serkodesign.tepera.ui.settings.FeedOpeningSettings
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.ui.settings.AppIcon
 import com.serkodesign.tepera.ui.theme.GlassRow
@@ -80,6 +82,10 @@ fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        // Лише в Налаштуваннях (не в онбордингу): що відбувається, коли відкриваєш стрічку.
+                        if (!searchActive && onDone == null && BuildConfig.V3_MVP) {
+                            item { FeedOpeningSettings() }
+                        }
                         if (!searchActive) {
                             item { TeperaHint(stringResource(R.string.v3_feed_hint), Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) }
                         }

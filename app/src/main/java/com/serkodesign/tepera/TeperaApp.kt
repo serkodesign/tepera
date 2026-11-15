@@ -212,6 +212,11 @@ class TeperaApp : Application() {
         super.onCreate()
         // D-15: звіти про збої — за збереженим вибором користувача (маніфест за замовчуванням вимикає збір).
         CrashReporting.apply(this)
+        // 1.2.2: підказки не показуємо тим, хто оновився з 1.1.x/1.2.1 (одноразово, лише першого запуску цієї версії).
+        runCatching {
+            val seen121 = kotlinx.coroutines.runBlocking { settingsStore.whatsNew121Seen.first() }
+            com.serkodesign.tepera.util.TutorialStore.migrateIfNeeded(this, cameFromV12 = seen121)
+        }
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE
         // у CategoryDao), тож виклик щозапуску безпечний.
         applicationScope.launch { seedInitialData() }

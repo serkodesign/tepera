@@ -82,6 +82,7 @@
     <string name="stats_below_five_min">&lt;5 min</string>
     <string name="activities_title">Activities</string>
     <string name="v3_online_today_title">Online today</string>
+    <string name="v3_online_typical_format">Usually by this time — %1$s</string>
     <string name="v3_hero_left_format">%1$s left</string>
     <string name="v3_hero_committed_format">You chose: “%1$s”. Let\'s keep to it.</string>
     <string name="v3_hero_start_format">Start: %1$s</string>
@@ -918,7 +919,7 @@
     <string name="v2_week_baseline">observation</string>
     <string name="v2_week_current">this week</string>
     <string name="v2_week_reference_title">Starting point</string>
-    <string name="v2_week_reference_unit">a day in feeds in your detox hours</string>
+    <string name="v2_week_reference_unit">a day in feeds</string>
     <string name="v2_today_was">Earlier today</string>
     <string name="v2_today_next">Later today</string>
     <string name="v2_today_all">Today</string>
