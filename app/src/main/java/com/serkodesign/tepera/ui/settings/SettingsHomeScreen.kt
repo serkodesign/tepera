@@ -95,19 +95,6 @@ fun SettingsScreen(
     val v3Active = BuildConfig.V3_MVP && v3Mode
     val feeds by app.feedAppRepository.observeAll().collectAsState(initial = emptyList())
 
-    // Стан служби доступності могли змінити в системних налаштуваннях — перечитуємо при поверненні.
-    var a11yState by remember { mutableStateOf(A11yFeatureState.current(context)) }
-    LifecycleResumeEffect(Unit) {
-        a11yState = A11yFeatureState.current(context)
-        onPauseOrDispose { }
-    }
-    val a11yOn = a11yState == A11yFeatureState.Active || a11yState == A11yFeatureState.Unavailable
-    var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
-    val requestA11y = rememberAccessibilityRequest(
-        onActive = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) },
-        onAgreed = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) }
-    )
-
     var showSuggest by remember { mutableStateOf(false) }
     if (showSuggest) {
         // FR-6.4/6.5: чесне попередження, що зараз відкриється браузер (форму приймає Google).
@@ -171,57 +158,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-                if (v3Active) {
-                    // Підгрупа тієї самої секції: тихіший підпис без відступу, як продовження «Цифрового детоксу».
-                    Text(
-                        stringResource(R.string.settings_group_opening),
-                        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 8.dp).semantics { heading() }
-                    )
-                    M3ListGroup {
-                        M3ListItem(
-                            title = stringResource(R.string.settings_overlay_title),
-                            supporting = stringResource(R.string.settings_overlay_supporting),
-                            icon = TeperaIcons.OpenFeed,
-                            trailing = {
-                                Switch(
-                                    checked = overlayOn && a11yOn,
-                                    onCheckedChange = { on ->
-                                        // Вмикається лише зі згодою й увімкненою службою; «Не зараз» лишає вимкненим.
-                                        if (on) requestA11y() else { overlayOn = false; PlanOverlayStore.setEnabled(context, false) }
-                                    },
-                                    colors = teperaSwitchColors()
-                                )
-                            }
-                        )
-                        if (GateAccessibility.isAvailable) {
-                            M3ListDivider()
-                            M3ListItem(
-                                title = stringResource(R.string.settings_a11y_title),
-                                icon = TeperaSymbols.Check,
-                                value = stringResource(if (a11yOn) R.string.settings_a11y_on else R.string.settings_a11y_off),
-                                // Увімкнено — системні налаштування служби (там і вимикається); ні — спершу розкриття.
-                                onClick = { if (a11yOn) GateAccessibility.openSettings(context) else requestA11y() }
-                            )
-                        }
-                        M3ListDivider()
-                        var puzzlesOn by remember { mutableStateOf(PlanOverlayStore.arePuzzlesEnabled(context)) }
-                        M3ListItem(
-                            title = stringResource(R.string.v3_puzzle_toggle_label),
-                            icon = TeperaSymbols.Keyboard,
-                            trailing = {
-                                Switch(
-                                    checked = puzzlesOn,
-                                    onCheckedChange = { on -> puzzlesOn = on; PlanOverlayStore.setPuzzlesEnabled(context, on) },
-                                    colors = teperaSwitchColors()
-                                )
-                            }
-                        )
-                        M3ListDivider()
-                        DimSetting()
-                    }
-                }
-
                 M3GroupLabel(stringResource(R.string.settings_group_app))
                 M3ListGroup {
                     M3ListItem(
@@ -286,6 +222,72 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                 )
             }
+        }
+    }
+}
+
+/**
+ * «Коли відкриваєш стрічку»: підказка поверх стрічки, служба доступності, задачки й приглушення. Живе на екрані
+ * «Застосунки-стрічки» (рішення власника, 15.11.2026) — поруч зі списком самих стрічок.
+ */
+@Composable
+fun FeedOpeningSettings() {
+    val context = LocalContext.current
+    // Стан служби доступності могли змінити в системних налаштуваннях — перечитуємо при поверненні.
+    var a11yState by remember { mutableStateOf(A11yFeatureState.current(context)) }
+    LifecycleResumeEffect(Unit) {
+        a11yState = A11yFeatureState.current(context)
+        onPauseOrDispose { }
+    }
+    val a11yOn = a11yState == A11yFeatureState.Active || a11yState == A11yFeatureState.Unavailable
+    var overlayOn by remember { mutableStateOf(PlanOverlayStore.isEnabled(context)) }
+    val requestA11y = rememberAccessibilityRequest(
+        onActive = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) },
+        onAgreed = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) }
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        M3GroupLabel(stringResource(R.string.settings_group_opening))
+        M3ListGroup {
+            M3ListItem(
+                title = stringResource(R.string.settings_overlay_title),
+                supporting = stringResource(R.string.settings_overlay_supporting),
+                icon = TeperaIcons.OpenFeed,
+                trailing = {
+                    Switch(
+                        checked = overlayOn && a11yOn,
+                        onCheckedChange = { on ->
+                            // Вмикається лише зі згодою й увімкненою службою; «Не зараз» лишає вимкненим.
+                            if (on) requestA11y() else { overlayOn = false; PlanOverlayStore.setEnabled(context, false) }
+                        },
+                        colors = teperaSwitchColors()
+                    )
+                }
+            )
+            if (GateAccessibility.isAvailable) {
+                M3ListDivider()
+                M3ListItem(
+                    title = stringResource(R.string.settings_a11y_title),
+                    icon = TeperaSymbols.Check,
+                    value = stringResource(if (a11yOn) R.string.settings_a11y_on else R.string.settings_a11y_off),
+                    // Увімкнено — системні налаштування служби (там і вимикається); ні — спершу розкриття.
+                    onClick = { if (a11yOn) GateAccessibility.openSettings(context) else requestA11y() }
+                )
+            }
+            M3ListDivider()
+            var puzzlesOn by remember { mutableStateOf(PlanOverlayStore.arePuzzlesEnabled(context)) }
+            M3ListItem(
+                title = stringResource(R.string.v3_puzzle_toggle_label),
+                icon = TeperaSymbols.Keyboard,
+                trailing = {
+                    Switch(
+                        checked = puzzlesOn,
+                        onCheckedChange = { on -> puzzlesOn = on; PlanOverlayStore.setPuzzlesEnabled(context, on) },
+                        colors = teperaSwitchColors()
+                    )
+                }
+            )
+            M3ListDivider()
+            DimSetting()
         }
     }
 }

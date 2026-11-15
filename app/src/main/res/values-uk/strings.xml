@@ -89,6 +89,7 @@
     <string name="stats_below_five_min">&lt;5 хв</string>
     <string name="activities_title">Активності</string>
     <string name="v3_online_today_title">Online сьогодні</string>
+    <string name="v3_online_typical_format">Зазвичай до цього часу — %1$s</string>
     <string name="v3_hero_left_format">Залишилось %1$s</string>
     <string name="v3_hero_committed_format">Ти обрав: «%1$s». Дотримаймося.</string>
     <string name="v3_hero_start_format">Почати: %1$s</string>
@@ -935,7 +936,7 @@
     <string name="v2_week_baseline">спостереження</string>
     <string name="v2_week_current">цей тиждень</string>
     <string name="v2_week_reference_title">Точка відліку</string>
-    <string name="v2_week_reference_unit">на день у стрічках у години детоксу</string>
+    <string name="v2_week_reference_unit">на день у стрічках</string>
     <string name="v2_today_was">Сьогодні вже було</string>
     <string name="v2_today_next">Далі сьогодні</string>
     <string name="v2_today_all">Сьогодні</string>
