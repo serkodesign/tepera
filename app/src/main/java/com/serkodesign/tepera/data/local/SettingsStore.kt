@@ -51,6 +51,8 @@ private val USAGE_SLOT_COVERED_DAYS_KEY = stringSetPreferencesKey("v3_usage_slot
 private val WELCOME_BACK_PENDING_FROM_KEY = longPreferencesKey("welcome_back_pending_from")
 private val CARD_EVENT_DISPLACEMENT_STREAK_KEY = intPreferencesKey("card_event_displacement_streak")
 private val WIDGET_SUGGESTION_SEEN_KEY = booleanPreferencesKey("widget_suggestion_seen")
+// Ставила лише 1.2.1 (вікно «Що змінилось»); у цій гілці його нема, ключ тільки читається — ознака оновлення з 1.1.x/1.2.1.
+private val WHATS_NEW_121_SEEN_KEY = booleanPreferencesKey("whats_new_121_seen")
 private val WIDGET_CATEGORY_IDS_KEY = stringPreferencesKey("widget_category_ids")
 private val SPLASH_SCREEN_SEEN_KEY = booleanPreferencesKey("splash_screen_seen")
 private val GATES_ONBOARDING_SEEN_KEY = booleanPreferencesKey("gates_onboarding_seen")
@@ -167,6 +169,10 @@ class SettingsStore(private val context: Context) {
      */
     val widgetSuggestionSeen: Flow<Boolean> = context.settingsDataStore.data
         .map { it[WIDGET_SUGGESTION_SEEN_KEY] ?: false }
+
+    /** Лише читання: чи людина закрила вікно «Що змінилось» 1.2.1 (тобто оновилась з 1.2.1). */
+    val whatsNew121Seen: Flow<Boolean> = context.settingsDataStore.data
+        .map { it[WHATS_NEW_121_SEEN_KEY] ?: false }
 
     suspend fun setWidgetSuggestionSeen() {
         context.settingsDataStore.edit { it[WIDGET_SUGGESTION_SEEN_KEY] = true }
