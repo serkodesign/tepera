@@ -136,7 +136,7 @@ class TeperaApp : Application() {
     val riskWindowRepository: RiskWindowRepository by lazy {
         RiskWindowRepository(
             database.riskWindowDao(), database.planDao(), database.usageSlotDao(),
-            com.serkodesign.tepera.data.repository.DeletedWindowStore(this)
+            deletedWindowStore
         )
     }
     val riskScanner: RiskScanner by lazy {
@@ -207,7 +207,10 @@ class TeperaApp : Application() {
 
     val installedAppsProvider: InstalledAppsProvider by lazy { InstalledAppsProvider(this) }
 
-    val backupRepository: BackupRepository by lazy { BackupRepository(database, settingsStore) }
+    val deletedWindowStore: com.serkodesign.tepera.data.repository.DeletedWindowStore by lazy {
+        com.serkodesign.tepera.data.repository.DeletedWindowStore(this)
+    }
+    val backupRepository: BackupRepository by lazy { BackupRepository(database, settingsStore, deletedWindowStore) }
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -217,7 +220,10 @@ class TeperaApp : Application() {
         CrashReporting.apply(this)
         // 1.2.2: підказки не показуємо тим, хто оновився з 1.1.x/1.2.1 (одноразово, лише першого запуску цієї версії).
         runCatching {
-            val seen121 = kotlinx.coroutines.runBlocking { settingsStore.whatsNew121Seen.first() }
+            // Оновлення з 1.1+: або закрито вікно «Що змінилось» 1.2.1, або вже пройдено v3-онбординг (його нема в 1.0.5).
+            val seen121 = kotlinx.coroutines.runBlocking {
+                settingsStore.whatsNew121Seen.first() || settingsStore.v3OnboardingSeen.first()
+            }
             com.serkodesign.tepera.util.TutorialStore.migrateIfNeeded(this, cameFromV12 = seen121)
         }
         // FR-2.1: insertDefaults() ігнорує вже засіяні рядки (fixed id + OnConflictStrategy.IGNORE

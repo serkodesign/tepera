@@ -31,7 +31,8 @@ private const val SCHEMA_VERSION = 3
  */
 class BackupRepository(
     private val database: AppDatabase,
-    private val settingsStore: SettingsStore
+    private val settingsStore: SettingsStore,
+    private val deletedWindows: DeletedWindowStore? = null
 ) {
 
     suspend fun exportToJson(): String = withContext(Dispatchers.IO) {
@@ -66,6 +67,10 @@ class BackupRepository(
         root.put("nudgeEvents", JSONArray().apply { database.nudgeEventDao().getAllOnce().forEach { put(V3BackupJson.nudgeEventToJson(it)) } })
         root.put("observationPeriods", JSONArray().apply {
             database.observationPeriodDao().getAllOnce().forEach { put(V3BackupJson.observationPeriodToJson(it)) }
+        })
+        // Межі вікон, видалених людиною (щоб сканування не пропонувало їх знову після відновлення). Необов'язковий ключ.
+        root.put("deletedWindows", JSONArray().apply {
+            deletedWindows?.bounds()?.forEach { (s, e) -> put(JSONObject().put("startMinute", s).put("endMinute", e)) }
         })
 
         root.toString(2)
@@ -129,6 +134,12 @@ class BackupRepository(
             }
         }
 
+        // Файли без ключа (старіші копії) список видалених не чіпають.
+        root.optJSONArray("deletedWindows")?.let { array ->
+            deletedWindows?.replaceAll(List(array.length()) { i ->
+                array.getJSONObject(i).let { it.getInt("startMinute") to it.getInt("endMinute") }
+            })
+        }
         settingsStore.setTargetMinutes(targetMinutes)
         // Є обрані стрічки з копії — онбординг v3 повторювати не треба.
         if (hasV3 && feedApps.isNotEmpty()) settingsStore.setV3OnboardingSeen(true)

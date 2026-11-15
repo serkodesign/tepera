@@ -40,6 +40,7 @@ import com.serkodesign.tepera.util.ProInterestForm
 @Composable
 fun ProInterestScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
     var showConfirm by remember { mutableStateOf(false) }
 
     if (showConfirm) {
@@ -54,7 +55,7 @@ fun ProInterestScreen(onBack: () -> Unit) {
                 try {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ProInterestForm.urlFor(context))))
                 } catch (e: ActivityNotFoundException) {
-                    Toast.makeText(context, context.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, resources.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
                 }
             }
         )

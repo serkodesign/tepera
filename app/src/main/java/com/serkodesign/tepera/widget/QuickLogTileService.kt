@@ -26,6 +26,8 @@ class QuickLogTileService : TileService() {
             )
             startActivityAndCollapse(pendingIntent)
         } else {
+            // Лише API < 34: з targetSdk 34+ старий виклик кидає виняток, тому вище вже PendingIntent.
+            @android.annotation.SuppressLint("StartActivityAndCollapseDeprecated")
             @Suppress("DEPRECATION")
             startActivityAndCollapse(intent)
         }

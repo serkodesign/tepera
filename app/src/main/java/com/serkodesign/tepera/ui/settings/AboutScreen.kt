@@ -48,6 +48,7 @@ fun AboutScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
     val versionName = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
     }
@@ -56,7 +57,7 @@ fun AboutScreen(
         try {
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, context.getString(R.string.about_no_app), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, resources.getString(R.string.about_no_app), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -95,7 +96,7 @@ fun AboutScreen(
                     onClick = {
                         open(
                             Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$CONTACT_EMAIL"))
-                                .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.app_name))
+                                .putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.app_name))
                         )
                     },
                     leading = { TeperaIconCircle(TeperaSymbols.Mail) },

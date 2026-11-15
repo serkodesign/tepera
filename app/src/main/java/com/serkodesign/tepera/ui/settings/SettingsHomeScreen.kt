@@ -89,6 +89,7 @@ fun SettingsScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
     val app = context.applicationContext as TeperaApp
     val scope = rememberCoroutineScope()
     val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
@@ -109,7 +110,7 @@ fun SettingsScreen(
                 try {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
                 } catch (e: ActivityNotFoundException) {
-                    Toast.makeText(context, context.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, resources.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
                 }
             }
         )
