@@ -325,7 +325,8 @@ private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, card
         }
         Text(stringResource(R.string.v3_observing_hint), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
     }
-    V3Card(spacing = 12.dp) {
+    // Щойно людина сама створила першу годину (навіть вимкнену), «Не хочеш чекати» більше не потрібна.
+    if ((state.windows + state.disabledWindows).none { it.isManual }) V3Card(spacing = 12.dp) {
         // Поки збираються дані, годину можна обрати самому — стрічки працюватимуть у неї вже зараз.
         Text(stringResource(R.string.v3_observing_manual_hint), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
         TeperaButton(

@@ -106,6 +106,15 @@ class WindowWhyViewModel(private val app: TeperaApp, private val windowId: Strin
         }
     }
 
+    /** Видаляє вікно (будь-яке); [onDone] — коли вже видалено. */
+    fun delete(onDone: () -> Unit) {
+        viewModelScope.launch {
+            app.riskWindowRepository.delete(windowId)
+            NudgeScheduler.reschedule(app)
+            onDone()
+        }
+    }
+
     class Factory(private val app: TeperaApp, private val windowId: String) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = WindowWhyViewModel(app, windowId) as T

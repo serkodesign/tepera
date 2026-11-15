@@ -795,6 +795,8 @@
     <string name="v3_editor_invalid">Кінець має відрізнятись від початку; найкоротше вікно — 15 хв.</string>
     <string name="v3_editor_save">Зберегти</string>
     <string name="v3_editor_delete">Видалити вікно</string>
+    <string name="v3_why_delete_title">Видалити це вікно?</string>
+    <string name="v3_why_delete_body">Вікно зникне разом із планом і нагадуваннями, а Tepera більше не пропонуватиме цей час.</string>
     <string name="v3_editor_edit_action">Змінити вікно</string>
     <string name="v3_summary_title">Підсумок тижня</string>
     <string name="v3_summary_intro">Час у стрічках за добу в твої години — порівняно з першим тижнем.</string>

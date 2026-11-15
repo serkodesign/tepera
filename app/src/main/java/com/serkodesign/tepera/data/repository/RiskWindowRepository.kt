@@ -25,7 +25,8 @@ import java.util.UUID
 class RiskWindowRepository(
     private val windowDao: RiskWindowDao,
     private val planDao: PlanDao,
-    private val slotDao: UsageSlotDao
+    private val slotDao: UsageSlotDao,
+    private val deletedWindows: DeletedWindowStore? = null
 ) {
     fun observeWindows(): Flow<List<RiskWindowEntity>> = windowDao.observeAll()
 
@@ -108,6 +109,16 @@ ull дозволив би наступному перерахунку одраз
         if (windowDao.getById(windowId)?.isManual == true) windowDao.delete(windowId)
     }
 
+    /**
+     * Видаляє будь-яке вікно разом із планом і нагадуваннями (каскад). Межі автоматичного вікна запам'ятовуються, щоб
+     * наступне сканування не знайшло його знову; ручне просто зникає.
+     */
+    suspend fun delete(windowId: String) = withContext(Dispatchers.IO) {
+        val w = windowDao.getById(windowId) ?: return@withContext
+        if (!w.isManual) deletedWindows?.add(w.startMinute, w.endMinute)
+        windowDao.delete(windowId)
+    }
+
     /** Зберігає результат пошуку вікон; повертає актуальний стан усіх вікон. */
     suspend fun saveDetected(
         result: RiskResult,
@@ -119,7 +130,10 @@ ull дозволив би наступному перерахунку одраз
         val manual = all.filter { it.isManual }
         val existing = all.filter { !it.isManual }
         val used = HashSet<String>()
+        val deleted = deletedWindows?.bounds().orEmpty()
         for (c in result.candidates) {
+            // Людина видалила це вікно сама — не пропонуємо його знову.
+            if (deleted.any { (s, e) -> RiskWindowFinder.sameWindow(s, e, c.startMinute, c.endMinute, cfg) }) continue
             // Людина вже сама задала вікно в цей час — автоматичне його не дублює.
             if (manual.any { RiskWindowFinder.sameWindow(it.startMinute, it.endMinute, c.startMinute, c.endMinute, cfg) }) continue
             val topApps = topAppsIn(c, result, cfg)
