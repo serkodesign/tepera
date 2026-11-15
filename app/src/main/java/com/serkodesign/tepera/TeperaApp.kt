@@ -134,7 +134,10 @@ class TeperaApp : Application() {
     // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): стрічки, години ризику з планами, 15-хвилинні слоти часу.
     val feedAppRepository: FeedAppRepository by lazy { FeedAppRepository(this, database.feedAppDao()) }
     val riskWindowRepository: RiskWindowRepository by lazy {
-        RiskWindowRepository(database.riskWindowDao(), database.planDao(), database.usageSlotDao())
+        RiskWindowRepository(
+            database.riskWindowDao(), database.planDao(), database.usageSlotDao(),
+            com.serkodesign.tepera.data.repository.DeletedWindowStore(this)
+        )
     }
     val riskScanner: RiskScanner by lazy {
         RiskScanner(

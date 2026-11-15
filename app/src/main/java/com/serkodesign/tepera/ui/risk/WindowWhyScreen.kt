@@ -20,6 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.serkodesign.tepera.ui.theme.TeperaDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +58,7 @@ fun WindowWhyScreen(windowId: String, onBack: () -> Unit, onEdit: (String) -> Un
     val app = LocalContext.current.applicationContext as TeperaApp
     val vm: WindowWhyViewModel = viewModel(key = "why_$windowId", factory = WindowWhyViewModel.Factory(app, windowId))
     val ui by vm.ui.collectAsState()
+    var confirmDelete by remember { mutableStateOf(false) }
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
@@ -89,9 +94,26 @@ fun WindowWhyScreen(windowId: String, onBack: () -> Unit, onEdit: (String) -> Un
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+                    // Видалити можна будь-яке вікно, не лише поставити на паузу чи вимкнути.
+                    TeperaButton(
+                        text = stringResource(R.string.v3_editor_delete),
+                        onClick = { confirmDelete = true },
+                        type = TeperaButtonType.Secondary,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }
+    }
+    if (confirmDelete) {
+        TeperaDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = stringResource(R.string.v3_why_delete_title),
+            text = stringResource(R.string.v3_why_delete_body),
+            confirmText = stringResource(R.string.v3_editor_delete),
+            dismissText = stringResource(R.string.dialog_cancel),
+            onConfirm = { confirmDelete = false; vm.delete(onBack) }
+        )
     }
 }
 

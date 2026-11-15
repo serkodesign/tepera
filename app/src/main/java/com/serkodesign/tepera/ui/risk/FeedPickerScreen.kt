@@ -46,6 +46,7 @@ import com.serkodesign.tepera.ui.theme.teperaSwitchColors
  * v3.0 MVP, Етап 3 («Вибір стрічок»): людина сама підтверджує, які застосунки враховуються. Підказки (вечірні
  * застосунки) лише піднімають рядки вгору й нічого не вмикають.
  */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
     val app = LocalContext.current.applicationContext as TeperaApp
@@ -58,16 +59,6 @@ fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
     Scaffold(containerColor = Color.Transparent) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
             if (!searchActive) GlassScreenHeader(title = stringResource(R.string.v3_feed_title), onBack = onBack)
-            if (!state.loading && state.apps.isNotEmpty()) {
-                TeperaSearchField(
-                    query = query,
-                    onQueryChange = { query = it },
-                    placeholder = stringResource(R.string.search_apps_placeholder),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    active = searchActive,
-                    onFocusChange = { searchFocused = it }
-                )
-            }
             when {
                 state.loading -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { TeperaLoadingIndicator() }
                 state.apps.isEmpty() -> Box(Modifier.weight(1f).fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -88,6 +79,18 @@ fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
                         }
                         if (!searchActive) {
                             item { TeperaHint(stringResource(R.string.v3_feed_hint), Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) }
+                        }
+                        // Пошук і список застосунків — нижче налаштувань; у списку, щоб прокручувались разом.
+                        stickyHeader(key = "search") {
+                            // Без власного фону: колір теми не збігається з градієнтом екрана й вигляд плашки під полем.
+                            TeperaSearchField(
+                                query = query,
+                                onQueryChange = { query = it },
+                                placeholder = stringResource(R.string.search_apps_placeholder),
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                active = searchActive,
+                                onFocusChange = { searchFocused = it }
+                            )
                         }
                         if (suggested.isNotEmpty()) {
                             item { GlassSectionHeader(stringResource(R.string.v3_feed_section_suggested)) }

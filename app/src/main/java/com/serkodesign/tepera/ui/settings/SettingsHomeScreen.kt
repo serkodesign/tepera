@@ -246,7 +246,6 @@ fun FeedOpeningSettings() {
         onAgreed = { overlayOn = true; PlanOverlayStore.setEnabled(context, true) }
     )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        M3GroupLabel(stringResource(R.string.settings_group_opening))
         M3ListGroup {
             M3ListItem(
                 title = stringResource(R.string.settings_overlay_title),
