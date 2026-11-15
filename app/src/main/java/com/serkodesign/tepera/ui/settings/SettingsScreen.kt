@@ -97,6 +97,7 @@ fun SettingsGroupScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
     // Етап 6: у режимі v3 (beta) старі категорії й кнопки віджета приховані; дані в базі лишаються.
     val v3Mode by settingsStore.v3ModeEnabled.collectAsState(initial = BuildConfig.V3_MVP)
     val v3Active = BuildConfig.V3_MVP && v3Mode
@@ -116,7 +117,7 @@ fun SettingsGroupScreen(
                 try {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
                 } catch (e: ActivityNotFoundException) {
-                    Toast.makeText(context, context.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, resources.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()
                 }
             }
         )

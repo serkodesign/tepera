@@ -14,6 +14,11 @@ class DeletedWindowStore(context: Context) {
         runCatching { prefs.edit().putStringSet(KEY, all() + "$startMinute:$endMinute").apply() }
     }
 
+    /** Заміна всього списку (імпорт резервної копії). */
+    fun replaceAll(bounds: List<Pair<Int, Int>>) {
+        runCatching { prefs.edit().putStringSet(KEY, bounds.map { "${it.first}:${it.second}" }.toSet()).apply() }
+    }
+
     /** Пари «початок — кінець» (хвилини доби) усіх видалених вікон. */
     fun bounds(): List<Pair<Int, Int>> = all().mapNotNull { s ->
         val p = s.split(":")

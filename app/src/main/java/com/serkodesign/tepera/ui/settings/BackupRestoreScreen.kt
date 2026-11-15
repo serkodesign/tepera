@@ -65,6 +65,7 @@ fun BackupRestoreScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
     var pendingImportUri by remember { mutableStateOf<Uri?>(null) }
     // Видалення всіх даних — ДВА кроки (захист від випадкового тапу): пояснення, потім введення слова-підтвердження.
     var deleteStep by remember { mutableStateOf(0) }
@@ -79,9 +80,9 @@ fun BackupRestoreScreen(
                 context.contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
                     ?: error("no output stream")
             }.onSuccess {
-                Toast.makeText(context, context.getString(R.string.backup_export_success), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.backup_export_success), Toast.LENGTH_SHORT).show()
             }.onFailure {
-                Toast.makeText(context, context.getString(R.string.backup_export_failure), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.backup_export_failure), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -107,9 +108,9 @@ fun BackupRestoreScreen(
                                 ?: error("no input stream")
                             backupRepository.importFromJson(String(json))
                         }.onSuccess {
-                            Toast.makeText(context, context.getString(R.string.backup_import_success), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, resources.getString(R.string.backup_import_success), Toast.LENGTH_SHORT).show()
                         }.onFailure {
-                            Toast.makeText(context, context.getString(R.string.backup_import_failure), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, resources.getString(R.string.backup_import_failure), Toast.LENGTH_SHORT).show()
                         }
                     }
             }
@@ -147,7 +148,7 @@ fun BackupRestoreScreen(
                         .onFailure {
                             deleting = false
                             deleteStep = 0
-                            Toast.makeText(context, context.getString(R.string.backup_delete_failure), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, resources.getString(R.string.backup_delete_failure), Toast.LENGTH_SHORT).show()
                         }
                 }
             },

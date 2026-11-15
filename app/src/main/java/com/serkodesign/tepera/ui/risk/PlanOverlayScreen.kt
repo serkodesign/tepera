@@ -88,6 +88,7 @@ fun PlanOverlayScreen(
     onDecided: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val resources = androidx.compose.ui.platform.LocalResources.current
     val app = context.applicationContext as TeperaApp
     val scope = rememberCoroutineScope()
     var content by remember { mutableStateOf<OverlayContent?>(null) }
@@ -162,7 +163,7 @@ fun PlanOverlayScreen(
         PlanOverlayStore.recordContinued(context)
         PlanOverlayStore.setPendingSoftExit(
             context,
-            PlanOverlayStore.PendingSoftExit(packageName, c.appLabel, context.getString(suggestionTextRes(c.suggestion.id)), System.currentTimeMillis())
+            PlanOverlayStore.PendingSoftExit(packageName, c.appLabel, resources.getString(suggestionTextRes(c.suggestion.id)), System.currentTimeMillis())
         )
         gateRepository.getLaunchIntent(packageName)?.let { context.startActivity(it) }
         finished = true
