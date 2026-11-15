@@ -111,6 +111,7 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         }
                     )
                 }
+                if (BuildConfig.GATE_ACCESSIBILITY) BerserkTestCard()
                 TeperaButton(
                     text = stringResource(R.string.v3_tester_restart),
                     onClick = onRestartOnboarding,
@@ -124,4 +125,53 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
             }
         }
     }
+}
+
+/**
+ * Тестові «дані» для берсерк-режиму: він працює від живих подій застосунків, тож замість даних тут швидкі значення
+ * (година 1 хв, блок 2 хв) і кнопка, що одразу показує екран блоку. Екран — у beta-джерелах, тому запуск за іменем класу.
+ */
+@Composable
+private fun BerserkTestCard() {
+    val context = LocalContext.current
+    var summary by remember { mutableStateOf(berserkSummary(context)) }
+    TeperaCard(title = stringResource(R.string.berserk_test_title)) {
+        Text(summary, style = MaterialTheme.typography.bodyMedium)
+        TeperaButton(
+            text = stringResource(R.string.berserk_test_fast),
+            onClick = {
+                com.serkodesign.tepera.util.BerserkStore.applyTestValues(context)
+                summary = berserkSummary(context)
+                Toast.makeText(context, context.getString(R.string.berserk_test_fast_done), Toast.LENGTH_LONG).show()
+            }
+        )
+        TeperaButton(
+            text = stringResource(R.string.berserk_test_show),
+            onClick = {
+                val until = System.currentTimeMillis() + 2 * 60_000L
+                runCatching {
+                    context.startActivity(
+                        android.content.Intent().setClassName(context, "com.serkodesign.tepera.gates.BerserkActivity")
+                            .putExtra("berserk_until", until).putExtra("berserk_joke", 0)
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    )
+                }
+            },
+            type = TeperaButtonType.Secondary
+        )
+        TeperaButton(
+            text = stringResource(R.string.berserk_test_reset),
+            onClick = {
+                com.serkodesign.tepera.util.BerserkStore.resetToDefaults(context)
+                summary = berserkSummary(context)
+            },
+            type = TeperaButtonType.Secondary
+        )
+    }
+}
+
+private fun berserkSummary(context: android.content.Context): String {
+    val s = com.serkodesign.tepera.util.BerserkStore
+    return "${if (s.isEnabled(context)) "ON" else "OFF"} · ${s.hourMinutes(context)} / ${s.blockMinutes(context)} min · " +
+        "${s.countMode(context)} · skip today: ${if (s.isSkippedToday(context)) "yes" else "no"}"
 }

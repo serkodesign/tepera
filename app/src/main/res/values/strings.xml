@@ -972,4 +972,41 @@
     <string name="settings_replay_tutorial">Show tips again</string>
     <string name="v3_observing_manual_hint">Do not want to wait? Pick the hours yourself, they start working right away.</string>
     <string name="v3_observing_manual_action">Choose hours</string>
+
+    <!-- Berserk mode and time counting type (beta) -->
+    <string name="berserk_title">Berserk mode</string>
+    <string name="berserk_still_blocked">This feed is still resting.</string>
+    <string name="berserk_resting_format">%1$s is resting. It comes back when the timer ends.</string>
+    <string name="berserk_resting_all">All feed apps are resting. They come back when the timer ends.</string>
+    <string name="berserk_ok">OK, I am off</string>
+    <string name="berserk_important">Important thing</string>
+    <string name="berserk_important_hint">Turns Berserk mode off until tomorrow. Once a day.</string>
+    <string-array name="berserk_jokes">
+        <item>An hour in the feed. The feed knows you better than your mum now. Break time!</item>
+        <item>Your thumb asked for a day off. Let us give it an hour.</item>
+        <item>You reached the bottom of the feed, but it has no bottom. So I decided for you.</item>
+        <item>Enough playing! The feed is closed for maintenance. The maintenance is you, taking a break.</item>
+        <item>The outside world refreshes too. And it has no ads.</item>
+        <item>Berserk mode: the scroll is on pause, the phone is not offended.</item>
+    </string-array>
+    <string name="berserk_settings_group">Berserk mode</string>
+    <string name="berserk_toggle_title">Berserk mode</string>
+    <string name="berserk_toggle_supporting">After a long stretch in feeds, the feed closes for a while</string>
+    <string name="berserk_hour_label">Stretch in feeds before the block, min</string>
+    <string name="berserk_block_label">Block length, min</string>
+    <string name="berserk_skip_title">Switch off until tomorrow</string>
+    <string name="berserk_skip_supporting">For important things. Once a day</string>
+    <string name="berserk_skip_done">Off until tomorrow</string>
+    <string name="berserk_skip_confirm_title">Switch Berserk mode off until tomorrow?</string>
+    <string name="berserk_skip_confirm_body">It can be done once a day and cannot be undone until tomorrow.</string>
+    <string name="berserk_skip_confirm_action">Switch off</string>
+    <string name="berserk_test_title">Berserk: test</string>
+    <string name="berserk_test_fast">Fast test: 1 min stretch, 2 min block</string>
+    <string name="berserk_test_fast_done">On. Stay in a feed app for about a minute</string>
+    <string name="berserk_test_show">Show the block screen now</string>
+    <string name="berserk_test_reset">Back to normal values (off, 60/60)</string>
+    <string name="count_mode_group">How to count time</string>
+    <string name="count_mode_per_app">Each app</string>
+    <string name="count_mode_all">All feeds together</string>
+    <string name="count_mode_hint">Applies to Berserk mode and to \"Open for 5 min\". Together: moving from one feed to another keeps the same count.</string>
 </resources>

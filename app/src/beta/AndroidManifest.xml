@@ -25,6 +25,14 @@
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
+        <!-- Берсерк-режим: екран блокування стрічки, коли набігла година. Власна задача, не в «Недавніх». -->
+        <activity
+            android:name=".gates.BerserkActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Tepera.PlanOverlay"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
         <!-- v3.0 MVP, Етап 4 (лише beta): нагадування перед годиною ризику. Приймають тільки системні події й власні
              PendingIntent застосунку. -->
         <receiver android:name=".data.NudgeReceiver" android:exported="false" />

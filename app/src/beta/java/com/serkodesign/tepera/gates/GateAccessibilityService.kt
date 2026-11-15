@@ -16,6 +16,7 @@ import com.serkodesign.tepera.data.repository.GateRepository
 import com.serkodesign.tepera.domain.risk.NextWindow
 import com.serkodesign.tepera.domain.risk.PlanOverlayRule
 import com.serkodesign.tepera.util.A11yConsentStore
+import com.serkodesign.tepera.util.BerserkStore
 import com.serkodesign.tepera.util.PackageAction
 import com.serkodesign.tepera.util.ScreenPackageRule
 import com.serkodesign.tepera.util.SoftExitSessionBridge
@@ -68,6 +69,8 @@ class GateAccessibilityService : AccessibilityService() {
         set(v) { sLastLaunchMillis = v }
     private val lastSeenMillis: HashMap<String, Long> get() = sLastSeenMillis
     private lateinit var softExit: SoftExitController
+    private lateinit var berserk: BerserkController
+    @Volatile private var feedPackages: Set<String> = emptySet()
     private var pendingListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
     private var consentListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
@@ -93,6 +96,16 @@ class GateAccessibilityService : AccessibilityService() {
         launcherPackages = resolveLauncherPackages()
         SoftExitSessionBridge.endSession = { softExit.endNow() }
         softExit.foregroundCheck = { realForegroundPackage() }
+        // «Усі стрічки разом»: перехід у іншу стрічку під час «5 хв» продовжує ту саму сесію.
+        softExit.continuesInto = { pkg ->
+            BerserkStore.countMode(this) == BerserkStore.CountMode.ALL && pkg in feedPackages
+        }
+        berserk = BerserkController(this, feeds = { feedPackages }, foregroundPackage = { realForegroundPackage() })
+        scope.launch {
+            (application as TeperaApp).feedAppRepository.observeAll().collectLatest { list ->
+                feedPackages = list.map { it.packageName }.toSet()
+            }
+        }
         scope.launch {
             gateRepository.gates.collectLatest { gates -> gatedPackages = gates.map { it.packageName }.toSet() }
         }
@@ -121,6 +134,7 @@ class GateAccessibilityService : AccessibilityService() {
                     return@launch
                 }
                 softExit.onLeftToLauncher()
+                berserk.onLeft()
                 lastPackage = pkg
                 lastSeenMillis.clear()
             }
@@ -136,6 +150,7 @@ class GateAccessibilityService : AccessibilityService() {
             PackageAction.END_SESSION -> {
                 // Налаштування, Google Play, інсталятор, діалоги дозволів: затемнення й плашка зникають одразу, нових листів нема.
                 softExit.endNow()
+                if (BuildConfig.V3_MVP) berserk.onLeft()
                 return
             }
             PackageAction.IGNORE -> {
@@ -154,6 +169,11 @@ class GateAccessibilityService : AccessibilityService() {
         val isRealApp = packageManager.getLaunchIntentForPackage(pkg) != null
         if (!isRealApp) return
         softExit.restoreFromSystemSurface()
+        // Берсерк-режим: заблокована стрічка — замість неї екран блокування, решту (сесія «5 хв», лист плану) пропускаємо.
+        if (BuildConfig.V3_MVP && berserk.onForeground(pkg)) {
+            softExit.endNow()
+            return
+        }
         if (BuildConfig.V3_MVP) softExit.onForeground(pkg, countsAsLeaving = true)
         if (pkg == lastPackage) {
             lastSeenMillis[pkg] = now
@@ -215,6 +235,10 @@ class GateAccessibilityService : AccessibilityService() {
         // навіть якщо людина сама додала вікно.
         if (app.database.observationPeriodDao().getLatest() == null) return log("$pkg: тиждень спостереження ще триває — мовчу")
         if (pkg !in app.feedAppRepository.packages()) return log("$pkg: не в списку стрічок")
+        // «Усі стрічки разом»: поки йде спільна сесія «5 хв», перехід в іншу стрічку нового листа не дає.
+        if (BerserkStore.countMode(this) == BerserkStore.CountMode.ALL && softExit.hasSession() && pkg in feedPackages) {
+            return log("$pkg: триває спільна сесія «5 хв» — нового листа не показую")
+        }
         if (pkg == sOpenFivePackage && System.currentTimeMillis() - sOpenFiveAtMillis < OPEN_FIVE_QUIET_MILLIS) {
             return log("$pkg: людина щойно обрала «Відкрити на 5 хв» — нового листа не показую")
         }
@@ -267,6 +291,7 @@ class GateAccessibilityService : AccessibilityService() {
         consentListener?.let { A11yConsentStore.stopListening(this, it) }
         SoftExitSessionBridge.endSession = null
         if (::softExit.isInitialized) softExit.destroy()
+        if (::berserk.isInitialized) berserk.destroy()
         scope.cancel()
         super.onDestroy()
     }

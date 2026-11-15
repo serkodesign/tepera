@@ -76,6 +76,10 @@ fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
                         // Лише в Налаштуваннях (не в онбордингу): що відбувається, коли відкриваєш стрічку.
                         if (!searchActive && onDone == null && BuildConfig.V3_MVP) {
                             item { FeedOpeningSettings() }
+                            // Тип підрахунку часу й берсерк-режим — лише там, де є служба доступності.
+                            if (com.serkodesign.tepera.util.GateAccessibility.isAvailable) {
+                                item { com.serkodesign.tepera.ui.settings.BerserkSettings() }
+                            }
                         }
                         if (!searchActive) {
                             item { TeperaHint(stringResource(R.string.v3_feed_hint), Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) }

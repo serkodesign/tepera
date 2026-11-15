@@ -989,4 +989,41 @@
     <string name="settings_replay_tutorial">Показати підказки знову</string>
     <string name="v3_observing_manual_hint">Не хочеш чекати? Обери години сам — вони запрацюють одразу.</string>
     <string name="v3_observing_manual_action">Обрати години</string>
+
+    <!-- Берсерк-режим і тип підрахунку часу (beta) -->
+    <string name="berserk_title">Берсерк-режим</string>
+    <string name="berserk_still_blocked">Ця стрічка ще відпочиває.</string>
+    <string name="berserk_resting_format">%1$s відпочиває. Повернеться, коли закінчиться таймер.</string>
+    <string name="berserk_resting_all">Усі застосунки-стрічки відпочивають. Повернуться, коли закінчиться таймер.</string>
+    <string name="berserk_ok">Добре, пішов</string>
+    <string name="berserk_important">Важлива справа</string>
+    <string name="berserk_important_hint">Вимикає берсерк-режим до завтра. Один раз на добу.</string>
+    <string-array name="berserk_jokes">
+        <item>Година в стрічці. Стрічка вже знає про тебе більше, ніж твоя мама. Перерва!</item>
+        <item>Твій великий палець попросив відпустку. Даємо йому годину.</item>
+        <item>Ти дійшов до дна стрічки, але в неї нема дна. Тож я вирішив за тебе.</item>
+        <item>Досить гратися! Стрічка зачинена на техобслуговування. Техобслуговування — це ти, що береш перерву.</item>
+        <item>Світ за вікном теж оновлюється. І без реклами.</item>
+        <item>Берсерк-режим: скрол на паузі, телефон не ображається.</item>
+    </string-array>
+    <string name="berserk_settings_group">Берсерк-режим</string>
+    <string name="berserk_toggle_title">Берсерк-режим</string>
+    <string name="berserk_toggle_supporting">Після довгого сидіння в стрічках стрічка закривається на деякий час</string>
+    <string name="berserk_hour_label">Скільки в стрічках до блоку, хв</string>
+    <string name="berserk_block_label">Скільки триває блок, хв</string>
+    <string name="berserk_skip_title">Вимкнути до завтра</string>
+    <string name="berserk_skip_supporting">Для важливих справ. Один раз на добу</string>
+    <string name="berserk_skip_done">Вимкнено до завтра</string>
+    <string name="berserk_skip_confirm_title">Вимкнути берсерк-режим до завтра?</string>
+    <string name="berserk_skip_confirm_body">Це можна зробити раз на добу, і до завтра повернути не вийде.</string>
+    <string name="berserk_skip_confirm_action">Вимкнути</string>
+    <string name="berserk_test_title">Берсерк: тест</string>
+    <string name="berserk_test_fast">Швидкий тест: година 1 хв, блок 2 хв</string>
+    <string name="berserk_test_fast_done">Увімкнено. Посидьте в стрічці приблизно хвилину</string>
+    <string name="berserk_test_show">Показати екран блоку зараз</string>
+    <string name="berserk_test_reset">Повернути звичайні значення (вимкнено, 60/60)</string>
+    <string name="count_mode_group">Як рахувати час</string>
+    <string name="count_mode_per_app">Кожен застосунок</string>
+    <string name="count_mode_all">Усі стрічки разом</string>
+    <string name="count_mode_hint">Стосується берсерк-режиму й «Відкрити на 5 хв». Разом: перехід з однієї стрічки в іншу зберігає той самий відлік.</string>
 </resources>

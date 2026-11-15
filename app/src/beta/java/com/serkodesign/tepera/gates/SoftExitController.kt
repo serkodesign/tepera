@@ -35,7 +35,8 @@ object SoftExitPuzzleBridge {
 class SoftExitController(private val service: AccessibilityService) {
 
     private class Session(
-        val packageName: String,
+        // var: у режимі «усі стрічки разом» перехід в іншу стрічку продовжує ту саму сесію на новому пакеті.
+        var packageName: String,
         val appLabel: String,
         val thenText: String,
         val startedAt: Long,
@@ -143,9 +144,18 @@ class SoftExitController(private val service: AccessibilityService) {
             val pending = PlanOverlayStore.takePendingSoftExit(service, packageName) ?: return
             start(pending)
         } else if (current.packageName != packageName && countsAsLeaving && !justStarted(current)) {
-            finish(onTime = isOnTime(current))
+            // «Усі стрічки разом»: перехід в іншу стрічку — не вихід, відлік 5 хвилин спільний.
+            if (continuesIntoFeed(packageName)) current.packageName = packageName
+            else finish(onTime = isOnTime(current))
         }
     }
+
+    /** Чи перехід у [packageName] продовжує поточну сесію (спільний підрахунок і це теж стрічка). Задає служба. */
+    var continuesInto: ((String) -> Boolean)? = null
+
+    private fun continuesIntoFeed(packageName: String) = continuesInto?.invoke(packageName) == true
+
+    fun hasSession(): Boolean = session != null
 
     /**
      * Лист плану записав сесію «Відкрити на 5 хв»: стартуємо одразу, не чекаючи на подію застосунку (вона не завжди
