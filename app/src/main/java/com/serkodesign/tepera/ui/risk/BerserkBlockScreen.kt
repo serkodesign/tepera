@@ -1,11 +1,17 @@
 package com.serkodesign.tepera.ui.risk
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.res.painterResource
+import com.serkodesign.tepera.ui.theme.LocalTeperaColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,11 +59,15 @@ fun BerserkBlockScreen(
             delay(1_000)
         }
     }
+    // Ілюстрація (макет 1.3.0): ведмежа у шоломі вікінга. Дві версії — контур світлий у темній темі, бо рідний темно-зелений
+    // зливається з графітовим фоном. Обираємо за темою застосунку (вона може відрізнятись від системної), не `drawable-night`.
+    val bear = if (LocalTeperaColors.current.isDark) R.drawable.berserk_bear_dark else R.drawable.berserk_bear
     Column(
-        Modifier.fillMaxSize().teperaGradientBackground().safeDrawingPadding().padding(24.dp),
+        Modifier.fillMaxSize().teperaGradientBackground().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(painter = painterResource(bear), contentDescription = null, modifier = Modifier.size(220.dp))
         Text(stringResource(R.string.berserk_title), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
         Text(
             joke ?: stringResource(R.string.berserk_still_blocked),
