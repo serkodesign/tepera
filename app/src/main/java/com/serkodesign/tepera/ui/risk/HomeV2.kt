@@ -206,14 +206,14 @@ internal fun NextHourCard(
 /** Чип `when`: surfaceContainerHigh, Label Medium; «зараз» — з крапкою 8dp кольору signalVivid. */
 @Composable
 private fun WhenChip(text: String, dot: Boolean = false) {
-    Row(
-        Modifier.clip(RoundedCornerShape(999.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (dot) Box(Modifier.size(8.dp).clip(CircleShape).background(M3Extra.colors.signalVivid))
-        Text(text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+    // Той самий чіп, що «4 з 7 днів» у картках годин скролінгу (M3RecurrenceBadge); «зараз» — з крапкою поруч.
+    if (dot) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(M3Extra.colors.signalVivid))
+            M3RecurrenceBadge(text)
+        }
+    } else {
+        M3RecurrenceBadge(text)
     }
 }
 

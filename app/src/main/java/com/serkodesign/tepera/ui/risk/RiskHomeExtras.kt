@@ -84,32 +84,6 @@ fun OnlineTodayCard(state: BalanceUiState) {
                 )
             }
         }
-        if (target != null || typicalNow != null) {
-            // Шкала до 1.25× більшого з орієнтира й «зазвичай» (або більше, якщо Online їх перевищив).
-            val reference = maxOf(target ?: 0, typicalNow ?: 0)
-            val scale = maxOf(state.onlineMinutes, (reference * 1.25f).toInt()).coerceAtLeast(1)
-            Box(
-                Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(TeperaPalette.heatmapNoDataFill)
-            ) {
-                Box(
-                    Modifier.fillMaxHeight().fillMaxWidth(state.onlineMinutes.toFloat() / scale)
-                        .background(TeperaPalette.onlineCard)
-                )
-                if (typicalNow != null) {
-                    // Тихіша позначка «зазвичай»: той самий розмір, але напівпрозора.
-                    Row(Modifier.fillMaxWidth().fillMaxHeight()) {
-                        Box(Modifier.fillMaxWidth((typicalNow.toFloat() / scale).coerceIn(0f, 1f)).fillMaxHeight())
-                        Box(Modifier.width(2.dp).fillMaxHeight().background(TeperaPalette.textSecondary))
-                    }
-                }
-                if (target != null) {
-                    Row(Modifier.fillMaxWidth().fillMaxHeight()) {
-                        Box(Modifier.fillMaxWidth((target.toFloat() / scale).coerceIn(0f, 1f)).fillMaxHeight())
-                        Box(Modifier.width(2.dp).fillMaxHeight().background(TeperaPalette.textPrimary))
-                    }
-                }
-            }
-        }
         if (typicalNow != null) {
             Text(
                 stringResource(R.string.v3_online_typical_format, heroDuration(typicalNow)),
