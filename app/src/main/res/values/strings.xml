@@ -894,6 +894,7 @@
     <string name="settings_a11y_title">Accessibility</string>
     <string name="settings_a11y_on">on</string>
     <string name="settings_a11y_off">off</string>
+    <string name="settings_a11y_shortcut_hint">To avoid switching Tepera off by accident, turn off its “Shortcut” in these settings</string>
     <string name="settings_dim_title">Dimming</string>
     <string name="settings_dim_hint">How much the screen dims when 5 minutes are up.</string>
     <string name="settings_dim_info">After “Open for 5 min” the screen dims as a reminder. Nothing is blocked.</string>

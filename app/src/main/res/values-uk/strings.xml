@@ -911,6 +911,7 @@
     <string name="settings_a11y_title">Спеціальні можливості</string>
     <string name="settings_a11y_on">увімкнено</string>
     <string name="settings_a11y_off">вимкнено</string>
+    <string name="settings_a11y_shortcut_hint">Щоб не вимкнути Tepera випадково, прибери її «Ярлик» у цих налаштуваннях</string>
     <string name="settings_dim_title">Приглушення</string>
     <string name="settings_dim_hint">Як сильно темніє екран, коли 5 хв минуло.</string>
     <string name="settings_dim_info">Після «Відкрити на 5 хв» екран темніє — нагадування про час. Нічого не блокується.</string>
