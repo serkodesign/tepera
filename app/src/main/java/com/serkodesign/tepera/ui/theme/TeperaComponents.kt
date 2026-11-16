@@ -410,6 +410,8 @@ fun HourRangeSlider(
 enum class TeperaButtonSize(val height: Dp, val textSize: TextUnit, val fontWeight: FontWeight) {
     Big(108.dp, 14.sp, FontWeight.Medium),
     Medium(48.dp, 14.sp, FontWeight.Medium),
+    /** Кнопки поп-апів (макет 1.3.0, v32/Button S): 40dp, Label Large, ширина за вмістом. */
+    Compact(40.dp, 14.sp, FontWeight.Medium),
     Small(32.dp, 12.sp, FontWeight.Normal)
 }
 
@@ -1197,20 +1199,24 @@ fun TeperaDialog(
                 }
                 content?.invoke(this)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Макет 1.3.0: кнопки 40dp за вмістом, праворуч, проміжок 8dp (раніше — дві рівні за шириною по 48dp).
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+            ) {
                 if (dismissText != null) {
                     TeperaButton(
                         text = dismissText,
                         onClick = onDismiss,
-                        type = TeperaButtonType.Secondary,
-                        modifier = Modifier.weight(1f)
+                        size = TeperaButtonSize.Compact,
+                        type = TeperaButtonType.Secondary
                     )
                 }
                 TeperaButton(
                     text = confirmText,
                     onClick = onConfirm,
                     enabled = confirmEnabled,
-                    modifier = Modifier.weight(1f)
+                    size = TeperaButtonSize.Compact
                 )
             }
         }

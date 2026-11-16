@@ -991,11 +991,11 @@
     </string-array>
     <string name="berserk_settings_group">Berserk mode</string>
     <string name="berserk_toggle_title">Berserk mode</string>
-    <string name="berserk_toggle_supporting">After a long stretch in feeds, the feed closes for a while</string>
+    <string name="berserk_toggle_supporting">If you get stuck in feeds for long — they close for a while</string>
     <string name="berserk_hour_label">Stretch in feeds before the block, min</string>
     <string name="berserk_block_label">Block length, min</string>
     <string name="berserk_skip_title">Switch off until tomorrow</string>
-    <string name="berserk_skip_supporting">For important things. Once a day</string>
+    <string name="berserk_skip_supporting">For something important. Once a day</string>
     <string name="berserk_skip_done">Off until tomorrow</string>
     <string name="berserk_skip_confirm_title">Switch Berserk mode off until tomorrow?</string>
     <string name="berserk_skip_confirm_body">It can be done once a day and cannot be undone until tomorrow.</string>

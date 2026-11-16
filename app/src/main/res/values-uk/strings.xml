@@ -1008,11 +1008,11 @@
     </string-array>
     <string name="berserk_settings_group">Берсерк-режим</string>
     <string name="berserk_toggle_title">Берсерк-режим</string>
-    <string name="berserk_toggle_supporting">Після довгого сидіння в стрічках стрічка закривається на деякий час</string>
+    <string name="berserk_toggle_supporting">Якщо зависнути надовго в стрічках — закривається на деякий час</string>
     <string name="berserk_hour_label">Скільки в стрічках до блоку, хв</string>
     <string name="berserk_block_label">Скільки триває блок, хв</string>
     <string name="berserk_skip_title">Вимкнути до завтра</string>
-    <string name="berserk_skip_supporting">Для важливих справ. Один раз на добу</string>
+    <string name="berserk_skip_supporting">Для важливого. Один раз на добу</string>
     <string name="berserk_skip_done">Вимкнено до завтра</string>
     <string name="berserk_skip_confirm_title">Вимкнути берсерк-режим до завтра?</string>
     <string name="berserk_skip_confirm_body">Це можна зробити раз на добу, і до завтра повернути не вийде.</string>

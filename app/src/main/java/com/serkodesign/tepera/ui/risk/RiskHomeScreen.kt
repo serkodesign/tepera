@@ -275,7 +275,7 @@ private fun WindowsHeader(onAddWindow: () -> Unit, addModifier: Modifier = Modif
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            stringResource(R.string.v3_windows_section), style = MaterialTheme.typography.titleSmall,
+            stringResource(R.string.v3_windows_section), style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.semantics { heading() }
         )

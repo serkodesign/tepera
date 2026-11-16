@@ -17,4 +17,11 @@ object AppLanguages {
 
     /** Рідна назва мови за тегом; для невідомого тегу — сам тег. `null` — коли тег порожній (системна). */
     fun endonym(tag: String): String? = if (tag.isEmpty()) null else all.firstOrNull { it.tag == tag }?.endonym ?: tag
+
+    /** Короткий код для значення в рядку Налаштувань (макет 1.3.0): `uk` → «UA», інші — мова великими літерами. `null` — системна. */
+    fun shortCode(tag: String): String? = when {
+        tag.isEmpty() -> null
+        tag == "uk" -> "UA"
+        else -> tag.substringBefore('-').uppercase()
+    }
 }

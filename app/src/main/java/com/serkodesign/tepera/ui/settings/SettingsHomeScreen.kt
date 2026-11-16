@@ -174,9 +174,9 @@ fun SettingsScreen(
                         M3ListItem(stringResource(R.string.settings_categories_action), icon = TeperaSymbols.Category, onClick = onOpenCategories)
                         M3ListDivider()
                     }
+                    // Макет 1.3.0: без підпису «Відкриє форму в браузері» (попередження лишається в діалозі підтвердження).
                     M3ListItem(
                         title = stringResource(R.string.settings_suggest_feature_action),
-                        supporting = stringResource(R.string.settings_suggest_supporting),
                         icon = TeperaSymbols.Feedback,
                         onClick = { showSuggest = true }
                     )
@@ -308,4 +308,4 @@ private fun DimSetting() {
 }
 
 @Composable
-private fun languageName(tag: String): String = AppLanguages.endonym(tag) ?: stringResource(R.string.settings_language_system)
+private fun languageName(tag: String): String = AppLanguages.shortCode(tag) ?: stringResource(R.string.settings_language_system)

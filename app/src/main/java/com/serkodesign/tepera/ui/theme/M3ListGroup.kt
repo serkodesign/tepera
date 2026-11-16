@@ -37,12 +37,12 @@ import androidx.compose.ui.unit.dp
 
 private val GroupShape = RoundedCornerShape(16.dp)
 
-/** `group label`: Title Small кольору primary, відступ зліва 16dp, зверху 12dp, знизу 4dp. */
+/** `group label`: Title Medium (16sp, макет 1.3.0) кольору primary, відступ зліва 16dp, зверху 12dp, знизу 4dp. */
 @Composable
 fun M3GroupLabel(text: String, modifier: Modifier = Modifier, top: Dp = 12.dp, bottom: Dp = 4.dp) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier.fillMaxWidth().padding(start = 16.dp, top = top, bottom = bottom).semantics { heading() }
     )
