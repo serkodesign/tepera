@@ -1561,3 +1561,11 @@ Samsung S23 (Android 16), Motorola G84 5G (Android 15), Huawei P9 (Android 8), S
   (`registerWidgetPreviewIfNeeded`, `WIDGET_PREVIEW_VERSION = 6`); 1x1, 2x1, 4x1, кільце й орб мають `previewLayout`
   (`res/layout/widget_preview_*.xml`, справжній текст і переклад, світла/темна через `values-night/colors.xml`), нижче API 31 —
   старий `previewImage`. Перевірено в меню віджетів на Samsung S23.
+
+## Робота з кількох пристроїв (20.11.2026, за прямим запитом власника)
+- **"Збережи проект в гіт"** (або `/save`) → skill `.claude/skills/save`: коміт + push поточної гілки, без `--force`; релізні артефакти,
+  архіви й секрети не додавати без запитання.
+- **На початку сесії** hook `scripts/session-sync.sh` (`.claude/settings.json`) робить `git fetch` і друкує рядок `GIT-SYNC: … позаду origin на N`.
+  Якщо N > 0 — у першій відповіді запропонуй `git pull` (виконувати лише після згоди); якщо є змінені файли — спершу скажи про них.
+- Через git НЕ переноситься: пам'ять Claude (`~/.claude/projects/.../memory`), `local.properties`, keystore, JAVA_HOME/шлях до `adb`
+  (`scripts/setup-java-home.ps1` — лише Windows; на Mac потрібне власне налаштування).
