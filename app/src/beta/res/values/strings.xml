@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="a11y_service_label">Tepera: pauses and ideas</string>
-    <string name="a11y_service_description">Only detects which app is open, so it can show a short pause before the apps you chose, or an idea instead of the feed during your scrolling hours, and gently dim the screen after 5 minutes. Doesn\'t read screen content. Tepera doesn\'t send data about opened apps anywhere.</string>
+    <string name="a11y_service_description">Only detects which app is open, so it can show a short pause before the apps you chose, or an idea instead of the feed during your scrolling hours, gently dim the screen after 5 minutes and, if you turn on Berserk mode, show a block screen and take you to the home screen after too long in a feed. Doesn\'t read screen content. Tepera doesn\'t send data about opened apps anywhere.</string>
     <string name="soft_exit_title">%1$d min have passed</string>
     <string name="soft_exit_body">Time to close %1$s. %2$s</string>
     <string name="soft_exit_more">5 more</string>

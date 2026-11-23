@@ -14,7 +14,7 @@ Finds your scrolling hours and quietly suggests something else just then
 
 ## Full description (≤4000 chars)
 
-**Tepera is a calm helper for people tired of endless scrolling. It is not a screen blocker and not a guilt counter.**
+**Tepera is a calm helper for people tired of endless scrolling. It is not a guilt counter. Anything that limits you is optional, set by you, and you can always leave.**
 
 We rarely pick up the phone by accident: it mostly happens at the same hours and in the same situations. Within a week Tepera finds your scrolling hours and helps in exactly those. The rest of the day it stays quiet.
 
@@ -26,13 +26,15 @@ We rarely pick up the phone by accident: it mostly happens at the same hours and
 
 💡 **A suggestion at the right moment** — open a chosen feed during your hour and Tepera briefly suggests something else: "Maybe go for a walk?". Say yes, ask for another idea, or open the feed for 5 minutes. If you keep coming back to the feed, Tepera may ask for a short puzzle first (up to 30 seconds; you can switch this off, and you can always leave instead). The choice is always yours.
 
-🌗 **Gentle exit** — after "Open for 5 min" the screen dims a little and Tepera quietly reminds you of the time: "5 more" or "Leave". Nothing is blocked, no penalties.
+🌗 **Gentle exit** — after "Open for 5 min" the screen dims a little and Tepera quietly reminds you of the time: "5 more" or "Leave". The dimming only reminds you of the time; the app stays available, no penalties.
+
+🐻 **Berserk mode (optional, off by default)** — if you stay in your chosen feeds for the time you set, Tepera covers the feed with a block screen for the time you set and takes you to the home screen. You turn it on and configure it yourself; "Important thing" switches it off until tomorrow. This mode works only in the test (beta) version and uses the Accessibility service.
 
 📊 **Weekly summary** — compared only with your own observation week, never with a "norm" or other people's averages.
 
 📱 **Structure of the day** — one scale, three neutral parts: Online (counted automatically), what you logged offline by category (Nature, Reading, Hobbies, Movement, Time with people, Errands — plus up to two of your own) and the rest of the day. The rest of the day is never shown as a gap.
 
-⚡ **1–2 taps, then back to life** — a quick activity timer or a manual entry, plus 1x1, 2x1, 4x1 and 4x2 home-screen widgets.
+⚡ **1–2 taps, then back to life** — a quick activity timer or a manual entry, plus home-screen widgets (1x1, 2x1, 4x1 and more).
 
 📈 **Statistics** — when you reach for your phone through the day, unlocks, time by category and your online trend for a day, week or month.
 
@@ -48,8 +50,8 @@ We rarely pick up the phone by accident: it mostly happens at the same hours and
 
 **Permissions and Accessibility:**
 • **Usage access** (Settings → Special access) — needed to count Online time and find scrolling hours. Without it the offline log still works fully.
-• **The Accessibility service is optional** (listed in Android settings as "Tepera: pauses and ideas"). It is needed only to show a pause before apps you chose, a suggestion over a feed you chose during your scrolling hours, or a gentle dim and reminder after the timer you set. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages. Tepera explains this on the second screen of the initial setup; the service turns on only if you tap "I agree" and enable it yourself in Android settings. You can turn it off any time there. Tepera does not send this data anywhere.
-• **Notifications** — optional, for the weekly summary.
+• **The Accessibility service is optional** (listed in Android settings as "Tepera: pauses and ideas"). It is needed only to show a pause before apps you chose, a suggestion over a feed you chose during your scrolling hours, a gentle dim and reminder after the timer you set, or, if you turn on Berserk mode, a block screen after too long in a feed and a return to the home screen. The service sees only the name of the app that has just opened and does not read screen content, text, passwords or messages and does not tap, scroll or type in other apps; its only action in them is taking you to the home screen. Tepera explains this on the second screen of the initial setup; the service turns on only if you tap "I agree" and enable it yourself in Android settings. You can turn it off any time there. Tepera does not send this data anywhere.
+• **Notifications** — optional: the weekly summary and, once, a note that your scrolling hours were found.
 
 Built in a "monastic" style: no badges, no streaks, no points for usage. Just a calm look at your day for people who want a healthier balance between the phone and real life.
 

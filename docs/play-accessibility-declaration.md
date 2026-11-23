@@ -12,7 +12,7 @@
 | `canRetrieveWindowContent` | `false` — вміст екрана недоступний |
 | `isAccessibilityTool` | не виставлено (Tepera не інструмент для людей з інвалідністю) |
 | Що читається | лише `packageName` вікна, що вийшло на передній план |
-| Що робиться | (1) «Застосунки з затримкою»: якщо пакет у списку, обраному користувачем, — запускається екран паузи Tepera (кнопки «Не зараз»/«Відкрити»); (2) «Години скролінгу» (v3): коли відкрито обрану стрічку у власну годину ризику — підказка Tepera поверх екрана (з 3-го повторного відкриття — коротка головоломка до 30 с, якщо ввімкнено «Puzzles on re-entry»; завжди можна вийти), а після обраного таймера на 5 хв — тимчасове затемнення (`TYPE_ACCESSIBILITY_OVERLAY`) з кнопками «5 more»/«Leave» |
+| Що робиться | (1) «Застосунки з затримкою»: якщо пакет у списку, обраному користувачем, — запускається екран паузи Tepera (кнопки «Не зараз»/«Відкрити»); (2) «Години скролінгу» (v3): коли відкрито обрану стрічку у власну годину ризику — підказка Tepera поверх екрана (з 3-го повторного відкриття — коротка головоломка до 30 с, якщо ввімкнено «Puzzles on re-entry»; завжди можна вийти), а після обраного таймера на 5 хв — тимчасове затемнення (`TYPE_ACCESSIBILITY_OVERLAY`) з кнопками «5 more»/«Leave»; (3) **Берсерк-режим** (необов'язковий, вимкнений за замовчуванням): після заданого користувачем часу в обраних стрічках `BerserkActivity` показує екран блоку на заданий час і відправляє на робочий стіл (`GLOBAL_ACTION_HOME` / інтент HOME); «Важлива справа» вимикає режим до завтра; (4) єдина дія в чужих застосунках — повернення на робочий стіл (`performGlobalAction(GLOBAL_ACTION_HOME)` у `SoftExitController` на «Leave», запуск HOME-інтента в `BerserkActivity`) |
 | Зберігається | локально: пакет + результат (PROCEEDED/CANCELLED) у `gate_events` |
 | Передається | нічого, нікому |
 | Вмикається | лише користувачем. Екран розкриття — другий крок онбордингу (одразу після вступного екрана «Start», до будь-яких дозволів); тим, хто оновився з попередньої версії, він показується один раз з Home; далі — з Налаштувань → Digital detox → «Apps with a delay» → «Turn on». «I agree» → системні налаштування доступності, де службу названо «Tepera: pauses and ideas» (Installed apps) |
@@ -28,8 +28,8 @@
 
 **How the API is used**
 > The service listens only to TYPE_WINDOW_STATE_CHANGED and reads only the package name of the window. It has
-> canRetrieveWindowContent=false, so it cannot read text, views, passwords or messages, and it does not perform gestures or
-> change any settings. If the package is on the user's own list, Tepera opens its own pause screen with "Not now" and
+> canRetrieveWindowContent=false, so it cannot read text, views, passwords or messages, and it does not tap, scroll, type or
+> change any settings. Its only action in other apps is returning the user to the home screen (see below). If the package is on the user's own list, Tepera opens its own pause screen with "Not now" and
 > "Open <app>" buttons (the open button becomes active after a short countdown). The user can always continue to the app.
 >
 > In the "Scrolling hours" mode, when the user opens a feed app they selected during an hour they marked as risky, Tepera
@@ -38,6 +38,12 @@
 > buttons ("5 more" / "Leave") using TYPE_ACCESSIBILITY_OVERLAY. These elements belong to Tepera only; the service still reads
 > nothing but the package name, does not read other apps' content, and does not click, scroll or type in other apps. The user can
 > close every element, continue to the app, and turn the feature off in Tepera or the service off in Android Settings.
+>
+> "Berserk mode" is an optional feature that is off by default; the user turns it on and sets two values themselves: how many
+> minutes in the chosen feed apps before a block, and how long the block lasts. When that time in the chosen feeds is reached,
+> Tepera shows its own full-screen block screen over the feed for the chosen time and takes the user to the home screen
+> (GLOBAL_ACTION_HOME or a HOME intent). While the block lasts, opening that feed shows the block screen again; when it ends the app opens normally. The block screen offers "OK" and "Important thing", which turns Berserk mode off until the next day.
+> Berserk mode can be turned off at any time in Tepera's settings or by turning the service off in Android Settings.
 
 **Why other APIs are not enough**
 > UsageStatsManager reports usage only after the fact (with a delay) and cannot trigger a pause at the moment of opening.
@@ -61,10 +67,10 @@
 
 ## 3. Текст розкриття в застосунку (як у демо)
 
-Фактичний текст (`a11y_disclosure_*`, build 37): заголовок + розділи Why / What Tepera sees / What Tepera doesn't see or do / Where the data goes + один підсумковий рядок; увесь текст влазить на один екран без прокрутки (перевірено на Samsung S23).
+Фактичний текст (`a11y_disclosure_*`, оновлено 23.11.2026): заголовок + розділи Why / What Tepera sees / What Tepera doesn't see or do / Where the data goes + один підсумковий рядок.
 
-- EN: «Pauses and ideas use Android accessibility. **Why:** This Android service (Accessibility Service API) tells Tepera when you open an app. That's how it shows a short pause before the apps you chose, or an idea instead of the feed in your scrolling hours, and dims the screen after 5 minutes. **What Tepera sees:** Only the name of the app that's currently open. **What Tepera doesn't see or do:** It doesn't read messages, text, passwords or anything on your screen, and doesn't tap for you. You can always close or uninstall any app. **Where the data goes:** Nowhere. App names are processed only on your phone and never sent. You can turn it off anytime in Android settings. The rest of Tepera works without it.» — кнопки «I agree» / «Not now».
-- UA: те саме в `values/strings.xml` (`a11y_disclosure_*`, кнопки «Погоджуюсь» / «Не зараз»).
+- EN: «Pauses, ideas and Berserk mode need Accessibility. **Why:** Tepera learns which app is open, to show a pause or an idea, dim the screen after 5 minutes and, if you turn on Berserk mode, show a block screen when you stay in a feed too long. **What Tepera sees:** Only the name of the app that's currently open. **What Tepera doesn't see or do:** It does not read messages, text or passwords and taps nothing for you. The only thing it does in other apps is take you to the home screen: when you tap "Leave", or when Berserk mode (off by default) ends a stay in a feed. **Where the data goes:** Nowhere. It all stays on your phone. You can turn it off anytime in Android settings. Without it the rest of Tepera works.» — кнопки «I agree» / «Not now».
+- UA: те саме в `values-uk/strings.xml` (`a11y_disclosure_*`, кнопки «Погоджуюсь» / «Не зараз»).
 
 Показується як другий крок онбордингу (`AccessibilityOnboardingStep`, після Welcome у режимі v3), один раз; далі — лише з Налаштувань → Digital detox → Apps with a delay → Turn on і з перемикача режиму v3. Тим, хто оновився, — один раз з Home. Тексти тут і в застосунку мають збігатися; якщо міняєш один — міняй обидва.
 
@@ -158,6 +164,12 @@
 | 11b | Тап «Відкрити на 5 хв» → стрічка відкривається | «The user can always continue to the app» |
 | 11c | Через 5 хв з'являється затемнення з «Ще 5» / «Вийти» | «After the timer: dimming with "5 more" / "Leave"» |
 | 11d | Тап «Вийти» → робочий стіл | «The user can leave in one tap» |
+
+| 11e | **Берсерк-режим** (Налаштування → Цифровий детокс → Застосунки-стрічки): увімкнути, поставити «1 хв» і «2 хв»; сидіти в стрічці | «Berserk mode is optional and off by default; the user sets the time» |
+| 11f | Екран блоку поверх стрічки → «Добре» → робочий стіл; повторне відкриття стрічки — екран блоку знову | «After the set time Tepera shows a block screen and takes the user home» |
+| 11g | «Важлива справа» → режим вимкнено до завтра | «The user can switch it off for the day» |
+
+**Берсерк обов'язково має бути у відео** (додано 23.11.2026): без нього декларація й відео описують менше, ніж робить збірка. Також додати кадри відео до `play-store/accessibility-demo.en.srt`.
 
 `play-store/accessibility-demo.en.srt` цих кадрів ще не має — дописати після запису. Також звірити розділ 3 з реальним
 `a11y_disclosure_*`: поточний текст розкриття згадує лише «коротку паузу», а не підказку поверх стрічки й затемнення —
