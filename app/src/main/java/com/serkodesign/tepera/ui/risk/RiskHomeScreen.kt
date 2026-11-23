@@ -132,7 +132,7 @@ fun RiskHomeScreen(
     val dateText = remember(locale, now.toLocalDate()) {
         SimpleDateFormat("EEEE, d MMMM", locale).format(Date()).replaceFirstChar { it.titlecase(locale) }
     }
-    val headerDate = if (observing) stringResource(R.string.v3_home_day_format, state.observedDays.coerceIn(1, 7)) else dateText
+    val headerDate = if (observing && state.observedDays < PROGRESS_HIDE_FROM_DAYS) stringResource(R.string.v3_home_day_format, state.observedDays.coerceIn(1, 7)) else dateText
     val logicalToday = remember(now) { now.minusHours(com.serkodesign.tepera.domain.risk.RiskConfig().dayCutoffHour.toLong()).toLocalDate() }
     val ready = !state.loading && state.hasAccess && state.feedCount > 0
     val insideOcc = occurrences.firstOrNull { it.isInside(now) }
@@ -315,7 +315,8 @@ private fun NoticeCard(titleRes: Int, bodyRes: Int, buttonRes: Int, onClick: () 
 @Composable
 private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, cardModifier: Modifier = Modifier) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
     V3Card(modifier = cardModifier, spacing = 12.dp) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        // Смужка прогресу лише поки історії мало; коли її вже майже вистачає, відлік не показуємо.
+        if (state.observedDays < PROGRESS_HIDE_FROM_DAYS) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             repeat(7) { i ->
                 Box(
                     Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp))
