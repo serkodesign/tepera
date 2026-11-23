@@ -996,7 +996,7 @@
     <string name="tutorial_settings_hint_title">З чого почати</string>
     <string name="tutorial_settings_hint_body">У «Цифровому детоксі» обери стрічки й що відбувається, коли ти їх відкриваєш.</string>
     <string name="settings_replay_tutorial">Показати підказки знову</string>
-    <string name="v3_observing_manual_hint">Не хочеш чекати? Обери години сам — вони запрацюють одразу.</string>
+    <string name="v3_observing_manual_hint">Не хочеш чекати? Обери години сам — вони з'являться тут.</string>
     <string name="v3_observing_manual_action">Обрати години</string>
 
     <!-- Берсерк-режим і тип підрахунку часу (beta) -->

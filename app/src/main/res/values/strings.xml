@@ -977,7 +977,7 @@
     <string name="tutorial_settings_hint_title">Where to start</string>
     <string name="tutorial_settings_hint_body">In “Digital detox” pick feeds and what happens when you open them.</string>
     <string name="settings_replay_tutorial">Show tips again</string>
-    <string name="v3_observing_manual_hint">Do not want to wait? Pick the hours yourself, they start working right away.</string>
+    <string name="v3_observing_manual_hint">Do not want to wait? Pick the hours yourself, they will appear here.</string>
     <string name="v3_observing_manual_action">Choose hours</string>
 
     <!-- Berserk mode and time counting type (beta) -->
