@@ -16,6 +16,8 @@ import com.serkodesign.tepera.data.local.entity.NudgeAction
 import com.serkodesign.tepera.data.repository.ScanOutcome
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
+import com.serkodesign.tepera.domain.risk.HistorySummaries
+import com.serkodesign.tepera.domain.risk.HistorySummary
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.domain.risk.RiskConfig
 import com.serkodesign.tepera.domain.risk.PackageSlotUsage
@@ -84,6 +86,8 @@ data class RiskHomeState(
     val windows: List<RiskWindowUi> = emptyList(),
     val disabledWindows: List<RiskWindowUi> = emptyList(),
     val teaser: RiskTeaser? = null,
+    /** «Точка відліку» з історії для екрана спостереження; `null` — нема з чого рахувати. */
+    val historySummary: HistorySummary? = null,
     /** М'який вихід за 7 діб (beta): сесій «на 5 хв» розпочато / завершено вчасно; `null`, поки сесій не було. */
     val softExit: Pair<Int, Int>? = null,
     /**
@@ -197,6 +201,9 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     daysSinceObservation = daysSinceObservation,
                     loading = false, hasAccess = hasAccess, feedCount = feed.size, observedDays = observed,
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
+                    historySummary = HistorySummaries.compute(
+                        records, logicalDays.filter { d -> d in covered && d.plusDays(1) in covered }, cfg
+                    ),
                     grid = HeatGrid.minutesByHour(records, dates), windows = windows,
                     disabledWindows = allWindows.filter { w -> w.isDisabled },
                     teaser = if (windows.none { !it.isManual } && observed in TEASER_MIN_DAYS until cfg.minObservedDays) {

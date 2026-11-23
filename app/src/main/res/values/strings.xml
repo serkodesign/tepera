@@ -671,7 +671,14 @@
     <string name="v3_home_need_access_body">Without it Tepera cannot see when you are in feeds.</string>
     <string name="v3_home_need_feeds_title">Choose your feed apps</string>
     <string name="v3_home_need_feeds_body">Tepera will only count time in the apps you choose.</string>
-    <string name="v3_observing_hint">Nothing to do: use your phone as usual.</string>
+    <string name="v3_observing_hint">For now I only look at your history and interrupt nothing, so there is something to compare with. Use your phone as usual.</string>
+    <string name="v3_history_title">Your starting point</string>
+    <string name="v3_history_body">About %1$s a day in feeds.</string>
+    <string name="v3_history_peak">Most time is around %1$s.</string>
+    <plurals name="v3_history_days">
+        <item quantity="one">Average over %1$d day of your history</item>
+        <item quantity="other">Average over %1$d days of your history</item>
+    </plurals>
     <string name="v3_heat_legend_feeds">feeds</string>
     <string name="v3_heat_legend_window">scrolling hour</string>
     <string name="v3_heat_description">Heat map: time in feeds over the last 7 days, by hour.</string>
@@ -951,7 +958,7 @@
     <string name="tutorial_done">Done</string>
     <string name="tutorial_got_it">Got it</string>
     <string name="tutorial_observing_title">A week to get to know you</string>
-    <string name="tutorial_observing_body">For a week Tepera learns when you scroll feeds. Just use your phone as usual.</string>
+    <string name="tutorial_observing_body">First Tepera looks at your history and interrupts nothing, so there is something to compare with. Just use your phone as usual.</string>
     <string name="tutorial_idea_title">An idea instead of a feed</string>
     <string name="tutorial_idea_body">Before a scrolling hour, an idea for what to do instead of the feed appears here.</string>
     <string name="tutorial_hours_title">Scrolling hours</string>

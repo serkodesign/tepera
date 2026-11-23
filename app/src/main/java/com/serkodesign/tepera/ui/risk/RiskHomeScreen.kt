@@ -56,7 +56,9 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import androidx.compose.ui.res.pluralStringResource
 import com.serkodesign.tepera.ui.home.BalanceViewModel
+import com.serkodesign.tepera.ui.home.formatBalanceDuration
 import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.bottomNavClearance
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
@@ -211,7 +213,6 @@ fun RiskHomeScreen(
                     }
                 }
             }
-            if (ready && observing) Box(Modifier.padding(horizontal = 16.dp)) { ObservingHeat(state) }
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // 3. Online сьогодні.
                 if (!state.loading) OnlineTodayCard(balanceState)
@@ -326,6 +327,26 @@ private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, card
         }
         Text(stringResource(R.string.v3_observing_hint), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
     }
+    // Цінність одразу: що вже відомо з системної історії, не чекаючи кінця спостереження. Лише власні дані, без оцінок.
+    state.historySummary?.let { h ->
+        V3Card(spacing = 8.dp) {
+            Text(stringResource(R.string.v3_history_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                stringResource(R.string.v3_history_body, formatBalanceDuration(h.avgMinutesPerDay)),
+                color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
+            )
+            h.peakHour?.let { hour ->
+                Text(
+                    stringResource(R.string.v3_history_peak, formatWindowTime(hour * 60, (hour + 1) * 60)),
+                    color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
+                )
+            }
+            Text(
+                pluralStringResource(R.plurals.v3_history_days, h.days, h.days),
+                color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp
+            )
+        }
+    }
     // Щойно людина сама створила першу годину (навіть вимкнену), «Не хочеш чекати» більше не потрібна.
     if ((state.windows + state.disabledWindows).none { it.isManual }) V3Card(spacing = 12.dp) {
         // Поки збираються дані, годину можна обрати самому — стрічки працюватимуть у неї вже зараз.
@@ -335,6 +356,8 @@ private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, card
             type = TeperaButtonType.Secondary, modifier = Modifier.fillMaxWidth()
         )
     }
+    // Теплова карта й підказка — одразу тут, а не десь нижче за години й Online.
+    ObservingHeat(state)
 }
 
 /** Теплова карта тижня спостереження й підказка про першу знайдену годину: нижче за години скролінгу. */

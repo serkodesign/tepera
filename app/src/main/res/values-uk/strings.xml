@@ -688,7 +688,16 @@
     <string name="v3_home_need_access_body">Без нього Tepera не бачить, коли ти у стрічках.</string>
     <string name="v3_home_need_feeds_title">Обери застосунки-стрічки</string>
     <string name="v3_home_need_feeds_body">Tepera рахуватиме час лише в тих, які обереш.</string>
-    <string name="v3_observing_hint">Нічого робити не треба — користуйся телефоном як завжди.</string>
+    <string name="v3_observing_hint">Поки що я лише дивлюсь на твою історію й нічого не переривую — так буде з чим порівняти. Користуйся телефоном як завжди.</string>
+    <string name="v3_history_title">Твоя точка відліку</string>
+    <string name="v3_history_body">У стрічках — близько %1$s на день.</string>
+    <string name="v3_history_peak">Найбільше часу — близько %1$s.</string>
+    <plurals name="v3_history_days">
+        <item quantity="one">Середнє за %1$d день твоєї історії</item>
+        <item quantity="few">Середнє за %1$d дні твоєї історії</item>
+        <item quantity="many">Середнє за %1$d днів твоєї історії</item>
+        <item quantity="other">Середнє за %1$d дня твоєї історії</item>
+    </plurals>
     <string name="v3_heat_legend_feeds">стрічки</string>
     <string name="v3_heat_legend_window">година скролінгу</string>
     <string name="v3_heat_description">Теплова карта: час у стрічках за останні 7 днів по годинах.</string>
@@ -968,7 +977,7 @@
     <string name="tutorial_done">Готово</string>
     <string name="tutorial_got_it">Зрозуміло</string>
     <string name="tutorial_observing_title">Тиждень знайомства</string>
-    <string name="tutorial_observing_body">Тиждень Tepera вивчає, коли ти скролиш стрічки. Роби все як завжди.</string>
+    <string name="tutorial_observing_body">Спершу Tepera дивиться на твою історію й нічого не перериває — щоб було з чим порівняти. Роби все як завжди.</string>
     <string name="tutorial_idea_title">Ідея замість стрічки</string>
     <string name="tutorial_idea_body">Перед годиною скролінгу тут буде ідея, чим зайнятись замість стрічки.</string>
     <string name="tutorial_hours_title">Години скролінгу</string>
