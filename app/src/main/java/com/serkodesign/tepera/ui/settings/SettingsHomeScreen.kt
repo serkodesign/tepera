@@ -255,9 +255,7 @@ fun FeedOpeningSettings() {
                 M3ListDivider()
                 M3ListItem(
                     title = stringResource(R.string.settings_a11y_title),
-                    // Система сама додає ввімкнену службу в «ярлик спеціальних можливостей»; тап по ньому вимикає службу.
-                    // Прибрати ярлик може лише людина в системних налаштуваннях — вони відкриваються цим рядком.
-                    supporting = if (a11yOn) stringResource(R.string.settings_a11y_shortcut_hint) else null,
+                    supporting = stringResource(R.string.settings_a11y_shortcut_hint),
                     icon = TeperaSymbols.Check,
                     value = stringResource(if (a11yOn) R.string.settings_a11y_on else R.string.settings_a11y_off),
                     // Увімкнено — системні налаштування служби (там і вимикається); ні — спершу розкриття.

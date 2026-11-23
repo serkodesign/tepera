@@ -28,8 +28,8 @@ import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import com.serkodesign.tepera.util.BerserkStore
 
 /**
- * Екран «Застосунки-стрічки», нижня частина налаштувань (лише збірка зі службою доступності): тип підрахунку часу
- * (окремо для кожної стрічки чи разом) і берсерк-режим. Тип підрахунку стосується і берсерка, і «Відкрити на 5 хв».
+ * Екран «Застосунки-стрічки», нижня частина налаштувань (лише збірка зі службою доступності): берсерк-режим. Тип підрахунку часу
+ * (окремо для кожної стрічки чи разом) живе в його підменю й стосується і берсерка, і «Відкрити на 5 хв».
  */
 @Composable
 fun BerserkSettings() {
@@ -42,24 +42,6 @@ fun BerserkSettings() {
     var confirmSkip by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        M3GroupLabel(stringResource(R.string.count_mode_group))
-        M3ListGroup {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                PillSegmentedControl(
-                    options = listOf(
-                        BerserkStore.CountMode.PER_APP to stringResource(R.string.count_mode_per_app),
-                        BerserkStore.CountMode.ALL to stringResource(R.string.count_mode_all)
-                    ),
-                    selected = mode,
-                    onSelect = { mode = it; BerserkStore.setCountMode(context, it) }
-                )
-                Text(
-                    stringResource(R.string.count_mode_hint),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
         M3GroupLabel(stringResource(R.string.berserk_settings_group))
         M3ListGroup {
             M3ListItem(
@@ -75,6 +57,8 @@ fun BerserkSettings() {
                 }
             )
             if (enabled) {
+                M3ListDivider()
+                CountModePicker(mode = mode, onSelect = { mode = it; BerserkStore.setCountMode(context, it) })
                 M3ListDivider()
                 IntervalPicker(
                     label = stringResource(R.string.berserk_hour_label),
@@ -110,6 +94,21 @@ fun BerserkSettings() {
                 BerserkStore.skipToday(context)
                 skipped = true
             }
+        )
+    }
+}
+
+@Composable
+private fun CountModePicker(mode: BerserkStore.CountMode, onSelect: (BerserkStore.CountMode) -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.count_mode_group), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+        PillSegmentedControl(
+            options = listOf(
+                BerserkStore.CountMode.PER_APP to stringResource(R.string.count_mode_per_app),
+                BerserkStore.CountMode.ALL to stringResource(R.string.count_mode_all)
+            ),
+            selected = mode,
+            onSelect = onSelect
         )
     }
 }

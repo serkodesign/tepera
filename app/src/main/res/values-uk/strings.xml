@@ -605,7 +605,8 @@
     <string name="a11y_disclosure_not">Не читає повідомлення, текст і паролі, нічого не натискає за тебе.</string>
     <string name="a11y_disclosure_data_label">Куди йдуть дані</string>
     <string name="a11y_disclosure_data">Нікуди. Усе лишається на телефоні.</string>
-    <string name="a11y_disclosure_footer">Вимкнути службу можна будь-коли в налаштуваннях Android. Решта Tepera працює без неї.</string>    <string name="a11y_disclosure_continue">Погоджуюсь</string>
+    <string name="a11y_disclosure_footer">Вимкнути службу можна будь-коли в налаштуваннях Android. Решта Tepera працює без неї.</string>
+    <string name="a11y_disclosure_continue">Погоджуюсь</string>
     <string name="a11y_disclosure_cancel">Не зараз</string>
     <string name="a11y_perm_label">Затримка перед застосунками</string>
     <string name="free_opens_title">Відкриття без затримки</string>
@@ -616,8 +617,6 @@
     <string name="free_opens_decrease">Менше</string>
     <string name="free_opens_increase">Більше</string>
 
-    <string name="gates_mode_shortcut">Ярлик</string>
-    <string name="gates_mode_accessibility">Доступність</string>
 
     <!-- Інформаційні віджети (Figma "Widgets v2"): назви в меню віджетів, описи й підписи всередині -->
     <string name="widget_info_online_ring_label">Online: кільце доби</string>
@@ -910,9 +909,9 @@
     <string name="settings_overlay_title">Показувати ідею при відкритті стрічки</string>
     <string name="settings_overlay_supporting">Лише в години детоксу</string>
     <string name="settings_a11y_title">Спеціальні можливості</string>
-    <string name="settings_a11y_on">увімкнено</string>
-    <string name="settings_a11y_off">вимкнено</string>
-    <string name="settings_a11y_shortcut_hint">Щоб не вимкнути Tepera випадково, прибери її «Ярлик» у цих налаштуваннях</string>
+    <string name="settings_a11y_on">On</string>
+    <string name="settings_a11y_off">Off</string>
+    <string name="settings_a11y_shortcut_hint">Для ідей при відкритті стрічки</string>
     <string name="settings_dim_title">Приглушення</string>
     <string name="settings_dim_hint">Як сильно темніє екран, коли 5 хв минуло.</string>
     <string name="settings_dim_info">Після «Відкрити на 5 хв» екран темніє — нагадування про час. Нічого не блокується.</string>
@@ -1010,7 +1009,7 @@
     </string-array>
     <string name="berserk_settings_group">Берсерк-режим</string>
     <string name="berserk_toggle_title">Берсерк-режим</string>
-    <string name="berserk_toggle_supporting">Якщо зависнути надовго в стрічках — закривається на деякий час</string>
+    <string name="berserk_toggle_supporting">Якщо довго сидітимеш у стрічці — прийде ведмідь і закриє застосунок</string>
     <string name="berserk_hour_label">Скільки в стрічках до блоку, хв</string>
     <string name="berserk_block_label">Скільки триває блок, хв</string>
     <string name="berserk_skip_title">Вимкнути до завтра</string>
@@ -1027,7 +1026,6 @@
     <string name="count_mode_group">Як рахувати час</string>
     <string name="count_mode_per_app">Кожен застосунок</string>
     <string name="count_mode_all">Усі стрічки разом</string>
-    <string name="count_mode_hint">Для берсерк-режиму й «Відкрити на 5 хв»: перехід між стрічками зберігає той самий відлік.</string>
 
     <!-- Віджети «години скролінгу» й дії (23.11.2026) -->
     <string name="widget_next_hour_label">Наступна година детоксу</string>

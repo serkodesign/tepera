@@ -588,7 +588,8 @@
     <string name="a11y_disclosure_not">It does not read messages, text or passwords, and taps nothing for you.</string>
     <string name="a11y_disclosure_data_label">Where the data goes</string>
     <string name="a11y_disclosure_data">Nowhere. It all stays on your phone.</string>
-    <string name="a11y_disclosure_footer">You can turn it off anytime in Android settings. The rest of Tepera works without it.</string>    <string name="a11y_disclosure_continue">I agree</string>
+    <string name="a11y_disclosure_footer">You can turn it off anytime in Android settings. The rest of Tepera works without it.</string>
+    <string name="a11y_disclosure_continue">I agree</string>
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>
     <string name="free_opens_title">Opens without delay</string>
@@ -599,8 +600,6 @@
     <string name="free_opens_decrease">Fewer</string>
     <string name="free_opens_increase">More</string>
 
-    <string name="gates_mode_shortcut">Shortcut</string>
-    <string name="gates_mode_accessibility">Accessibility</string>
 
     <!-- Info widgets (Figma "Widgets v2"): names in the widget picker, descriptions and in-widget labels -->
     <string name="widget_info_online_ring_label">Online: day ring</string>
@@ -893,9 +892,9 @@
     <string name="settings_overlay_title">Show an idea when a feed opens</string>
     <string name="settings_overlay_supporting">Only during detox hours</string>
     <string name="settings_a11y_title">Accessibility</string>
-    <string name="settings_a11y_on">on</string>
-    <string name="settings_a11y_off">off</string>
-    <string name="settings_a11y_shortcut_hint">To avoid switching Tepera off by accident, turn off its “Shortcut” in these settings</string>
+    <string name="settings_a11y_on">On</string>
+    <string name="settings_a11y_off">Off</string>
+    <string name="settings_a11y_shortcut_hint">For ideas when you open a feed</string>
     <string name="settings_dim_title">Dimming</string>
     <string name="settings_dim_hint">How much the screen dims when 5 minutes are up.</string>
     <string name="settings_dim_info">After “Open for 5 min” the screen dims as a reminder. Nothing is blocked.</string>
@@ -993,7 +992,7 @@
     </string-array>
     <string name="berserk_settings_group">Berserk mode</string>
     <string name="berserk_toggle_title">Berserk mode</string>
-    <string name="berserk_toggle_supporting">If you get stuck in feeds for long — they close for a while</string>
+    <string name="berserk_toggle_supporting">If you stay in a feed for too long, a bear will come and close the app</string>
     <string name="berserk_hour_label">Stretch in feeds before the block, min</string>
     <string name="berserk_block_label">Block length, min</string>
     <string name="berserk_skip_title">Switch off until tomorrow</string>
@@ -1010,7 +1009,6 @@
     <string name="count_mode_group">How to count time</string>
     <string name="count_mode_per_app">Each app</string>
     <string name="count_mode_all">All feeds together</string>
-    <string name="count_mode_hint">For berserk mode and “Open for 5 min”: moving between feeds keeps the same count.</string>
 
     <!-- Віджети «години скролінгу» й дії (23.11.2026) -->
     <string name="widget_next_hour_label">Next detox hour</string>
