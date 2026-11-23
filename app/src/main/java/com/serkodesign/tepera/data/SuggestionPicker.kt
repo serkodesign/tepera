@@ -23,10 +23,30 @@ object SuggestionPicker {
     ): ActivitySuggestions.Suggestion? {
         val app = context.applicationContext as TeperaApp
         val window = app.riskWindowRepository.getWindow(windowId) ?: return null
+        return pick(context, HeatGrid.partOfDay(window.startMinute), exclude, nowMillis)
+    }
+
+    /** Підказка за поточною порою доби — для екрана спостереження, де годин ще нема. */
+    suspend fun pickForNow(
+        context: Context,
+        exclude: Set<ActivitySuggestions.Id> = emptySet(),
+        nowMillis: Long = System.currentTimeMillis()
+    ): ActivitySuggestions.Suggestion? {
+        val now = java.time.Instant.ofEpochMilli(nowMillis).atZone(java.time.ZoneId.systemDefault())
+        return pick(context, HeatGrid.partOfDay(now.hour * 60 + now.minute), exclude, nowMillis)
+    }
+
+    private suspend fun pick(
+        context: Context,
+        part: com.serkodesign.tepera.domain.risk.PartOfDay,
+        exclude: Set<ActivitySuggestions.Id>,
+        nowMillis: Long
+    ): ActivitySuggestions.Suggestion? {
+        val app = context.applicationContext as TeperaApp
         val available = app.categoryRepository.observeActiveCategories().first().map { it.id }.toSet()
         val weekend = LocalDate.ofEpochDay(LogicalDay.epochDay(nowMillis)).dayOfWeek.value > 5
         return ActivitySuggestions.pick(
-            part = HeatGrid.partOfDay(window.startMinute),
+            part = part,
             weekend = weekend,
             availableCategories = available,
             declined = PlanOverlayStore.declined(context),

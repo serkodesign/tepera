@@ -57,6 +57,15 @@ import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.runtime.rememberCoroutineScope
+import com.serkodesign.tepera.data.SuggestionPicker
+import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.data.startPlannedCategoryTimer
+import com.serkodesign.tepera.data.suggestionTextRes
+import com.serkodesign.tepera.domain.risk.ActivitySuggestions
+import com.serkodesign.tepera.ui.category.categoryDisplayName
+import com.serkodesign.tepera.util.PlanOverlayStore
+import kotlinx.coroutines.launch
 import com.serkodesign.tepera.ui.home.BalanceViewModel
 import com.serkodesign.tepera.ui.home.formatBalanceDuration
 import com.serkodesign.tepera.ui.theme.TeperaCard
@@ -175,7 +184,9 @@ fun RiskHomeScreen(
                         state.feedCount == 0 -> NoticeCard(
                             R.string.v3_home_need_feeds_title, R.string.v3_home_need_feeds_body, R.string.v3_feed_picker_action, onOpenFeedPicker
                         )
-                        observing -> ObservingContent(state, onAddWindow, Modifier.tutorialTarget(targets, "observing"))
+                        observing -> ObservingContent(
+                            state, categories, onAddWindow, vm::addManualWindow, Modifier.tutorialTarget(targets, "observing")
+                        )
                         else -> {
                             // 1. Картка ідеї: наступна година (або та, що триває; коли сьогодні все — перша завтра).
                             if (heroWindow != null && heroOcc != null) {
@@ -314,7 +325,16 @@ private fun NoticeCard(titleRes: Int, bodyRes: Int, buttonRes: Int, onClick: () 
 
 /** L3: прогрес 7 днів, пояснення «нічого робити не треба», теплова карта й, якщо вже щось видно, підказка. */
 @Composable
-private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, cardModifier: Modifier = Modifier) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun ObservingContent(
+    state: RiskHomeState,
+    categories: List<CategoryEntity>,
+    onAddWindow: () -> Unit,
+    onMakeWindow: (Int, Int) -> Unit,
+    cardModifier: Modifier = Modifier
+) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val hasManual: (Int, Int) -> Boolean = { s, e ->
+        (state.windows + state.disabledWindows).any { it.isManual && it.startMinute == s && it.endMinute == e }
+    }
     V3Card(modifier = cardModifier, spacing = 12.dp) {
         // Смужка прогресу лише поки історії мало; коли її вже майже вистачає, відлік не показуємо.
         if (state.observedDays < PROGRESS_HIDE_FROM_DAYS) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -332,12 +352,27 @@ private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, card
         V3Card(spacing = 8.dp) {
             Text(stringResource(R.string.v3_history_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             Text(
-                stringResource(R.string.v3_history_body, formatBalanceDuration(h.avgMinutesPerDay)),
+                stringResource(R.string.v3_history_body, feedDuration(h.avgMinutesPerDay)),
                 color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
             )
             h.peakHour?.let { hour ->
+                val start = hour * 60
+                val end = (hour + 1) * 60 % 1440
                 Text(
-                    stringResource(R.string.v3_history_peak, formatWindowTime(hour * 60, (hour + 1) * 60)),
+                    stringResource(R.string.v3_history_peak, formatWindowTime(start, end)),
+                    color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
+                )
+                // Свою годину можна додати одним тапом з даних; якщо вже є підказка про знайдене вікно — кнопка там.
+                if (state.teaser == null && !hasManual(start, end)) {
+                    TeperaButton(
+                        text = stringResource(R.string.v3_history_make_window), onClick = { onMakeWindow(start, end) },
+                        type = TeperaButtonType.Secondary, modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            state.feedMinutesToday?.let { m ->
+                Text(
+                    stringResource(R.string.v3_history_today, feedDuration(m)),
                     color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
                 )
             }
@@ -347,6 +382,8 @@ private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, card
             )
         }
     }
+    // Дія без жодних даних: ідея «що зробити замість стрічки» за порою доби (без листа поверх стрічки й нагадувань).
+    ObservingIdeaCard(categories)
     // Щойно людина сама створила першу годину (навіть вимкнену), «Не хочеш чекати» більше не потрібна.
     if ((state.windows + state.disabledWindows).none { it.isManual }) V3Card(spacing = 12.dp) {
         // Поки збираються дані, годину можна обрати самому — стрічки працюватимуть у неї вже зараз.
@@ -357,25 +394,88 @@ private fun ObservingContent(state: RiskHomeState, onAddWindow: () -> Unit, card
         )
     }
     // Теплова карта й підказка — одразу тут, а не десь нижче за години й Online.
-    ObservingHeat(state)
+    ObservingHeat(state, onMakeWindow, hasManual)
+}
+
+/** До години — точні хвилини (округлення до чверті з'їло б «3 хв»), далі — як на решті екрана. */
+@Composable
+private fun feedDuration(minutes: Int): String =
+    if (minutes < 60) stringResource(R.string.minutes_short_format, minutes) else formatBalanceDuration(minutes)
+
+/** Скільки хвилин триває обіцянка після «Почати» — як на листі плану й картці-герої. */
+private const val OBSERVING_IDEA_MINUTES = 30
+
+/**
+ * Одна ідея «замість скролу» на екрані спостереження: пора доби — за поточним часом. «Почати» (лише коли в ідеї є
+ * категорія) запускає звичайний тап-таймер; обіцянку й лічильники листа не чіпаємо — це не втручання, а тиха пропозиція.
+ */
+@Composable
+private fun ObservingIdeaCard(categories: List<CategoryEntity>) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var suggestion by remember { mutableStateOf<ActivitySuggestions.Suggestion?>(null) }
+    var shown by remember { mutableStateOf(emptySet<ActivitySuggestions.Id>()) }
+    LaunchedEffect(Unit) {
+        suggestion = SuggestionPicker.pickForNow(context)
+        shown = setOfNotNull(suggestion?.id)
+    }
+    val picked = suggestion ?: return
+    V3Card(spacing = 8.dp) {
+        Text(stringResource(R.string.v3_observing_idea_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(stringResource(suggestionTextRes(picked.id)), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, lineHeight = 22.sp)
+        val category = categories.firstOrNull { it.id == picked.categoryId }
+        // Назви категорій довгі («Хобі/Творчість»): кнопки одна під одною на всю ширину, а не в ряд з обрізанням.
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            if (category != null) {
+                TeperaButton(
+                    text = stringResource(R.string.v3_hero_start_format, categoryDisplayName(category)),
+                    onClick = { scope.launch { startPlannedCategoryTimer(context, category.id, OBSERVING_IDEA_MINUTES) } },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            TeperaButton(
+                text = stringResource(R.string.v3_sg_another),
+                onClick = {
+                    PlanOverlayStore.recordDeclined(context, picked.id)
+                    scope.launch {
+                        SuggestionPicker.pickForNow(context, exclude = shown)?.let { next ->
+                            shown = shown + next.id
+                            suggestion = next
+                        }
+                    }
+                },
+                type = TeperaButtonType.Secondary, modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 }
 
 /** Теплова карта тижня спостереження й підказка про першу знайдену годину: нижче за години скролінгу. */
 @Composable
-private fun ObservingHeat(state: RiskHomeState) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun ObservingHeat(
+    state: RiskHomeState,
+    onMakeWindow: (Int, Int) -> Unit,
+    hasManual: (Int, Int) -> Boolean
+) = Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
     HeatWeek(state.dates, state.grid, emptyList(), stringResource(R.string.v3_heat_description))
     state.teaser?.let { t ->
-        Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(TeperaPalette.guessFill)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(TeperaPalette.guessFill).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(TeperaSymbols.AutoAwesome, contentDescription = null, tint = TeperaPalette.textSecondary, modifier = Modifier.size(20.dp))
-            Text(
-                stringResource(R.string.v3_teaser_format, formatWindowTime(t.startMinute, t.endMinute), t.daysLeft),
-                color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                Icon(TeperaSymbols.AutoAwesome, contentDescription = null, tint = TeperaPalette.textSecondary, modifier = Modifier.size(20.dp))
+                Text(
+                    stringResource(R.string.v3_teaser_format, formatWindowTime(t.startMinute, t.endMinute), t.daysLeft),
+                    color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
+                )
+            }
+            if (!hasManual(t.startMinute, t.endMinute)) {
+                TeperaButton(
+                    text = stringResource(R.string.v3_history_make_window), onClick = { onMakeWindow(t.startMinute, t.endMinute) },
+                    type = TeperaButtonType.Secondary, modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

@@ -88,6 +88,8 @@ data class RiskHomeState(
     val teaser: RiskTeaser? = null,
     /** «Точка відліку» з історії для екрана спостереження; `null` — нема з чого рахувати. */
     val historySummary: HistorySummary? = null,
+    /** Хвилини в стрічках за поточну логічну добу (екран спостереження); `null` — нічого не було. */
+    val feedMinutesToday: Int? = null,
     /** М'який вихід за 7 діб (beta): сесій «на 5 хв» розпочато / завершено вчасно; `null`, поки сесій не було. */
     val softExit: Pair<Int, Int>? = null,
     /**
@@ -201,6 +203,8 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     daysSinceObservation = daysSinceObservation,
                     loading = false, hasAccess = hasAccess, feedCount = feed.size, observedDays = observed,
                     enoughData = observed >= cfg.minObservedDays, dates = dates,
+                    feedMinutesToday = (records.filter { r -> RiskWindowFinder.logicalDate(r.date, r.slot, cfg) == logicalToday }
+                        .sumOf { r -> r.seconds } / 60).takeIf { m -> m > 0 },
                     historySummary = HistorySummaries.compute(
                         records, logicalDays.filter { d -> d in covered && d.plusDays(1) in covered }, cfg
                     ),
@@ -211,6 +215,15 @@ class RiskHomeViewModel(private val app: TeperaApp) : ViewModel() {
                     } else null
                 )
             }
+        }
+    }
+
+    /** «Додати як мою годину» з історії: ручне вікно на кожен день; нагадування, як і для будь-якого вікна, перераховуються. */
+    fun addManualWindow(startMinute: Int, endMinute: Int) {
+        viewModelScope.launch {
+            app.riskWindowRepository.createManual(startMinute, endMinute, DayType.ALL)
+            NudgeScheduler.reschedule(app)
+            refresh()
         }
     }
 

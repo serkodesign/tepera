@@ -675,6 +675,9 @@
     <string name="v3_history_title">Your starting point</string>
     <string name="v3_history_body">About %1$s a day in feeds.</string>
     <string name="v3_history_peak">Most time is around %1$s.</string>
+    <string name="v3_history_today">So far today: about %1$s.</string>
+    <string name="v3_history_make_window">Add as my hour</string>
+    <string name="v3_observing_idea_title">Instead of scrolling</string>
     <plurals name="v3_history_days">
         <item quantity="one">Average over %1$d day of your history</item>
         <item quantity="other">Average over %1$d days of your history</item>

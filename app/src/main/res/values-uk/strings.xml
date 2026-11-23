@@ -692,6 +692,9 @@
     <string name="v3_history_title">Твоя точка відліку</string>
     <string name="v3_history_body">У стрічках — близько %1$s на день.</string>
     <string name="v3_history_peak">Найбільше часу — близько %1$s.</string>
+    <string name="v3_history_today">Сьогодні поки що — близько %1$s.</string>
+    <string name="v3_history_make_window">Додати як мою годину</string>
+    <string name="v3_observing_idea_title">Замість скролу</string>
     <plurals name="v3_history_days">
         <item quantity="one">Середнє за %1$d день твоєї історії</item>
         <item quantity="few">Середнє за %1$d дні твоєї історії</item>
