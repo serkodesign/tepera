@@ -666,7 +666,7 @@
     <string name="v3_feeds_continue">Continue</string>
     <string name="v3_home_label_observing">Observing</string>
     <string name="v3_home_label_today">Today</string>
-    <string name="v3_home_day_format">Day %1$d of 7</string>
+    <string name="v3_home_day_format">Day %1$d of %2$d</string>
     <string name="v3_home_need_access_title">Usage access is needed</string>
     <string name="v3_home_need_access_body">Without it Tepera cannot see when you are in feeds.</string>
     <string name="v3_home_need_feeds_title">Choose your feed apps</string>
@@ -960,7 +960,7 @@
     <string name="tutorial_skip">Skip</string>
     <string name="tutorial_done">Done</string>
     <string name="tutorial_got_it">Got it</string>
-    <string name="tutorial_observing_title">A week to get to know you</string>
+    <string name="tutorial_observing_title">Getting to know you</string>
     <string name="tutorial_observing_body">First Tepera looks at your history and interrupts nothing, so there is something to compare with. Just use your phone as usual.</string>
     <string name="tutorial_idea_title">An idea instead of a feed</string>
     <string name="tutorial_idea_body">Before a scrolling hour, an idea for what to do instead of the feed appears here.</string>
@@ -977,7 +977,7 @@
     <string name="tutorial_settings_hint_title">Where to start</string>
     <string name="tutorial_settings_hint_body">In “Digital detox” pick feeds and what happens when you open them.</string>
     <string name="settings_replay_tutorial">Show tips again</string>
-    <string name="v3_observing_manual_hint">Do not want to wait? Pick the hours yourself, they will appear here.</string>
+    <string name="v3_observing_manual_hint">Do not want to wait? Pick the hours yourself, they start working right away.</string>
     <string name="v3_observing_manual_action">Choose hours</string>
 
     <!-- Berserk mode and time counting type (beta) -->

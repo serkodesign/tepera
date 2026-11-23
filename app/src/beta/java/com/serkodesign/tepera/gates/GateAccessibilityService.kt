@@ -231,9 +231,9 @@ class GateAccessibilityService : AccessibilityService() {
         // Вимкнути план можна лише зсередини Tepera (перемикач у налаштуваннях, пауза чи вимкнення вікна) — з самого листа чи сповіщення ні.
         if (!PlanOverlayStore.isEnabled(this)) return log("$pkg: план поверх стрічки вимкнено в налаштуваннях")
         val app = application as TeperaApp
-        // Тиждень спостереження — база для порівняння: поки період не заданий (перший перерахунок ще не відбувся), Tepera лише дивиться,
-        // навіть якщо людина сама додала вікно.
-        if (app.database.observationPeriodDao().getLatest() == null) return log("$pkg: тиждень спостереження ще триває — мовчу")
+        // Спостереження — база для порівняння: поки період не заданий (перший перерахунок ще не відбувся), Tepera лише дивиться
+        // й знайдені нею вікна не показує. Виняток (фаза C): вікно, яке людина додала сама, — її свідомий вибір, воно працює одразу.
+        val observing = app.database.observationPeriodDao().getLatest() == null
         if (pkg !in app.feedAppRepository.packages()) return log("$pkg: не в списку стрічок")
         // «Усі стрічки разом»: поки йде спільна сесія «5 хв», перехід в іншу стрічку нового листа не дає.
         if (BerserkStore.countMode(this) == BerserkStore.CountMode.ALL && softExit.hasSession() && pkg in feedPackages) {
@@ -247,7 +247,7 @@ class GateAccessibilityService : AccessibilityService() {
                 NextWindow.Spec(w.id, w.startMinute, w.endMinute, w.dayType),
                 // «Не сьогодні» з Головної: вікно мовчить до кінця свого найближчого проходу.
                 enabled = !w.isUserDisabled && !w.isPausedAt(System.currentTimeMillis()) &&
-                    !com.serkodesign.tepera.util.WindowSkipStore.isSkipped(this, w.id)
+                    !com.serkodesign.tepera.util.WindowSkipStore.isSkipped(this, w.id) && (!observing || w.isManual)
             )
         }
         val nowMillis = System.currentTimeMillis()

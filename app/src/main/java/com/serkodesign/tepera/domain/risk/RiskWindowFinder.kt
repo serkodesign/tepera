@@ -27,8 +27,11 @@ data class RiskConfig(
     val roundToMinutes: Int = 10,
     val maxWindows: Int = 3,
     val observationDays: Int = 7,
-    /** Скільки з [observationDays] днів мають бути покриті даними, щоб будувати вікна взагалі. */
-    val minObservedDays: Int = 7,
+    /**
+     * Скільки з [observationDays] днів мають бути покриті даними, щоб будувати вікна взагалі. 5, а не 7 (фаза C плану
+     * `first-day-value`, 23.11.2026): системна історія вже є, і чекати «повного тижня» людині нема сенсу.
+     */
+    val minObservedDays: Int = 5,
     /** Початок вікна, зміщений щонайменше настільки хвилин два тижні поспіль, — привід запропонувати оновлення. */
     val shiftMinutes: Int = 20
 )
@@ -60,7 +63,9 @@ class RiskResult(
     val days: List<LocalDate>,
     val observedDays: Int,
     val enoughData: Boolean,
-    val candidates: List<RiskCandidate>
+    val candidates: List<RiskCandidate>,
+    /** Покриті логічні доби (підмножина [days]): базова лінія рахується лише по них, непокриті її не розбавляють. */
+    val coveredDays: List<LocalDate> = emptyList()
 )
 
 object RiskWindowFinder {
@@ -98,7 +103,7 @@ object RiskWindowFinder {
         val days = (cfg.observationDays - 1 downTo 0).map { lastLogicalDay.minusDays(it.toLong()) }
         // Логічна доба D = календарний D з межі доби + ранок D+1 до межі: покрита, лише якщо покриті обидві дати.
         val covered = days.filter { it in coveredDays && it.plusDays(1) in coveredDays }
-        if (covered.size < cfg.minObservedDays) return RiskResult(days, covered.size, false, emptyList())
+        if (covered.size < cfg.minObservedDays) return RiskResult(days, covered.size, false, emptyList(), covered)
 
         val grid = covered.associateWith { IntArray(SLOTS_PER_DAY) }
         for (r in records) grid[logicalDate(r.date, r.slot, cfg)]?.let { it[position(r.slot, cfg)] += r.seconds }
@@ -144,7 +149,8 @@ object RiskWindowFinder {
             days, covered.size, true,
             chosen.map {
                 RiskCandidate((offset + it.startPos) % 1440, (offset + it.endPos) % 1440, it.hits.size, it.observed, it.avg.toInt(), it.hits, it.dayType)
-            }
+            },
+            covered
         )
     }
 

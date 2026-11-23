@@ -55,7 +55,9 @@ class RiskScanner(
         val saved = windows.saveDetected(result, cfg, nowMillis)
         // Базова лінія: тиждень, за який вікна знайдено вперше (планів ще нема, тож це «тиждень без втручань»).
         if (periods.getLatest() == null) {
-            periods.upsert(ObservationPeriodEntity(UUID.randomUUID().toString(), result.days.first().toEpochDay(), result.days.last().toEpochDay()))
+            // Від першої ПОКРИТОЇ доби: коли історії менше за 7 діб, непокриті доби не повинні розбавляти базову лінію нулями.
+            val first = result.coveredDays.firstOrNull() ?: result.days.first()
+            periods.upsert(ObservationPeriodEntity(UUID.randomUUID().toString(), first.toEpochDay(), result.days.last().toEpochDay()))
         }
         val history = RiskScanCodec.append(
             RiskScanCodec.decode(store.load()),

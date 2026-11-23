@@ -67,8 +67,11 @@ data class RiskWindowUi(
     val todayMinutes: Double? = null
 )
 
-/** З такої кількості покритих діб смужку «День N з 7» не показуємо: відлік лише дратує, коли історії вже майже вистачає. */
-const val PROGRESS_HIDE_FROM_DAYS = 5
+/** Скільки покритих діб потрібно, щоб спостереження завершилось (смужка «День N з …» рахує до цього числа). */
+val OBSERVATION_DAYS: Int get() = RiskConfig().minObservedDays
+
+/** З такої кількості покритих діб смужку не показуємо: відлік лише дратує, коли історії вже майже вистачає (на одну добу до кінця). */
+val PROGRESS_HIDE_FROM_DAYS: Int get() = OBSERVATION_DAYS - 1
 
 /** Підказка на екрані спостереження, коли вже видно щось схоже (≥ 3 дні даних). */
 data class RiskTeaser(val startMinute: Int, val endMinute: Int, val daysLeft: Int)
