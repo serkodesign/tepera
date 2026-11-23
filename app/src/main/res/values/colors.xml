@@ -14,4 +14,8 @@
     <color name="widget_preview_text">#FF003926</color>
     <color name="widget_preview_sub">#FF4D6B60</color>
     <color name="widget_preview_track">#1F003926</color>
+    <color name="widget_preview_mint">#FFDCF6ED</color>
+    <color name="widget_preview_mint_icon">#FF006944</color>
+    <color name="widget_preview_btn">#FF006944</color>
+    <color name="widget_preview_btn_icon">#FFFFFFFF</color>
 </resources>

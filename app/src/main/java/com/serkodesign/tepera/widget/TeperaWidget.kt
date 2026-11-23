@@ -2,22 +2,14 @@ package com.serkodesign.tepera.widget
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.DashPathEffect
-import android.graphics.Paint
-import android.graphics.RectF
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -35,7 +27,6 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
@@ -43,36 +34,27 @@ import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
-import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.DefaultCategories
-import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
-import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.category.categoryColor
 import com.serkodesign.tepera.ui.category.categoryDisplayName
-import com.serkodesign.tepera.util.startOfLogicalDayMillis
 import kotlinx.coroutines.flow.first
 
 
 /**
  * Кнопки віджета — Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), компонент "Activity icons 2"
- * (node 234:442) і віджети 4x1/2x1/1x1/4x2 (nodes 234:788, 235:935, 234:808, 234:848): БЕЗ фону
+ * (node 234:442) і віджети 4x1/2x1/1x1 (nodes 234:788, 235:935, 234:808): БЕЗ фону
  * віджета, кола 64dp прямо на шпалерах. Невибрана — біле коло й сірий (#505050) контурний гліф;
  * вибрана (запущений таймер) — коло відтінку категорії й ТЕМНИЙ заповнений гліф того ж відтінку.
  * Гліфи — vector drawable `ic_widget2_*` 1:1 з SVG-асетів макета (RemoteViews не вміє
@@ -161,60 +143,37 @@ private fun customActiveTint(base: Color): ButtonTint {
 }
 
 /**
- * FR-4.1–4.6: компактна 4x1 (5 кнопок категорій) і розширена 4x2 (кнопки + картка сітки доби) через
- * SizeMode.Responsive. Кнопки категорій — той самий тап-таймер, що на Home (перший тап починає,
- * другий по тій самій категорії зупиняє й зберігає, toggleCategoryTimer()) — БЕЗ live-лічильника
- * (FR-4.2 лишається чинним): активний стан — вибрана кнопка (коло відтінку категорії), оновлюється
- * одразу після тапу або періодично через WidgetUpdateWorker ~30 хв. Зовнішній вигляд — за Figma
- * "App concept" (див. коментар біля [widgetIconRes]); без фону віджета.
+ * FR-4.1–4.6: ряд кнопок категорій у капсулі — 4x1 (до 5 кнопок), 2x1 (2) і 1x1 (1), див. підкласи нижче. Кнопки — той
+ * самий тап-таймер, що на Home (перший тап починає, другий по тій самій категорії зупиняє й зберігає,
+ * toggleCategoryTimer()) — БЕЗ live-лічильника (FR-4.2 лишається чинним): активний стан — вибрана кнопка (коло відтінку
+ * категорії), оновлюється одразу після тапу або періодично через WidgetUpdateWorker ~30 хв. Вигляд — за Figma
+ * "App concept" (див. коментар біля [widgetIconRes]). Віджет 4x2 із сіткою доби прибрано (23.11.2026, за запитом власника).
  */
 open class TeperaWidget : GlanceAppWidget() {
 
-    /** Скільки кнопок категорій показує цей розмір віджета (1x1 — 1, 2x1 — 2, 4x1/4x2 — 5). */
+    /** Скільки кнопок категорій показує цей розмір віджета (1x1 — 1, 2x1 — 2, 4x1 — 5). */
     protected open val maxButtons: Int = MAX_WIDGET_BUTTONS
 
-    // 60 — лише ряд кнопок (4x1); решта — розширений стан: 76 (капсула) + 12 + картка сітки. Макет 4x2 —
-    // повний макет = капсула 76 + 12 + картка 127 = 215dp, але реальна висота 4x2 на S23 ~212dp, а Responsive обирає найбільший розмір, що ВМІЩУЄТЬСЯ, — тому брейкпоінт 205 (клітинки ~21dp); 140/170 — лаунчери з нижчими рядками.
-    override val sizeMode: SizeMode = SizeMode.Responsive(
-        setOf(
-            DpSize(250.dp, 60.dp),
-            DpSize(250.dp, 140.dp),
-            DpSize(250.dp, 170.dp),
-            DpSize(250.dp, 205.dp),
-            // Ширші брейкпоінти: кнопки 4x1/4x2 підбираються під реальну ширину (див. CategoryButtonsRow)
-            DpSize(300.dp, 60.dp),
-            DpSize(300.dp, 140.dp),
-            DpSize(300.dp, 170.dp),
-            DpSize(300.dp, 205.dp),
-            DpSize(340.dp, 60.dp),
-            DpSize(340.dp, 140.dp),
-            DpSize(340.dp, 170.dp),
-            DpSize(340.dp, 205.dp)
-        )
-    )
+    // Exact: LocalSize — справжній розмір віджета, кнопки підбираються під реальну ширину (див. CategoryButtonsRow).
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val app = context.applicationContext as TeperaApp
         // Початкові значення завантажуються ДО першого кадру: без цього кожен collectAsState стартував
         // з порожнього значення й віджет мигав порожнім станом та перемальовувався 6-11 разів поспіль
         // (виміряно на S23) — тепер оновлення шлеться лише при справжній зміні даних.
-        val midnight = startOfLogicalDayMillis()
         val initial = LiveWidgetInitial(
             activeCategories = app.categoryRepository.observeActiveCategories().first(),
             selectedIds = app.settingsStore.widgetCategoryIds.first(),
-            activeTimers = app.activeTimerStore.activeTimers.first(),
-            entries = app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE).first(),
-            grid = WidgetLiveData.gridInputs(app, midnight)
+            activeTimers = app.activeTimerStore.activeTimers.first()
         )
         provideContent { LiveWidgetContent(context, app, initial, maxButtons) }
     }
 
     /**
-     * Прев'ю для меню віджетів (Android 15+, Glance 1.2.0): той самий [WidgetContent] на демо-даних
-     * (шість дефолтних категорій, "типова" сітка доби). Раніше `previewLayout`/`initialLayout`
-     * вказували на `widget_loading` — просто спінер, тому меню віджетів показувало спінер замість
-     * віджета. Реєструється через `GlanceAppWidgetManager.setWidgetPreviews()` (див. TeperaApp).
-     * На старіших версіях Android діє статичний `previewImage` (`widget_preview.xml`).
+     * Прев'ю для меню віджетів (Android 15+, Glance 1.2.0): той самий [WidgetContent] на демо-даних (шість
+     * дефолтних категорій). Реєструється через `GlanceAppWidgetManager.setWidgetPreviews()` (див. TeperaApp).
+     * На старіших версіях Android діє `previewLayout` / статичний `previewImage`.
      */
     override suspend fun providePreview(context: Context, widgetCategory: Int) {
         provideContent {
@@ -223,8 +182,6 @@ open class TeperaWidget : GlanceAppWidget() {
                 categories = sortCategoriesForWidget(DefaultCategories.all),
                 // Як у макеті: перша кнопка вибрана.
                 activeTimers = sortCategoriesForWidget(DefaultCategories.all).firstOrNull()?.let { mapOf(it.id to 0L) } ?: emptyMap(),
-                hasUsageAccess = true,
-                gridSlots = previewGridSlots(),
                 maxButtons = maxButtons
             )
         }
@@ -244,40 +201,6 @@ internal val WIDGET_CIRCLE_UNSELECTED = Color.White // Surface/surface-card
 internal val WIDGET_GLYPH_UNSELECTED_NIGHT = Color(0xFFFEFFEF)
 internal val WIDGET_CIRCLE_UNSELECTED_NIGHT = Color(0x24FFFFFF)
 
-// Figma node 234:678 (4x2): віджет з відступом 12, без окремої картки; сітка 12x4 — горизонтальні
-// пігулки висотою 16 з проміжком 3; між блоками — 8.
-private const val DAILY_GRID_COLUMNS = 12
-private const val DAILY_GRID_ROWS = 4
-private val CARD_PADDING = 12.dp
-private val DAILY_GRID_GAP = 3.dp
-private val DAILY_GRID_MAX_CELL = 24.dp // макет: 16; до 24 клітинки ростуть разом із висотою віджета
-private val EXTENDED_MAX_HEIGHT = 212.dp // 4x2 на сітці 4x4: підкладка не вища за макетні ~211dp, а не на весь розмір
-private val WIDGET_GRID_OUTLINE = Color(0x29000000) // обвідка білих клітинок на світлій підкладці
-private val WIDGET_GRID_FUTURE_DASH = Color(0x80003926)
-private val DAILY_GRID_MIN_CELL = 8.dp // нижче — на тісних лаунчерах (висота 140dp) клітинки ще читаються
-private val ROW_TO_CARD_GAP = 8.dp
-
-// Figma node 234:678: кольори клітинок — лише 4 стани, без кольорів категорій (макет їх не показує).
-private val WIDGET_GRID_PRE_UNLOCK_COLOR = Color(0xFFA87DFF) // до точки старту дня (#a87dff)
-private val WIDGET_GRID_ONLINE_COLOR = Color(0xFFF5C401) // той самий #F5C401, що TeperaPalette.onlineCard
-private val WIDGET_GRID_BLANK_PAST = Color.White // Grey/0 — минуло, без Online (і без записів категорій)
-private val WIDGET_GRID_BLANK_FUTURE = Color(0x80A7A7A7) // rgba(167,167,167,0.5) — ще не настало, пунктирна обвідка
-
-// Годинні підмітки й легенда під сіткою (за запитом користувача — не в Figma).
-// Картка напівпрозора (30% білого, widget_card_translucent) — на темних шпалерах ефективний
-// фон лишається темним, тож текст ПОВНІСТЮ непрозорий і Medium-накреслення (не 60% альфа й
-// Normal, як у першій версії — на темних шпалерах це читалось як розмита пляма).
-private val HOUR_ROW_LABELS = listOf(0, 6, 12, 18) // початок кожного з 4 рядків сітки (по 6 год)
-private val HOUR_LABEL_WIDTH = 18.dp
-private val HOUR_LABEL_GAP = 6.dp
-private val HOUR_LABEL_TEXT_SIZE = 11.sp
-private val HOUR_LABEL_COLOR = Color(0xFF003926) // підкладка щільна біла (70%) — текст темно-зелений
-private val LEGEND_ROW_GAP = 8.dp
-private val LEGEND_ROW_HEIGHT = 16.dp
-private val LEGEND_DOT_SIZE = 12.dp // +50% до 8dp за запитом користувача
-private val LEGEND_DOT_GAP = 4.dp
-private val LEGEND_ITEM_GAP = 10.dp
-private val LEGEND_TEXT_SIZE = 11.sp
 
 /**
  * Ряд кнопок у напівпрозорій капсулі (Figma node 236:956). Повний ряд (5) на всю ширину віджета —
@@ -295,7 +218,7 @@ private fun CategoryButtonsRow(
     fillWidth: Boolean = true,
     buttonSize: Dp = CATEGORY_BUTTON_SIZE,
     padding: Dp = PILL_PADDING,
-    // 4x2 (макет 234:678) — без капсули: кнопки лежать прямо на фоні віджета.
+    // false — без капсули: кнопки лежать прямо на фоні віджета.
     capsule: Boolean = true
 ) {
     val spread = fillWidth && categories.size >= MAX_WIDGET_BUTTONS
@@ -378,218 +301,6 @@ class ToggleCategoryTimerAction : ActionCallback {
     }
 }
 
-/**
- * Картка сітки доби (Figma node 234:855) — напівпрозорий білий прямокутник із радіусом 16 і
- * відступом 12, усередині сітка 12x4 (клітинки 4dp-радіуса, проміжок 3). БЕЗ доступу до статистики —
- * текстовий заклик до дії; Online-клітинки тоді не з'являться, решта лишається коректною.
- *
- * **Годинні підмітки й легенда (за запитом користувача — "там зараз нічого не ясно"):** ліворуч
- * від сітки — підпис початку рядка (00/06/12/18, той самий принцип, що вже є на Home у
- * [com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall], лише тут рядок = 6 год, бо сітка 12
- * колонок × 4 ряди, а не одна горизонтальна стрічка з 24 годин) — без цього незрозуміло, який
- * рядок якій половині доби відповідає. Під сіткою — легенда лише РЕАЛЬНИХ кольорів, що сьогодні
- * зустрілись у слотах (не фіксований список — категорій, яких сьогодні не було, у легенді нема).
- */
-@Composable
-private fun DailyGridCard(
-    hasUsageAccess: Boolean,
-    slots: List<DailyGridSlot>,
-    context: Context,
-    modifier: GlanceModifier = GlanceModifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        if (!hasUsageAccess) {
-            Text(
-                text = context.getString(R.string.usage_access_prompt_title),
-                style = TextStyle(color = GlanceTheme.colors.onBackground)
-            )
-            return@Column
-        }
-
-        val legendItems = remember(context) { dailyGridLegendItems(context) }
-
-        // Сітка малюється ОДНИМ растровим зображенням (Canvas), а не 12x4 вузлами Box — RemoteViews-хост
-        // відкидає зайві діти контейнера (на S23 замість 12 клітинок у ряду було видно 10, а з Spacer-ами
-        // між ними ~5). Ширина картинки розтягується на всю ширину картки (FillBounds).
-        // Висота клітинки: LocalSize.height у Responsive — найближчий МЕНШИЙ розмір зі списку, а не
-        // реальна висота, тож вона наближена; макетні 16dp — стеля, знизу — запобіжник.
-        // Резервуємо висоту під кнопки, відступи, рядок легенди (LEGEND_ROW_GAP + LEGEND_ROW_HEIGHT),
-        // інакше він або обрізався б, або стискав картку понад доступний розмір лаунчер-гріда.
-        val available = LocalSize.current.height - CATEGORY_BUTTON_SIZE - ROW_TO_CARD_GAP - CARD_PADDING * 2 -
-            LEGEND_ROW_GAP - LEGEND_ROW_HEIGHT
-        val cellHeight = ((available - DAILY_GRID_GAP * (DAILY_GRID_ROWS - 1)) / DAILY_GRID_ROWS)
-            .coerceIn(DAILY_GRID_MIN_CELL, DAILY_GRID_MAX_CELL)
-        val density = context.resources.displayMetrics.density
-        val bitmap = renderDailyGridBitmap(
-            slots = slots,
-            // Номінальна ширина ~343dp (макет) мінус відступи й колонку годинних підписів;
-            // реальна відрізнятиметься — FillBounds підганяє.
-            widthPx = ((343.dp - CARD_PADDING * 2 - HOUR_LABEL_WIDTH - HOUR_LABEL_GAP).value * density).toInt(),
-            cellHeightPx = cellHeight.value * density,
-            gapPx = DAILY_GRID_GAP.value * density,
-            density = density
-        )
-        // Сітка займає весь залишок висоти картки (defaultWeight): відступи між блоками лишаються
-        // фіксованими (8dp), а різниця з реальною висотою віджета йде в розтягнення клітинок.
-        Row(modifier = GlanceModifier.fillMaxWidth().defaultWeight()) {
-            Column(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH).fillMaxHeight()) {
-                HOUR_ROW_LABELS.forEach { hour ->
-                    Box(modifier = GlanceModifier.defaultWeight(), contentAlignment = Alignment.TopStart) {
-                        Text(
-                            text = "%02d".format(hour),
-                            style = TextStyle(
-                                fontSize = HOUR_LABEL_TEXT_SIZE,
-                                fontWeight = FontWeight.Medium,
-                                color = ColorProvider(day = HOUR_LABEL_COLOR, night = HOUR_LABEL_COLOR)
-                            )
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = GlanceModifier.width(HOUR_LABEL_GAP))
-            // Тап по всій сітці відкриває Головну. Одна ціль на весь растр — окремі клітинки не
-            // можна: сітка малюється одним Bitmap, а не вузлами (див. коментар вище).
-            Image(
-                provider = ImageProvider(bitmap),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = GlanceModifier.defaultWeight().fillMaxHeight().clickable(actionStartActivity(Intent(context, MainActivity::class.java)))
-            )
-        }
-        if (legendItems.isNotEmpty()) {
-            Spacer(modifier = GlanceModifier.height(LEGEND_ROW_GAP))
-            // Glance/RemoteViews обмежує Row РІВНО 10 прямими дітьми (перевищення мовчки
-            // "truncate"-иться — `IllegalArgumentException: Row container cannot have more
-            // than 10 elements`, підтверджено в logcat на Samsung S23: 3-4 елементи легенди,
-            // кожен колись давав [Spacer?, Box, Spacer, Text] прямими дітьми ЦЬОГО Row,
-            // вже при 3 елементах переповнювали ліміт (12 дітей), і легенду обрізало посеред
-            // елемента). Фікс: кожен елемент легенди — окремий вкладений Row (один прямий
-            // нащадок зовнішнього), тож зовнішній Row має щонайбільше 1 + кількість пунктів легенди (3).
-            Row(
-                modifier = GlanceModifier.fillMaxWidth().height(LEGEND_ROW_HEIGHT),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Той самий відступ, що колонка годинних підписів + проміжок до сітки вище —
-                // легенда починається РІВНО під першою клітинкою, а не під підписами "00/06/12/18".
-                Spacer(modifier = GlanceModifier.width(HOUR_LABEL_WIDTH + HOUR_LABEL_GAP))
-                legendItems.forEachIndexed { index, item ->
-                    Row(
-                        modifier = GlanceModifier.padding(start = if (index > 0) LEGEND_ITEM_GAP else 0.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = GlanceModifier.size(LEGEND_DOT_SIZE), contentAlignment = Alignment.Center) {
-                            if (item.dashed) {
-                                // Пунктирна точка — готовий drawable (колір і обвідка всередині), без тонування.
-                                Image(
-                                    provider = ImageProvider(R.drawable.widget_legend_rest_dot),
-                                    contentDescription = null,
-                                    modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
-                                )
-                            } else {
-                                Image(
-                                    provider = ImageProvider(R.drawable.widget_circle_solid),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(ColorProvider(day = item.color, night = item.color)),
-                                    modifier = GlanceModifier.size(LEGEND_DOT_SIZE)
-                                )
-                            }
-                        }
-                        Spacer(modifier = GlanceModifier.width(LEGEND_DOT_GAP))
-                        Text(
-                            text = item.label,
-                            maxLines = 1,
-                            style = TextStyle(
-                                fontSize = LEGEND_TEXT_SIZE,
-                                fontWeight = FontWeight.Medium,
-                                color = ColorProvider(day = HOUR_LABEL_COLOR, night = HOUR_LABEL_COLOR)
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** Пункт легенди: [dashed] — точка з пунктирною обвідкою, як майбутні клітинки сітки ("Решта доби"). */
-private data class DailyGridLegendItem(val color: Color, val label: String, val dashed: Boolean = false)
-
-/** Легенда з макета 234:678: три фіксовані стани сітки (категорій на сітці немає). */
-private fun dailyGridLegendItems(context: Context): List<DailyGridLegendItem> = listOf(
-    DailyGridLegendItem(WIDGET_GRID_PRE_UNLOCK_COLOR, context.getString(R.string.widget_grid_legend_before_start)),
-    DailyGridLegendItem(WIDGET_GRID_ONLINE_COLOR, context.getString(R.string.balance_online_label)),
-    DailyGridLegendItem(WIDGET_GRID_BLANK_FUTURE, context.getString(R.string.widget_grid_legend_rest), dashed = true)
-)
-
-/**
- * Малює сітку доби 12x4 (по рядках зліва направо) у Bitmap. Клітинки — пігулки (радіус = піввисоти);
- * майбутні — напівпрозорі з пунктирною білою обвідкою (макет).
- */
-private fun renderDailyGridBitmap(
-    slots: List<DailyGridSlot>,
-    widthPx: Int,
-    cellHeightPx: Float,
-    gapPx: Float,
-    density: Float
-): Bitmap {
-    val heightPx = (cellHeightPx * DAILY_GRID_ROWS + gapPx * (DAILY_GRID_ROWS - 1)).toInt().coerceAtLeast(1)
-    val bitmap = Bitmap.createBitmap(widthPx.coerceAtLeast(1), heightPx, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    val dashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        color = WIDGET_GRID_FUTURE_DASH.toArgb()
-        strokeWidth = density
-        pathEffect = DashPathEffect(floatArrayOf(3 * density, 2 * density), 0f)
-    }
-    val outlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        color = WIDGET_GRID_OUTLINE.toArgb()
-        strokeWidth = density
-    }
-    val cellWidthPx = (widthPx - gapPx * (DAILY_GRID_COLUMNS - 1)) / DAILY_GRID_COLUMNS
-    val radiusPx = cellHeightPx / 2
-    val inset = dashPaint.strokeWidth / 2
-    for (row in 0 until DAILY_GRID_ROWS) {
-        for (col in 0 until DAILY_GRID_COLUMNS) {
-            val slot = slots[row * DAILY_GRID_COLUMNS + col]
-            fillPaint.color = colorForGridSlot(slot).toArgb()
-            val left = col * (cellWidthPx + gapPx)
-            val top = row * (cellHeightPx + gapPx)
-            canvas.drawRoundRect(RectF(left, top, left + cellWidthPx, top + cellHeightPx), radiusPx, radiusPx, fillPaint)
-            if (colorForGridSlot(slot) == WIDGET_GRID_BLANK_PAST) {
-                canvas.drawRoundRect(
-                    RectF(left + inset, top + inset, left + cellWidthPx - inset, top + cellHeightPx - inset),
-                    radiusPx, radiusPx, outlinePaint
-                )
-            }
-            if (slot is DailyGridSlot.Blank && slot.isFuture) {
-                canvas.drawRoundRect(
-                    RectF(left + inset, top + inset, left + cellWidthPx - inset, top + cellHeightPx - inset),
-                    radiusPx, radiusPx, dashPaint
-                )
-            }
-        }
-    }
-    return bitmap
-}
-
-/** Категорія на сітці не фарбується (макет показує лише стани доби) — такий слот виглядає як минулий порожній. */
-private fun colorForGridSlot(slot: DailyGridSlot): Color = when (slot) {
-    is DailyGridSlot.PreUnlock -> WIDGET_GRID_PRE_UNLOCK_COLOR
-    is DailyGridSlot.Category -> WIDGET_GRID_BLANK_PAST
-    is DailyGridSlot.Online -> WIDGET_GRID_ONLINE_COLOR
-    is DailyGridSlot.Blank -> if (slot.isFuture) WIDGET_GRID_BLANK_FUTURE else WIDGET_GRID_BLANK_PAST
-}
-
-
-/**
- * Другий запис у меню віджетів (типовий розмір 4x2, life_balance_widget_4x2_info.xml) — той самий
- * вміст і ті самі розміри Responsive, що [TeperaWidget]; окремий клас потрібен, бо Glance зіставляє
- * провайдера з класом віджета.
- */
-class TeperaWidget4x2 : TeperaWidget()
-
 /** 1x1: одна кнопка — перша з обраних у налаштуваннях віджета. */
 class TeperaWidget1x1 : TeperaWidget() {
     override val maxButtons = 1
@@ -610,18 +321,20 @@ class TeperaWidget2x1Receiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget2x1()
 }
 
-class TeperaWidget4x2Receiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = TeperaWidget4x2()
-}
-
 class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget()
 }
 
 
-/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */private class LiveWidgetInitial(    val activeCategories: List<CategoryEntity>,    val selectedIds: List<String>,    val activeTimers: Map<String, Long>,    val entries: List<ActivityEntryEntity>,    val grid: GridInputs)
+/** Початкові значення для [LiveWidgetContent] — завантажуються в provideGlance() до першого кадру. */
+private class LiveWidgetInitial(
+    val activeCategories: List<CategoryEntity>,
+    val selectedIds: List<String>,
+    val activeTimers: Map<String, Long>
+)
+
 /**
- * Вміст віджета на ЖИВИХ даних: таймери/категорії/записи — потоки всередині композиції (див. коментар
+ * Вміст віджета на ЖИВИХ даних: таймери й категорії — потоки всередині композиції (див. коментар
  * у [WidgetLiveData] — раніше все читалось один раз на сесію й показувало застарілий стан).
  */
 @Composable
@@ -629,49 +342,9 @@ private fun LiveWidgetContent(context: Context, app: TeperaApp, initial: LiveWid
     val selectedIds by app.settingsStore.widgetCategoryIds.collectAsState(initial = initial.selectedIds)
     val activeCategories by app.categoryRepository.observeActiveCategories().collectAsState(initial = initial.activeCategories)
     val activeTimers by app.activeTimerStore.activeTimers.collectAsState(initial = initial.activeTimers)
-    val tick by WidgetLiveData.refreshTick.collectAsState()
-
-    // Figma node 11:647: сітка доби — 48 клітинок по 30 хв від КАЛЕНДАРНОЇ півночі, кожна фарбується
-    // реальним кольором категорії/Online. Ручні записи — жива підписка, Online/точка старту — кеш.
-    val midnight = remember(tick) { startOfLogicalDayMillis() }
-    val entriesFlow = remember(midnight) { app.activityRepository.observeEntriesInRange(midnight, Long.MAX_VALUE) }
-    val entries by entriesFlow.collectAsState(initial = initial.entries)
-    val gridInputs by produceState<GridInputs?>(initialValue = initial.grid, tick) {
-        value = WidgetLiveData.gridInputs(app, midnight)
-    }
 
     val sorted = remember(activeCategories, selectedIds) { categoriesForWidget(activeCategories, selectedIds) }
-    val slots = gridInputs?.let {
-        calculateDailyGridSlots(
-            calendarMidnightMillis = midnight,
-            dayStartMillis = it.dayStartMillis,
-            nowMillis = System.currentTimeMillis(),
-            entries = entries,
-            onlineMinutesPerSlot = it.onlineMinutesPerSlot
-        )
-    } ?: List(DAILY_GRID_SLOT_COUNT) { DailyGridSlot.Blank(isFuture = true) }
-
-    WidgetContent(
-        context = context,
-        categories = sorted,
-        activeTimers = activeTimers,
-        hasUsageAccess = gridInputs?.hasUsageAccess ?: true,
-        gridSlots = slots,
-        maxButtons = maxButtons
-    )
-}
-
-/** Демо-сітка доби для прев'ю: ніч (до пробудження), трохи Online й активностей, далі ще не настало. */
-private fun previewGridSlots(): List<DailyGridSlot> = List(DAILY_GRID_SLOT_COUNT) { index ->
-    when (index) {
-        in 0..13 -> DailyGridSlot.PreUnlock
-        in 14..15, 19, 24, 28 -> DailyGridSlot.Blank(isFuture = false)
-        in 16..18, 25, 26 -> DailyGridSlot.Online
-        in 20..22 -> DailyGridSlot.Category(DefaultCategories.READING_ID)
-        23 -> DailyGridSlot.Category(DefaultCategories.MOVEMENT_ID)
-        27 -> DailyGridSlot.Category(DefaultCategories.HOBBY_ID)
-        else -> DailyGridSlot.Blank(isFuture = true)
-    }
+    WidgetContent(context = context, categories = sorted, activeTimers = activeTimers, maxButtons = maxButtons)
 }
 
 /**
@@ -708,14 +381,12 @@ private fun SmallWidgetContent(
 
 private const val MAX_WIDGET_BUTTONS = 5
 
-/** Вміст віджета — спільний для [TeperaWidget.provideGlance] (реальні дані) і [TeperaWidget.providePreview] (демо). */
+/** Вміст віджета 4x1/2x1/1x1 — спільний для [TeperaWidget.provideGlance] (реальні дані) і [TeperaWidget.providePreview] (демо). */
 @Composable
 private fun WidgetContent(
     context: Context,
     categories: List<CategoryEntity>,
     activeTimers: Map<String, Long>,
-    hasUsageAccess: Boolean,
-    gridSlots: List<DailyGridSlot>,
     maxButtons: Int = MAX_WIDGET_BUTTONS
 ) {
     GlanceTheme {
@@ -723,35 +394,13 @@ private fun WidgetContent(
             SmallWidgetContent(context, categories.take(maxButtons), activeTimers)
             return@GlanceTheme
         }
-        // 4x1 — лише ряд кнопок у капсулі (Figma 234:788); від 100dp — розширений 4x2 без капсули,
-        // відступ 12 по периметру, блоки розділені 8 (Figma 234:678).
-        val isExtended = LocalSize.current.height >= 100.dp
-        // Фон завжди задається (лише drawable змінюється залежно від розміру) — умовний background() на
-        // RemoteViews іноді не знімає раніше встановлений фон.
-        // Вміст прив'язаний до верху: відступ зверху = 12, а зайве місце по висоті віддає картка сітки
-        // (defaultWeight у DailyGridCard), тож відступ знизу теж 12 — як зліва й справа.
-        // Кореневий фон прозорий, підкладку несе внутрішня колонка. На сітці 4x4 лаунчер дає 4x2 набагато більше
-        // висоти, ніж макет, — тоді підкладка лишається ~212dp і центрується. LocalSize.height у Responsive —
-        // найближчий МЕНШИЙ розмір зі списку (макс. 205), тож 205 означає "205 і більше".
-        val capHeight = isExtended && LocalSize.current.height >= 205.dp
+        // 4x1 — ряд кнопок у капсулі (Figma 234:788). Фон завжди задається (лише drawable) — умовний background()
+        // на RemoteViews іноді не знімає раніше встановлений фон.
         Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(ImageProvider(R.drawable.widget_root_none)),
+            modifier = GlanceModifier.fillMaxSize().background(ImageProvider(R.drawable.widget_root_none)),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = (if (capHeight) GlanceModifier.fillMaxWidth().height(EXTENDED_MAX_HEIGHT) else GlanceModifier.fillMaxSize())
-                    .background(ImageProvider(if (isExtended) R.drawable.widget_root_translucent else R.drawable.widget_root_none))
-                    .padding(if (isExtended) CARD_PADDING else 0.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                CategoryButtonsRow(categories.take(maxButtons), activeTimers, context, capsule = !isExtended)
-                if (isExtended) {
-                    Spacer(modifier = GlanceModifier.height(ROW_TO_CARD_GAP))
-                    DailyGridCard(hasUsageAccess, gridSlots, context, modifier = GlanceModifier.defaultWeight())
-                }
-            }
+            CategoryButtonsRow(categories.take(maxButtons), activeTimers, context)
         }
     }
 }

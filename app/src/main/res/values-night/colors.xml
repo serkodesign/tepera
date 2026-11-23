@@ -5,4 +5,8 @@
     <color name="widget_preview_text">#FFFEFFEF</color>
     <color name="widget_preview_sub">#FFA9C7BD</color>
     <color name="widget_preview_track">#24FFFFFF</color>
+    <color name="widget_preview_mint">#FF1D4A41</color>
+    <color name="widget_preview_mint_icon">#FF9FE3C6</color>
+    <color name="widget_preview_btn">#FFFEFFEF</color>
+    <color name="widget_preview_btn_icon">#FF062924</color>
 </resources>

@@ -8,7 +8,6 @@ import androidx.glance.appwidget.updateAll
 import com.serkodesign.tepera.widget.TeperaWidget
 import com.serkodesign.tepera.widget.TeperaWidget1x1
 import com.serkodesign.tepera.widget.TeperaWidget2x1
-import com.serkodesign.tepera.widget.TeperaWidget4x2
 import com.serkodesign.tepera.widget.updateAllInfoWidgets
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -65,7 +64,6 @@ class ActiveTimerStore(private val context: Context) {
 
     suspend fun refreshWidgets() {
         TeperaWidget().updateAll(context)
-        TeperaWidget4x2().updateAll(context)
         TeperaWidget1x1().updateAll(context)
         TeperaWidget2x1().updateAll(context)
         updateAllInfoWidgets(context)

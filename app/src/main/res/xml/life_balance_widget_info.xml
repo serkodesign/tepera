@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- FR-4.1: компактна 4x1 (кнопки категорій) / розширена 4x2 (кнопки + сітка доби) через
-     SizeMode.Responsive у TeperaWidget.kt. updatePeriodMillis=0, бо оновлення веде WorkManager
-     (WidgetUpdateWorker, ~30 хв), не система. -->
+<!-- FR-4.1: 4x1 — ряд кнопок категорій (SizeMode.Exact у TeperaWidget.kt). updatePeriodMillis=0, бо оновлення веде
+     WorkManager (WidgetUpdateWorker, ~30 хв), не система. Віджет 4x2 із сіткою доби прибрано 23.11.2026. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="60dp"
     android:targetCellWidth="4"
     android:targetCellHeight="1"
-    android:maxResizeHeight="205dp"
     android:updatePeriodMillis="0"
-    android:resizeMode="horizontal|vertical"
+    android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
     android:initialLayout="@layout/widget_loading"
     android:description="@string/widget_4x1_description"

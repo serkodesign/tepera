@@ -80,6 +80,7 @@ fun SettingsScreen(
     onOpenFeedPicker: () -> Unit,
     onOpenTracking: () -> Unit,
     onOpenGates: () -> Unit,
+    onOpenWidgetSettings: () -> Unit,
     onOpenCategories: () -> Unit,
     onOpenDataPrivacy: () -> Unit,
     onOpenProInterest: () -> Unit,
@@ -162,6 +163,8 @@ fun SettingsScreen(
                         icon = TeperaSymbols.Palette,
                         onClick = { onOpenGroup(SettingsGroup.GENERAL) }
                     )
+                    M3ListDivider()
+                    M3ListItem(stringResource(R.string.settings_widget_action), icon = TeperaSymbols.Widgets, onClick = onOpenWidgetSettings)
                     M3ListDivider()
                     M3ListItem(stringResource(R.string.settings_data_privacy_action), icon = TeperaSymbols.PrivacyTip, onClick = onOpenDataPrivacy)
                     M3ListDivider()

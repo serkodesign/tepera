@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Статичне прев'ю віджета (Android < 12): капсула, м'ятний кружок із символом і дві смужки замість тексту. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="220dp" android:height="72dp" android:viewportWidth="220" android:viewportHeight="72">
+    <path android:fillColor="#F2FFFFFF" android:pathData="M36,0h148a36,36 0 0 1 0,72h-148a36,36 0 0 1 0,-72z" />
+    <path android:fillColor="#FFDCF6ED" android:pathData="M12,36a22,22 0 1 0 44,0a22,22 0 1 0 -44,0z" />
+    <group android:translateX="22" android:translateY="24">
+        <path android:fillColor="#FF006944" android:pathData="M8,6h8a2,2 0 0 1 2,2v8a2,2 0 0 1 -2,2H8a2,2 0 0 1 -2,-2V8a2,2 0 0 1 2,-2z" />
+    </group>
+    <path android:fillColor="#FF4D6B60" android:pathData="M68,22h60a3,3 0 0 1 0,6h-60a3,3 0 0 1 0,-6z" />
+    <path android:fillColor="#FF003926" android:pathData="M68,36h96a3,3 0 0 1 0,6h-96a3,3 0 0 1 0,-6z" />
+</vector>

@@ -92,3 +92,27 @@ internal fun renderOrb(sizePx: Int, level: Float, bgArgb: Int, waterArgb: Int): 
     }
     return bitmap
 }
+
+/**
+ * Дві смуги одного масштабу для віджета «Цей тиждень»: верхня — тиждень спостереження ([baseline]), нижня — останні 7 діб
+ * ([current]); частки 0..1 від спільного максимуму. Без підписів і без кольору-оцінки: лише довжина.
+ */
+internal fun renderWeekBars(widthPx: Int, heightPx: Int, baseline: Float, current: Float, trackArgb: Int, baseArgb: Int, curArgb: Int): Bitmap {
+    val bitmap = Bitmap.createBitmap(widthPx.coerceAtLeast(1), heightPx.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val w = bitmap.width.toFloat()
+    val h = bitmap.height.toFloat()
+    val gap = h * 0.25f
+    val barH = (h - gap) / 2
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    listOf(baseline to baseArgb, current to curArgb).forEachIndexed { index, (fraction, color) ->
+        val top = index * (barH + gap)
+        paint.color = trackArgb
+        canvas.drawRoundRect(RectF(0f, top, w, top + barH), barH / 2, barH / 2, paint)
+        paint.color = color
+        // Мінімум — кружечок, щоб ненульовий час не зник зовсім.
+        val right = (w * fraction.coerceIn(0f, 1f)).coerceAtLeast(barH)
+        canvas.drawRoundRect(RectF(0f, top, right, top + barH), barH / 2, barH / 2, paint)
+    }
+    return bitmap
+}

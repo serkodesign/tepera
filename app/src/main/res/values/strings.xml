@@ -16,7 +16,7 @@
 
     <string name="tile_quick_add">Add activity</string>
     <string name="usage_access_prompt_title">See your day\'s structure</string>
-    <string name="usage_access_prompt_body">Allow app usage access to see your day\'s structure</string>
+    <string name="usage_access_prompt_body">Allow usage access to see how your day is structured.</string>
     <string name="usage_access_open_settings">Open settings</string>
 
     <!-- Home -->
@@ -73,7 +73,7 @@
     <string name="hero_all_activities">All activities today</string>
     <string name="hero_named_format">named %1$s</string>
     <string name="hero_no_access_title">Access needed</string>
-    <string name="hero_no_access_body">To see your day, allow access to usage statistics. Tepera does not send this data anywhere.</string>
+    <string name="hero_no_access_body">To see your day, allow usage access. The data stays on your phone.</string>
     <string name="hero_grant_access">Grant access</string>
     <!-- Day structure (FR-3.1–3.12) — formerly "Online/Offline balance"; renamed because
          directly opposing Online vs Offline structurally guaranteed a feeling of guilt. -->
@@ -104,7 +104,7 @@
     <string name="onboarding_target_unit">h</string>
     <string name="onboarding_target_chip">Reference</string>
     <string name="perm_title">Before we begin</string>
-    <string name="perm_body">Tepera itself sends nothing except anonymous crash reports — you can turn them off anytime in Settings. Android may keep a copy of your data in your Google account — that is controlled by your phone settings.</string>
+    <string name="perm_body">Data stays on your phone, except anonymous crash reports, which you can turn off in Settings. Android may keep a backup in your Google account.</string>
     <string name="perm_usage_label">Usage access</string>
     <string name="perm_continue">Continue</string>
     <string name="target_onboarding_title">A reference for your day</string>
@@ -139,7 +139,7 @@
     <string name="pro_interest_body">We are considering an extended version. No prices or payments, just a question: what would help?</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="extra_animations_label">Extra animations</string>
-    <string name="extra_animations_explanation">Circle motion, counting numbers, soft transitions. Turn off to save battery.</string>
+    <string name="extra_animations_explanation">Moving circle and smooth transitions. Turn off to save battery.</string>
     <string name="crash_reports_label">Crash reports</string>
     <string name="crash_reports_explanation">When the app crashes, it sends an anonymous report (Firebase Crashlytics): phone model, Android version, crash description. No entries, activities or app time. Turn it off anytime.</string>
 
@@ -273,7 +273,7 @@
     <string name="settings_target_decrease">Decrease target</string>
     <string name="settings_target_increase">Increase target</string>
     <string name="settings_sleep_window_label">Sleep window</string>
-    <string name="settings_sleep_window_info">Not sleep tracking — just a calculation setting. It affects day start, day length, pause detection and the unlock counter. Never shown on the scale. Work nights? Adjust it.</string>
+    <string name="settings_sleep_window_info">Just a technical boundary, not sleep tracking. Affects day start and pause detection. Work nights? Adjust it.</string>
     <string name="settings_sleep_window_start_label">Start</string>
     <string name="settings_sleep_window_end_label">End</string>
 
@@ -295,7 +295,7 @@
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export statistics</string>
     <string name="backup_import_action">Import statistics</string>
-    <string name="backup_not_included_note">The file includes: activities (name, icon, colour, order, archived state), all activity entries (start, duration, note), excluded apps, the Online-time reference and the daily Online history (Online minutes, unlocks, day start and end, Online by hour). In v3 mode (beta) it also includes the chosen feed apps, their time slots, the scrolling hours found, your \"if — then\" plans, reminder events and observation weeks. Other settings (sleep window, gates, widget, language, theme) need to be set up again.</string>
+    <string name="backup_not_included_note">The backup includes your activities, entries, excluded apps, target and daily Online history. In scroll-hours mode it also includes feed apps, hours and plans. Set the rest (sleep window, gates, widgets, language, theme) again.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
@@ -313,8 +313,8 @@
 
     <!-- T-4 (tepera-dev-spec.md, FR-G part 1): gates — apps with a delay before opening -->
     <string name="settings_gates_action">Apps with a delay</string>
-    <string name="settings_widget_action">Widget buttons</string>
-    <string name="widget_settings_title">Widget buttons</string>
+    <string name="settings_widget_action">Widgets</string>
+    <string name="widget_settings_title">Widgets</string>
     <string name="widget_settings_hint">1x1 shows the first button, 2x1 two, larger up to five. Drag the handle to reorder.</string>
     <string name="widget_settings_auto_hint">Order is automatic, by time of day. Pick activities to set your own.</string>
     <string name="widget_settings_selected_section">On the widget</string>
@@ -323,6 +323,10 @@
     <string name="widget_settings_remove">Remove from widget</string>
     <string name="widget_settings_drag_handle">Reorder</string>
     <string name="widget_settings_reset">Automatic order</string>
+    <string name="widget_settings_metrics_section">Numbers on widgets</string>
+    <string name="widget_settings_metrics_hint">These widgets show numbers, so they stay quiet until you switch them on.</string>
+    <string name="widget_settings_show_week">“This week” widget</string>
+    <string name="widget_settings_show_pauses">“Phone-free pauses” widget</string>
     <string name="gates_screen_title">Apps with a delay</string>
     <string name="gates_pause_label">Pause</string>
     <string name="gates_pause_none">Not paused</string>
@@ -502,24 +506,23 @@
     <string name="hero_structure_info_action">About the day bar</string>
     <string name="hero_structure_info_title">Day bar</string>
     <string name="hero_structure_info_body">The bar shows what your day is made of: Online, logged activities, the rest. Hatching is time still ahead.</string>
-    <string name="hero_structure_info_body_target">The bar shows what your day is made of since it started: Online, the activities you logged, and the rest of the day. The hatched end is time still ahead.\n\nThe quiet tick is your Online reference (change it in Settings → Tracking). It doesn\'t change colour if Online passes it: it\'s a point of reference, not a limit.</string>
+    <string name="hero_structure_info_body_target">What your day is made of: Online, logged activities, the rest. Hatching is what is still ahead. The quiet tick is your Online target.</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
     <string name="day_usage_info_body">Each square is one hour of yesterday; color shows minutes online. No judgment.</string>
-    <string name="weekly_digest_info_body">A summary of the last 7 days: how many times you logged activities, what took most of your time, when your day usually starts (median). Tiles without data aren\'t shown.</string>
+    <string name="weekly_digest_info_body">Last 7 days: how often you logged activities, what took most time, when your day usually starts.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
     <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): widget-picker description — now "Today" (day shape), not category buttons. -->
     <string name="widget_4x1_description">Quick activity buttons</string>
     <string name="widget_1x1_description">One activity button</string>
     <string name="widget_2x1_description">Two activity buttons</string>
-    <string name="widget_4x2_description">Activity buttons and the day grid</string>
 
     <!-- About (GAP-8) -->
     <string name="settings_about_action">About</string>
     <string name="about_screen_title">About</string>
     <string name="about_version_format">Version %1$s</string>
-    <string name="about_tagline">For now, Tepera works without an account. Tepera does not send your entries anywhere.</string>
+    <string name="about_tagline">No account. Your entries are never sent anywhere.</string>
     <string name="about_privacy_policy">Privacy Policy</string>
     <string name="about_contact">Write to the developer</string>
     <string name="about_no_app">Couldn\'t find an app that can open this</string>
@@ -565,8 +568,6 @@
     <string name="trend_chart_description">Online by day: %1$s.</string>
     <string name="timeline_description_prefix">Timeline of the previous day, approximately: %1$s.</string>
     <string name="loading_description">Loading</string>
-    <string name="widget_grid_legend_before_start">Before day start</string>
-    <string name="widget_grid_legend_rest">Rest of day</string>
     <!-- App shortcuts (long-press the app icon): dynamic, the pause label changes with state -->
     <string name="shortcut_pause_gates">Pause gates</string>
     <string name="shortcut_resume_gates">Resume gates</string>
@@ -574,19 +575,19 @@
 
     <!-- Test build (a11y flavor): gates through the accessibility service -->
     <string name="a11y_gate_card_title">Delay on any app launch</string>
-    <string name="a11y_gate_card_off">To show the pause when you open a chosen app in any way (icon, notification, recents), turn on Tepera in Accessibility settings.</string>
-    <string name="a11y_gate_card_on">On. The pause appears when you open a chosen app. If you are already inside it, it is not shown again.</string>
+    <string name="a11y_gate_card_off">To show the pause however you open an app, turn on Tepera in Accessibility.</string>
+    <string name="a11y_gate_card_on">On. The pause appears when you open a chosen app.</string>
     <string name="a11y_gate_enable_action">Turn on</string>
     <string name="a11y_gate_manage_action">Settings</string>
     <string name="a11y_disclosure_title">Pauses and ideas use Android accessibility</string>
     <string name="a11y_disclosure_why_label">Why</string>
-    <string name="a11y_disclosure_why">This Android service (Accessibility Service API) tells Tepera when you open an app. That\'s how it shows a short pause before the apps you chose, or an idea instead of the feed in your scrolling hours, and dims the screen after 5 minutes.</string>
+    <string name="a11y_disclosure_why">An Android service tells Tepera which app is open, so it can show a pause, an idea instead of the feed, and dim the screen after 5 minutes.</string>
     <string name="a11y_disclosure_sees_label">What Tepera sees</string>
     <string name="a11y_disclosure_sees">Only the name of the app that\'s currently open.</string>
     <string name="a11y_disclosure_not_label">What Tepera doesn\'t see or do</string>
-    <string name="a11y_disclosure_not">It doesn\'t read messages, text, passwords or anything on your screen, and doesn\'t tap for you. You can always close or uninstall any app.</string>
+    <string name="a11y_disclosure_not">It does not read messages, text or passwords, and taps nothing for you.</string>
     <string name="a11y_disclosure_data_label">Where the data goes</string>
-    <string name="a11y_disclosure_data">Nowhere. App names are processed only on your phone and never sent.</string>
+    <string name="a11y_disclosure_data">Nowhere. It all stays on your phone.</string>
     <string name="a11y_disclosure_footer">You can turn it off anytime in Android settings. The rest of Tepera works without it.</string>    <string name="a11y_disclosure_continue">I agree</string>
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>
@@ -665,7 +666,7 @@
     <string name="v3_access_not_needed_body">No location, no microphone. Accessibility only if you turn it on yourself later.</string>
     <string name="v3_access_grant">Grant access</string>
     <string name="v3_access_details">What exactly is collected</string>
-    <string name="v3_access_details_text">Tepera reads from the system only the time when the apps on your feed list were on screen: the app name, the start and the end. From that it works out the hours when you are most often in feeds. Screen content, messages and texts are not read. Everything is stored only on this phone.</string>
+    <string name="v3_access_details_text">Tepera reads only when apps from your list were on screen: name, start and end. Screen content is not read; everything stays on your phone.</string>
     <string name="v3_dialog_close">Got it</string>
     <string name="v3_feeds_continue">Continue</string>
     <string name="v3_home_label_observing">Observing</string>
@@ -1009,5 +1010,68 @@
     <string name="count_mode_group">How to count time</string>
     <string name="count_mode_per_app">Each app</string>
     <string name="count_mode_all">All feeds together</string>
-    <string name="count_mode_hint">Applies to Berserk mode and to \"Open for 5 min\". Together: moving from one feed to another keeps the same count.</string>
+    <string name="count_mode_hint">For berserk mode and “Open for 5 min”: moving between feeds keeps the same count.</string>
+
+    <!-- Віджети «години скролінгу» й дії (23.11.2026) -->
+    <string name="widget_next_hour_label">Next detox hour</string>
+    <string name="widget_next_hour_description">When your next scroll hour starts and what to do instead</string>
+    <string name="widget_idea_label">Instead of scrolling</string>
+    <string name="widget_idea_description">One idea for right now, with a button for another</string>
+    <string name="widget_timer_label">Running now</string>
+    <string name="widget_timer_description">The activity that is running, with a stop button</string>
+    <string name="widget_quiet_label">Not today</string>
+    <string name="widget_quiet_description">One tap: no prompts for the next scroll hour</string>
+    <string name="widget_gate_label">Pause delays today</string>
+    <string name="widget_gate_description">Turn app delays off for today and back on with one tap</string>
+    <string name="widget_add_label">Add entry</string>
+    <string name="widget_add_description">Open the form to add an activity</string>
+    <string name="widget_week_label">This week</string>
+    <string name="widget_week_description">Your scroll hours this week. Hidden until you switch it on</string>
+    <string name="widget_pauses_label">Phone-free pauses</string>
+    <string name="widget_pauses_description">Pauses you can still name. Hidden until you switch it on</string>
+    <string name="widget_next_now">Now</string>
+    <string name="widget_next_in_format">In %1$s</string>
+    <string name="widget_next_tomorrow_format">Tomorrow · %1$s</string>
+    <string name="widget_next_skipped">Quiet today</string>
+    <string name="widget_next_none_title">Your detox hours</string>
+    <string name="widget_next_none">Still watching</string>
+    <string name="widget_idea_header">Instead of scrolling</string>
+    <string name="widget_idea_other">Another</string>
+    <string name="widget_timer_idle">Nothing running</string>
+    <string name="widget_timer_idle_hint">Open Tepera</string>
+    <string name="widget_quiet_off">Not today</string>
+    <string name="widget_quiet_on">Quiet ✓</string>
+    <string name="widget_quiet_none">No hours</string>
+    <string name="widget_gate_on">Delays</string>
+    <string name="widget_gate_paused">Paused</string>
+    <string name="widget_add_text">Add entry</string>
+    <string name="widget_metric_hidden_title">Numbers hidden</string>
+    <string name="widget_metric_hidden_hint">Turn on in settings</string>
+    <string name="widget_week_title">This week</string>
+    <string name="widget_week_empty">Not enough data yet</string>
+    <string name="widget_pauses_count">Pauses: %1$d</string>
+    <string name="widget_pauses_hint">you can name them</string>
+    <string name="widget_pauses_none">All named</string>
+    <string name="widget_pauses_none_hint">Calm</string>
+    <string name="widget_ph_short">Zzz…</string>
+    <string name="widget_ph_next_title">Widget on holiday</string>
+    <string name="widget_ph_next_body">Napping until scroll hours.</string>
+    <string name="widget_ph_idea_title">Out of ideas</string>
+    <string name="widget_ph_idea_body">(Not delivered yet.)</string>
+    <string name="widget_ph_quiet_title">Nothing to mute</string>
+    <string name="widget_ph_quiet_body">No scroll hours — quiet anyway.</string>
+    <string name="widget_ph_week_title">A week of… peace</string>
+    <string name="widget_ph_week_body">No one counts scroll hours here.</string>
+
+    <!-- Preview texts for action widgets -->
+    <string name="widget_preview_next_top">Evening · 21:00</string>
+    <string name="widget_preview_next_bottom">In 40 min</string>
+    <string name="widget_preview_week_top">This week</string>
+    <string name="widget_preview_week_bottom">1h 10m</string>
+    <string name="widget_preview_pauses_top">Phone-free pauses</string>
+    <string name="widget_preview_pauses_bottom">Pauses: 2</string>
+    <string name="widget_preview_timer_top">Reading · running</string>
+    <string name="widget_preview_timer_bottom">Tap to stop</string>
+    <string name="widget_idea_fallback">I will suggest when you open a feed</string>
+    <string name="widget_week_unit">per day</string>
 </resources>

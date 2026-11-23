@@ -76,12 +76,15 @@ import java.util.Locale
  * показуються пасивно. Online й "без телефону" — ті самі числа, що вже постійно видно на Home.
  */
 
-private val CAPSULE_HEIGHT = 72.dp
-private val ONLINE_COLOR = Color(0xFFF5C401) // той самий #F5C401, що TeperaPalette.onlineCard
+internal val CAPSULE_HEIGHT = 72.dp
+internal val ONLINE_COLOR = Color(0xFFF5C401) // той самий #F5C401, що TeperaPalette.onlineCard
 
 /** Кольори теми віджета: капсула/плашка — drawable за темою, решта — значення макета (light/dark). */
 internal class InfoColors(
     val capsule: Int,
+    /** Картка 28dp-радіуса (віджет 2x2) і колір заливки капсули як Color (кругла кнопка 1x1 — тонований круг). */
+    val card: Int,
+    val fill: Color,
     val chip: Int,
     val text: Color,
     val sub: Color,
@@ -101,14 +104,14 @@ internal fun infoColors(context: Context): InfoColors {
     val night = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
     return if (night) {
         InfoColors(
-            capsule = R.drawable.widget_info_capsule_dark, chip = R.drawable.widget_info_chip_dark,
+            capsule = R.drawable.widget_info_capsule_dark, card = R.drawable.widget_info_card_dark, fill = Color(0xE60B2B25), chip = R.drawable.widget_info_chip_dark,
             text = Color(0xFFFEFFEF), sub = Color(0xFFA9C7BD), track = Color(0x24FFFFFF),
             btn = Color(0xFFFEFFEF), btnIcon = Color(0xFF062924),
             mint = Color(0xFF1D4A41), mintIcon = Color(0xFF9FE3C6), rest = Color(0xFF3A5A52)
         )
     } else {
         InfoColors(
-            capsule = R.drawable.widget_info_capsule_light, chip = R.drawable.widget_info_chip_light,
+            capsule = R.drawable.widget_info_capsule_light, card = R.drawable.widget_info_card_light, fill = Color(0xE0FFFFFF), chip = R.drawable.widget_info_chip_light,
             text = Color(0xFF003926), sub = Color(0xFF4D6B60), track = Color(0x1F003926),
             btn = Color(0xFF006944), btnIcon = Color.White,
             mint = Color(0xFFDCF6ED), mintIcon = Color(0xFF006944), rest = Color(0xFFC5E2CB)
@@ -203,11 +206,11 @@ private fun previewState(): InfoState {
 
 // ---------- спільні елементи ----------
 
-private fun Context.px(dp: Dp): Int = (dp.value * resources.displayMetrics.density).toInt()
+internal fun Context.px(dp: Dp): Int = (dp.value * resources.displayMetrics.density).toInt()
 
-private fun glanceColor(color: Color) = ColorProvider(day = color, night = color)
+internal fun glanceColor(color: Color) = ColorProvider(day = color, night = color)
 
-private fun formatDuration(context: Context, minutes: Int, roundQuarter: Boolean = false): String {
+internal fun formatDuration(context: Context, minutes: Int, roundQuarter: Boolean = false): String {
     // Округлення до чверті години не повинно перетворювати короткий, але ненульовий час на "0 хв".
     val (hours, rest) = if (roundQuarter) {
         roundToQuarterHour(minutes).let { if (it.first == 0 && it.second == 0) 0 to minutes else it }
@@ -224,16 +227,17 @@ private fun formatDuration(context: Context, minutes: Int, roundQuarter: Boolean
 private fun clockText(millis: Long): String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))
 
 @Composable
-private fun InfoText(
+internal fun InfoText(
     text: String,
     sizeSp: Int,
     color: Color,
     weight: FontWeight = FontWeight.Normal,
-    modifier: GlanceModifier = GlanceModifier
+    modifier: GlanceModifier = GlanceModifier,
+    maxLines: Int = 1
 ) {
     Text(
         text = text,
-        maxLines = 1,
+        maxLines = maxLines,
         modifier = modifier,
         style = TextStyle(fontSize = sizeSp.sp, fontWeight = weight, color = glanceColor(color))
     )
@@ -241,7 +245,14 @@ private fun InfoText(
 
 /** Капсула на всю ширину віджета, по центру по висоті; тап по ній відкриває застосунок. */
 @Composable
-private fun Capsule(context: Context, colors: InfoColors, horizontalPadding: Dp, content: @Composable RowScope.() -> Unit) {
+internal fun Capsule(
+    context: Context,
+    colors: InfoColors,
+    horizontalPadding: Dp,
+    /** Дія тапу по капсулі; за замовчуванням відкриває застосунок. */
+    action: androidx.glance.action.Action? = null,
+    content: @Composable RowScope.() -> Unit
+) {
     val height = minOf(CAPSULE_HEIGHT, LocalSize.current.height)
     Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Row(
@@ -250,7 +261,7 @@ private fun Capsule(context: Context, colors: InfoColors, horizontalPadding: Dp,
                 .height(height)
                 .background(ImageProvider(colors.capsule))
                 .padding(horizontal = horizontalPadding, vertical = 6.dp)
-                .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
+                .clickable(action ?: actionStartActivity(Intent(context, MainActivity::class.java))),
             verticalAlignment = Alignment.CenterVertically,
             content = content
         )
@@ -258,7 +269,7 @@ private fun Capsule(context: Context, colors: InfoColors, horizontalPadding: Dp,
 }
 
 @Composable
-private fun Dot(color: Color, size: Dp = 8.dp) {
+internal fun Dot(color: Color, size: Dp = 8.dp) {
     Image(
         provider = ImageProvider(R.drawable.widget_circle_solid),
         contentDescription = null,
@@ -269,7 +280,7 @@ private fun Dot(color: Color, size: Dp = 8.dp) {
 
 /** Кругла кнопка play/stop для категорії — той самий тап-таймер, що на Home і в кнопках віджета. */
 @Composable
-private fun TimerButton(context: Context, colors: InfoColors, categoryId: String, running: Boolean, size: Dp) {
+internal fun TimerButton(context: Context, colors: InfoColors, categoryId: String, running: Boolean, size: Dp) {
     Box(
         modifier = GlanceModifier.size(size).clickable(
             actionRunCallback<ToggleCategoryTimerAction>(actionParametersOf(CATEGORY_ID_KEY to categoryId))
@@ -372,4 +383,5 @@ class InfoOrb1x1Receiver : GlanceAppWidgetReceiver() { override val glanceAppWid
 suspend fun updateAllInfoWidgets(context: Context) {
     InfoOnlineRing2x1().updateAll(context)
     InfoOrb1x1().updateAll(context)
+    updateAllActionWidgets(context)
 }

@@ -167,6 +167,8 @@ class MainActivity : ComponentActivity() {
             }
             AppShortcuts.ACTION_DIARY ->
                 pendingShortcutRequest = ShortcutScreenRequest(ShortcutScreen.DIARY, System.nanoTime())
+            AppShortcuts.ACTION_ADD_ENTRY ->
+                pendingShortcutRequest = ShortcutScreenRequest(ShortcutScreen.ADD_ENTRY, System.nanoTime())
             AppShortcuts.ACTION_STATS ->
                 pendingShortcutRequest = ShortcutScreenRequest(ShortcutScreen.STATS, System.nanoTime())
             else -> return

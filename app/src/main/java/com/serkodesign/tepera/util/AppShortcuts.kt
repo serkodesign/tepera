@@ -9,7 +9,7 @@ import com.serkodesign.tepera.MainActivity
 import com.serkodesign.tepera.R
 
 /** Екран, куди веде ярлик (без залежності від приватних маршрутів NavHost). */
-enum class ShortcutScreen { DIARY, STATS }
+enum class ShortcutScreen { DIARY, STATS, ADD_ENTRY }
 
 /**
  * Ярлики застосунку (довгий тап по іконці Tepera): "Пауза затримки" / "Відновити затримку",
@@ -25,6 +25,8 @@ object AppShortcuts {
     const val ACTION_PAUSE_TOGGLE = "com.serkodesign.tepera.shortcut.PAUSE_TOGGLE"
     const val ACTION_DIARY = "com.serkodesign.tepera.shortcut.DIARY"
     const val ACTION_STATS = "com.serkodesign.tepera.shortcut.STATS"
+    /** Лише з віджета «Додати запис» (не динамічний ярлик): відкриває форму запису. */
+    const val ACTION_ADD_ENTRY = "com.serkodesign.tepera.shortcut.ADD_ENTRY"
 
     private const val ID_PAUSE = "tepera_pause_gates"
     private const val ID_DIARY = "tepera_diary"

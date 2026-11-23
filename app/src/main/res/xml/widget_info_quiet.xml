@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget from widget/ActionWidgets.kt. updatePeriodMillis=0: updates are driven by WorkManager and the widget's own actions. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="40dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="1"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:resizeMode="none"
+    android:widgetCategory="home_screen"
+    android:initialLayout="@layout/widget_loading"
+    android:description="@string/widget_quiet_description"
+    android:previewLayout="@layout/widget_preview_quiet"
+    android:previewImage="@drawable/widget_preview_img_quiet" />

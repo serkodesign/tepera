@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +43,7 @@ import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaHint
+import com.serkodesign.tepera.ui.theme.teperaSwitchColors
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -65,6 +67,8 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
 
     val savedIds by app.settingsStore.widgetCategoryIds.collectAsState(initial = emptyList())
     val activeCategories by app.categoryRepository.observeActiveCategories().collectAsState(initial = emptyList())
+    val showWeek by app.settingsStore.widgetShowWeek.collectAsState(initial = false)
+    val showPauses by app.settingsStore.widgetShowPauses.collectAsState(initial = false)
     val byId = activeCategories.associateBy { it.id }
 
     // Локальна копія порядку — перетягування міняє її миттєво, у сховище пишемо лише в кінці жесту.
@@ -192,6 +196,24 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                         type = TeperaButtonType.Tertiary
                     )
                 }
+
+                GlassSectionHeader(stringResource(R.string.widget_settings_metrics_section))
+                TeperaHint(
+                    text = stringResource(R.string.widget_settings_metrics_hint),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                MetricSwitchRow(
+                    label = stringResource(R.string.widget_settings_show_week),
+                    icon = TeperaSymbols.Schedule,
+                    checked = showWeek,
+                    onChange = { scope.launch { app.settingsStore.setWidgetShowWeek(it); app.activeTimerStore.refreshWidgets() } }
+                )
+                MetricSwitchRow(
+                    label = stringResource(R.string.widget_settings_show_pauses),
+                    icon = TeperaSymbols.Smartphone,
+                    checked = showPauses,
+                    onChange = { scope.launch { app.settingsStore.setWidgetShowPauses(it); app.activeTimerStore.refreshWidgets() } }
+                )
             }
         }
     }
@@ -209,3 +231,14 @@ private fun CategoryCircle(category: CategoryEntity) {
 
 private fun List<String>.moved(from: Int, to: Int): List<String> =
     toMutableList().also { it.add(to, it.removeAt(from)) }
+
+@Composable
+private fun MetricSwitchRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, checked: Boolean, onChange: (Boolean) -> Unit) {
+    GlassRow(
+        label = label,
+        cornerRadius = 24.dp,
+        onClick = { onChange(!checked) },
+        leading = { Icon(icon, contentDescription = null) },
+        trailing = { Switch(checked = checked, onCheckedChange = onChange, colors = teperaSwitchColors()) }
+    )
+}

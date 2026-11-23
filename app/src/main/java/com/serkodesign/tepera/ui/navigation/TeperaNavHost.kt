@@ -312,10 +312,16 @@ fun TeperaNavHost(
     LaunchedEffect(pendingShortcutNonce) {
         val screen = pendingShortcutScreen ?: return@LaunchedEffect
         skipSplash()
+        if (screen == ShortcutScreen.ADD_ENTRY) {
+            // Форма запису — повноекранний маршрут (як з кнопки на Головній), не вкладка: без popUpTo/restoreState.
+            navController.navigate(Routes.addEntry())
+            return@LaunchedEffect
+        }
         navController.navigate(
             when (screen) {
                 ShortcutScreen.DIARY -> Routes.DIARY
                 ShortcutScreen.STATS -> Routes.STATS
+                ShortcutScreen.ADD_ENTRY -> return@LaunchedEffect
             }
         ) {
             popUpTo(Routes.HOME) { saveState = true }
@@ -703,6 +709,7 @@ fun TeperaNavHost(
                     onOpenFeedPicker = { navController.navigate(Routes.FEED_PICKER) },
                     onOpenTracking = { navController.navigate(Routes.TRACKING_SETTINGS) },
                     onOpenGates = { navController.navigate(Routes.GATES) },
+                    onOpenWidgetSettings = { navController.navigate(Routes.WIDGET_SETTINGS) },
                     onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                     onOpenDataPrivacy = { navController.navigate(Routes.BACKUP_RESTORE) },
                     onOpenProInterest = { navController.navigate(Routes.PRO_INTEREST) },

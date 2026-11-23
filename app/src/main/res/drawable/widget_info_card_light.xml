@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Картка віджетів-дій (2x2): та сама заливка, що капсула, але радіус 28dp (білий 88%). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#E0FFFFFF" />
+    <corners android:radius="28dp" />
+</shape>

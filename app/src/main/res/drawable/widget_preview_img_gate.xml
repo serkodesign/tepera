@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Статичне прев'ю кругового віджета 1x1 (Android < 12). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp" android:height="72dp" android:viewportWidth="72" android:viewportHeight="72">
+    <path android:fillColor="#F2FFFFFF" android:pathData="M6,36a30,30 0 1 0 60,0a30,30 0 1 0 -60,0z" />
+    <group android:translateX="24" android:translateY="18">
+        <path android:fillColor="#FF003926" android:pathData="M6,2v6h0.01L6,8.01 10,12l-4,4 0.01,0.01H6V22h12v-5.99h-0.01L18,16l-4,-4 4,-3.99 -0.01,-0.01H18V2H6zM16,16.5V20H8v-3.5l4,-4 4,4zM12,11.5l-4,-4V4h8v3.5l-4,4z" />
+    </group>
+    <path android:fillColor="#FF003926" android:pathData="M22,48h28a3,3 0 0 1 0,6h-28a3,3 0 0 1 0,-6z" />
+</vector>

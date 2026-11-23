@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Preview of a round 1x1 widget (Android 12+), same structure as the class in widget/ActionWidgets.kt. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <FrameLayout android:layout_width="64dp" android:layout_height="64dp" android:layout_gravity="center" android:background="@drawable/widget_preview_circle">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+            android:gravity="center_horizontal" android:orientation="vertical">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_widget_info_hourglass"
+                android:tint="@color/widget_preview_text" android:importantForAccessibility="no" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_gate_on"
+                android:textColor="@color/widget_preview_text" android:textSize="10sp" android:textStyle="bold" android:maxLines="1" />
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

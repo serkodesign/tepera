@@ -114,9 +114,11 @@ fun GatesScreen(
     // Тестова збірка a11y: чи ввімкнена служба доступності (змінюється в системних налаштуваннях — перечитуємо при поверненні).
     var a11yEnabled by remember { mutableStateOf(A11yFeatureState.current(context) == A11yFeatureState.Active) }
     val requestA11y = rememberAccessibilityRequest()
-    // Спосіб воріт: ярлик або доступність (таб). Лише в збірці a11y; у standard завжди ярлик.
-    var viaA11y by rememberSaveable { mutableStateOf(GateAccessibility.isAvailable) }
-    val tabGates = if (GateAccessibility.isAvailable) state.gates.filter { (it.gate.shortcutId.isEmpty()) == viaA11y } else state.gates
+    // Спосіб воріт — лише доступність (рішення власника, 23.11.2026): таба «Ярлик» нема, нові ворота завжди через службу.
+    // Збірка без служби (standard) лишає ярлик єдиним можливим способом. Ворота, створені раніше через ярлик, показуються
+    // в тому самому списку, щоб їх можна було видалити.
+    val viaA11y = GateAccessibility.isAvailable
+    val tabGates = state.gates
     val freeOpensPerDay by viewModel.freeOpensPerDay.collectAsState()
     val freeOpensUsed by viewModel.freeOpensUsed.collectAsState()
 
@@ -169,16 +171,6 @@ fun GatesScreen(
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     if (!searchActive && GateAccessibility.isAvailable) {
-                        item {
-                            PillSegmentedControl(
-                                options = listOf(
-                                    false to stringResource(R.string.gates_mode_shortcut),
-                                    true to stringResource(R.string.gates_mode_accessibility)
-                                ),
-                                selected = viaA11y,
-                                onSelect = { viaA11y = it }
-                            )
-                        }
                         if (viaA11y && !a11yEnabled) item {
                             AccessibilityGateCard(enabled = a11yEnabled, onOpen = requestA11y)
                         }

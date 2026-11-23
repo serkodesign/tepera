@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Картка віджетів-дій (2x2), темна: #0B2B25 90%, радіус 28dp. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#E60B2B25" />
+    <corners android:radius="28dp" />
+</shape>

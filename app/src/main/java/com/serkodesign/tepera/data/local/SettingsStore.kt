@@ -42,6 +42,8 @@ private val GATE_FREE_OPENS_PER_DAY_KEY = intPreferencesKey("gate_free_opens_per
 private val GATE_FREE_OPENS_DAY_KEY = longPreferencesKey("gate_free_opens_day")
 private val GATE_FREE_OPENS_USED_KEY = intPreferencesKey("gate_free_opens_used")
 private val WEEKLY_SUMMARY_ENABLED_KEY = booleanPreferencesKey("weekly_summary_enabled")
+private val WIDGET_SHOW_WEEK_KEY = booleanPreferencesKey("widget_show_week")
+private val WIDGET_SHOW_PAUSES_KEY = booleanPreferencesKey("widget_show_pauses")
 private val FEED_PACKAGES_KEY = stringSetPreferencesKey("v3_feed_packages")
 private val V3_MODE_KEY = booleanPreferencesKey("v3_mode_enabled")
 private val V3_ONBOARDING_SEEN_KEY = booleanPreferencesKey("v3_onboarding_seen")
@@ -259,6 +261,22 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setWidgetCategoryIds(ids: List<String>) {
         context.settingsDataStore.edit { it[WIDGET_CATEGORY_IDS_KEY] = ids.joinToString(",") }
+    }
+
+    /**
+     * Віджети «Цей тиждень» і «Паузи без телефону» показують числа, що можуть засмутити, тож пасивно (на робочому
+     * столі) вони з'являються лише коли людина сама ввімкнула їх у Налаштуваннях віджетів (tepera-dev-spec.md, 2.2).
+     * За замовчуванням вимкнено.
+     */
+    val widgetShowWeek: Flow<Boolean> = context.settingsDataStore.data.map { it[WIDGET_SHOW_WEEK_KEY] ?: false }
+    val widgetShowPauses: Flow<Boolean> = context.settingsDataStore.data.map { it[WIDGET_SHOW_PAUSES_KEY] ?: false }
+
+    suspend fun setWidgetShowWeek(show: Boolean) {
+        context.settingsDataStore.edit { it[WIDGET_SHOW_WEEK_KEY] = show }
+    }
+
+    suspend fun setWidgetShowPauses(show: Boolean) {
+        context.settingsDataStore.edit { it[WIDGET_SHOW_PAUSES_KEY] = show }
     }
 
     /**

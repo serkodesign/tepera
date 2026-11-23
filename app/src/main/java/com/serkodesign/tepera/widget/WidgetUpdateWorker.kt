@@ -24,7 +24,6 @@ class WidgetUpdateWorker(context: Context, params: WorkerParameters) : Coroutine
     override suspend fun doWork(): Result {
         WidgetLiveData.forceRefresh()
         TeperaWidget().updateAll(applicationContext)
-        TeperaWidget4x2().updateAll(applicationContext)
         TeperaWidget1x1().updateAll(applicationContext)
         TeperaWidget2x1().updateAll(applicationContext)
         updateAllInfoWidgets(applicationContext)
@@ -60,7 +59,6 @@ class WidgetRolloverWorker(context: Context, params: WorkerParameters) : Corouti
     override suspend fun doWork(): Result {
         WidgetLiveData.forceRefresh()
         TeperaWidget().updateAll(applicationContext)
-        TeperaWidget4x2().updateAll(applicationContext)
         TeperaWidget1x1().updateAll(applicationContext)
         TeperaWidget2x1().updateAll(applicationContext)
         updateAllInfoWidgets(applicationContext)

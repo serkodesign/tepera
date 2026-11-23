@@ -70,7 +70,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Jetpack Glance-віджет (FR-4.1) — компактна 4x1 і розширена 4x2 через SizeMode.Responsive -->
+        <!-- Jetpack Glance-віджет (FR-4.1) — ряд кнопок 4x1 (SizeMode.Exact) -->
         <receiver
             android:name=".widget.TeperaWidgetReceiver"
             android:exported="false">
@@ -80,18 +80,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/life_balance_widget_info" />
-        </receiver>
-
-        <!-- Той самий віджет із типовим розміром 4x2 — окремий запис у меню віджетів -->
-        <receiver
-            android:name=".widget.TeperaWidget4x2Receiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/life_balance_widget_4x2_info" />
         </receiver>
 
         <!-- 1x1: одна кнопка категорії (перша з обраних у налаштуваннях віджета) -->
@@ -141,6 +129,96 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info_orb" />
+        </receiver>
+
+        <!-- Віджети «години скролінгу» й дії (23.11.2026) — widget/ActionWidgets.kt -->
+        <receiver
+            android:name=".widget.NextHourWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_next_hour_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_next_hour" />
+        </receiver>
+        <receiver
+            android:name=".widget.IdeaWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_idea_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_idea" />
+        </receiver>
+        <receiver
+            android:name=".widget.RunningTimerWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_timer_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_timer" />
+        </receiver>
+        <receiver
+            android:name=".widget.QuietTodayWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_quiet_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_quiet" />
+        </receiver>
+        <receiver
+            android:name=".widget.GatePauseWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_gate_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_gate" />
+        </receiver>
+        <receiver
+            android:name=".widget.AddEntryWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_add_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_add" />
+        </receiver>
+        <receiver
+            android:name=".widget.WeekWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_week_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_week" />
+        </receiver>
+        <receiver
+            android:name=".widget.PausesWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_pauses_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_pauses" />
         </receiver>
 
         <!-- Quick Settings Tile (FR-4.4) -->
