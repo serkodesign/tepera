@@ -323,10 +323,6 @@
     <string name="widget_settings_remove">Remove from widget</string>
     <string name="widget_settings_drag_handle">Reorder</string>
     <string name="widget_settings_reset">Automatic order</string>
-    <string name="widget_settings_metrics_section">Numbers on widgets</string>
-    <string name="widget_settings_metrics_hint">These widgets show numbers, so they stay quiet until you switch them on.</string>
-    <string name="widget_settings_show_week">“This week” widget</string>
-    <string name="widget_settings_show_pauses">“Phone-free pauses” widget</string>
     <string name="gates_screen_title">Apps with a delay</string>
     <string name="gates_pause_label">Pause</string>
     <string name="gates_pause_none">Not paused</string>

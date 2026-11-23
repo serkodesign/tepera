@@ -338,10 +338,6 @@
     <string name="widget_settings_remove">Прибрати з віджета</string>
     <string name="widget_settings_drag_handle">Змінити порядок</string>
     <string name="widget_settings_reset">Автоматичний порядок</string>
-    <string name="widget_settings_metrics_section">Числа на віджетах</string>
-    <string name="widget_settings_metrics_hint">Ці віджети показують числа, тож мовчать, доки ти сам їх не ввімкнеш.</string>
-    <string name="widget_settings_show_week">Віджет «Цей тиждень»</string>
-    <string name="widget_settings_show_pauses">Віджет «Паузи без телефону»</string>
     <string name="gates_screen_title">Застосунки з затримкою</string>
     <string name="gates_pause_label">Пауза</string>
     <string name="gates_pause_none">Не на паузі</string>

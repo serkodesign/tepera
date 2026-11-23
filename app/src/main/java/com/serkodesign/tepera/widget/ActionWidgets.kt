@@ -119,9 +119,9 @@ abstract class ActionWidget : GlanceAppWidget() {
             safely { PlanOverlayStore.activeCommitment(context) ?: SuggestionPicker.pickFor(context, next.windowId)?.id }
         } else idea
         val gatePaused = if (wantsGate) safely { app.gateRepository.isPauseActive() } ?: false else false
-        val showWeek = if (wantsWeek) safely { app.settingsStore.widgetShowWeek.first() } ?: false else false
+        val showWeek = wantsWeek
         val week = if (v3 && wantsWeek && showWeek) safely { ActionWidgetData.week(app) } else null
-        val showPauses = if (wantsPauses) safely { app.settingsStore.widgetShowPauses.first() } ?: false else false
+        val showPauses = wantsPauses
         val pauses = if (wantsPauses && showPauses) safely { ActionWidgetData.unnamedPauses(app) } ?: 0 else 0
         return ActionState(
             v3 = v3, next = next, idea = nextIdea, gatePaused = gatePaused,
