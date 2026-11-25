@@ -54,3 +54,8 @@ object ScreenPackageRule {
 object SoftExitSessionBridge {
     @Volatile var endSession: (() -> Unit)? = null
 }
+
+/** Тестовий перегляд вікон м'якого виходу (екран тестувальників): служба доступності показує плашку/затемнення без очікування. */
+object SoftExitPreviewBridge {
+    @Volatile var show: ((String) -> Boolean)? = null
+}

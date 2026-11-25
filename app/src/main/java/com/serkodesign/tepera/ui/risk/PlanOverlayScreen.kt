@@ -185,7 +185,7 @@ fun PlanOverlayScreen(
     PlanSheetShell {
         PlanSheetAppRow(
             appLabel = c.appLabel,
-            subtitle = stringResource(R.string.v3_overlay_sheet_sub, formatClock(c.startMinute) + "–" + formatClock(c.endMinute))
+            subtitle = formatClock(c.startMinute) + "–" + formatClock(c.endMinute)
         )
         if (solving) {
             PuzzleStep(
@@ -217,6 +217,28 @@ fun PlanOverlayScreen(
 }
 
 /**
+ * Тестовий перегляд листа плану (екран тестувальників, beta): той самий вигляд, що й справжній, але з вигаданими даними,
+ * без вікон ризику й без запису в статистику. [kind]: "idea", "duration", "watching", "puzzle".
+ */
+@Composable
+fun PlanOverlayPreview(kind: String, onClose: () -> Unit) {
+    BackHandler(onBack = onClose)
+    val suggestion = remember { ActivitySuggestions.Suggestion(ActivitySuggestions.Id.WALK, null) }
+    PlanSheetShell {
+        PlanSheetAppRow(
+            appLabel = "Instagram",
+            subtitle = "22:40–00:10"
+        )
+        when (kind) {
+            "duration" -> DurationStep(onPick = { onClose() }, onBack = onClose)
+            "watching" -> WatchingStep(suggestion, onLeave = onClose, onOpenFive = onClose)
+            "puzzle" -> PuzzleStep(total = 2, level = QuickPuzzles.Level.NORMAL, onAllSolved = onClose, onLeave = onClose)
+            else -> SuggestionStep(suggestion, onYes = onClose, onAnother = onClose, onOpenFive = onClose)
+        }
+    }
+}
+
+/**
  * Задачки на шляху «Ще 5» м'якого виходу (з 3-го натискання за сесію; те саме правило, що для «Відкрити на 5 хв» на екрані
  * «я за тобою слідкую»). «Гаразд, іду» вільний, «назад» — повернення до плашки.
  */
@@ -231,7 +253,8 @@ fun SoftExitPuzzleScreen(
 ) {
     BackHandler(onBack = onBack)
     PlanSheetShell {
-        Text(appLabel, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall, modifier = Modifier.fillMaxWidth())
+        // Часу вікна тут нема (сесія вже йде в стрічці) — той самий хедер, але без часу.
+        PlanSheetAppRow(appLabel = appLabel, subtitle = "")
         PuzzleStep(total = puzzles, level = level, onAllSolved = onSolved, onLeave = onLeave)
     }
 }
@@ -243,23 +266,15 @@ private fun SuggestionStep(
     onAnother: () -> Unit,
     onOpenFive: () -> Unit
 ) {
-    val onSurface = MaterialTheme.colorScheme.onSurface
-    val variant = MaterialTheme.colorScheme.onSurfaceVariant
-    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xs), modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.v3_overlay_sheet_title_suggest), color = variant, style = MaterialTheme.typography.bodyMedium)
+    // Спрощено за макетом: лише ідея й дві дії — «Так, роблю це» і тихе «Відкрити на 5 хв». Без підписів і «Іншої ідеї».
+    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xxl), modifier = Modifier.fillMaxWidth().padding(top = TeperaSpacing.s)) {
         Text(
-            stringResource(suggestionTextRes(suggestion.id)), color = onSurface, style = MaterialTheme.typography.headlineSmall,
+            stringResource(suggestionTextRes(suggestion.id)), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.semantics { heading() }
         )
-        Text(stringResource(R.string.v3_sg_hint), color = variant, style = MaterialTheme.typography.bodyMedium)
-    }
-    // Кнопки за 3.4: головна — Filled M на всю ширину; під нею в рядку Outlined S і Text S. Дії й порядок з коду
-    // збережено: «Так, роблю це» (Filled), «Інша ідея» (Outlined), «Відкрити на 5 хв» (Text — найтихіша, це обхід).
-    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
-        M3Button(M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_sg_yes), onYes, Modifier.fillMaxWidth())
-        Row(horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
-            M3Button(M3ButtonType.Outlined, M3ButtonSize.S, stringResource(R.string.v3_sg_another), onAnother, Modifier.weight(1f))
-            M3Button(M3ButtonType.Text, M3ButtonSize.S, stringResource(R.string.v3_overlay_open_five), onOpenFive, Modifier.weight(1f))
+        Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.s), modifier = Modifier.fillMaxWidth()) {
+            M3Button(M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_sg_yes), onYes, Modifier.fillMaxWidth())
+            M3Button(M3ButtonType.Text, M3ButtonSize.S, stringResource(R.string.v3_overlay_open_five), onOpenFive, Modifier.fillMaxWidth())
         }
     }
 }

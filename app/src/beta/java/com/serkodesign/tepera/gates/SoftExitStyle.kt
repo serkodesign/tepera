@@ -83,10 +83,10 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
     fun body(value: String, color: Int = onSurfaceVariant) = text(value, 14f, 20f, 400, 0f, color)
 
     /** Кнопка за розділом 3.1 плану: S — 40dp, M — 56dp, форма full; текст S — labelLarge 14/20, M — titleMedium 16/24. */
-    fun button(type: ButtonType, size: ButtonSize, label: String, onClick: () -> Unit): TextView {
+    fun button(type: ButtonType, size: ButtonSize, label: String, onClick: () -> Unit, heightDp: Int? = null): TextView {
         val isM = size == ButtonSize.M
         // Text-кнопка без фону: висота 48dp (мінімальна ціль дотику M3) невидима, але дає зручне натискання.
-        val height = dp(if (isM) 56 else if (type == ButtonType.TEXT) 48 else 40)
+        val height = dp(heightDp ?: if (isM) 56 else if (type == ButtonType.TEXT) 48 else 40)
         val horizontal = dp(if (isM) 24 else if (type == ButtonType.TEXT) 12 else 16)
         val (container, content) = when (type) {
             ButtonType.FILLED -> primary to onPrimary
@@ -218,11 +218,12 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
         texts.addView(body(body))
         head.addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         pill.addView(head)
-        val more = button(ButtonType.OUTLINED, ButtonSize.S, moreText, onMore)
-        val leave = button(ButtonType.FILLED, ButtonSize.S, leaveText, onLeave)
+        val more = button(ButtonType.OUTLINED, ButtonSize.S, moreText, onMore, heightDp = 48)
+        val leave = button(ButtonType.FILLED, ButtonSize.S, leaveText, onLeave, heightDp = 48)
         val buttons = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        buttons.addView(more, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { rightMargin = dp(8) })
-        buttons.addView(leave, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        // Кнопки завжди на всю ширину порівну (за макетом), у обох стадіях плашки.
+        buttons.addView(more, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { rightMargin = dp(8) })
+        buttons.addView(leave, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         // MATCH_PARENT: інакше після expand() вага кнопок не має вільного місця (кнопки лишаються за вмістом і текст переноситься).
         pill.addView(buttons, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12) })
         return ExitPillViews(pill, more, leave)

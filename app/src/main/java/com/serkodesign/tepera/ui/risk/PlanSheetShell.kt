@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -92,7 +93,12 @@ fun PlanSheetAppRow(appLabel: String, subtitle: String, modifier: Modifier = Mod
         ) {
             Text(appLabel.take(1).uppercase(), color = M3Extra.colors.onDark, style = MaterialTheme.typography.titleSmall)
         }
-        Column {
+        // Назва застосунку ліворуч, час вікна праворуч (за макетом): обидва притиснуті догори рядка 20dp.
+        Row(
+            modifier = Modifier.weight(1f).height(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
             Text(appLabel, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall)
             Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }

@@ -95,6 +95,7 @@ class GateAccessibilityService : AccessibilityService() {
         gateRepository = (application as TeperaApp).gateRepository
         launcherPackages = resolveLauncherPackages()
         SoftExitSessionBridge.endSession = { softExit.endNow() }
+        com.serkodesign.tepera.util.SoftExitPreviewBridge.show = { kind -> softExit.showPreview(kind); true }
         softExit.foregroundCheck = { realForegroundPackage() }
         // «Усі стрічки разом»: перехід у іншу стрічку під час «5 хв» продовжує ту саму сесію.
         softExit.continuesInto = { pkg ->
@@ -290,6 +291,7 @@ class GateAccessibilityService : AccessibilityService() {
         pendingListener?.let { PlanOverlayStore.stopListening(this, it) }
         consentListener?.let { A11yConsentStore.stopListening(this, it) }
         SoftExitSessionBridge.endSession = null
+        com.serkodesign.tepera.util.SoftExitPreviewBridge.show = null
         if (::softExit.isInitialized) softExit.destroy()
         if (::berserk.isInitialized) berserk.destroy()
         scope.cancel()

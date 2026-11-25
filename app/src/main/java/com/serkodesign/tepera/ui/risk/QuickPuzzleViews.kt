@@ -60,16 +60,6 @@ fun PuzzleStep(total: Int, level: QuickPuzzles.Level, onAllSolved: () -> Unit, o
     var attempt by remember { mutableIntStateOf(0) }
     val puzzle = remember(index, attempt) { QuickPuzzles.generate(kinds[index], level = level) }
 
-    Column(verticalArrangement = Arrangement.spacedBy(TeperaSpacing.xs), modifier = Modifier.fillMaxWidth()) {
-        Text(
-            stringResource(R.string.v3_puzzle_title), color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() }
-        )
-        Text(
-            if (total > 1) stringResource(R.string.v3_puzzle_hint_steps, index + 1, kinds.size) else stringResource(R.string.v3_puzzle_hint),
-            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium
-        )
-    }
     key(index, attempt) {
         PuzzleBody(
             puzzle = puzzle,
@@ -272,8 +262,9 @@ private fun SudokuBody(puzzle: QuickPuzzles.Sudoku, onSolved: () -> Unit, onWron
 
 @Composable
 private fun IntentionBody(onSolved: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.v3_puzzle_intent_title), color = MaterialTheme.colorScheme.onSurface, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium)
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.v3_puzzle_intent_title), color = MaterialTheme.colorScheme.onSurface, fontSize = 24.sp, lineHeight = 32.sp, textAlign = TextAlign.Center)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
         listOf(R.string.v3_puzzle_intent_1, R.string.v3_puzzle_intent_2, R.string.v3_puzzle_intent_3).forEach { res ->
             TeperaButton(
                 text = stringResource(res),
@@ -282,6 +273,7 @@ private fun IntentionBody(onSolved: () -> Unit) {
                 type = TeperaButtonType.Secondary,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
         }
     }
 }

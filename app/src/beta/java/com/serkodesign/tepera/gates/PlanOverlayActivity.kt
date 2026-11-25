@@ -44,6 +44,15 @@ class PlanOverlayActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
         )
+        // Тестовий перегляд з екрана тестувальників: статичний вміст листа без вікон, стрічок і запису в статистику.
+        intent.getStringExtra(EXTRA_PREVIEW)?.let { kind ->
+            setContent {
+                ProvideAppLocale {
+                    TeperaTheme { com.serkodesign.tepera.ui.risk.PlanOverlayPreview(kind = kind, onClose = { finish() }) }
+                }
+            }
+            return
+        }
         val puzzles = intent.getIntExtra(EXTRA_SOFT_EXIT_PUZZLES, 0)
         if (puzzles > 0) {
             // Задачки на шляху «Ще 5» м'якого виходу: результат повертаємо контролеру через [SoftExitPuzzleBridge].
@@ -105,6 +114,7 @@ class PlanOverlayActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_SOFT_EXIT_PUZZLES = "soft_exit_puzzles"
+        const val EXTRA_PREVIEW = "plan_preview"
         const val EXTRA_APP_LABEL = "soft_exit_app_label"
     }
 }

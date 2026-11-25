@@ -407,7 +407,7 @@ class SoftExitController(private val service: AccessibilityService) {
         s.extensions++
         s.deadline = System.currentTimeMillis() + SESSION_MILLIS
         s.strong = false
-        PlanOverlayStore.recordSoftExitExtended(service)
+        if (!previewActive) PlanOverlayStore.recordSoftExitExtended(service)
         handler.removeCallbacks(onStrong)
         removeAll()
         schedule()
@@ -443,9 +443,37 @@ class SoftExitController(private val service: AccessibilityService) {
         )
     }
 
+    // --- Тестовий перегляд (екран тестувальників) ---
+    // Показує ті самі вікна, що й справжній вихід, але без очікування й без запису в статистику.
+    private var previewActive = false
+    private val endPreview = Runnable {
+        previewActive = false
+        session = null
+        handler.removeCallbacks(onDeadline)
+        handler.removeCallbacks(onStrong)
+        removeAll()
+    }
+
+    /** [kind]: "pill" — плашка, "pill_strong" — стадія «+2 хв», "confirm" — «Ще 5 хвилин?», "toast" — тост після виходу. */
+    fun showPreview(kind: String) {
+        handler.removeCallbacks(endPreview)
+        endPreview.run()
+        val now = System.currentTimeMillis()
+        val s = Session(service.packageName, "Instagram", localized().getString(R.string.v3_sg_walk), now - SESSION_MILLIS, now)
+        previewActive = true
+        session = s
+        when (kind) {
+            "toast" -> { session = null; showToast(localized().getString(R.string.soft_exit_toast_on_time, SESSION_MINUTES, SESSION_MINUTES)) }
+            "confirm" -> { showDim(); showConfirm(s) }
+            else -> { showDim(); showPill(s); if (kind == "pill_strong") strengthenDim() }
+        }
+        handler.postDelayed(endPreview, PREVIEW_MILLIS)
+    }
+
     private fun finish(onTime: Boolean) {
         if (session == null) return
-        if (onTime) PlanOverlayStore.recordSoftExitOnTime(service)
+        if (onTime && !previewActive) PlanOverlayStore.recordSoftExitOnTime(service)
+        previewActive = false
         session = null
         handler.removeCallbacks(onDeadline)
         handler.removeCallbacks(onStrong)
@@ -512,6 +540,7 @@ class SoftExitController(private val service: AccessibilityService) {
         const val START_GRACE_MILLIS = 4_000L
         const val FADE_MILLIS = 3_000L
         const val TOAST_MILLIS = 2_500L
+        const val PREVIEW_MILLIS = 30_000L
         const val RESTORE_FADE_MILLIS = 700L
         const val RESTORE_IGNORE_MILLIS = 2_000L
         const val SYSTEM_SURFACE_MAX_HIDE_MILLIS = 30_000L

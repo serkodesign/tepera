@@ -111,7 +111,7 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                         }
                     )
                 }
-                if (BuildConfig.GATE_ACCESSIBILITY) BerserkTestCard()
+                if (BuildConfig.GATE_ACCESSIBILITY) { PreviewWindowsCard(); BerserkTestCard() }
                 TeperaButton(
                     text = stringResource(R.string.v3_tester_restart),
                     onClick = onRestartOnboarding,
@@ -123,6 +123,44 @@ fun TesterStatsScreen(onBack: () -> Unit, onOpenTools: () -> Unit, onRestartOnbo
                     type = TeperaButtonType.Secondary
                 )
             }
+        }
+    }
+}
+
+/**
+ * Тестовий перегляд вікон поверх стрічок: лист плану (його малює окрема activity beta-збірки) і плашка/затемнення
+ * м'якого виходу (їх малює служба доступності через [com.serkodesign.tepera.util.SoftExitPreviewBridge]). Без очікування
+ * й без запису в статистику.
+ */
+@Composable
+private fun PreviewWindowsCard() {
+    val context = LocalContext.current
+    TeperaCard(title = stringResource(R.string.preview_title)) {
+        Text(stringResource(R.string.preview_hint), style = MaterialTheme.typography.bodyMedium)
+        fun sheet(kind: String) {
+            runCatching {
+                context.startActivity(
+                    android.content.Intent().setClassName(context, "com.serkodesign.tepera.gates.PlanOverlayActivity")
+                        .putExtra("plan_preview", kind)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                )
+            }
+        }
+        fun overlay(kind: String) {
+            val shown = com.serkodesign.tepera.util.SoftExitPreviewBridge.show?.invoke(kind) ?: false
+            if (!shown) Toast.makeText(context, context.getString(R.string.preview_need_a11y), Toast.LENGTH_LONG).show()
+        }
+        listOf(
+            R.string.preview_idea to { sheet("idea") },
+            R.string.preview_duration to { sheet("duration") },
+            R.string.preview_watching to { sheet("watching") },
+            R.string.preview_puzzle to { sheet("puzzle") },
+            R.string.preview_pill to { overlay("pill") },
+            R.string.preview_pill_strong to { overlay("pill_strong") },
+            R.string.preview_confirm to { overlay("confirm") },
+            R.string.preview_toast to { overlay("toast") }
+        ).forEach { (label, action) ->
+            TeperaButton(text = stringResource(label), onClick = action, type = TeperaButtonType.Secondary)
         }
     }
 }
@@ -153,6 +191,20 @@ private fun BerserkTestCard() {
                     context.startActivity(
                         android.content.Intent().setClassName(context, "com.serkodesign.tepera.gates.BerserkActivity")
                             .putExtra("berserk_until", until).putExtra("berserk_joke", 0)
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    )
+                }
+            },
+            type = TeperaButtonType.Secondary
+        )
+        TeperaButton(
+            text = stringResource(R.string.preview_berserk_reopen),
+            onClick = {
+                val until = System.currentTimeMillis() + 2 * 60_000L
+                runCatching {
+                    context.startActivity(
+                        android.content.Intent().setClassName(context, "com.serkodesign.tepera.gates.BerserkActivity")
+                            .putExtra("berserk_until", until).putExtra("berserk_joke", -1)
                             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     )
                 }
