@@ -72,7 +72,8 @@ fun AboutScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 TeperaCard(
-                    modifier = if (BuildConfig.V3_MVP) {
+                    modifier = if (BuildConfig.V3_MVP && BuildConfig.DEBUG) {
+                        // Службовий екран тестувальників — довге натискання на версію лише в debug-збірках; у релізній AAB вимкнено.
                         // v3 Етап 0: службовий екран годин ризику — довге натискання на версію (лише beta).
                         Modifier.combinedClickable(onClick = {}, onLongClick = onOpenTesterStats)
                     } else Modifier,
