@@ -51,7 +51,7 @@ import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.HeatGrid
 import com.serkodesign.tepera.domain.risk.PartOfDay
 import com.serkodesign.tepera.ui.theme.TeperaButton
-import com.serkodesign.tepera.ui.theme.M3Card
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.M3Extra
 import com.serkodesign.tepera.ui.theme.TeperaExtraShapes
 import com.serkodesign.tepera.ui.theme.TeperaSpacing
@@ -65,29 +65,6 @@ import java.util.Locale
  * Спільні елементи екранів v3.0 (Figma "App concept", сторінка v3.0: `v3/HeatWeek` 909:144, `v3/RiskWindowCard`
  * 909:380). Усі кольори — токени [TeperaPalette] (світла й темна тема), не значення з макета напряму.
  */
-
-/** Скляна картка v3: ті самі радіус 16, поле 16 і проміжок 12, що в [com.serkodesign.tepera.ui.theme.TeperaCard]; обвідка — якщо тема її має. */
-@Composable
-internal fun V3Card(
-    modifier: Modifier = Modifier,
-    padding: PaddingValues = PaddingValues(16.dp),
-    radius: Dp = 16.dp,
-    spacing: Dp = 12.dp,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    val border = TeperaPalette.activityCardIdleBorder
-    val shape = RoundedCornerShape(radius)
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(TeperaPalette.cardSurface)
-            .let { if (border != null) it.border(1.dp, border, shape) else it }
-            .padding(padding),
-        verticalArrangement = Arrangement.spacedBy(spacing),
-        content = content
-    )
-}
 
 
 internal fun formatWindowTime(startMinute: Int, endMinute: Int): String =
@@ -117,10 +94,8 @@ fun HeatWeek(
     val axisStyle = MaterialTheme.typography.bodySmall
     val rows = dates.size
 
-    M3Card(
-        modifier = modifier.semantics(mergeDescendants = true) { contentDescription = description },
-        spacing = TeperaSpacing.s,
-        appStyle = true
+    TeperaCard(
+        modifier = modifier.semantics(mergeDescendants = true) { contentDescription = description }
     ) {
         Row {
             Column(Modifier.width(28.dp)) {
@@ -244,7 +219,7 @@ fun RiskWindowCard(window: RiskWindowUi, onOpenWhy: () -> Unit, modifier: Modifi
     // Дизайн-система v3.1 (3.3 плану): M3Card, час titleLarge + бейдж повторюваності праворуч, мета bodySmall і крапки
     // через 4dp. Блок «план / немає плану» зі специфікації не додано: у RiskWindowUi даних про план нема, а картка
     // свідомо про саме вікно (підказка приходить через оверлей і нагадування) — нова функція поза обсягом міграції.
-    M3Card(modifier = modifier, glass = true) {
+    TeperaCard(modifier = modifier) {
         // Верхня частина відкриває «Чому це вікно?» (M6).
         Column(
             Modifier.fillMaxWidth()

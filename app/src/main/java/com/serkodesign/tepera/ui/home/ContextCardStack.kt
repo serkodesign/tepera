@@ -11,8 +11,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -143,7 +146,10 @@ private fun ContextCardSlot(visible: Boolean, content: @Composable () -> Unit) {
         exit = fadeOut(tween(TeperaMotion.SHORT3, easing = TeperaMotion.EmphasizedAccelerate)) +
             (if (motion) shrinkVertically(TeperaSpecs.spatial()) else shrinkVertically(snap()))
     ) {
-        content()
+        // Зовнішні відступи задає екран, не картка: 16 з боків, 12 до наступної картки.
+        Box(Modifier.padding(horizontal = TeperaSpacing.screenHorizontal).padding(bottom = TeperaSpacing.betweenCards)) {
+            content()
+        }
     }
 }
 
@@ -173,21 +179,6 @@ internal fun ContextCardHeader(
             )
         }
     }
-}
-
-/**
- * Поверхня інформаційної картки за Figma 367:1532 ("Цей місяць"): білий 70% (темна — `card`), радіус 24,
- * біла рамка 1dp у світлій темі. Спільна для всіх карток із заголовком-закриттям, щоб вони виглядали однаково.
- */
-@Composable
-internal fun Modifier.contextInfoSurface(): Modifier {
-    val shape = RoundedCornerShape(24.dp)
-    // Та сама рамка, що в PatternMiniCard (світла — білий 70%, темна — без рамки як у "Мій день").
-    val border = TeperaPalette.homeCardBorderPattern
-    return this
-        .clip(shape)
-        .background(TeperaPalette.cardTranslucentLight)
-        .then(if (border != null) Modifier.border(1.dp, border, shape) else Modifier)
 }
 
 /** Мітка-заголовок інформаційної картки за Figma 367:1534: 11sp, колір бренду. */

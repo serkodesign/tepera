@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -39,14 +41,7 @@ import com.serkodesign.tepera.util.roundToQuarterHour
  */
 @Composable
 fun WeeklyReflectionCard(state: WeeklyReflectionUiState, onSelectGuess: (WeeklyOnlineGuess) -> Unit, onDismiss: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    TeperaCard(variant = TeperaCardVariant.Context) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = stringResource(R.string.weekly_reflection_question),

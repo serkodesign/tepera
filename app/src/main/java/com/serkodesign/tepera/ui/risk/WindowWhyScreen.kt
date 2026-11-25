@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.domain.risk.DayType
 import com.serkodesign.tepera.domain.risk.PartOfDay
@@ -123,7 +124,7 @@ private fun Explanation(data: WhyUi) {
     val and = stringResource(R.string.v3_why_and)
     val appTemplate = stringResource(R.string.v3_why_app_format)
     val weekdayNames = stringArrayResource(R.array.v3_weekdays_accusative)
-    V3Card(padding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)) {
+    TeperaCard {
         Text(
             stringResource(
                 if (data.dayType == DayType.WEEKDAYS) R.string.v3_why_line1_weekdays else R.string.v3_why_line1_days,
@@ -148,7 +149,7 @@ private fun formatClock(minute: Int) = String.format(java.util.Locale.ROOT, "%02
 /** `GlassRow` макета: коло з іконкою, підпис 16sp і перемикач; зміна одразу зберігається. */
 @Composable
 private fun EnabledRow(data: WhyUi, onChange: (Boolean) -> Unit) {
-    V3Card(radius = 16.dp, padding = PaddingValues(12.dp)) {
+    TeperaCard {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(40.dp).clip(CircleShape).background(TeperaPalette.surfaceBrandLight),
@@ -175,7 +176,7 @@ private fun EnabledRow(data: WhyUi, onChange: (Boolean) -> Unit) {
 /** Пауза: вікно не показує підказок, поки людина не зніме її або не мине два тижні; на відміну від вимкнення, повертається саме. */
 @Composable
 private fun PauseRow(data: WhyUi, onChange: (Boolean) -> Unit) {
-    V3Card(radius = 16.dp, padding = PaddingValues(12.dp)) {
+    TeperaCard {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(40.dp).clip(CircleShape).background(TeperaPalette.surfaceBrandLight),

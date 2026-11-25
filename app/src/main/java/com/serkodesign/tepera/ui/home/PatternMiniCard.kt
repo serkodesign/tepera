@@ -35,13 +35,7 @@ fun PatternMiniCard(state: PatternUiState, modifier: Modifier = Modifier) {
 
     // Figma node 347:3209 ("Day usage"): радіус 24 (не загальні 28dp), суцільний #F5F5F5 + біла
     // рамка 1dp, асиметричний відступ top-16/sides-12/bottom-12 (не рівний 16 звідусіль).
-    HomeCardSurface(
-        modifier = modifier,
-        containerColor = TeperaPalette.homeCardFillPattern,
-        cornerRadius = 24.dp,
-        borderColor = TeperaPalette.homeCardBorderPattern,
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 12.dp)
-    ) {
+    HomeCardSurface(modifier = modifier) {
         HomeCardTitleRow(
             title = stringResource(R.string.pattern_card_title),
             onInfo = { showInfo = true }

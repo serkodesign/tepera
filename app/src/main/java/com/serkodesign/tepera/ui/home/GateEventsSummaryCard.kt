@@ -15,6 +15,8 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 /**
@@ -25,14 +27,7 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  */
 @Composable
 fun GateEventsSummaryCard(state: GateEventsSummaryUiState, onDismiss: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    TeperaCard(variant = TeperaCardVariant.Context) {
         ContextCardHeader(title = stringResource(R.string.gate_events_summary_card_title), onDismiss = onDismiss)
         Text(
             pluralStringResource(R.plurals.gate_events_summary_text, state.cancelledCount, state.cancelledCount),

@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.pattern.HourlyHeatGridTall
 import com.serkodesign.tepera.ui.theme.TeperaButton
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import java.time.LocalDate
 import java.time.Month
@@ -92,7 +94,7 @@ fun SummarySheet(
             val yesterday = completed[today.minusDays(1)]
             when (tab) {
                 SummaryTab.YESTERDAY -> {
-                    GlassCard(cornerRadius = 16.dp) {
+                    GlassCard(TeperaCardVariant.Standard) {
                         Text(
                             text = stringResource(R.string.pattern_card_title),
                             modifier = Modifier.semantics { heading() },
@@ -108,7 +110,7 @@ fun SummarySheet(
                 }
                 SummaryTab.WEEK -> {
                     val bars = remember(today, completed, todayOffline, todayOnline) { buildCalendarWeek(today, completed, todayOffline, todayOnline) }
-                    GlassCard(cornerRadius = 24.dp) {
+                    GlassCard(TeperaCardVariant.Context) {
                         ChartTitle(stringResource(R.string.summary_week_online))
                         OnlineChart(bars, locale, weekdayLabels = true)
                     }
@@ -116,7 +118,7 @@ fun SummarySheet(
                 }
                 SummaryTab.MONTH -> {
                     val bars = remember(today, completed, todayOffline, todayOnline) { buildCalendarMonth(today, completed, todayOffline, todayOnline) }
-                    GlassCard(cornerRadius = 24.dp) {
+                    GlassCard(TeperaCardVariant.Context) {
                         ChartTitle(monthName(today, locale))
                         OnlineChart(bars, locale, weekdayLabels = false)
                     }
@@ -176,19 +178,10 @@ private fun SummaryTabs(selected: SummaryTab, onSelect: (SummaryTab) -> Unit) {
     }
 }
 
-/** Скляна картка шторки (`surface/glass` + `card/activity-border`). */
+/** Картка шторки — єдиний [TeperaCard]; варіант лише розрізняє радіус (Standard — патерн, Context — графіки). */
 @Composable
-private fun GlassCard(cornerRadius: androidx.compose.ui.unit.Dp, content: @Composable () -> Unit) {
-    val shape = RoundedCornerShape(cornerRadius)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(TeperaPalette.activityCardIdle)
-            .then(TeperaPalette.activityCardIdleBorder?.let { Modifier.border(1.dp, it, shape) } ?: Modifier)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) { content() }
+private fun GlassCard(variant: TeperaCardVariant, content: @Composable () -> Unit) {
+    TeperaCard(variant = variant) { content() }
 }
 
 @Composable
@@ -252,14 +245,8 @@ private fun StatsRow(offline: Int?, online: Int?) {
 
 @Composable
 private fun StatCard(label: String, text: String, size: Int, modifier: Modifier) {
-    val shape = RoundedCornerShape(18.dp)
-    Column(
-        modifier = modifier
-            .clip(shape)
-            .background(TeperaPalette.activityCardIdle)
-            .then(TeperaPalette.activityCardIdleBorder?.let { Modifier.border(1.dp, it, shape) } ?: Modifier)
-            .padding(horizontal = 14.dp, vertical = 10.dp)
-    ) {
+    TeperaCard(modifier = modifier) {
+      Column {
         Text(
             text = label,
             color = TeperaPalette.textSecondary,
@@ -276,6 +263,7 @@ private fun StatCard(label: String, text: String, size: Int, modifier: Modifier)
             lineHeight = (size * 1.1f).sp,
             maxLines = 1
         )
+      }
     }
 }
 

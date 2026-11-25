@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.TeperaApp
 import com.serkodesign.tepera.data.NudgeScheduler
 import com.serkodesign.tepera.domain.risk.DayType
@@ -89,7 +90,7 @@ fun WindowEditorScreen(windowId: String?, onBack: () -> Unit) {
                         TimeCard(stringResource(R.string.v3_editor_start), start, Modifier.weight(1f)) { pickStart = true }
                         TimeCard(stringResource(R.string.v3_editor_end), end, Modifier.weight(1f)) { pickEnd = true }
                     }
-                    V3Card(padding = PaddingValues(16.dp), spacing = 12.dp) {
+                    TeperaCard {
                         Text(stringResource(R.string.v3_editor_days), color = TeperaPalette.textPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                         PillSegmentedControl(
                             options = listOf(
@@ -158,15 +159,15 @@ fun WindowEditorScreen(windowId: String?, onBack: () -> Unit) {
 
 @Composable
 private fun TimeCard(label: String, minute: Int, modifier: Modifier, onClick: () -> Unit) {
-    V3Card(
-        modifier = modifier.clickable(role = Role.Button, onClick = onClick),
-        padding = PaddingValues(horizontal = 16.dp, vertical = 14.dp), radius = 20.dp, spacing = 4.dp
-    ) {
-        Text(label, color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
-        Text(
-            String.format(Locale.ROOT, "%02d:%02d", minute / 60 % 24, minute % 60),
-            color = TeperaPalette.textPrimary, fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium
-        )
+    TeperaCard(modifier = modifier.clickable(role = Role.Button, onClick = onClick)) {
+        // Підпис і час — одна група з тісним проміжком 4, решта картки — стандартний проміжок 12.
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(label, color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp)
+            Text(
+                String.format(Locale.ROOT, "%02d:%02d", minute / 60 % 24, minute % 60),
+                color = TeperaPalette.textPrimary, fontSize = 27.sp, lineHeight = 30.sp, fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

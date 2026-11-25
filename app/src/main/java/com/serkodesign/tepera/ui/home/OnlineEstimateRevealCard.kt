@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.onboarding.DailyOnlineGuess
 import com.serkodesign.tepera.ui.onboarding.dailyGuessLabel
 import com.serkodesign.tepera.ui.theme.TeperaEstimateBar
@@ -45,16 +47,11 @@ fun OnlineEstimateRevealCard(state: OnlineEstimateRevealUiState, onDismiss: () -
     val scaleMinutes = scaleHours * 60
     val guessRange = if (guess != null) guessRangeMinutes(state.estimatedMinutes, scaleMinutes) else null
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp)
-            .semantics(mergeDescendants = true) {
-                contentDescription = "$guessLabel: $guessText. $actualLabel: $actualText"
-            },
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    TeperaCard(
+        variant = TeperaCardVariant.Context,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = "$guessLabel: $guessText. $actualLabel: $actualText"
+        }
     ) {
         // Figma "Estimate card" (k6s4prQ9oK9x2uUvzHRghR, 626:126/626:161): заголовок — стиль "Tag", Golos Regular 11 / 1.1, ink.
         ContextCardHeader(

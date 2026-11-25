@@ -14,6 +14,8 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 /**
@@ -23,14 +25,7 @@ import com.serkodesign.tepera.ui.theme.TeperaPalette
  */
 @Composable
 fun WelcomeBackCard(state: WelcomeBackUiState, onDismiss: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    TeperaCard(variant = TeperaCardVariant.Context) {
         ContextCardHeader(title = stringResource(R.string.welcome_back_title), onDismiss = onDismiss)
         // Той самий основний текст, що в GateEventsSummaryCard ("Цей місяць", Figma 367:1535):
         // 18sp Medium, темно-зелений. Кілька фактів — один під одним із вужчим проміжком (4dp),

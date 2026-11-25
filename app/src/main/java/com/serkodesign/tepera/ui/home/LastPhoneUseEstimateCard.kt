@@ -18,6 +18,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -38,14 +40,7 @@ fun LastPhoneUseEstimateCard(
     onDismiss: () -> Unit
 ) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    TeperaCard(variant = TeperaCardVariant.Context) {
         if (state.guess == null) {
             Text(
                 text = stringResource(R.string.last_phone_use_estimate_question),

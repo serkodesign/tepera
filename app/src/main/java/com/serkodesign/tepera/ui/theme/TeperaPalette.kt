@@ -110,18 +110,13 @@ object TeperaPalette {
     val activityMoreTimeContent: Color @Composable @ReadOnlyComposable get() = themed(Color(0xFF003926)) { if (isDawn) ink else if (isDark) Color(0xFFDCF6ED) else Color(0xFF003926) }
     /** Рамка 1dp ідлу-картки активності (node 347:3052: `border border-white`) — лише світлий редизайн, активна картка й легасі її не мають. */
     val activityCardIdleBorder: Color? @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.let { if (it === LegacyTeperaColors) null else if (it.isDark) it.listItem else Color(0xB3FFFFFF) }
+    /** Єдина рамка 1dp усіх карток ([TeperaCard]): світла — білий 70%, темна — колір заливки (тобто непомітна), легасі — без рамки. */
+    val cardBorder: Color? @Composable @ReadOnlyComposable get() = activityCardIdleBorder
     val headerButtonFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { iconButtonFill } // білий 50% (було 80% за Figma; змінено за запитом користувача)
     val homeCardFill: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else card } // білий 70% (було 65% за Figma; за запитом користувача) — Патерн / Цей тиждень
     // Твій день (node 347:3166, "My day"): rgba(255,255,255,0.7) буквально — редизайн світлої теми
     // тепер теж на цьому значенні (раніше брав роль `card`, інший колір), темну не чіпаємо (лишається `card`).
     val homeCardFillMyDay: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
-    // Патерн доби: та сама заливка, що й "Твій день" (rgba(255,255,255,0.7)) — за запитом користувача,
-    // щоб обидві картки пейджера Home виглядали однаково. Біла рамка 1dp лишається (див. нижче).
-    val homeCardFillPattern: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
-    // Темна тема — без рамки, як "Мій день" (MyDayCard): інформаційні картки лише заливкою listItem.
-    val homeCardBorderPattern: Color? @Composable @ReadOnlyComposable get() = LocalTeperaColors.current.let { if (it === LegacyTeperaColors || it.isDark) null else Color(0xB3FFFFFF) }
-    // Цей тиждень (node 347:3267, "This week"): rgba(255,255,255,0.65), без рамки — лише світлий редизайн.
-    val homeCardFillWeeklyDigest: Color @Composable @ReadOnlyComposable get() = themed(Color(0xB3FFFFFF)) { if (isDark) listItem else Color(0xB3FFFFFF) }
 
     // "Новий екран додавання активності" (Figma "App concept" k6s4prQ9oK9x2uUvzHRghR, node
     // 61:3516) — фіолетовий акцент лише для чіпів часу (Початок/Фініш, підсумок тривалості),

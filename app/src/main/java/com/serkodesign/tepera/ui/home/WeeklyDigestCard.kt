@@ -126,12 +126,7 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
 
     // Figma node 347:3267 ("This week"): радіус 24 (не загальні 28dp), rgba(255,255,255,0.65) без
     // рамки, асиметричний відступ top-16/sides-12/bottom-12 (не рівний 16 звідусіль).
-    HomeCardSurface(
-        modifier = modifier,
-        containerColor = TeperaPalette.homeCardFillWeeklyDigest,
-        cornerRadius = 24.dp,
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 12.dp)
-    ) {
+    HomeCardSurface(modifier = modifier) {
         HomeCardTitleRow(
             title = stringResource(R.string.weekly_digest_card_title),
             onInfo = { showInfo = true }

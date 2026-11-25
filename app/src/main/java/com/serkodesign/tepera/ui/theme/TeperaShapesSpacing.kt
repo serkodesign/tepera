@@ -33,6 +33,16 @@ object TeperaExtraShapes {
  * Дизайн-система v3.1: шкала відступів (розділ 2.5 плану) — 2, 4, 8, 12, 16, 20, 24, 32, 40 dp.
  * Значення поза шкалою заборонені. Розміри іконок і висоти компонентів сюди не входять.
  */
+/**
+ * Варіанти єдиної картки [TeperaCard]: Standard — Статистика/Налаштування/екрани v3; Context — контекстні картки Home;
+ * Hero — головні картки Головної v2. Відступ — однаковий з усіх боків.
+ */
+enum class TeperaCardVariant(val radius: androidx.compose.ui.unit.Dp, val padding: androidx.compose.ui.unit.Dp) {
+    Standard(16.dp, 16.dp),
+    Context(24.dp, 16.dp),
+    Hero(28.dp, 20.dp)
+}
+
 object TeperaSpacing {
     val xxs = 2.dp
     val xs = 4.dp

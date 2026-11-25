@@ -54,13 +54,14 @@ fun M3GroupLabel(text: String, modifier: Modifier = Modifier, top: Dp = 12.dp, b
  */
 @Composable
 fun M3ListGroup(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    val extra = M3Extra.colors
+    // Заливка й рамка — ті самі токени, що в TeperaCard; радіус 16 = TeperaCardVariant.Standard, відступ лише вертикальний (рядки несуть власний).
+    val border = TeperaPalette.cardBorder
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(GroupShape)
-            .background(extra.glass)
-            .border(1.dp, extra.cardStroke, GroupShape)
+            .background(TeperaPalette.cardSurface)
+            .then(if (border != null) Modifier.border(1.dp, border, GroupShape) else Modifier)
             .padding(vertical = 4.dp),
         content = content
     )

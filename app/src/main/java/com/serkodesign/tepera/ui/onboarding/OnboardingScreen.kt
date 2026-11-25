@@ -52,7 +52,7 @@ import com.serkodesign.tepera.data.repository.BalanceRepository
 import com.serkodesign.tepera.ui.theme.M3Button
 import com.serkodesign.tepera.ui.theme.M3ButtonSize
 import com.serkodesign.tepera.ui.theme.M3ButtonType
-import com.serkodesign.tepera.ui.theme.M3Card
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.OnboardingTopBar
 import com.serkodesign.tepera.ui.theme.TeperaSpacing
 import com.serkodesign.tepera.ui.theme.TeperaOnboardingTitle
@@ -156,7 +156,7 @@ fun OnboardingScreen(
             Spacer(Modifier.height(TeperaSpacing.xxxl))
 
             // Дизайн-система v3.1: картка M3Card (було напівпрозорий білий 30%, радіус 16, padding 12, gap 8) — поле 16, проміжок 8.
-            M3Card(spacing = TeperaSpacing.s) {
+            TeperaCard {
                 PermissionRow(
                     label = stringResource(R.string.perm_usage_label),
                     granted = usageGranted,

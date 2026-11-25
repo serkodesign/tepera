@@ -43,6 +43,8 @@ import com.serkodesign.tepera.R
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonSize
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaPalette
 
 /**
@@ -63,22 +65,12 @@ internal val HomeCardTextSecondary: Color @Composable @ReadOnlyComposable get() 
 @Composable
 internal fun HomeCardSurface(
     modifier: Modifier = Modifier,
-    containerColor: Color = TeperaPalette.homeCardFill,
-    cornerRadius: androidx.compose.ui.unit.Dp = 28.dp,
-    borderColor: Color? = null,
-    contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val shape = RoundedCornerShape(cornerRadius)
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 182.dp)
-            .clip(shape)
-            .background(containerColor)
-            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
-            .padding(contentPadding),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    // Єдиний стандарт карток: радіус, відступ, проміжок і рамка — з TeperaCard (варіант Context). Лишилась тільки мін. висота.
+    TeperaCard(
+        modifier = modifier.heightIn(min = 182.dp),
+        variant = TeperaCardVariant.Context,
         content = content
     )
 }

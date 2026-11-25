@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
  * групи всередині через 12dp. Кольори — [M3Extra], форма — `MaterialTheme.shapes.large`. Паралельна заміна
  * `TeperaCard`/`V3Card` (ті не змінювались; екрани переходять у етапі D, старі компоненти видаляються в I27).
  */
+@Deprecated("Єдиний стандарт карток — TeperaCard (варіанти Standard/Context/Hero)", ReplaceWith("TeperaCard(modifier, content = content)"))
 @Composable
 fun M3Card(
     modifier: Modifier = Modifier,

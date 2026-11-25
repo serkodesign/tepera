@@ -13,6 +13,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaPalette
@@ -30,14 +32,7 @@ import com.serkodesign.tepera.widget.TeperaWidgetReceiver
 @Composable
 fun WidgetSuggestionCard(onAdded: () -> Unit, onDismiss: () -> Unit) {
     val context = LocalContext.current
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    TeperaCard(variant = TeperaCardVariant.Context) {
         ContextCardHeader(title = stringResource(R.string.widget_suggestion_title), onDismiss = onDismiss)
         Text(
             text = stringResource(R.string.widget_suggestion_body),

@@ -53,6 +53,8 @@ import com.serkodesign.tepera.ui.theme.M3ListDivider
 import com.serkodesign.tepera.ui.theme.M3ListGroup
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
@@ -136,13 +138,10 @@ internal fun NextHourCard(
         teperaColors.isDawn -> teperaColors.brand
         else -> Color(0xFF71CCA4)
     }
-    val cardFill = cardTint?.copy(alpha = 0.16f) ?: MaterialTheme.colorScheme.surfaceContainerLowest
-    val cardStroke = cardTint?.copy(alpha = 0.40f) ?: MaterialTheme.colorScheme.outlineVariant
-    Column(
-        Modifier.fillMaxWidth().clip(HeroShape).background(cardFill)
-            .border(1.dp, cardStroke, HeroShape)
-            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    TeperaCard(
+        variant = TeperaCardVariant.Hero,
+        containerColor = cardTint?.copy(alpha = 0.16f),
+        borderColor = cardTint?.copy(alpha = 0.40f)
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -228,13 +227,9 @@ internal fun WeekCard(windows: List<RiskWindowUi>, daysSinceObservation: Int?, o
     val reference = daysSinceObservation == null || daysSinceObservation < 7 || current == null
     val big = (if (reference) baseline else current) ?: return
     val scale = maxOf(baseline ?: 0.0, current ?: 0.0, 1.0)
-    val shape = RoundedCornerShape(28.dp)
-    Column(
-        Modifier.fillMaxWidth().clip(shape).background(M3Extra.colors.glass)
-            .border(1.dp, M3Extra.colors.cardStroke, shape)
-            .then(if (onOpen != null) Modifier.clickable(role = Role.Button, onClick = onOpen) else Modifier)
-            .padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    TeperaCard(
+        variant = TeperaCardVariant.Hero,
+        modifier = if (onOpen != null) Modifier.clickable(role = Role.Button, onClick = onOpen) else Modifier
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -367,12 +362,7 @@ internal fun ShiftSuggestions(windows: List<RiskWindowUi>, onApply: (String) -> 
     if (withShift.isEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         withShift.forEach { w ->
-            val shape = RoundedCornerShape(16.dp)
-            Column(
-                Modifier.fillMaxWidth().clip(shape).background(M3Extra.colors.glass)
-                    .border(1.dp, M3Extra.colors.cardStroke, shape).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            TeperaCard {
                 Text(
                     formatWindowTime(w.startMinute, w.endMinute), style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -32,6 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
+import com.serkodesign.tepera.ui.theme.TeperaCard
+import com.serkodesign.tepera.ui.theme.TeperaCardVariant
 import com.serkodesign.tepera.ui.theme.TeperaIconButton
 import com.serkodesign.tepera.ui.theme.TeperaButtonType
 import com.serkodesign.tepera.ui.theme.TeperaButton
@@ -67,15 +69,7 @@ fun PauseCard(
 ) {
     var gapForPicker by remember { mutableStateOf<PauseUiGap?>(null) }
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .contextInfoSurface()
-            .padding(16.dp)
-            .animateContentSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    TeperaCard(variant = TeperaCardVariant.Context, modifier = Modifier.animateContentSize()) {
         // Закриття ЦІЛОЇ картки (за прямим запитом користувача, не в SRS) — окремо від per-gap
         // "×" нижче, який пропускає лише одну паузу назавжди. Тут — "прочитав, ховай до наступного
         // вікна опитування" (FR-D.3), непозначені паузи лишаються в БД.

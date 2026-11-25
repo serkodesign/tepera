@@ -335,13 +335,17 @@ private fun ObservingContent(
     val hasManual: (Int, Int) -> Boolean = { s, e ->
         (state.windows + state.disabledWindows).any { it.isManual && it.startMinute == s && it.endMinute == e }
     }
-    V3Card(modifier = cardModifier, spacing = 12.dp) {
+    TeperaCard(modifier = cardModifier) {
         // Смужка прогресу лише поки історії мало; коли її вже майже вистачає, відлік не показуємо.
         if (state.observedDays < PROGRESS_HIDE_FROM_DAYS) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Порожні сегменти: у темній темі білий 10% (рішення власника), у світлій — як було. Токен heatmapNoDataFill спільний
+            // з тепловою картою, тому тут не змінюється.
+            val emptyFill = if (com.serkodesign.tepera.ui.theme.LocalTeperaColors.current.isDark) Color.White.copy(alpha = 0.10f)
+            else TeperaPalette.heatmapNoDataFill
             repeat(OBSERVATION_DAYS) { i ->
                 Box(
                     Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp))
-                        .background(if (i < state.observedDays) TeperaPalette.brandAccent else TeperaPalette.heatmapNoDataFill)
+                        .background(if (i < state.observedDays) TeperaPalette.brandAccent else emptyFill)
                 )
             }
         }
@@ -349,7 +353,7 @@ private fun ObservingContent(
     }
     // Цінність одразу: що вже відомо з системної історії, не чекаючи кінця спостереження. Лише власні дані, без оцінок.
     state.historySummary?.let { h ->
-        V3Card(spacing = 8.dp) {
+        TeperaCard {
             Text(stringResource(R.string.v3_history_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             Text(
                 stringResource(R.string.v3_history_body, feedDuration(h.avgMinutesPerDay)),
@@ -379,7 +383,7 @@ private fun ObservingContent(
     // Дія без жодних даних: ідея «що зробити замість стрічки» за порою доби (без листа поверх стрічки й нагадувань).
     ObservingIdeaCard(categories)
     // Щойно людина сама створила першу годину (навіть вимкнену), «Не хочеш чекати» більше не потрібна.
-    if ((state.windows + state.disabledWindows).none { it.isManual }) V3Card(spacing = 12.dp) {
+    if ((state.windows + state.disabledWindows).none { it.isManual }) TeperaCard {
         // Поки збираються дані, годину можна обрати самому — стрічки працюватимуть у неї вже зараз.
         Text(stringResource(R.string.v3_observing_manual_hint), color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp)
         TeperaButton(
@@ -414,7 +418,7 @@ private fun ObservingIdeaCard(categories: List<CategoryEntity>) {
         shown = setOfNotNull(suggestion?.id)
     }
     val picked = suggestion ?: return
-    V3Card(spacing = 8.dp) {
+    TeperaCard {
         Text(stringResource(R.string.v3_observing_idea_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
         Text(stringResource(suggestionTextRes(picked.id)), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, lineHeight = 22.sp)
         val category = categories.firstOrNull { it.id == picked.categoryId }

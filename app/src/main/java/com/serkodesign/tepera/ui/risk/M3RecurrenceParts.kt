@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.ui.theme.DarkTeperaExtraColors
 import com.serkodesign.tepera.ui.theme.LightTeperaExtraColors
 import com.serkodesign.tepera.ui.theme.LocalTeperaExtraColors
-import com.serkodesign.tepera.ui.theme.M3Card
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.M3Extra
 import com.serkodesign.tepera.ui.theme.TeperaDarkColors
 import com.serkodesign.tepera.ui.theme.TeperaExtraShapes
@@ -84,7 +84,7 @@ fun M3RecurrenceDots(dots: List<DotState>, description: String, modifier: Modifi
 @Composable
 private fun RecurrencePartsPreviewBody() {
     Surface(color = MaterialTheme.colorScheme.surface) {
-        M3Card(Modifier.padding(16.dp)) {
+        TeperaCard(Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.s), verticalAlignment = Alignment.CenterVertically) {
                 Text("22:40 – 00:10", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
                 M3RecurrenceBadge("6 з 7 вечорів")

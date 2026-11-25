@@ -891,21 +891,32 @@ fun TeperaOnboardingTitle(text: String, modifier: Modifier = Modifier) {
  * радіус 16 (M3 large), внутрішній відступ 16 і проміжок 12 між блоками — крок 4/8dp за M3.
  * Заголовок — M3 titleMedium (16sp/24sp Medium, tracking 0.15) шрифтом застосунку, необов'язковий
  * підзаголовок — bodySmall приглушеним кольором. Вміст — колонка, тож блоки самі отримують проміжок.
+ *
+ * Єдиний стандарт карток: один компонент, три варіанти ([TeperaCardVariant]), проміжок між блоками завжди 12,
+ * одна рамка [TeperaPalette.cardBorder]. Зовнішніх відступів картка не має — їх задає екран
+ * (`TeperaSpacing.screenHorizontal` з боків, `TeperaSpacing.betweenCards` між картками).
+ * [containerColor]/[borderColor] — лише для карток із власною тонуванням (напр. `NextHourCard`).
  */
 @Composable
 fun TeperaCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     subtitle: String? = null,
+    variant: TeperaCardVariant = TeperaCardVariant.Standard,
+    containerColor: Color? = null,
+    borderColor: Color? = null,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
 ) {
+    val shape = RoundedCornerShape(variant.radius)
+    val border = borderColor ?: TeperaPalette.cardBorder
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(TeperaPalette.cardSurface)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .clip(shape)
+            .background(containerColor ?: TeperaPalette.cardSurface)
+            .then(if (border != null) Modifier.border(1.dp, border, shape) else Modifier)
+            .padding(variant.padding),
+        verticalArrangement = Arrangement.spacedBy(TeperaSpacing.cardGroups)
     ) {
         if (title != null || subtitle != null) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
