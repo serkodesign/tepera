@@ -120,6 +120,10 @@ data class TeperaColors(
     val isDawn: Boolean = false,
     /** Багатоколірний вертикальний градієнт фону; якщо задано — замість пари [backgroundTop]/[backgroundBottom]. */
     val backgroundStops: List<Color>? = null,
+    /** Позиції зупинок [backgroundStops] (0..1, по одній на колір); null — рівномірно. */
+    val backgroundStopPositions: List<Float>? = null,
+    /** Розмите світіння зверху зліва (Figma "Tepera" 1233:144): центр (80, 20)dp, радіус 230dp, σ 60dp; null — без світіння. */
+    val backgroundGlow: Color? = null,
     /** Головна кнопка на hero (кремова в класичних наборах, персикова в «Світанку») і її текст. */
     val heroCta: Color = Color(0xFFFEFFEF),
     val heroCtaText: Color = Color(0xFF062924)

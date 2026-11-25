@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.theme
 
+import androidx.compose.ui.graphics.Color
+
 /**
  * Дизайн-система v3.1, ітерація I08: «мостик» для екранів, які ще не перенесені на `MaterialTheme.colorScheme` /
  * [M3Extra]. Старі екрани читають кольори через `LocalTeperaColors` / `TeperaPalette`; цей набір будується з
@@ -13,7 +15,7 @@ fun m3BridgeColors(dark: Boolean): TeperaColors {
     val base = if (dark) RedesignDarkColors else RedesignLightColors
     val m = if (dark) TeperaDarkColors else TeperaLightColors
     val x = if (dark) DarkTeperaExtraColors else LightTeperaExtraColors
-    return base.copy(
+    val bridged = base.copy(
         // bg/gradient-*, bg/blob-*
         backgroundTop = x.bgGradientTop,
         backgroundBottom = x.bgGradientBottom,
@@ -49,4 +51,16 @@ fun m3BridgeColors(dark: Boolean): TeperaColors {
         textError = m.error,
         borderError = m.error
     )
+    // Темна тема: фон за Figma "Tepera" 1233:144 — градієнт #0c1d13 → #070a08 (на 45%) → #050605 і одне зелене світіння
+    // (#17663A 50%) зверху зліва замість двох плям.
+    return if (dark) {
+        bridged.copy(
+            // М'якший, розтягнутий за запитом власника: середня зупинка на 65% (у макеті 45%) і трохи зеленіша (#09130d).
+            backgroundStops = listOf(x.bgGradientTop, Color(0xFF09130D), x.bgGradientBottom),
+            backgroundStopPositions = listOf(0f, 0.65f, 1f),
+            backgroundGlow = Color(0x8017663A),
+            backgroundBlobTopRight = null,
+            backgroundBlobBottomLeft = null
+        )
+    } else bridged
 }

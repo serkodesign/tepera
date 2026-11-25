@@ -114,8 +114,8 @@ object M3Palette {
         val onDark = Color(0xFFFFFFFF)
         val glass = Color(0x14FFFFFF) // 8%
         val glassStrong = Color(0x24FFFFFF) // 14%
-        val bgGradientTop = Color(0xFF1B1B1D)
-        val bgGradientBottom = Color(0xFF03190C)
+        val bgGradientTop = Color(0xFF0C1D13) // Figma "Tepera" 1233:144: #0c1d13 → #070a08 (45%) → #050605
+        val bgGradientBottom = Color(0xFF050605)
         val bgBlobWarm = Color(0x1AFFF2D2) // 10%
         val bgBlobCool = Color(0x1AC2BDF6) // 10%
         val dataHeat0 = Color(0xFF2F3131)

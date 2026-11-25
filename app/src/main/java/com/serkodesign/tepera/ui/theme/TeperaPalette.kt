@@ -255,12 +255,22 @@ fun Modifier.teperaGradientBackground(): Modifier {
     // розмитими плямами поверх, тим самим механізмом (drawBlurredBlob), що легасі-фон нижче, та
     // ж позиція/радіус/сигма (302/97.55dp), лише нові кольори набору.
     if (top != null && bottom != null) {
-        var modifier = this.fillMaxSize().background(Brush.verticalGradient(colors.backgroundStops ?: listOf(top, bottom)))
+        val stops = colors.backgroundStops ?: listOf(top, bottom)
+        val positions = colors.backgroundStopPositions?.takeIf { it.size == stops.size }
+        val brush = if (positions != null) {
+            Brush.verticalGradient(colorStops = Array(stops.size) { positions[it] to stops[it] })
+        } else Brush.verticalGradient(stops)
+        var modifier = this.fillMaxSize().background(brush)
         val blobTopRight = colors.backgroundBlobTopRight
         val blobBottomLeft = colors.backgroundBlobBottomLeft
-        if (blobTopRight != null || blobBottomLeft != null) {
+        val glow = colors.backgroundGlow
+        if (blobTopRight != null || blobBottomLeft != null || glow != null) {
             modifier = modifier.drawBehind {
                 val d = density
+                glow?.let {
+                    // Макет: радіус 230, σ 60; розтягнуто за запитом власника (м'якший, ширший перехід).
+                    drawBlurredBlob(center = Offset(80f * d, 20f * d), radius = 300f * d, sigma = 110f * d, color = it)
+                }
                 blobTopRight?.let {
                     drawBlurredBlob(center = Offset(size.width - 6f * d, 20f * d), radius = 302f * d, sigma = 97.55f * d, color = it)
                 }
