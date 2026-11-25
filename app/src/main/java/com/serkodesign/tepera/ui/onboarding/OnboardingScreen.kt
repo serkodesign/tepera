@@ -125,12 +125,7 @@ fun OnboardingScreen(
                     .clip(RoundedCornerShape(41.143.dp))
             ) {
                 Image(
-                    painter = painterResource(R.drawable.ic_launcher_background),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
+                    painter = painterResource(R.drawable.ic_launcher_art),
                     contentDescription = stringResource(R.string.app_name),
                     modifier = Modifier.fillMaxSize()
                 )

@@ -110,7 +110,7 @@ fun ActivitiesSectionHeader(
             Row(
                 modifier = Modifier
                     .height(32.dp)
-                    .clip(RoundedCornerShape(100.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(if (colors.isDark) colors.listItem else Color(0x80FFFFFF))
                     .padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),

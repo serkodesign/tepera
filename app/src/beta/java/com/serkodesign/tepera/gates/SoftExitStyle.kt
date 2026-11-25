@@ -100,7 +100,7 @@ internal class SoftExitStyle(private val context: Context, val dark: Boolean = i
             setPadding(horizontal, 0, horizontal, 0)
             background = GradientDrawable().apply {
                 setColor(container)
-                cornerRadius = height / 2f
+                cornerRadius = dp(12).toFloat()
                 if (type == ButtonType.OUTLINED) setStroke(dp(1), outlineVariant)
             }
             isClickable = true

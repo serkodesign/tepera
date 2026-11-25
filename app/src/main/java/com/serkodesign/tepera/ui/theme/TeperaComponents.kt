@@ -245,9 +245,9 @@ fun <T> PillSegmentedControl(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp)
-            .clip(RoundedCornerShape(100.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(TeperaPalette.cardTranslucent)
-            .border(1.dp, TeperaPalette.fieldBorder, RoundedCornerShape(100.dp))
+            .border(1.dp, TeperaPalette.fieldBorder, RoundedCornerShape(12.dp))
             .padding(4.dp)
     ) {
         val itemWidth = (maxWidth - gap * (options.size - 1)) / options.size
@@ -261,7 +261,7 @@ fun <T> PillSegmentedControl(
                 .offset(x = indicatorOffset)
                 .width(itemWidth)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(100.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(TeperaPalette.colors.primaryFill)
         )
         Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
@@ -270,7 +270,7 @@ fun <T> PillSegmentedControl(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(100.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .selectable(selected = value == selected, role = Role.RadioButton, onClick = { onSelect(value) }),
                     contentAlignment = Alignment.Center
                 ) {
@@ -450,7 +450,7 @@ fun TeperaButton(
     leadingIcon: ImageVector? = null
 ) {
     val big = size == TeperaButtonSize.Big
-    val shape = RoundedCornerShape(if (big && type == TeperaButtonType.Primary) 54.dp else if (type == TeperaButtonType.Filled) 100.dp else 24.dp)
+    val shape = RoundedCornerShape(12.dp)
 
     val background: Color = when (type) {
         TeperaButtonType.Primary -> TeperaPalette.primaryButtonFill

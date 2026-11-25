@@ -81,7 +81,7 @@ fun M3Button(
         onClick = onClick,
         modifier = sizing.height(height),
         enabled = enabled,
-        shape = TeperaExtraShapes.full,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
         colors = colors,
         border = border,
         elevation = null,

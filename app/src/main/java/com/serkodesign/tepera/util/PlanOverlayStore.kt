@@ -32,6 +32,17 @@ object PlanOverlayStore {
     private const val KEY_REENTRY_AT_PREFIX = "reentry_t_"
     private const val KEY_LAST_PUZZLE = "last_puzzle"
     private const val REENTRY_RESET_MILLIS = 60 * 60_000L
+    private const val KEY_HELD_PACKAGE = "held_pkg"
+    private const val KEY_HELD_LABEL = "held_label"
+    private const val KEY_HELD_THEN = "held_then"
+    private const val KEY_HELD_STARTED = "held_started"
+    private const val KEY_HELD_DEADLINE = "held_deadline"
+    private const val KEY_HELD_EXTENSIONS = "held_extensions"
+    private const val KEY_HELD_SUSPENDED = "held_suspended"
+    private const val KEY_HELD_ON_TIME = "held_on_time"
+
+    /** Скільки сесія «Відкрити на 5 хв» чекає на повернення в стрічку після виходу з неї; довша перерва — нова сесія. */
+    const val HELD_SESSION_MILLIS = 10 * 60_000L
 
     private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -79,6 +90,50 @@ object PlanOverlayStore {
 
     /** [number] — за рахунком показ для цих воріт у межах обіцянки; [minutesSincePrevious] — скільки минуло від попереднього (`null` — перший). */
     data class Reentry(val number: Int, val minutesSincePrevious: Long?)
+
+    /**
+     * Сесія «Відкрити на 5 хв», збережена на диску. Вихід зі стрічки (на робочий стіл, у недавні, у системні налаштування,
+     * вивантаження з пам'яті) її не закінчує: повернення в [HELD_SESSION_MILLIS] продовжує той самий відлік і той самий
+     * лічильник «Ще 5» (від нього залежать задачки). Закінчує її лише «Вийти» або довша перерва. [suspendedAtMillis] = 0 —
+     * сесія зараз іде.
+     */
+    data class HeldSoftExit(
+        val packageName: String, val appLabel: String, val thenText: String,
+        val startedAtMillis: Long, val deadlineMillis: Long, val extensions: Int,
+        val suspendedAtMillis: Long, val onTimeCounted: Boolean
+    )
+
+    fun saveHeldSoftExit(context: Context, h: HeldSoftExit) {
+        prefs(context).edit()
+            .putString(KEY_HELD_PACKAGE, h.packageName).putString(KEY_HELD_LABEL, h.appLabel).putString(KEY_HELD_THEN, h.thenText)
+            .putLong(KEY_HELD_STARTED, h.startedAtMillis).putLong(KEY_HELD_DEADLINE, h.deadlineMillis)
+            .putInt(KEY_HELD_EXTENSIONS, h.extensions).putLong(KEY_HELD_SUSPENDED, h.suspendedAtMillis)
+            .putBoolean(KEY_HELD_ON_TIME, h.onTimeCounted).apply()
+    }
+
+    /** Збережена сесія, якщо вона ще не застаріла; застарілу прибирає. */
+    fun heldSoftExit(context: Context, nowMillis: Long = System.currentTimeMillis()): HeldSoftExit? {
+        val p = prefs(context)
+        val pkg = p.getString(KEY_HELD_PACKAGE, null) ?: return null
+        val suspended = p.getLong(KEY_HELD_SUSPENDED, 0L)
+        val deadline = p.getLong(KEY_HELD_DEADLINE, 0L)
+        // Сесія йшла, коли службу перестворили: перерву рахуємо від дедлайну.
+        val idleSince = if (suspended > 0L) suspended else deadline
+        if (nowMillis - idleSince > HELD_SESSION_MILLIS) {
+            clearHeldSoftExit(context)
+            return null
+        }
+        return HeldSoftExit(
+            pkg, p.getString(KEY_HELD_LABEL, pkg).orEmpty(), p.getString(KEY_HELD_THEN, "").orEmpty(),
+            p.getLong(KEY_HELD_STARTED, 0L), deadline, p.getInt(KEY_HELD_EXTENSIONS, 0), suspended,
+            p.getBoolean(KEY_HELD_ON_TIME, false)
+        )
+    }
+
+    fun clearHeldSoftExit(context: Context) {
+        prefs(context).edit().remove(KEY_HELD_PACKAGE).remove(KEY_HELD_LABEL).remove(KEY_HELD_THEN).remove(KEY_HELD_STARTED)
+            .remove(KEY_HELD_DEADLINE).remove(KEY_HELD_EXTENSIONS).remove(KEY_HELD_SUSPENDED).remove(KEY_HELD_ON_TIME).apply()
+    }
 
     fun lastPuzzleKind(context: Context): QuickPuzzles.Kind? =
         prefs(context).getString(KEY_LAST_PUZZLE, null)?.let { name -> QuickPuzzles.Kind.entries.firstOrNull { it.name == name } }

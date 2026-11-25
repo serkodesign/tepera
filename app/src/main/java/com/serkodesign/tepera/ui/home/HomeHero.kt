@@ -400,7 +400,7 @@ private fun HeroNoAccess(onGrantAccess: () -> Unit) {
             Box(
                 modifier = Modifier
                     .heightIn(min = 48.dp)
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color.White)
                     .clickable(role = Role.Button, onClick = onGrantAccess)
                     .padding(horizontal = 16.dp),

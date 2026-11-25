@@ -389,7 +389,7 @@ private fun GateRow(gateState: GateUiState, onMarkHandled: () -> Unit, onRemove:
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 4.dp)
-                    .clip(MaterialTheme.shapes.small)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(TeperaPalette.cardTranslucent)
                     .clickable(role = Role.Button, onClick = onMarkHandled)
                     .padding(8.dp),

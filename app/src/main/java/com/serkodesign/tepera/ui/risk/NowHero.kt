@@ -165,7 +165,7 @@ fun IdeaHero(
 /** Кнопка на темному герої: кремова заливка (головна) або контур; ≥48dp за висотою. */
 @Composable
 private fun HeroButton(text: String, filled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(100.dp)
+    val shape = RoundedCornerShape(12.dp)
     // «Світанок» бере кольори з теми; класичний вигляд лишається буквально як був (кремова кнопка на темному hero).
     val dawn = TeperaPalette.colors.isDawn
     val filledBg = if (dawn) TeperaPalette.heroCta else HeroCream
@@ -218,7 +218,7 @@ fun ActivityChips(onAddEntry: () -> Unit) {
                 val container = if (active) TeperaPalette.activityCardActive else TeperaPalette.activityCardIdle
                 val content = if (active) TeperaPalette.onPrimary else TeperaPalette.textPrimary
                 Row(
-                    Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(24.dp)).background(container)
+                    Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(12.dp)).background(container)
                         .toggleable(value = active, role = Role.Switch) { vm.toggleTimer(item.category.id) }
                         .padding(start = 14.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

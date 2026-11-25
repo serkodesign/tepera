@@ -42,7 +42,9 @@ class SoftExitController(private val service: AccessibilityService) {
         val startedAt: Long,
         var deadline: Long,
         var extensions: Int = 0,
-        var strong: Boolean = false
+        var strong: Boolean = false,
+        // Вчасний вихід уже пораховано (сесія могла перериватись і відновлюватись): щоб не рахувати двічі.
+        var onTimeCounted: Boolean = false
     )
 
     private val handler = Handler(Looper.getMainLooper())
@@ -141,13 +143,58 @@ class SoftExitController(private val service: AccessibilityService) {
     fun onForeground(packageName: String, countsAsLeaving: Boolean) {
         val current = session
         if (current == null) {
-            val pending = PlanOverlayStore.takePendingSoftExit(service, packageName) ?: return
-            start(pending)
+            val pending = PlanOverlayStore.takePendingSoftExit(service, packageName)
+            if (pending != null) start(pending) else resumeHeld(packageName)
         } else if (current.packageName != packageName && countsAsLeaving && !justStarted(current)) {
             // «Усі стрічки разом»: перехід в іншу стрічку — не вихід, відлік 5 хвилин спільний.
             if (continuesIntoFeed(packageName)) current.packageName = packageName
-            else finish(onTime = isOnTime(current))
+            else suspend()
         }
+    }
+
+    /** Пакет стрічки, для якої зараз іде сесія «Відкрити на 5 хв» (у тому числі щойно відновлена), інакше null. */
+    fun sessionPackage(): String? = session?.packageName
+
+    /**
+     * Повернення в стрічку, з якої вийшли в межах [PlanOverlayStore.HELD_SESSION_MILLIS]: відновлюємо ту саму сесію з
+     * тим самим дедлайном і лічильником «Ще 5». Так вихід, вивантаження з пам'яті чи системні налаштування не скидають
+     * таймер і не обнуляють задачки. Дедлайн уже минув — плашка «Ще 5 / Вийти» з'являється одразу.
+     */
+    private fun resumeHeld(packageName: String) {
+        val h = PlanOverlayStore.heldSoftExit(service) ?: return
+        if (h.packageName != packageName && !continuesIntoFeed(packageName)) return
+        session = Session(packageName, h.appLabel, h.thenText, h.startedAtMillis, h.deadlineMillis, h.extensions, false, h.onTimeCounted)
+        persist(session!!, suspendedAtMillis = 0L)
+        schedule()
+    }
+
+    /**
+     * Людина вийшла (робочий стіл, недавні, інший застосунок, системні налаштування): затемнення й плашка зникають, але
+     * сесія зберігається на диску — повернення протягом [PlanOverlayStore.HELD_SESSION_MILLIS] її продовжує. Закінчує
+     * сесію лише [finish] («Вийти») або довша перерва.
+     */
+    private fun suspend() {
+        val s = session ?: return
+        if (previewActive) return finish(onTime = false)
+        if (!s.onTimeCounted && isOnTime(s)) {
+            PlanOverlayStore.recordSoftExitOnTime(service)
+            s.onTimeCounted = true
+        }
+        persist(s, suspendedAtMillis = System.currentTimeMillis())
+        session = null
+        handler.removeCallbacks(onDeadline)
+        handler.removeCallbacks(onStrong)
+        removeAll()
+    }
+
+    private fun persist(s: Session, suspendedAtMillis: Long) {
+        if (previewActive) return
+        PlanOverlayStore.saveHeldSoftExit(
+            service,
+            PlanOverlayStore.HeldSoftExit(
+                s.packageName, s.appLabel, s.thenText, s.startedAt, s.deadline, s.extensions, suspendedAtMillis, s.onTimeCounted
+            )
+        )
     }
 
     /** Чи перехід у [packageName] продовжує поточну сесію (спільний підрахунок і це теж стрічка). Задає служба. */
@@ -178,7 +225,7 @@ class SoftExitController(private val service: AccessibilityService) {
     fun startingPackage(): String? = session?.takeIf { justStarted(it) }?.packageName
 
     fun onLeftToLauncher() {
-        session?.let { if (!justStarted(it)) finish(onTime = isOnTime(it)) }
+        session?.let { if (!justStarted(it)) suspend() }
     }
 
     /** Перші секунди після старту йде перехід листа плану → стрічка: проміжні вікна виходом не вважаємо. */
@@ -186,7 +233,7 @@ class SoftExitController(private val service: AccessibilityService) {
 
     /** Системний екран або головний екран Tepera: сесію завершено, затемнення й плашка прибираються одразу (без стримування «щойно стартувала»). */
     fun endNow() {
-        session?.let { finish(onTime = isOnTime(it)) }
+        suspend()
     }
 
     /**
@@ -287,6 +334,7 @@ class SoftExitController(private val service: AccessibilityService) {
     private fun start(pending: PlanOverlayStore.PendingSoftExit) {
         PlanOverlayStore.recordSoftExitStarted(service)
         session = Session(pending.packageName, pending.appLabel, pending.thenText, pending.startedAtMillis, pending.startedAtMillis + SESSION_MILLIS)
+        persist(session!!, suspendedAtMillis = 0L)
         schedule()
     }
 
@@ -407,6 +455,7 @@ class SoftExitController(private val service: AccessibilityService) {
         s.extensions++
         s.deadline = System.currentTimeMillis() + SESSION_MILLIS
         s.strong = false
+        persist(s, suspendedAtMillis = 0L)
         if (!previewActive) PlanOverlayStore.recordSoftExitExtended(service)
         handler.removeCallbacks(onStrong)
         removeAll()
@@ -471,8 +520,10 @@ class SoftExitController(private val service: AccessibilityService) {
     }
 
     private fun finish(onTime: Boolean) {
-        if (session == null) return
-        if (onTime && !previewActive) PlanOverlayStore.recordSoftExitOnTime(service)
+        val s = session ?: return
+        if (onTime && !previewActive && !s.onTimeCounted) PlanOverlayStore.recordSoftExitOnTime(service)
+        // «Вийти» (або тестовий перегляд) — справжній кінець сесії: збережену копію прибираємо.
+        if (!previewActive) PlanOverlayStore.clearHeldSoftExit(service)
         previewActive = false
         session = null
         handler.removeCallbacks(onDeadline)

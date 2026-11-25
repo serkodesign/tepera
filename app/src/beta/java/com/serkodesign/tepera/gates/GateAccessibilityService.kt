@@ -240,8 +240,10 @@ class GateAccessibilityService : AccessibilityService() {
         if (BerserkStore.countMode(this) == BerserkStore.CountMode.ALL && softExit.hasSession() && pkg in feedPackages) {
             return log("$pkg: триває спільна сесія «5 хв» — нового листа не показую")
         }
-        if (pkg == sOpenFivePackage && System.currentTimeMillis() - sOpenFiveAtMillis < OPEN_FIVE_QUIET_MILLIS) {
-            return log("$pkg: людина щойно обрала «Відкрити на 5 хв» — нового листа не показую")
+        // Для цієї стрічки йде (або щойно відновлена після виходу чи вивантаження) сесія «Відкрити на 5 хв»: новий лист не
+        // потрібен, відлік і лічильник «Ще 5» тривають. Раніше тут було «тихе вікно» на 10 хв — воно давало обхід.
+        if (softExit.sessionPackage() == pkg) {
+            return log("$pkg: триває сесія «Відкрити на 5 хв» — нового листа не показую")
         }
         val candidates = app.riskWindowRepository.getAll().map { w ->
             PlanOverlayRule.Candidate(

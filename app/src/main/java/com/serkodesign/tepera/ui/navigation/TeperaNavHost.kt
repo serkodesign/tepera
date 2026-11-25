@@ -1042,7 +1042,7 @@ private fun TeperaBottomNavBar(
             // За прямим запитом користувача піднято на 8dp (було 8.dp над системним інсетом, тепер 16.dp).
             .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp + navigationBarInset)
             .height(62.dp)
-            .clip(RoundedCornerShape(32.dp))
+            .clip(RoundedCornerShape(18.dp))
             // Матове скло: сильніше розмиття (прибирає деталі контенту під навбаром, тож вкладки читаються
             // чіткіше) + легкий шум, поверх — напівпрозорий navPillCard (білий 30%) і тонка світла кромка скла.
             // До Android 12 (API < 31) розмиття недоступне — Haze тоді малює лише fallbackTint; без нього контент
@@ -1061,7 +1061,7 @@ private fun TeperaBottomNavBar(
                 )
             )
             .background(TeperaPalette.navPillCard)
-            .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(32.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
             .padding(6.dp),
         // Відступ між таблетками = внутрішній відступ контуру (6dp), як у макеті (gap-[6px]).
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -1149,7 +1149,7 @@ private fun NavPillTab(
     )
     // Макет 347:3146/3155: вибрана — 40 з усіх боків; крайні невибрані мають 40 з ЗОВНІШНЬОГО боку
     // контейнера (Home — ліворуч, Stats — праворуч), внутрішній бік 16; середня — 16 з усіх боків.
-    val shape = if (selected) RoundedCornerShape(40.dp) else unselectedShape
+    val shape = RoundedCornerShape(12.dp) // однакова форма вкладок (вибрана й ні) — за запитом власника
     Box(
         modifier = modifier
             .fillMaxHeight()

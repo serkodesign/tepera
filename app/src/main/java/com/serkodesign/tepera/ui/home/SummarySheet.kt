@@ -136,7 +136,7 @@ fun SummarySheet(
 
 @Composable
 private fun SummaryTabs(selected: SummaryTab, onSelect: (SummaryTab) -> Unit) {
-    val shape = RoundedCornerShape(22.dp)
+    val shape = RoundedCornerShape(12.dp)
     val colors = TeperaPalette.colors
     Row(
         modifier = Modifier
@@ -156,7 +156,7 @@ private fun SummaryTabs(selected: SummaryTab, onSelect: (SummaryTab) -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(18.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(if (isSelected) TeperaPalette.activityCardActive else Color.Transparent)
                     .clickable(role = Role.Tab, onClick = { onSelect(tab) })
                     .padding(vertical = 12.dp),
