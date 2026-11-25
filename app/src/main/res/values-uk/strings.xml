@@ -252,7 +252,7 @@
     <string name="settings_target_label">Орієнтир Online-часу</string>
     <string name="settings_exclusion_list_action">Виключені застосунки</string>
     <string name="settings_categories_action">Активності</string>
-    <string name="settings_language_label">Мова застосунку</string>
+    <string name="settings_language_label">Мова</string>
     <string name="settings_language_system">Системна</string>
     <string name="settings_general_section">Оформлення</string>
     <string name="settings_time_tracking_section">Облік часу</string>

@@ -237,7 +237,7 @@
     <string name="settings_target_label">Online-time reference</string>
     <string name="settings_exclusion_list_action">Excluded apps</string>
     <string name="settings_categories_action">Activities</string>
-    <string name="settings_language_label">App language</string>
+    <string name="settings_language_label">Language</string>
     <string name="settings_language_system">System</string>
     <string name="settings_general_section">Appearance</string>
     <string name="settings_time_tracking_section">Time tracking</string>
