@@ -1,18 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Логотип "Т" — редизайн за Figma "App concept" (k6s4prQ9oK9x2uUvzHRghR), node 395:1226, вузол
-     "Union" (вже сплющена boolean-операція, шлях 1:1 з SVG-експорта MCP download_assets, колір
-     #FEFEFE). Задній шар — ic_launcher_background.xml. Той самий прийом safe zone, що в
-     попередній версії: контент вписаний у видимі центральні ~72% 108dp канви (scale 0.72 навколо
-     центру фрейму 1400x1400), щоб не обрізався різними масками лаунчерів (коло/сквіркл/тощо). -->
+<!-- Логотип "Т" — нова іконка за Figma "Tepera" (k6s4prQ9oK9x2uUvzHRghR), node 1286:8039 "Tepera icon / 3 Mesh + grain",
+     шар "T" (шляхи 1:1 з SVG-експорта MCP download_assets, без тіні — вона вже запечена в ic_launcher_art.png).
+     Координати — у системі фрейму 1024x1024.
+     Цей шар використовують екран запуску й логотипи в застосунку поверх ic_launcher_background; сама іконка
+     на робочому столі — ic_launcher.xml з єдиним шаром ic_launcher_art (щоб "Т" не двоїлась при паралаксі). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="1400"
-    android:viewportHeight="1400">
-
-    <group android:scaleX="0.72" android:scaleY="0.72" android:pivotX="700" android:pivotY="700">
-        <path
-            android:pathData="M1148,346C1148,456.457 1058.46,546 948,546H919C883.654,546 855,574.654 855,610V944.5C855,1054.96 765.457,1144.5 655,1144.5H559V714C559,493.086 738.086,314 959,314H1148V346ZM756.795,314C661.875,364.775 585.514,445.71 540.513,544H261V514C261,403.543 350.543,314 461,314H756.795Z"
-            android:fillColor="#FEFEFE" />
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <group>
+        <path android:pathData="M752,311.339C752,371.189 703.544,419.707 643.77,419.707H628.077C608.949,419.707 593.443,435.233 593.443,454.385V635.632C593.443,695.482 544.987,744 485.213,744H433.263V510.737C433.263,391.036 530.175,294 649.723,294H752V311.339Z">
+            <aapt:attr name="android:fillColor" xmlns:aapt="http://schemas.android.com/aapt">
+                <gradient
+                    android:type="linear"
+                    android:startX="512" android:startY="294"
+                    android:endX="512" android:endY="744">
+                    <item android:offset="0" android:color="#FFFFFFFF" />
+                    <item android:offset="1" android:color="#FFE9F3C8" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M540.299,294C488.933,321.512 447.611,365.366 423.258,418.624H272V402.368C272,342.518 320.456,294 380.23,294H540.299Z">
+            <aapt:attr name="android:fillColor" xmlns:aapt="http://schemas.android.com/aapt">
+                <gradient
+                    android:type="linear"
+                    android:startX="512" android:startY="294"
+                    android:endX="512" android:endY="744">
+                    <item android:offset="0" android:color="#FFFFFFFF" />
+                    <item android:offset="1" android:color="#FFE9F3C8" />
+                </gradient>
+            </aapt:attr>
+        </path>
     </group>
 </vector>
