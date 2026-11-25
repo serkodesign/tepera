@@ -150,6 +150,8 @@ fun GlassRow(
     cornerRadius: Dp = 16.dp,
     // Необов'язковий блок під рядком, усередині тієї самої картки (напр. кнопка «Увімкнути доступ»).
     below: (@Composable () -> Unit)? = null,
+    // Короткий підпис одразу під назвою (4dp), усередині тієї ж колонки з назвою.
+    supporting: String? = null,
     leading: @Composable () -> Unit,
     trailing: @Composable () -> Unit
 ) {
@@ -168,11 +170,14 @@ fun GlassRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             leading()
-            Text(
-                text = label,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = label, style = MaterialTheme.typography.bodyLarge)
+                if (supporting != null) Text(
+                    text = supporting,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+                )
+            }
             trailing()
         }
         if (below != null) {
@@ -658,9 +663,11 @@ fun TeperaIconButton(
     contentColor: Color = TeperaPalette.colors.chipContent,
     enabled: Boolean = true,
     height: Dp = 44.dp,
-    iconSize: Dp = 24.dp
+    iconSize: Dp = 24.dp,
+    /** Прозорість усієї кнопки в неактивному стані (1f — стан передає сама пара кольорів). */
+    disabledAlpha: Float = 0.5f
 ) {
-    val stateAlpha by animateFloatAsState(if (enabled) 1f else 0.5f, TeperaSpecs.effects(), label = "iconButtonAlpha")
+    val stateAlpha by animateFloatAsState(if (enabled) 1f else disabledAlpha, TeperaSpecs.effects(), label = "iconButtonAlpha")
     Box(
         modifier = modifier
             .height(height)

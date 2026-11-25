@@ -399,7 +399,7 @@
     </string-array>
     <string name="gate_pause_open_format">Open %1$s</string>
     <string name="gates_growing_delay_label">Growing delay</string>
-    <string name="gates_growing_delay_hint">The delay grows with each open (up to 20s) and resets after half an hour.</string>
+    <string name="gates_growing_delay_hint">up to 20 s. Resets after half an hour</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Activities</string>
@@ -589,7 +589,6 @@
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>
     <string name="free_opens_title">Opens without delay</string>
-    <string name="free_opens_hint">How many times a day apps open without a pause.</string>
     <string name="free_opens_used_format">Used today: %1$d of %2$d</string>
     <string name="free_opens_off">Off</string>
     <string name="free_opens_count_format">%d per day</string>

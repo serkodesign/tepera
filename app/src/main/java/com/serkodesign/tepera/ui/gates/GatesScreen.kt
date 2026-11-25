@@ -121,7 +121,6 @@ fun GatesScreen(
     val viaA11y = GateAccessibility.isAvailable
     val tabGates = state.gates
     val freeOpensPerDay by viewModel.freeOpensPerDay.collectAsState()
-    val freeOpensUsed by viewModel.freeOpensUsed.collectAsState()
 
     // Видалення ярлика воріт відбувається поза застосунком (long-press на робочому столі) — без
     // цього ефекту список лишався б "активним" до наступного повного перестворення ViewModel.
@@ -165,7 +164,6 @@ fun GatesScreen(
                         item {
                             FreeOpensCard(
                                 perDay = freeOpensPerDay,
-                                usedToday = freeOpensUsed,
                                 onChange = { viewModel.setFreeOpensPerDay(it) }
                             )
                         }
@@ -209,12 +207,7 @@ fun GatesScreen(
                             // CC-6: опційна «зростаюча» затримка; лічильник повторних відкриттів ніде не показується.
                             GlassRow(
                                 label = stringResource(R.string.gates_growing_delay_label),
-                                below = {
-                                    TeperaHint(
-                                        text = stringResource(R.string.gates_growing_delay_hint),
-                                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
-                                    )
-                                },
+                                supporting = stringResource(R.string.gates_growing_delay_hint),
                                 leading = { TeperaIconCircle(TeperaSymbols.Timer) },
                                 trailing = {
                                     Switch(

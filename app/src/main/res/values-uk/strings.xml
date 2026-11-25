@@ -414,7 +414,7 @@
     </string-array>
     <string name="gate_pause_open_format">Відкрити %1$s</string>
     <string name="gates_growing_delay_label">Зростаюча затримка</string>
-    <string name="gates_growing_delay_hint">Затримка росте з кожним відкриттям (до 20 с) і скидається за пів години.</string>
+    <string name="gates_growing_delay_hint">до 20 с. Скидається за півгодини</string>
 
     <!-- Categories (FR-2.1–2.3) -->
     <string name="categories_screen_title">Активності</string>
@@ -606,7 +606,6 @@
     <string name="a11y_disclosure_cancel">Не зараз</string>
     <string name="a11y_perm_label">Затримка перед застосунками</string>
     <string name="free_opens_title">Відкриття без затримки</string>
-    <string name="free_opens_hint">Скільки разів на день застосунки відкриваються без паузи.</string>
     <string name="free_opens_used_format">Сьогодні використано %1$d з %2$d</string>
     <string name="free_opens_off">Вимкнено</string>
     <string name="free_opens_count_format">%d на день</string>

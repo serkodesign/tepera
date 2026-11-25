@@ -84,9 +84,8 @@ fun AccessibilityGateCard(enabled: Boolean, onOpen: () -> Unit, modifier: Modifi
 
 /** Картка «Відкриття без затримки»: − / + і лічильник за сьогодні. 0 = вимкнено. */
 @Composable
-fun FreeOpensCard(perDay: Int, usedToday: Int, onChange: (Int) -> Unit, modifier: Modifier = Modifier) {
+fun FreeOpensCard(perDay: Int, onChange: (Int) -> Unit, modifier: Modifier = Modifier) {
     TeperaCard(modifier = modifier, title = stringResource(R.string.free_opens_title)) {
-        Text(text = stringResource(R.string.free_opens_hint), style = MaterialTheme.typography.bodyMedium)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -96,7 +95,10 @@ fun FreeOpensCard(perDay: Int, usedToday: Int, onChange: (Int) -> Unit, modifier
                 icon = TeperaSymbols.Remove,
                 contentDescription = stringResource(R.string.free_opens_decrease),
                 onClick = { onChange((perDay - 1).coerceAtLeast(0)) },
-                enabled = perDay > 0
+                enabled = perDay > 0,
+                containerColor = freeOpensFill(perDay > 0),
+                contentColor = freeOpensIcon(perDay > 0),
+                disabledAlpha = 1f
             )
             Text(
                 text = if (perDay == 0) stringResource(R.string.free_opens_off) else stringResource(R.string.free_opens_count_format, perDay),
@@ -108,19 +110,23 @@ fun FreeOpensCard(perDay: Int, usedToday: Int, onChange: (Int) -> Unit, modifier
                 icon = TeperaSymbols.Add,
                 contentDescription = stringResource(R.string.free_opens_increase),
                 onClick = { onChange((perDay + 1).coerceAtMost(MAX_FREE_OPENS)) },
-                enabled = perDay < MAX_FREE_OPENS
-            )
-        }
-        if (perDay > 0) {
-            Text(
-                text = stringResource(R.string.free_opens_used_format, usedToday.coerceAtMost(perDay), perDay),
-                style = MaterialTheme.typography.bodyMedium
+                enabled = perDay < MAX_FREE_OPENS,
+                containerColor = freeOpensFill(perDay < MAX_FREE_OPENS),
+                contentColor = freeOpensIcon(perDay < MAX_FREE_OPENS),
+                disabledAlpha = 1f
             )
         }
     }
 }
 
 private const val MAX_FREE_OPENS = 10
+
+/** Кнопки «−» і «+»: активна — білий 100% з темно-зеленою іконкою, неактивна — білий 15% з білою іконкою. */
+private fun freeOpensFill(enabled: Boolean) =
+    androidx.compose.ui.graphics.Color.White.copy(alpha = if (enabled) 1f else 0.15f)
+
+private fun freeOpensIcon(enabled: Boolean) =
+    if (enabled) androidx.compose.ui.graphics.Color(0xFF003926) else androidx.compose.ui.graphics.Color.White
 
 
 /**
