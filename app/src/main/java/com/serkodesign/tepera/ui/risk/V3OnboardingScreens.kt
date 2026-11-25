@@ -42,7 +42,7 @@ import com.serkodesign.tepera.ui.onboarding.AppIconTile
 import com.serkodesign.tepera.ui.theme.M3Button
 import com.serkodesign.tepera.ui.theme.M3ButtonSize
 import com.serkodesign.tepera.ui.theme.M3ButtonType
-import com.serkodesign.tepera.ui.theme.M3Card
+import com.serkodesign.tepera.ui.theme.TeperaCard
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 import com.serkodesign.tepera.ui.theme.TeperaIcons
 import com.serkodesign.tepera.ui.theme.TeperaSpacing
@@ -157,7 +157,7 @@ fun V3AccessScreen(onGranted: () -> Unit) {
  */
 @Composable
 private fun InfoBlock(icon: ImageVector, titleRes: Int, bodyRes: Int) {
-    M3Card {
+    TeperaCard {
         Row(horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.m), verticalAlignment = Alignment.Top) {
             Box(
                 Modifier.size(36.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest),
