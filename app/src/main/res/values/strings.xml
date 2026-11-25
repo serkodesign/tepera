@@ -146,7 +146,7 @@
     <!-- "Widget suggestion" — last onboarding step (Figma user-flow k6s4prQ9oK9x2uUvzHRghR,
          node 14:791), shown on both branches of "access granted? yes/no". -->
     <string name="widget_suggestion_title">Add the widget to your home screen</string>
-    <string name="widget_suggestion_body">Your day structure and a quick tap-timer within reach, without opening the app.</string>
+    <string name="widget_suggestion_body">Day structure and a quick timer, without opening the app.</string>
     <string name="widget_suggestion_add_action">Add widget</string>
 
     <string name="onboarding_skip_all">Skip all</string>
@@ -160,7 +160,7 @@
 
     <!-- T-8 (tepera-dev-spec.md): category selection onboarding, right after the values question -->
     <string name="category_onboarding_title">What\'s part of your day?</string>
-    <string name="category_onboarding_subtitle">Turn on what you want to track. You can change this anytime in Settings.</string>
+    <string name="category_onboarding_subtitle">Turn on what you track. Change anytime in Settings.</string>
     <string name="category_onboarding_continue">Continue</string>
 
     <!-- T-3 (tepera-dev-spec.md): online-time estimate onboarding, before the permission explanation -->
@@ -213,7 +213,7 @@
     <string name="pattern_card_subtitle_yesterday">yesterday</string>
     <string name="stats_online_differs_note">May differ from system screen time: excluded apps, launcher and keyboard aren\'t counted.</string>
     <string name="stats_day_start_note">Start is the first unlock after 05:00.</string>
-    <string name="target_onboarding_later_hint">Without a reference the scale simply has no tick. You can add one in Settings.</string>
+    <string name="target_onboarding_later_hint">No reference, no tick on the scale. Add one in Settings.</string>
     <string name="pattern_empty_state">Your pattern will show up here once a bit more data builds up</string>
 
     <!-- "This week" digest card — sourced from a Figma mockup (node 2062:2862), not literally in the SRS -->
@@ -261,14 +261,14 @@
     <string name="settings_debug_clock_real">real time</string>
     <string name="settings_debug_clock_reset">Back to real time</string>
     <string name="settings_theme_time">By time</string>
-    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night. Evening comes earlier in winter.</string>
+    <string name="settings_theme_time_hint">Light by day, dark in the evening, darkest at night.</string>
     <string name="settings_hemisphere_label">Hemisphere</string>
     <string name="settings_hemisphere_north">Northern</string>
     <string name="settings_hemisphere_south">Southern</string>
     <string name="settings_mood_title">App mood</string>
     <string name="settings_mood_classic">Current</string>
     <string name="settings_mood_dawn">Dawn</string>
-    <string name="settings_target_info">Roughly how many Online hours fit your day. Just a marker on the scale, no judgment.</string>
+    <string name="settings_target_info">A marker on the day scale. It judges nothing.</string>
     <string name="settings_target_hours_format">%dh</string>
     <string name="settings_target_decrease">Decrease target</string>
     <string name="settings_target_increase">Increase target</string>
@@ -279,7 +279,7 @@
 
     <!-- T-11 (tepera-dev-spec.md): gap detection sensitivity preset -->
     <string name="settings_gap_sensitivity_label">Pause detection sensitivity</string>
-    <string name="settings_gap_sensitivity_info">How often the app suggests labeling pauses. Logged activity is not affected.</string>
+    <string name="settings_gap_sensitivity_info">How often to suggest naming pauses.</string>
     <string name="settings_gap_sensitivity_rare">Rare</string>
     <string name="settings_gap_sensitivity_normal">Normal</string>
     <string name="settings_gap_sensitivity_frequent">Frequent</string>
@@ -306,7 +306,7 @@
 
     <!-- Exclusion List (FR-3.5) -->
     <string name="exclusion_list_screen_title">Excluded apps</string>
-    <string name="exclusion_list_hint">Selected apps aren\'t included in Online time (maps, e-readers, banking, etc.)</string>
+    <string name="exclusion_list_hint">Selected apps aren\'t counted as Online (maps, e-readers, banking).</string>
     <string name="exclusion_list_empty">No apps with usage history in the last 30 days</string>
     <string name="exclusion_list_section_excluded">Excluded</string>
     <string name="exclusion_list_section_all">All</string>
@@ -505,7 +505,7 @@
     <string name="hero_structure_info_body_target">Your day: Online, logged activities, the rest. Hatching is time still ahead. The quiet tick is your Online target.</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
-    <string name="day_usage_info_body">Each square is one hour of yesterday; color shows minutes online. No judgment.</string>
+    <string name="day_usage_info_body">One square is one hour of yesterday; color shows minutes online.</string>
     <string name="weekly_digest_info_body">Last 7 days: entries logged, most time spent, usual day start.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
@@ -688,7 +688,7 @@
     <string name="v3_heat_window_description">%1$s Scrolling hours: %2$s.</string>
     <string name="v3_teaser_format">Already visible: around %1$s looks similar from day to day. I will check %2$d more days.</string>
     <string name="v3_windows_intro_format">Feeds repeated in %1$d windows this week. Tepera stays out the rest of the day.</string>
-    <string name="v3_windows_empty">I did not find stable hours, and that is fine too. I will check another week.</string>
+    <string name="v3_windows_empty">No stable hours found, and that\'s fine. I\'ll check again next week.</string>
     <string name="v3_card_recurrence_days">%1$d of %2$d days</string>
     <string name="v3_card_recurrence_weekdays">%1$d of %2$d weekdays</string>
     <string name="v3_card_meta_format">%1$s · %2$s · ~%3$d min</string>
@@ -774,7 +774,7 @@
     <string name="v3_card_manual_format">Own · %1$s</string>
     <string name="v3_editor_title_new">New window</string>
     <string name="v3_editor_title_edit">Own window</string>
-    <string name="v3_editor_intro">Set the hours when you usually get stuck in feeds. Tepera shows how that matches reality.</string>
+    <string name="v3_editor_intro">Set the hours you usually get stuck in feeds.</string>
     <string name="v3_editor_start">Start</string>
     <string name="v3_editor_end">End</string>
     <string name="v3_editor_days">Days</string>
@@ -1008,7 +1008,7 @@
     <string name="berserk_skip_confirm_body">It can be done once a day and cannot be undone until tomorrow.</string>
     <string name="berserk_skip_confirm_action">Switch off</string>
     <string name="preview_title">Windows preview (test)</string>
-    <string name="preview_hint">Shows the windows that appear over feeds right away, without waiting. Statistics are not changed.</string>
+    <string name="preview_hint">Shows the pop-ups over feeds right away. Statistics aren\'t changed.</string>
     <string name="preview_idea">Idea for this time</string>
     <string name="preview_duration">How long?</string>
     <string name="preview_watching">“I’m watching you”</string>
