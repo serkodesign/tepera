@@ -226,7 +226,7 @@ fun RiskHomeScreen(
             }
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // 3. Online сьогодні.
-                if (!state.loading) OnlineTodayCard(balanceState)
+                if (!state.loading) OnlineTodayCard(balanceState, state.feedMinutesToday)
                 // 4. Сьогоднішні години рядками: «Сьогодні вже було» / «Далі сьогодні».
                 if (ready && !observing) {
                     TodayRows(state.windows, now, logicalToday, heroWindowId = heroOcc?.id, onOpenWhy = onOpenWhy)
@@ -370,12 +370,6 @@ private fun ObservingContent(
                     )
                 }
             }
-            state.feedMinutesToday?.let { m ->
-                Text(
-                    stringResource(R.string.v3_history_today, feedDuration(m)),
-                    color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
-                )
-            }
             Text(
                 pluralStringResource(R.plurals.v3_history_days, h.days, h.days),
                 color = TeperaPalette.textSecondary, fontSize = 12.sp, lineHeight = 16.sp
@@ -399,7 +393,7 @@ private fun ObservingContent(
 
 /** До години — точні хвилини (округлення до чверті з'їло б «3 хв»), далі — як на решті екрана. */
 @Composable
-private fun feedDuration(minutes: Int): String =
+internal fun feedDuration(minutes: Int): String =
     if (minutes < 60) stringResource(R.string.minutes_short_format, minutes) else formatBalanceDuration(minutes)
 
 /** Скільки хвилин триває обіцянка після «Почати» — як на листі плану й картці-герої. */

@@ -14,6 +14,9 @@ object MoodStore {
 
     enum class Mood { CLASSIC, DAWN }
 
+    /** false — «Світанок» тимчасово прихований (код лишається); збережений DAWN читається як CLASSIC. */
+    const val DAWN_MOOD_ENABLED = false
+
     private val defaultMood = Mood.CLASSIC
     private val state = mutableStateOf(defaultMood)
     private var loaded = false
@@ -24,6 +27,7 @@ object MoodStore {
         loaded = true
         val stored = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(KEY_MOOD, defaultMood.name)
         state.value = runCatching { Mood.valueOf(stored ?: defaultMood.name) }.getOrDefault(defaultMood)
+            .let { if (!DAWN_MOOD_ENABLED && it == Mood.DAWN) Mood.CLASSIC else it }
     }
 
     /** Поточний вибір; читання в композиції перемальовує її при зміні. */

@@ -185,9 +185,8 @@ fun SettingsGroupScreen(
                             options = listOf(
                                 ThemeStore.Mode.SYSTEM to stringResource(R.string.settings_theme_system),
                                 ThemeStore.Mode.LIGHT to stringResource(R.string.settings_theme_light),
-                                ThemeStore.Mode.DARK to stringResource(R.string.settings_theme_dark),
-                                ThemeStore.Mode.TIME to stringResource(R.string.settings_theme_time)
-                            ),
+                                ThemeStore.Mode.DARK to stringResource(R.string.settings_theme_dark)
+                            ) + (if (ThemeStore.TIME_THEME_ENABLED) listOf(ThemeStore.Mode.TIME to stringResource(R.string.settings_theme_time)) else emptyList()),
                             selected = ThemeStore.current(),
                             onSelect = { ThemeStore.set(context, it) }
                         )
@@ -214,7 +213,7 @@ fun SettingsGroupScreen(
                     }
                 }
                 // ТИМЧАСОВО (лише debug): повзунок години, щоб побачити тему «За часом» у будь-яку пору доби.
-                if (BuildConfig.DEBUG) {
+                if (BuildConfig.DEBUG && ThemeStore.TIME_THEME_ENABLED) {
                     val debugMinute = DebugClock.override.value
                     val shown = debugMinute ?: java.time.LocalTime.now().let { it.hour * 60 + it.minute }
                     TeperaCard(title = stringResource(R.string.settings_debug_clock_title)) {
@@ -237,7 +236,7 @@ fun SettingsGroupScreen(
                     }
                 }
                 // Настрій — Поточний / Світанок (MoodStore): новий стиль поряд зі старим, незалежно від теми вище.
-                TeperaCard(title = stringResource(R.string.settings_mood_title)) {
+                if (MoodStore.DAWN_MOOD_ENABLED) TeperaCard(title = stringResource(R.string.settings_mood_title)) {
                     PillSegmentedControl(
                         options = listOf(
                             MoodStore.Mood.CLASSIC to stringResource(R.string.settings_mood_classic),

@@ -54,7 +54,7 @@ internal fun typicalOnlineSoFar(hourly: List<Int>, days: Int, minuteOfDay: Int):
  * (FR-3.10, ніякого світлофора). Без доступу до статистики не показується: заклик дати доступ уже є на екрані.
  */
 @Composable
-fun OnlineTodayCard(state: BalanceUiState) {
+fun OnlineTodayCard(state: BalanceUiState, feedMinutesToday: Int? = null) {
     if (state.hasUsageAccess != true) return
     val context = LocalContext.current
     val target = state.targetMinutes
@@ -83,6 +83,12 @@ fun OnlineTodayCard(state: BalanceUiState) {
                     color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
                 )
             }
+        }
+        if (feedMinutesToday != null) {
+            Text(
+                stringResource(R.string.v3_online_feeds_format, feedDuration(feedMinutesToday)),
+                color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
+            )
         }
         if (typicalNow != null) {
             Text(

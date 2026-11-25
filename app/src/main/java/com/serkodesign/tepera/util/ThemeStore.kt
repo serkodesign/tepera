@@ -18,6 +18,9 @@ object ThemeStore {
      */
     const val THEME_CHOICE_ENABLED = true
 
+    /** false — варіант «За часом» тимчасово прихований (код лишається); збережений TIME читається як SYSTEM. */
+    const val TIME_THEME_ENABLED = false
+
     /** TIME — за часом доби: вдень світла, ввечері темна, вночі найтемніша ("Світанок" змінюється плавно). */
     enum class Mode { SYSTEM, LIGHT, DARK, TIME }
 
@@ -50,6 +53,7 @@ object ThemeStore {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val stored = prefs.getString(KEY_MODE, defaultMode.name)
         state.value = runCatching { Mode.valueOf(stored ?: defaultMode.name) }.getOrDefault(defaultMode)
+            .let { if (!TIME_THEME_ENABLED && it == Mode.TIME) Mode.SYSTEM else it }
         hemisphereState.value = runCatching { Hemisphere.valueOf(prefs.getString(KEY_HEMISPHERE, null) ?: "") }
             .getOrDefault(Hemisphere.NORTH)
     }
