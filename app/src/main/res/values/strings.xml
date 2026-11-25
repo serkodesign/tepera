@@ -589,7 +589,7 @@
     <string name="a11y_disclosure_cancel">Not now</string>
     <string name="a11y_perm_label">Delay before apps</string>
     <string name="free_opens_title">Opens without delay</string>
-    <string name="free_opens_hint">How many times a day apps open without a pause. 0 means off.</string>
+    <string name="free_opens_hint">How many times a day apps open without a pause.</string>
     <string name="free_opens_used_format">Used today: %1$d of %2$d</string>
     <string name="free_opens_off">Off</string>
     <string name="free_opens_count_format">%d per day</string>
@@ -997,6 +997,8 @@
         <item>Berserk mode: the scroll is on pause, the phone is not offended.</item>
     </string-array>
     <string name="berserk_settings_group">Berserk mode</string>
+    <string name="settings_feed_opening_menu">Customize</string>
+    <string name="settings_feed_opening_menu_hint">Idea, puzzles, dimming</string>
     <string name="berserk_toggle_title">Berserk mode</string>
     <string name="berserk_toggle_supporting">If you stay in a feed for too long, a bear will come and close the app</string>
     <string name="berserk_hour_label">Stretch in feeds before the block, min</string>

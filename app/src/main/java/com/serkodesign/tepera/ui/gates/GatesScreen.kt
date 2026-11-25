@@ -97,6 +97,7 @@ private val DELAY_OPTIONS = listOf(3, 5, 10)
  * запуску застосунку (напр. якщо `isRequestPinShortcutSupported() == false`), показуються спокійним
  * поясненням замість краху — буквальна вимога приймання.
  */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun GatesScreen(
     gateRepository: GateRepository,
@@ -145,19 +146,6 @@ fun GatesScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (!searchActive) {
                 GlassScreenHeader(title = stringResource(R.string.gates_screen_title), onBack = onBack)
-            }
-
-            // Пошук закріплений угорі: інакше при вводі клавіатура закривала б список під полем. Діє на обидва
-            // списки — уже додані й доступні для додавання.
-            if (!state.loading && (state.pinShortcutSupported || viaA11y)) {
-                TeperaSearchField(
-                    query = query,
-                    onQueryChange = { query = it },
-                    placeholder = stringResource(R.string.search_apps_placeholder),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    active = searchActive,
-                    onFocusChange = { searchFocused = it }
-                )
             }
 
             when {
@@ -221,6 +209,12 @@ fun GatesScreen(
                             // CC-6: опційна «зростаюча» затримка; лічильник повторних відкриттів ніде не показується.
                             GlassRow(
                                 label = stringResource(R.string.gates_growing_delay_label),
+                                below = {
+                                    TeperaHint(
+                                        text = stringResource(R.string.gates_growing_delay_hint),
+                                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
+                                    )
+                                },
                                 leading = { TeperaIconCircle(TeperaSymbols.Timer) },
                                 trailing = {
                                     Switch(
@@ -230,11 +224,19 @@ fun GatesScreen(
                                     )
                                 }
                             )
-                            TeperaHint(
-                                text = stringResource(R.string.gates_growing_delay_hint),
-                                modifier = Modifier.padding(horizontal = 12.dp)
-                            )
                         }
+                    }
+
+                    // Пошук — під налаштуваннями, липкий: клавіатура не закриває список. Діє на обидва списки.
+                    if (state.pinShortcutSupported || viaA11y) stickyHeader(key = "search") {
+                        TeperaSearchField(
+                            query = query,
+                            onQueryChange = { query = it },
+                            placeholder = stringResource(R.string.search_apps_placeholder),
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            active = searchActive,
+                            onFocusChange = { searchFocused = it }
+                        )
                     }
 
                     if (!state.pinShortcutSupported && !viaA11y) {
@@ -263,17 +265,9 @@ fun GatesScreen(
                         return@LazyColumn
                     }
 
-                    if (!searchActive || visibleGates.isNotEmpty()) {
+                    // Розділ «Застосунки з затримкою» (і порожній стан) не показуємо, поки там нема жодного застосунку.
+                    if (visibleGates.isNotEmpty()) {
                         item { GlassSectionHeader(stringResource(R.string.gates_section_active)) }
-                    }
-                    if (!searchActive && tabGates.isEmpty()) {
-                        item {
-                            Text(
-                                text = stringResource(R.string.gates_empty),
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-                            )
-                        }
                     }
                     items(visibleGates, key = { it.gate.packageName }) { gateState ->
                         GateRow(

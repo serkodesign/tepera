@@ -101,6 +101,7 @@ fun FreeOpensCard(perDay: Int, usedToday: Int, onChange: (Int) -> Unit, modifier
             Text(
                 text = if (perDay == 0) stringResource(R.string.free_opens_off) else stringResource(R.string.free_opens_count_format, perDay),
                 style = MaterialTheme.typography.titleMedium,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 modifier = Modifier.weight(1f)
             )
             TeperaIconButton(

@@ -606,7 +606,7 @@
     <string name="a11y_disclosure_cancel">Не зараз</string>
     <string name="a11y_perm_label">Затримка перед застосунками</string>
     <string name="free_opens_title">Відкриття без затримки</string>
-    <string name="free_opens_hint">Скільки разів на день застосунки відкриваються без паузи. 0 — вимкнено.</string>
+    <string name="free_opens_hint">Скільки разів на день застосунки відкриваються без паузи.</string>
     <string name="free_opens_used_format">Сьогодні використано %1$d з %2$d</string>
     <string name="free_opens_off">Вимкнено</string>
     <string name="free_opens_count_format">%d на день</string>
@@ -911,7 +911,7 @@
 
     <!-- Налаштування, Figma "Tepera" T2 · Налаштування (1066:4191) -->
     <string name="settings_group_hours">Цифровий детокс</string>
-    <string name="settings_group_opening">Коли відкриваєш стрічку</string>
+    <string name="settings_group_opening">Налаштувати</string>
     <string name="settings_group_app">Застосунок</string>
     <string name="settings_group_more">Додатково</string>
     <string name="settings_overlay_title">Показувати ідею при відкритті стрічки</string>
@@ -1016,6 +1016,8 @@
         <item>Берсерк-режим: скрол на паузі, телефон не ображається.</item>
     </string-array>
     <string name="berserk_settings_group">Берсерк-режим</string>
+    <string name="settings_feed_opening_menu">Налаштувати</string>
+    <string name="settings_feed_opening_menu_hint">Ідея, задачки, приглушення</string>
     <string name="berserk_toggle_title">Берсерк-режим</string>
     <string name="berserk_toggle_supporting">Якщо довго сидітимеш у стрічці — прийде ведмідь і закриє застосунок</string>
     <string name="berserk_hour_label">Скільки в стрічках до блоку, хв</string>

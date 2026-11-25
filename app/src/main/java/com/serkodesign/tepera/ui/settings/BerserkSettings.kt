@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.serkodesign.tepera.R
-import com.serkodesign.tepera.ui.theme.M3GroupLabel
 import com.serkodesign.tepera.ui.theme.M3ListDivider
 import com.serkodesign.tepera.ui.theme.M3ListGroup
 import com.serkodesign.tepera.ui.theme.M3ListItem
@@ -42,7 +41,6 @@ fun BerserkSettings() {
     var confirmSkip by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        M3GroupLabel(stringResource(R.string.berserk_settings_group))
         M3ListGroup {
             M3ListItem(
                 title = stringResource(R.string.berserk_toggle_title),

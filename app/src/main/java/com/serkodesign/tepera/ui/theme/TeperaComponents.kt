@@ -740,7 +740,8 @@ fun TeperaSearchField(
             .focusable()
             .clip(RoundedCornerShape(28.dp))
             // Білий, як картки (cardActive): у світлій темі — білий, у темній — колір карток, а не сірий inputSurface.
-            .background(TeperaPalette.cardActive)
+            // Темна тема (за рішенням власника): білий 10% замість кольору карток.
+            .background(if (TeperaPalette.colors.isDark) Color.White.copy(alpha = 0.10f) else TeperaPalette.cardActive)
             .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)

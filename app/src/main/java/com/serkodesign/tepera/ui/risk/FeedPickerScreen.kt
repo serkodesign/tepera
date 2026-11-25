@@ -30,12 +30,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.serkodesign.tepera.R
 import com.serkodesign.tepera.BuildConfig
 import com.serkodesign.tepera.TeperaApp
-import com.serkodesign.tepera.ui.settings.FeedOpeningSettings
 import com.serkodesign.tepera.data.repository.InstalledAppInfo
 import com.serkodesign.tepera.ui.settings.AppIcon
 import com.serkodesign.tepera.ui.theme.GlassRow
 import com.serkodesign.tepera.ui.theme.GlassScreenHeader
 import com.serkodesign.tepera.ui.theme.GlassSectionHeader
+import com.serkodesign.tepera.ui.theme.M3ListDivider
+import com.serkodesign.tepera.ui.theme.M3ListGroup
+import com.serkodesign.tepera.ui.theme.M3ListItem
+import com.serkodesign.tepera.ui.theme.TeperaIcons
+import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaButton
 import com.serkodesign.tepera.ui.theme.TeperaHint
 import com.serkodesign.tepera.ui.theme.TeperaLoadingIndicator
@@ -48,7 +52,12 @@ import com.serkodesign.tepera.ui.theme.teperaSwitchColors
  */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
+fun FeedPickerScreen(
+    onBack: () -> Unit,
+    onDone: (() -> Unit)? = null,
+    onOpenOpening: (() -> Unit)? = null,
+    onOpenBerserk: (() -> Unit)? = null
+) {
     val app = LocalContext.current.applicationContext as TeperaApp
     val viewModel: FeedPickerViewModel = viewModel(factory = FeedPickerViewModel.Factory(app))
     val state by viewModel.state.collectAsState()
@@ -75,10 +84,24 @@ fun FeedPickerScreen(onBack: () -> Unit, onDone: (() -> Unit)? = null) {
                     ) {
                         // Лише в Налаштуваннях (не в онбордингу): що відбувається, коли відкриваєш стрічку.
                         if (!searchActive && onDone == null && BuildConfig.V3_MVP) {
-                            item { FeedOpeningSettings() }
-                            // Тип підрахунку часу й берсерк-режим — лише там, де є служба доступності.
-                            if (com.serkodesign.tepera.util.GateAccessibility.isAvailable) {
-                                item { com.serkodesign.tepera.ui.settings.BerserkSettings() }
+                            // Два підменю замість довгого списку перемикачів: що відбувається при відкритті стрічки і Берсерк-режим.
+                            item {
+                                M3ListGroup {
+                                    M3ListItem(
+                                        title = stringResource(R.string.settings_feed_opening_menu),
+                                        supporting = stringResource(R.string.settings_feed_opening_menu_hint),
+                                        icon = TeperaIcons.OpenFeed,
+                                        onClick = onOpenOpening
+                                    )
+                                    if (com.serkodesign.tepera.util.GateAccessibility.isAvailable) {
+                                        M3ListDivider()
+                                        M3ListItem(
+                                            title = stringResource(R.string.berserk_title),
+                                            icon = TeperaSymbols.Timer,
+                                            onClick = onOpenBerserk
+                                        )
+                                    }
+                                }
                             }
                         }
                         if (!searchActive) {

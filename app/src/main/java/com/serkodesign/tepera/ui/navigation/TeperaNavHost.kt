@@ -114,6 +114,8 @@ import com.serkodesign.tepera.ui.settings.BackupRestoreScreen
 import com.serkodesign.tepera.ui.settings.ExclusionListScreen
 import com.serkodesign.tepera.debug.RiskSpikeScreen
 import com.serkodesign.tepera.ui.risk.FeedPickerScreen
+import com.serkodesign.tepera.ui.settings.BerserkScreen
+import com.serkodesign.tepera.ui.settings.FeedOpeningScreen
 import com.serkodesign.tepera.ui.risk.TesterStatsScreen
 import com.serkodesign.tepera.ui.risk.RiskHomeScreen
 import com.serkodesign.tepera.ui.risk.WindowWhyScreen
@@ -164,6 +166,8 @@ private object Routes {
     const val LANGUAGE_SETTINGS = "language_settings"
     const val RISK_SPIKE = "risk_spike"
     const val FEED_PICKER = "feed_picker"
+    const val FEED_OPENING = "feed_opening"
+    const val BERSERK_SETTINGS = "berserk_settings"
     const val TESTER_STATS = "tester_stats"
     const val V3_WELCOME = "v3_welcome"
     const val V3_ACCESS = "v3_access"
@@ -200,7 +204,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, LANGUAGE_SETTINGS, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, LANGUAGE_SETTINGS, RISK_SPIKE, FEED_PICKER, FEED_OPENING, BERSERK_SETTINGS, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, A11Y_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
@@ -856,7 +860,15 @@ fun TeperaNavHost(
                     onBack = { navController.popBackStack(Routes.HOME, inclusive = false) }
                 )
             }
-            composable(Routes.FEED_PICKER) { FeedPickerScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.FEED_PICKER) { 
+                FeedPickerScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenOpening = { navController.navigate(Routes.FEED_OPENING) },
+                    onOpenBerserk = { navController.navigate(Routes.BERSERK_SETTINGS) }
+                )
+            }
+            composable(Routes.FEED_OPENING) { FeedOpeningScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.BERSERK_SETTINGS) { BerserkScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.TESTER_STATS) {
                 TesterStatsScreen(
                     onBack = { navController.popBackStack() },
