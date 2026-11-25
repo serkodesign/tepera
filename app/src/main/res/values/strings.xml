@@ -94,7 +94,7 @@
     <!-- Usage access onboarding (FR-7.1) -->
     <string name="onboarding_skip">Skip</string>
     <string name="welcome_onboarding_title">A tracker without judgement</string>
-    <string name="welcome_onboarding_body">Tepera only shows how your day goes by: it doesn\'t grade you or rush you. You compare yourself only with yourself.</string>
+    <string name="welcome_onboarding_body">Tepera shows how your day goes. It doesn\'t grade or rush you.</string>
     <string name="welcome_principle_no_scores">No scores, no points</string>
     <string name="welcome_principle_no_shaming">No shaming, no rush</string>
     <string name="welcome_principle_private">Tepera does not send your data anywhere</string>
@@ -108,8 +108,8 @@
     <string name="perm_usage_label">Usage access</string>
     <string name="perm_continue">Continue</string>
     <string name="target_onboarding_title">A reference for your day</string>
-    <string name="target_onboarding_body">A reference is a quiet, optional tick on the day scale — it judges nothing. Set it now or later in Settings.</string>
-    <string name="target_onboarding_average_format">Over the last %1$d days, about %2$s online per day on average. It\'s only a starting point — pick your own.</string>
+    <string name="target_onboarding_body">A quiet optional tick on the day scale. Set it now or later in Settings.</string>
+    <string name="target_onboarding_average_format">Last %1$d days: about %2$s online a day. Just a starting point.</string>
     <string name="target_onboarding_later">Later</string>
     <string name="target_onboarding_set">Set</string>
     <string name="settings_target_off_hint">No reference — nothing is marked on the day scale.</string>
@@ -121,8 +121,8 @@
     <string name="welcome_back_logged_format">Noted: %1$s</string>
     <string name="welcome_back_online_format">Online on average: %1$s per day</string>
     <string name="weekly_summary_label">Weekly summary</string>
-    <string name="weekly_summary_hint">Once a week, Sunday evening: one quiet notification. Plus one more, once, when your scrolling hours are found.</string>
-    <string name="weekly_summary_permission_hint">Without notification permission the summary won\'t arrive. Allow it in system settings.</string>
+    <string name="weekly_summary_hint">One quiet notification on Sunday evening, and one when your scrolling hours are found.</string>
+    <string name="weekly_summary_permission_hint">Allow notifications in system settings to get it.</string>
     <string name="weekly_summary_channel_name">Weekly summary</string>
     <string name="weekly_summary_notification_text">Your weekly summary is ready.</string>
     <string name="update_dialog_title">Update available</string>
@@ -136,7 +136,7 @@
     <string name="settings_pro_interest_action">Tepera Pro</string>
     <string name="pro_interest_screen_title">Tepera Pro</string>
     <string name="pro_interest_title">Tepera Pro — in development</string>
-    <string name="pro_interest_body">We are considering an extended version. No prices or payments, just a question: what would help?</string>
+    <string name="pro_interest_body">We\'re considering an extended version. No prices, just a question: what would help you?</string>
     <string name="pro_interest_action">I want to know more</string>
     <string name="extra_animations_label">Extra animations</string>
     <string name="extra_animations_explanation">Moving circle and smooth transitions. Turn off to save battery.</string>
@@ -152,7 +152,7 @@
     <string name="onboarding_skip_all">Skip all</string>
 
     <string name="gates_onboarding_title">Apps with a delay</string>
-    <string name="gates_onboarding_body">A short pause before chosen apps, to decide on purpose. Later: Settings → Apps with a delay.</string>
+    <string name="gates_onboarding_body">A short pause before chosen apps. Later: Settings → Apps with a delay.</string>
     <string name="gates_onboarding_action">Got it</string>
 
 
@@ -211,7 +211,7 @@
     <string name="pattern_card_title">When you\'re on your phone</string>
     <string name="pattern_card_title_average">When you\'re on your phone</string>
     <string name="pattern_card_subtitle_yesterday">yesterday</string>
-    <string name="stats_online_differs_note">Online may differ from the system screen time: we don\'t count excluded apps, the launcher and the keyboard.</string>
+    <string name="stats_online_differs_note">May differ from system screen time: excluded apps, launcher and keyboard aren\'t counted.</string>
     <string name="stats_day_start_note">Start is the first unlock after 05:00.</string>
     <string name="target_onboarding_later_hint">Without a reference the scale simply has no tick. You can add one in Settings.</string>
     <string name="pattern_empty_state">Your pattern will show up here once a bit more data builds up</string>
@@ -273,7 +273,7 @@
     <string name="settings_target_decrease">Decrease target</string>
     <string name="settings_target_increase">Increase target</string>
     <string name="settings_sleep_window_label">Sleep window</string>
-    <string name="settings_sleep_window_info">Just a technical boundary, not sleep tracking. Affects day start and pause detection. Work nights? Adjust it.</string>
+    <string name="settings_sleep_window_info">A technical boundary, not sleep tracking. Sets day start and pause detection.</string>
     <string name="settings_sleep_window_start_label">Start</string>
     <string name="settings_sleep_window_end_label">End</string>
 
@@ -288,14 +288,14 @@
     <string name="settings_suggest_feature_action">Suggest a feature</string>
     <string name="settings_rate_action">Rate the app</string>
     <string name="settings_suggest_feature_confirm_title">Open the form in your browser?</string>
-    <string name="settings_suggest_feature_confirm_body">This opens a Google Form in your browser — Google handles it, not Tepera.</string>
+    <string name="settings_suggest_feature_confirm_body">Opens a Google Form in your browser; Google handles it.</string>
     <string name="settings_suggest_feature_confirm_action">Open</string>
     <string name="settings_suggest_feature_no_browser">Couldn\'t find a browser to open the form</string>
 
     <!-- Backup (FR-6.1, FR-6.2) -->
     <string name="backup_export_action">Export statistics</string>
     <string name="backup_import_action">Import statistics</string>
-    <string name="backup_not_included_note">The backup includes your activities, entries, excluded apps, target and daily Online history. In scroll-hours mode it also includes feed apps, hours and plans. Set the rest (sleep window, gates, widgets, language, theme) again.</string>
+    <string name="backup_not_included_note">Included: activities, entries, excluded apps, target and Online history (in scroll-hours mode also feed apps, hours and plans). Settings are not.</string>
     <string name="backup_export_success">Data exported</string>
     <string name="backup_export_failure">Couldn\'t export the data</string>
     <string name="backup_import_success">Data imported</string>
@@ -340,7 +340,7 @@
     <string name="gate_schedule_title">Delay schedule</string>
     <string name="gate_schedule_always">Always active</string>
     <string name="gate_schedule_always_hint">Active at all times, except while paused.</string>
-    <string name="gate_schedule_custom_hint">Active only in the chosen periods — outside them the shortcut opens the app right away.</string>
+    <string name="gate_schedule_custom_hint">Active only in chosen periods; otherwise the app opens right away.</string>
     <string name="gate_schedule_day_off">The delay is off on this day</string>
     <string name="gate_schedule_add_interval">Add a period</string>
     <string name="gate_schedule_copy_all">To all days</string>
@@ -362,7 +362,7 @@
     <string name="gates_delay_picker_cancel">Cancel</string>
     <string name="gates_pin_failed">Couldn\'t create the shortcut — please retry</string>
     <string name="gates_instruction_title">Shortcut created</string>
-    <string name="gates_instruction_body">Android won\'t let us remove the %1$s icon — long-press it on your home screen and drag it to \"Remove\".</string>
+    <string name="gates_instruction_body">Android can\'t remove the %1$s icon for you. Long-press it and drag to "Remove".</string>
     <string name="gates_instruction_done">Done</string>
     <string name="gates_instruction_later">I\'ll do it later</string>
     <!-- Gate pause screen redesign per a provided mockup (direct user request, not T-5) -->
@@ -501,12 +501,12 @@
     <string name="home_card_first_unlock_label">First unlock</string>
     <string name="hero_structure_info_action">About the day bar</string>
     <string name="hero_structure_info_title">Day bar</string>
-    <string name="hero_structure_info_body">The bar shows what your day is made of: Online, logged activities, the rest. Hatching is time still ahead.</string>
-    <string name="hero_structure_info_body_target">What your day is made of: Online, logged activities, the rest. Hatching is what is still ahead. The quiet tick is your Online target.</string>
+    <string name="hero_structure_info_body">Your day: Online, logged activities, the rest. Hatching is time still ahead.</string>
+    <string name="hero_structure_info_body_target">Your day: Online, logged activities, the rest. Hatching is time still ahead. The quiet tick is your Online target.</string>
     <string name="home_card_info_action">About this card</string>
     <string name="home_card_info_close">Got it</string>
     <string name="day_usage_info_body">Each square is one hour of yesterday; color shows minutes online. No judgment.</string>
-    <string name="weekly_digest_info_body">Last 7 days: how often you logged activities, what took most time, when your day usually starts.</string>
+    <string name="weekly_digest_info_body">Last 7 days: entries logged, most time spent, usual day start.</string>
     <string name="weekly_digest_hobby_between">days of</string>
     <string name="weekly_digest_hobby_suffix"></string>
     <!-- W-3 (CLAUDE-CODE-TASK-widgets.md): widget-picker description — now "Today" (day shape), not category buttons. -->
@@ -527,7 +527,7 @@
     <string name="backup_delete_section">Data deletion</string>
     <string name="backup_delete_action">Delete all data</string>
     <string name="backup_delete_title">Delete all data?</string>
-    <string name="backup_delete_body">This deletes entries, activities, settings and everything else Tepera stores on this phone. It can\'t be undone.\n\nNot sure? Save a copy first: \"Export statistics\".\n\nAn Android Auto Backup copy (if enabled) is not affected.</string>
+    <string name="backup_delete_body">Deletes everything Tepera stores on this phone. It can\'t be undone.\n\nSave a copy first: "Export statistics". A Google Auto Backup copy, if enabled, stays.</string>
     <string name="backup_delete_next">Continue</string>
     <string name="backup_delete_final_title">One last confirmation</string>
     <string name="backup_delete_final_body">To delete everything for good, type the word \"%1$s\".</string>
@@ -541,7 +541,7 @@
     <!-- T-16 B: what is known / not known about scrolling -->
     <string name="scrolling_notes_row">What is known about scrolling and dopamine</string>
     <string name="scrolling_notes_title">What is and isn\'t known</string>
-    <string name="scrolling_notes_intro">This is not advice and not an assessment. It is only what science knows right now, and where scientists disagree with each other.</string>
+    <string name="scrolling_notes_intro">Not advice or assessment, only what science knows now and where scientists disagree.</string>
     <string name="scrolling_notes_1_title">What this is about</string>
     <string name="scrolling_notes_1_body">Scrolling means moving through a feed with no goal set in advance. Tepera can\'t see what happens inside an app: a minute of reading and a minute of scrolling look the same to it.</string>
     <string name="scrolling_notes_2_title">What is known</string>
@@ -650,7 +650,7 @@
 
     <!-- v3.0 MVP, stage 3: onboarding L1-L2, home screen L3/L4 (Figma "App concept", page v3.0). -->
     <string name="v3_welcome_title">You do not pick up your phone by accident</string>
-    <string name="v3_welcome_body">Mostly at the same hours. Within a week Tepera finds yours and quietly suggests something else then. The rest of the day it stays quiet.</string>
+    <string name="v3_welcome_body">Usually at the same hours. Tepera finds yours within a week and suggests something else then. The rest of the day it stays quiet.</string>
     <string name="v3_welcome_start">Start</string>
     <string name="v3_access_title">To find your hours, Tepera needs access to usage statistics</string>
     <string name="v3_access_sees_title">What Tepera sees</string>
@@ -671,7 +671,7 @@
     <string name="v3_home_need_access_body">Without it Tepera cannot see when you are in feeds.</string>
     <string name="v3_home_need_feeds_title">Choose your feed apps</string>
     <string name="v3_home_need_feeds_body">Tepera will only count time in the apps you choose.</string>
-    <string name="v3_observing_hint">For now I only look at your history and interrupt nothing, so there is something to compare with. Use your phone as usual.</string>
+    <string name="v3_observing_hint">For now I only watch your history and interrupt nothing. Use your phone as usual.</string>
     <string name="v3_history_title">Your starting point</string>
     <string name="v3_history_body">About %1$s a day in feeds.</string>
     <string name="v3_history_peak">Most time is around %1$s.</string>
@@ -687,7 +687,7 @@
     <string name="v3_heat_description">Heat map: time in feeds over the last 7 days, by hour.</string>
     <string name="v3_heat_window_description">%1$s Scrolling hours: %2$s.</string>
     <string name="v3_teaser_format">Already visible: around %1$s looks similar from day to day. I will check %2$d more days.</string>
-    <string name="v3_windows_intro_format">Over the week feeds repeated in these windows: %1$d. The rest of the day Tepera will not interfere.</string>
+    <string name="v3_windows_intro_format">Feeds repeated in %1$d windows this week. Tepera stays out the rest of the day.</string>
     <string name="v3_windows_empty">I did not find stable hours, and that is fine too. I will check another week.</string>
     <string name="v3_card_recurrence_days">%1$d of %2$d days</string>
     <string name="v3_card_recurrence_weekdays">%1$d of %2$d weekdays</string>
@@ -706,7 +706,7 @@
     <!-- v3.0 MVP, stage 3: L5 "If - then" plan (Figma 911:1066). Evening/lunch suggestions come from the design, morning/day are neutral. -->
     <string name="v3_card_make_plan">Make a plan</string>
     <string name="v3_plan_title_format">Plan for %1$s</string>
-    <string name="v3_plan_intro_format">%1$s · %2$s. Describe what you do instead of the feed, the way you would say it to yourself.</string>
+    <string name="v3_plan_intro_format">%1$s · %2$s. What will you do instead of the feed?</string>
     <string name="v3_plan_if_title">If…</string>
     <string name="v3_plan_then_title">…then I</string>
     <string name="v3_plan_own">my own</string>
@@ -961,11 +961,11 @@
     <string name="tutorial_done">Done</string>
     <string name="tutorial_got_it">Got it</string>
     <string name="tutorial_observing_title">Getting to know you</string>
-    <string name="tutorial_observing_body">First Tepera looks at your history and interrupts nothing, so there is something to compare with. Just use your phone as usual.</string>
+    <string name="tutorial_observing_body">Tepera first looks at your history and interrupts nothing. Use your phone as usual.</string>
     <string name="tutorial_idea_title">An idea instead of a feed</string>
     <string name="tutorial_idea_body">Before a scrolling hour, an idea for what to do instead of the feed appears here.</string>
     <string name="tutorial_hours_title">Scrolling hours</string>
-    <string name="tutorial_hours_body">During these hours feeds get gentle care. Tepera finds them within a week, or pick yours now.</string>
+    <string name="tutorial_hours_body">Tepera finds these hours within a week, or pick yours now.</string>
     <string name="tutorial_add_title">Add your own hour</string>
     <string name="tutorial_add_body">Tap “+” and set when feeds matter to you.</string>
     <string name="tutorial_diary_title">Diary</string>
