@@ -141,7 +141,7 @@
     <string name="extra_animations_label">Extra animations</string>
     <string name="extra_animations_explanation">Moving circle and smooth transitions. Turn off to save battery.</string>
     <string name="analytics_consent_label">Help improve Tepera</string>
-    <string name="analytics_consent_explanation">Off by default. If you turn it on, Tepera sends anonymous usage events (for example, which screen was opened or that an activity was added) to our analytics provider PostHog in the EU. They are tied to a random analytics ID, not to your name or account. No app names, no text you type, nothing from the screen. You can turn it off or reset the ID anytime.</string>
+    <string name="analytics_consent_explanation">Optional, and off until you turn it on. If you do, Tepera sends anonymous usage events (for example, which screen was opened or that an activity was added) to our analytics provider PostHog in the EU. They are tied to a random analytics ID, not to your name or account. No app names, no text you type, nothing from the screen. You can turn it off or reset the ID anytime.</string>
     <string name="analytics_id_label">Analytics ID</string>
     <string name="analytics_id_copied">ID copied</string>
     <string name="analytics_id_reset">Reset ID</string>
