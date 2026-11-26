@@ -309,6 +309,7 @@ class TeperaApp : Application() {
         getSharedPreferences("locale_prefs", MODE_PRIVATE).edit().clear().commit()
         getSharedPreferences("widget_prefs", MODE_PRIVATE).edit().clear().commit()
         CrashReporting.reset(this@TeperaApp)
+        com.serkodesign.tepera.analytics.AccessStateProbe.clear(this@TeperaApp)
         seedInitialData()
         WidgetUpdateWorker.schedule(this@TeperaApp)
         WidgetRolloverWorker.schedule(this@TeperaApp)

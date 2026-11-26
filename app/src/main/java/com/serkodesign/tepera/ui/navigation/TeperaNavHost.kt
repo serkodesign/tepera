@@ -101,6 +101,10 @@ import com.serkodesign.tepera.ui.home.HomeScreen
 import com.serkodesign.tepera.ui.home.MiniPlayer
 import com.serkodesign.tepera.data.toggleCategoryTimer
 import com.serkodesign.tepera.ui.onboarding.OnboardingScreen
+import com.serkodesign.tepera.analytics.AnalyticsEvent
+import com.serkodesign.tepera.analytics.OnboardingStep
+import com.serkodesign.tepera.analytics.Tab
+import com.serkodesign.tepera.analytics.analytics
 import com.serkodesign.tepera.ui.onboarding.CategoryOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.OnlineEstimateOnboardingScreen
 import com.serkodesign.tepera.ui.onboarding.TargetOnboardingScreen
@@ -359,6 +363,27 @@ fun TeperaNavHost(
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // Аналітика (лише локальні лічильники): вкладки й проходження онбордингу — за зміною маршруту.
+    // Онбординг: «розпочато» — перший екран ланцюжка; «крок пройдено» — перехід на інший крок; «завершено» — вихід на Home
+    // (звичайний, «Пропустити все» чи повторно відкритий з Налаштувань крок теж потрапляють сюди — відоме спрощення).
+    var lastOnboardingStep by remember { mutableStateOf<com.serkodesign.tepera.analytics.OnboardingStep?>(null) }
+    LaunchedEffect(currentRoute) {
+        val route = currentRoute ?: return@LaunchedEffect
+        val analytics = appContext.analytics
+        analyticsTabFor(route)?.let { analytics.track(AnalyticsEvent.TabViewed(it)) }
+        val step = analyticsOnboardingStepFor(route)
+        val last = lastOnboardingStep
+        if (step != null) {
+            if (last == null) analytics.track(AnalyticsEvent.OnboardingStarted)
+            else if (last != step) analytics.track(AnalyticsEvent.OnboardingStepCompleted(last))
+            lastOnboardingStep = step
+        } else if (route == Routes.HOME && last != null) {
+            analytics.track(AnalyticsEvent.OnboardingStepCompleted(last))
+            analytics.track(AnalyticsEvent.OnboardingCompleted)
+            lastOnboardingStep = null
+        }
+    }
 
     // Повторний тап по вже вибраній вкладці навбару (за прямим запитом користувача) прокручує
     // той екран наверх замість нічого не робити — кожен лічильник передається у відповідний
@@ -940,6 +965,26 @@ fun TeperaNavHost(
  * Наступний непройдений крок онбордингу або null, коли всі пройдені: Welcome → категорії → оцінка Online →
  * орієнтир → розкриття доступності (лише beta) → ворота → дозвіл (останній, лише без доступу). Пропозиція віджета — тепер картка Home, не крок.
  */
+private fun analyticsTabFor(route: String): Tab? = when (route) {
+    Routes.HOME -> Tab.TODAY
+    Routes.DIARY -> Tab.ACTIVITIES
+    Routes.STATS -> Tab.DATA
+    Routes.SETTINGS -> Tab.SETTINGS
+    else -> null
+}
+
+private fun analyticsOnboardingStepFor(route: String): OnboardingStep? = when (route) {
+    Routes.WELCOME_ONBOARDING, Routes.V3_WELCOME -> OnboardingStep.WELCOME
+    Routes.A11Y_ONBOARDING -> OnboardingStep.ACCESSIBILITY
+    Routes.CATEGORY_ONBOARDING -> OnboardingStep.CATEGORIES
+    Routes.ONLINE_ESTIMATE_ONBOARDING -> OnboardingStep.ONLINE_ESTIMATE
+    Routes.TARGET_ONBOARDING -> OnboardingStep.TARGET
+    Routes.V3_FEEDS -> OnboardingStep.FEEDS
+    Routes.ONBOARDING, Routes.V3_ACCESS -> OnboardingStep.PERMISSIONS
+    Routes.GATES_ONBOARDING -> OnboardingStep.GATES
+    else -> null
+}
+
 private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository, context: android.content.Context): String? {
     if (!settingsStore.welcomeOnboardingSeen.first()) return Routes.WELCOME_ONBOARDING
     if (!settingsStore.categoryOnboardingSeen.first()) return Routes.CATEGORY_ONBOARDING
