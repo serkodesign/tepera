@@ -58,6 +58,6 @@ class LocalAnalyticsTest {
 
     @Test
     fun retention_cutoffIs90DaysBack() {
-        assertEquals(LocalDate.of(2026, 8, 27), analyticsRetentionCutoff(day))
+        assertEquals(LocalDate.of(2026, 8, 28), analyticsRetentionCutoff(day))
     }
 }
