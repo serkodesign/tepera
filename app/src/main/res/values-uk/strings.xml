@@ -1110,4 +1110,15 @@
     <string name="widget_preview_timer_bottom">Тап — зупинити</string>
     <string name="widget_idea_fallback">Підкажу, коли відкриєш стрічку</string>
     <string name="widget_week_unit">на день</string>
+    <!-- Аналітика, рівень 1: «Поділитися анонімною статистикою» -->
+    <string name="stats_share_title">Поділитися анонімною статистикою</string>
+    <string name="stats_share_intro">Tepera веде прості лічильники того, як користуються її функціями. Вони лишаються на твоєму телефоні. Якщо хочеш допомогти, можеш сам надіслати їх розробнику.</string>
+    <string name="stats_share_what_title">Що входить</string>
+    <string name="stats_share_what_body">Лише скільки разів за останні 30 днів використано кожну функцію, а також версії застосунку й Android. Без назв застосунків, без введеного тексту, без часу доби, без ID і моделі телефону. Лічильники автоматично видаляються через 90 днів.</string>
+    <string name="stats_share_preview_title">Саме це буде надіслано</string>
+    <string name="stats_share_hint">Нічого не надсилається автоматично. Кнопка відкриває твій поштовий застосунок із цим текстом — перед надсиланням його можна прочитати й змінити.</string>
+    <string name="stats_share_send">Надіслати листом</string>
+    <string name="stats_share_mail_subject">Tepera stats</string>
+    <string name="stats_share_chooser_title">Надіслати статистику</string>
+    <string name="stats_share_no_mail_app">Не знайдено застосунку для пошти</string>
 </resources>

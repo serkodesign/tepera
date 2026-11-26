@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.analytics.AnalyticsEvent
+import com.serkodesign.tepera.analytics.track
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -109,6 +111,7 @@ fun SettingsScreen(
             onConfirm = {
                 showSuggest = false
                 try {
+                    context.track(AnalyticsEvent.FeedbackFormOpened)
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(context, resources.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()

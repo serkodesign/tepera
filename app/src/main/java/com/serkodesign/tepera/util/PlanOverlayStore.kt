@@ -1,6 +1,9 @@
 package com.serkodesign.tepera.util
 
 import android.content.Context
+import com.serkodesign.tepera.analytics.AnalyticsEvent
+import com.serkodesign.tepera.analytics.SoftExitOutcome
+import com.serkodesign.tepera.analytics.track
 import com.serkodesign.tepera.domain.risk.ActivitySuggestions
 import com.serkodesign.tepera.domain.risk.QuickPuzzles
 
@@ -51,7 +54,10 @@ object PlanOverlayStore {
 
     fun setEnabled(context: Context, enabled: Boolean) = prefs(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
 
-    fun recordShown(context: Context) = bump(context, KEY_SHOWN)
+    fun recordShown(context: Context) {
+        bump(context, KEY_SHOWN)
+        context.track(AnalyticsEvent.IntentionSheetShown)
+    }
 
     /** «Так, роблю це»: до [untilMillis] повторне відкриття стрічки показує не нову ідею, а «я бачу тебе». */
     fun setCommitment(context: Context, ideaId: ActivitySuggestions.Id, untilMillis: Long) {
@@ -210,11 +216,20 @@ object PlanOverlayStore {
     }
 
     /** М'який вихід: сесію розпочато / завершено вчасно (до кінця строку + 2 хв) / продовжено кнопкою «Ще 5». Час — для вікна «7 днів». */
-    fun recordSoftExitStarted(context: Context, nowMillis: Long = System.currentTimeMillis()) = appendTime(context, KEY_SE_STARTED, nowMillis)
+    fun recordSoftExitStarted(context: Context, nowMillis: Long = System.currentTimeMillis()) {
+        appendTime(context, KEY_SE_STARTED, nowMillis)
+        context.track(AnalyticsEvent.SoftExitShown)
+    }
 
-    fun recordSoftExitOnTime(context: Context, nowMillis: Long = System.currentTimeMillis()) = appendTime(context, KEY_SE_ON_TIME, nowMillis)
+    fun recordSoftExitOnTime(context: Context, nowMillis: Long = System.currentTimeMillis()) {
+        appendTime(context, KEY_SE_ON_TIME, nowMillis)
+        context.track(AnalyticsEvent.SoftExitOutcomeEvent(SoftExitOutcome.LEFT))
+    }
 
-    fun recordSoftExitExtended(context: Context, nowMillis: Long = System.currentTimeMillis()) = appendTime(context, KEY_SE_EXTENDED, nowMillis)
+    fun recordSoftExitExtended(context: Context, nowMillis: Long = System.currentTimeMillis()) {
+        appendTime(context, KEY_SE_EXTENDED, nowMillis)
+        context.track(AnalyticsEvent.SoftExitOutcomeEvent(SoftExitOutcome.CONTINUED))
+    }
 
     /** Скільки сесій розпочато / завершено вчасно / продовжено за останні [days] діб. */
     fun softExitCounts(context: Context, days: Int = 7, nowMillis: Long = System.currentTimeMillis()): Triple<Int, Int, Int> {

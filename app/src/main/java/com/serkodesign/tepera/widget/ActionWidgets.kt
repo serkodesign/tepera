@@ -673,14 +673,14 @@ class PausesWidget : ActionWidget() {
 
 // ---------- СЂРµСЃС–РІРµСЂРё Р№ РѕРЅРѕРІР»РµРЅРЅСЏ ----------
 
-class NextHourWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = NextHourWidget() }
-class IdeaWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = IdeaWidget() }
-class RunningTimerWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = RunningTimerWidget() }
-class QuietTodayWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = QuietTodayWidget() }
-class GatePauseWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = GatePauseWidget() }
-class AddEntryWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = AddEntryWidget() }
-class WeekWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = WeekWidget() }
-class PausesWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = PausesWidget() }
+class NextHourWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.NEXT_HOUR) { override val glanceAppWidget: GlanceAppWidget = NextHourWidget() }
+class IdeaWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.IDEA) { override val glanceAppWidget: GlanceAppWidget = IdeaWidget() }
+class RunningTimerWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.ACTIVE_NOW) { override val glanceAppWidget: GlanceAppWidget = RunningTimerWidget() }
+class QuietTodayWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.SKIP_TODAY) { override val glanceAppWidget: GlanceAppWidget = QuietTodayWidget() }
+class GatePauseWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.GATE_PAUSE) { override val glanceAppWidget: GlanceAppWidget = GatePauseWidget() }
+class AddEntryWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.ADD_ENTRY) { override val glanceAppWidget: GlanceAppWidget = AddEntryWidget() }
+class WeekWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.WEEK) { override val glanceAppWidget: GlanceAppWidget = WeekWidget() }
+class PausesWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.PAUSES) { override val glanceAppWidget: GlanceAppWidget = PausesWidget() }
 
 /** РћРЅРѕРІР»СЋС” РІСЃС– РІС–РґР¶РµС‚Рё С†СЊРѕРіРѕ С„Р°Р№Р»Сѓ вЂ” РІРёРєР»РёРєР°С”С‚СЊСЃСЏ СЂР°Р·РѕРј Р· С–РЅС€РёРјРё С–РЅС„РѕСЂРјР°С†С–Р№РЅРёРјРё (РІРѕСЂРєРµСЂРё, С‚Р°Р№РјРµСЂРё) С– РїС–СЃР»СЏ РІР»Р°СЃРЅРёС… РґС–Р№. */
 suspend fun updateAllActionWidgets(context: Context) {

@@ -338,3 +338,14 @@ val MIGRATION_22_23 = object : Migration(22, 23) {
         db.execSQL("ALTER TABLE risk_windows ADD COLUMN pausedByUser INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/** Версія 24 (аналітика, рівень 1): нова таблиця денних лічильників подій. Адитивна, існуючих таблиць не чіпає. */
+val MIGRATION_23_24 = object : Migration(23, 24) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `daily_event_counters` (" +
+                "`date` INTEGER NOT NULL, `eventName` TEXT NOT NULL, `propsKey` TEXT NOT NULL, `count` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`date`, `eventName`, `propsKey`))"
+        )
+    }
+}

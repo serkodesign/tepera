@@ -1091,4 +1091,15 @@
     <string name="widget_preview_timer_bottom">Tap to stop</string>
     <string name="widget_idea_fallback">I will suggest when you open a feed</string>
     <string name="widget_week_unit">per day</string>
+    <!-- Аналітика, рівень 1: «Поділитися анонімною статистикою» -->
+    <string name="stats_share_title">Share anonymous statistics</string>
+    <string name="stats_share_intro">Tepera keeps simple counters of how its features are used. They stay on your phone. If you want to help, you can send them to the developer yourself.</string>
+    <string name="stats_share_what_title">What is included</string>
+    <string name="stats_share_what_body">Only how many times each feature was used over the last 30 days, plus the app and Android versions. No names of apps, no text you typed, no times of day, no ID, no phone model. The counters are deleted automatically after 90 days.</string>
+    <string name="stats_share_preview_title">Exactly this will be sent</string>
+    <string name="stats_share_hint">Nothing is sent automatically. The button opens your email app with this text — you can read and edit it before sending.</string>
+    <string name="stats_share_send">Send by email</string>
+    <string name="stats_share_mail_subject">Tepera stats</string>
+    <string name="stats_share_chooser_title">Send statistics</string>
+    <string name="stats_share_no_mail_app">No app to send email found</string>
 </resources>

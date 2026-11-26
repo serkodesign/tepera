@@ -61,6 +61,7 @@ import java.util.Locale
 @Composable
 fun BackupRestoreScreen(
     backupRepository: BackupRepository,
+    onOpenStatsShare: () -> Unit,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -203,6 +204,12 @@ fun BackupRestoreScreen(
                 // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
                 GlassSectionHeader(stringResource(R.string.settings_privacy_section))
                 CrashReportsToggle()
+                GlassRow(
+                    label = stringResource(R.string.stats_share_title),
+                    onClick = onOpenStatsShare,
+                    leading = { TeperaIconCircle(TeperaSymbols.FileUpload) },
+                    trailing = { NavChevron() }
+                )
                 GlassSectionHeader(stringResource(R.string.backup_delete_section))
                 GlassRow(
                     label = stringResource(R.string.backup_delete_action),
