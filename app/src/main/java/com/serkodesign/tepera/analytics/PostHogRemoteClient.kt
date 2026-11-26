@@ -23,6 +23,9 @@ class PostHogRemoteClient(context: Context, apiKey: String, initiallyOptedOut: B
             captureDeepLinks = false
             sessionReplay = false
             preloadFeatureFlags = false
+            // Без запиту remote config на старті (він ішов би до згоди) і без опитувань — нам потрібні лише події.
+            remoteConfig = false
+            surveys = false
             this.debug = debug
         }
         PostHogAndroid.setup(context.applicationContext, config)

@@ -567,6 +567,17 @@ fun TeperaNavHost(
                     scrollToTopSignal = homeScrollToTopSignal,
                     weeklySummaryNonce = pendingWeeklySummaryNonce
                 )
+                // Аналітика рівня 2: одноразовий вибір (нові й існуючі користувачі) — лише коли онбординг уже пройдено.
+                AnalyticsConsentGate {
+                    if (BuildConfig.V3_MVP && v3Mode == true) {
+                        val a11yPending = com.serkodesign.tepera.util.GateAccessibility.isAvailable &&
+                            !settingsStore.a11yOnboardingSeen.first() &&
+                            !com.serkodesign.tepera.util.A11yConsentStore.isAccepted(appContext)
+                        settingsStore.v3OnboardingSeen.first() && settingsStore.whatsNew121Seen.first() && !a11yPending
+                    } else {
+                        nextOnboardingRoute(settingsStore, balanceRepository, appContext) == null
+                    }
+                }
             }
             composable(Routes.STATS) {
                 StatsScreen(
@@ -1000,6 +1011,29 @@ private fun analyticsOnboardingStepFor(route: String): OnboardingStep? = when (r
     Routes.ONBOARDING, Routes.V3_ACCESS -> OnboardingStep.PERMISSIONS
     Routes.GATES_ONBOARDING -> OnboardingStep.GATES
     else -> null
+}
+
+/**
+ * Одноразовий вибір «Допомогти покращити Tepera». Нічого не показує, коли в збірці нема ключа віддаленої аналітики
+ * або вибір уже зроблено. Після короткої паузи (щоб не збігтись із переходами) питає, лише коли [isReady] каже, що
+ * онбординг завершено.
+ */
+@Composable
+private fun AnalyticsConsentGate(isReady: suspend () -> Boolean) {
+    val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as com.serkodesign.tepera.TeperaApp
+    if (!app.remoteAnalyticsAvailable) return
+    var show by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (app.analyticsConsent.isDecided()) return@LaunchedEffect
+        delay(2000)
+        if (isReady()) show = true
+    }
+    if (show) {
+        com.serkodesign.tepera.ui.onboarding.AnalyticsConsentDialog { enabled ->
+            app.setAnalyticsConsent(enabled)
+            show = false
+        }
+    }
 }
 
 private suspend fun nextOnboardingRoute(settingsStore: SettingsStore, balanceRepository: BalanceRepository, context: android.content.Context): String? {

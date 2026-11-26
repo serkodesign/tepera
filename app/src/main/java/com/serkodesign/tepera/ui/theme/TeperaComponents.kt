@@ -1188,6 +1188,8 @@ fun TeperaDialog(
     dismissText: String? = null,
     onDismiss: () -> Unit = onDismissRequest,
     confirmEnabled: Boolean = true,
+    /** Тип кнопки «відмова». За замовчуванням контурна; для вибору «так/ні» з однаковою вагою (згода) — [TeperaButtonType.Primary]. */
+    dismissType: TeperaButtonType = TeperaButtonType.Secondary,
     content: (@Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit)? = null
 ) {
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismissRequest) {
@@ -1237,7 +1239,7 @@ fun TeperaDialog(
                         text = dismissText,
                         onClick = onDismiss,
                         size = TeperaButtonSize.Compact,
-                        type = TeperaButtonType.Secondary
+                        type = dismissType
                     )
                 }
                 TeperaButton(

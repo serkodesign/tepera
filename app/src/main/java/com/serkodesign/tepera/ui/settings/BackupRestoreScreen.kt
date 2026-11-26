@@ -204,6 +204,8 @@ fun BackupRestoreScreen(
                 // D-15: звіти про збої — опційні; той самий блок, що на першому екрані онбордингу.
                 GlassSectionHeader(stringResource(R.string.settings_privacy_section))
                 CrashReportsToggle()
+                // Рівень 2 аналітики (PostHog): лише в збірці з ключем проєкту, вимкнено за замовчуванням.
+                AnalyticsConsentSection()
                 GlassRow(
                     label = stringResource(R.string.stats_share_title),
                     onClick = onOpenStatsShare,

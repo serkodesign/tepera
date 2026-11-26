@@ -149,6 +149,16 @@
     <string name="pro_interest_action">Хочу дізнатись</string>
     <string name="extra_animations_label">Додаткові анімації</string>
     <string name="extra_animations_explanation">Рух кола й плавні переходи. Вимкни, щоб заощадити заряд.</string>
+    <string name="analytics_consent_label">Допомогти покращити Tepera</string>
+    <string name="analytics_consent_explanation">Вимкнено за замовчуванням. Якщо ввімкнеш, Tepera надсилатиме анонімні події використання (наприклад, який екран відкрито чи що додано активність) нашому сервісу аналітики PostHog в ЄС. Вони прив\'язані до випадкового ID аналітики, а не до твого імені чи облікового запису. Без назв застосунків, без тексту, який ти вводиш, нічого з екрана. Вимкнути або скинути ID можна будь-коли.</string>
+    <string name="analytics_id_label">ID аналітики</string>
+    <string name="analytics_id_copied">ID скопійовано</string>
+    <string name="analytics_id_reset">Скинути ID</string>
+    <string name="analytics_id_hint">Щоб видалити дані аналітики, напиши нам цей ID. Скидання створює новий випадковий ID.</string>
+    <string name="analytics_consent_dialog_title">Допомогти покращити Tepera?</string>
+    <string name="analytics_consent_dialog_body">Ми хочемо анонімно бачити, якими функціями користуються, щоб покращувати Tepera. Ми отримуватимемо лише прості події (наприклад, який екран відкрито), прив\'язані до випадкового ID. Без назв застосунків, без тексту, який ти вводиш, нічого з твого екрана. Аналітика вимкнена, доки ти не скажеш «так», і це можна змінити будь-коли в Налаштування → Дані й приватність.</string>
+    <string name="analytics_consent_yes">Так, допомогти</string>
+    <string name="analytics_consent_no">Ні, дякую</string>
     <string name="crash_reports_label">Звіти про збої</string>
     <string name="crash_reports_explanation">Коли застосунок падає, надсилається анонімний звіт (Firebase Crashlytics): модель телефону, версія Android, опис збою. Без записів, активностей і часу в застосунках. Можна вимкнути будь-коли.</string>
 
