@@ -11,6 +11,9 @@ import com.serkodesign.tepera.data.local.MIGRATION_17_18
 import com.serkodesign.tepera.data.local.MIGRATION_18_19
 import com.serkodesign.tepera.data.local.MIGRATION_19_20
 import com.serkodesign.tepera.data.local.MIGRATION_20_21
+import com.serkodesign.tepera.data.local.MIGRATION_21_22
+import com.serkodesign.tepera.data.local.MIGRATION_22_23
+import com.serkodesign.tepera.data.local.MIGRATION_23_24
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -65,7 +68,10 @@ class MigrationTest {
 
     private fun openMigrated(): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
+            .addMigrations(
+                MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
+                MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24
+            )
             .build()
 
     @Test
@@ -147,6 +153,29 @@ class MigrationTest {
         room.openHelper.writableDatabase.query("SELECT COUNT(*) FROM feed_apps").use {
             it.moveToFirst()
             assertEquals(0, it.getInt(0))
+        }
+        room.close()
+    }
+
+    @Test
+    fun migrate23to24_addsEmptyDailyEventCountersAndKeepsData() {
+        createOldDatabase(23).apply {
+            execSQL(
+                "INSERT INTO risk_windows (id, startMinute, endMinute, dayType, recurrenceDays, observedDays, avgMinutes, " +
+                    "topApps, createdAt, updatedAt, isUserDisabled, isManual, pausedUntil, pausedByUser) " +
+                    "VALUES ('w1', 1320, 1410, 'ALL', 6, 7, 36, '', 1, 1, 0, 0, NULL, 0)"
+            )
+            close()
+        }
+        val room = openMigrated()
+        val db = room.openHelper.writableDatabase
+        db.query("SELECT COUNT(*) FROM daily_event_counters").use {
+            it.moveToFirst()
+            assertEquals(0, it.getInt(0))
+        }
+        db.query("SELECT COUNT(*) FROM risk_windows WHERE id = 'w1'").use {
+            it.moveToFirst()
+            assertEquals(1, it.getInt(0))
         }
         room.close()
     }
