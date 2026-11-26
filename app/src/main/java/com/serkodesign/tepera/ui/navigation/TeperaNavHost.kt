@@ -164,6 +164,7 @@ private object Routes {
     const val TRACKING_SETTINGS = "tracking_settings"
     const val EXCLUSION_LIST = "exclusion_list"
     const val BACKUP_RESTORE = "backup_restore"
+    const val STATS_SHARE = "stats_share"
     const val ABOUT = "about"
     const val LANGUAGE_SETTINGS = "language_settings"
     const val RISK_SPIKE = "risk_spike"
@@ -204,7 +205,7 @@ private object Routes {
     // (доки для них не було Figma-фрейму), тепер стилізовані за зразком уже готових екранів
     // (Налаштування/Категорії), без окремого фрейму для кожного.
     val GRADIENT_ROUTES = BOTTOM_NAV_ROUTES + setOf(
-        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, ABOUT, LANGUAGE_SETTINGS, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
+        SETTINGS, SETTINGS_GROUP, TRACKING_SETTINGS, CATEGORIES, EXCLUSION_LIST, BACKUP_RESTORE, STATS_SHARE, ABOUT, LANGUAGE_SETTINGS, RISK_SPIKE, FEED_PICKER, TESTER_STATS, V3_WELCOME, V3_ACCESS, V3_FEEDS, V3_WHY, V3_WINDOW_NEW, V3_WINDOW_EDIT, PRO_INTEREST, GATES, GATE_SCHEDULE, WIDGET_SETTINGS,
         ADD_ENTRY, ADD_ENTRY_WITH_CATEGORY, EDIT_ENTRY,
         ONBOARDING, CATEGORY_ONBOARDING, ONLINE_ESTIMATE_ONBOARDING, TARGET_ONBOARDING,
         WELCOME_ONBOARDING, GATES_ONBOARDING, A11Y_ONBOARDING, GATE_PAUSE, KNOWLEDGE_BASE, KNOWLEDGE_SCROLLING, CATEGORY_HISTORY, CALENDAR
@@ -904,8 +905,12 @@ fun TeperaNavHost(
             composable(Routes.BACKUP_RESTORE) {
                 BackupRestoreScreen(
                     backupRepository = backupRepository,
+                    onOpenStatsShare = { navController.navigate(Routes.STATS_SHARE) },
                     onBack = { navController.popBackStack() }
                 )
+            }
+            composable(Routes.STATS_SHARE) {
+                com.serkodesign.tepera.ui.settings.StatsShareScreen(onBack = { navController.popBackStack() })
             }
         }
     }
