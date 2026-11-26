@@ -201,7 +201,7 @@
     <string name="weekly_reflection_done">Got it</string>
 
     <!-- Detected pauses card (FR-D.1–D.5, SRS v2.6) -->
-    <string name="pause_card_title">You can name these pauses, if you want</string>
+    <string name="pause_card_title">You can name these pauses</string>
     <string name="pause_gap_row_format">%1$s–%2$s · %3$s</string>
     <string name="pause_gap_dismiss_action">Skip this pause</string>
     <string name="pause_pick_category_title">What was this?</string>

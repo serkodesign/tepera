@@ -323,7 +323,7 @@ internal fun HistoryEntryRow(item: HistoryEntryItem, onEdit: () -> Unit) {
             .clip(RoundedCornerShape(24.dp))
             .background(TeperaPalette.colors.listItem)
             .clickable(role = Role.Button, onClick = onEdit)
-            .padding(12.dp),
+            .padding(8.dp), // концентрично: 24 − 8 = 16 (плитка)
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

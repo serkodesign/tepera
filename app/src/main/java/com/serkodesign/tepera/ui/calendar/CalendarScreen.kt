@@ -133,7 +133,7 @@ fun CalendarScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(24.dp))
                         .background(TeperaPalette.cardTranslucent)
-                        .padding(horizontal = 11.dp, vertical = 8.dp)
+                        .padding(8.dp) // концентрично: 24 − 8 = 16 (клітинка дня)
                 ) {
                     MonthGrid(
                         month = YearMonth.from(anchor),

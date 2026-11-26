@@ -220,36 +220,48 @@ private fun WhenChip(text: String, dot: Boolean = false) {
  * `week`: середнє на день у стрічках у твої години. Дві смуги одного масштабу — тиждень спостереження (signalVivid) і
  * останні 7 діб (primary); поки після спостереження не минув тиждень — лише «Точка відліку» однією смугою.
  */
+/** Чи є що показувати в розділі тижня (інакше він не рендериться й розділювач не потрібен). */
+internal fun weekHasData(windows: List<RiskWindowUi>, daysSinceObservation: Int?): Boolean {
+    val baseline = windows.mapNotNull { it.baselineMinutes }.takeIf { it.isNotEmpty() }?.sum()
+    val current = windows.mapNotNull { it.currentMinutes }.takeIf { it.isNotEmpty() }?.sum()
+    val reference = daysSinceObservation == null || daysSinceObservation < 7 || current == null
+    return (if (reference) baseline else current) != null
+}
+
+/** Розділ тижня без власної картки: його вставляють під «Online сьогодні» в одну спільну картку. */
 @Composable
-internal fun WeekCard(windows: List<RiskWindowUi>, daysSinceObservation: Int?, onOpen: (() -> Unit)?) {
+internal fun WeekSection(windows: List<RiskWindowUi>, daysSinceObservation: Int?, onOpen: (() -> Unit)?) {
     val baseline = windows.mapNotNull { it.baselineMinutes }.takeIf { it.isNotEmpty() }?.sum()
     val current = windows.mapNotNull { it.currentMinutes }.takeIf { it.isNotEmpty() }?.sum()
     val reference = daysSinceObservation == null || daysSinceObservation < 7 || current == null
     val big = (if (reference) baseline else current) ?: return
     val scale = maxOf(baseline ?: 0.0, current ?: 0.0, 1.0)
-    TeperaCard(
-        variant = TeperaCardVariant.Hero,
-        modifier = if (onOpen != null) Modifier.clickable(role = Role.Button, onClick = onOpen) else Modifier
+    Column(
+        modifier = Modifier.fillMaxWidth().then(if (onOpen != null) Modifier.clickable(role = Role.Button, onClick = onOpen) else Modifier),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                stringResource(if (reference) R.string.v2_week_reference_title else R.string.v2_week_title),
-                style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (onOpen != null) M3Chevron()
+        // Близькість: заголовок → число 4; число → смуги 12 (між групами); смуги між собою 4.
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(if (reference) R.string.v2_week_reference_title else R.string.v2_week_title),
+                    style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (onOpen != null) M3Chevron()
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
+                Text(
+                    durationText(big.roundToInt().toLong()), style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    stringResource(if (reference) R.string.v2_week_reference_unit else R.string.v2_week_unit),
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+            }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
-            Text(
-                durationText(big.roundToInt().toLong()), style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                stringResource(if (reference) R.string.v2_week_reference_unit else R.string.v2_week_unit),
-                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 6.dp)
-            )
-        }
-        Column(Modifier.fillMaxWidth().padding(end = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.fillMaxWidth().padding(end = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             if (baseline != null) WeekBar(stringResource(R.string.v2_week_baseline), baseline, scale, M3Extra.colors.signalVivid)
             if (!reference && current != null) {
                 WeekBar(stringResource(R.string.v2_week_current), current, scale, MaterialTheme.colorScheme.primary)
@@ -266,7 +278,7 @@ private fun WeekBar(label: String, minutes: Double, scale: Double, color: androi
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, modifier = Modifier.width(104.dp))
-        Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(999.dp)).background(M3Extra.colors.dataTrack)) {
+        Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(999.dp)).background(if (LocalTeperaColors.current.isDark) androidx.compose.ui.graphics.Color.White.copy(alpha = 0.15f) else M3Extra.colors.dataTrack)) {
             val fraction = (minutes / scale).toFloat().coerceIn(0f, 1f)
             if (fraction > 0f) {
                 Box(Modifier.fillMaxHeight().fillMaxWidth(fraction.coerceAtLeast(0.03f)).clip(RoundedCornerShape(999.dp)).background(color))
@@ -325,30 +337,35 @@ internal fun TodayRows(
     val upcoming = todays.filter { it.second.isAfter(now) && it.first.id != heroWindowId }
     if (passed.isEmpty() && upcoming.isEmpty()) return
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // Близькість: підпис групи на 4 від свого списку; між групами 24; від попередньої картки 12 + 12 = 24 (батьківський проміжок + padding).
+    Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (passed.isNotEmpty()) {
-            M3GroupLabel(
-                // Усі сьогоднішні години вже минули — один список «Сьогодні».
-                stringResource(if (todays.none { it.third.isAfter(now) }) R.string.v2_today_all else R.string.v2_today_was),
-                top = 8.dp, bottom = 0.dp
-            )
-            M3ListGroup {
-                passed.forEachIndexed { i, (w, _, _) ->
-                    if (i > 0) M3ListDivider()
-                    TodayRow(
-                        w,
-                        stringResource(R.string.v2_row_fact, (w.todayMinutes ?: 0.0).roundToInt(), w.avgMinutes),
-                        onClick = { onOpenWhy(w.id) }
-                    )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                M3GroupLabel(
+                    // Усі сьогоднішні години вже минули — один список «Сьогодні».
+                    stringResource(if (todays.none { it.third.isAfter(now) }) R.string.v2_today_all else R.string.v2_today_was),
+                    top = 0.dp, bottom = 0.dp
+                )
+                M3ListGroup {
+                    passed.forEachIndexed { i, (w, _, _) ->
+                        if (i > 0) M3ListDivider()
+                        TodayRow(
+                            w,
+                            stringResource(R.string.v2_row_fact, (w.todayMinutes ?: 0.0).roundToInt(), w.avgMinutes),
+                            onClick = { onOpenWhy(w.id) }
+                        )
+                    }
                 }
             }
         }
         if (upcoming.isNotEmpty()) {
-            M3GroupLabel(stringResource(R.string.v2_today_next), top = 8.dp, bottom = 0.dp)
-            M3ListGroup {
-                upcoming.forEachIndexed { i, (w, _, _) ->
-                    if (i > 0) M3ListDivider()
-                    TodayRow(w, formatWindowTime(w.startMinute, w.endMinute), onClick = { onOpenWhy(w.id) })
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                M3GroupLabel(stringResource(R.string.v2_today_next), top = 0.dp, bottom = 0.dp)
+                M3ListGroup {
+                    upcoming.forEachIndexed { i, (w, _, _) ->
+                        if (i > 0) M3ListDivider()
+                        TodayRow(w, formatWindowTime(w.startMinute, w.endMinute), onClick = { onOpenWhy(w.id) })
+                    }
                 }
             }
         }

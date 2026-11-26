@@ -203,6 +203,8 @@ object TeperaPalette {
     val pagerDotActive: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { pagerDotActive }
     val pagerDotInactive: Color @Composable @ReadOnlyComposable get() = themed(Color.White.copy(alpha = 0.5f)) { pagerDotInactive }
     val chipSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { chipFill }
+    /** Фон круглих кнопок/іконок: у темних темах біле 10% (раніше chipFill 10–14% — темно-сірий); у світлих як chipSurface. */
+    val roundButtonSurface: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { if (isDark) Color(0x1AFFFFFF) else chipFill }
     /** Фон/рамка [TeperaChip] ("підпис-значення") — Figma node 408:2185 (dark) / 407:1882 (light), окремо від [chipSurface]. */
     val labelChipFill: Color @Composable @ReadOnlyComposable get() = themed(Color.White) { labelChipFill }
     val labelChipBorder: Color @Composable @ReadOnlyComposable get() = themed(Color.Transparent) { labelChipBorder }

@@ -101,8 +101,8 @@ fun IdeaHero(
     val left = (total - passed).coerceAtLeast(0)
 
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).heroMoodBackground()
-            .then(if (TeperaPalette.colors.isDawn) Modifier.border(1.dp, TeperaPalette.heroBorder, RoundedCornerShape(24.dp)) else Modifier)
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).heroMoodBackground()
+            .then(if (TeperaPalette.colors.isDawn) Modifier.border(1.dp, TeperaPalette.heroBorder, RoundedCornerShape(32.dp)) else Modifier)
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

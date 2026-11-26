@@ -80,7 +80,7 @@ fun MiniPlayer(
     ) {
         Box(
             // Ті самі кольори плитки, що в Щоденнику й на рядку активності: колір категорії @20% і categoryGlyphColor.
-            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(accent.copy(alpha = 0.2f)),
+            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(20.dp)).background(accent.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             val glyph = categoryGlyphColor(accent)

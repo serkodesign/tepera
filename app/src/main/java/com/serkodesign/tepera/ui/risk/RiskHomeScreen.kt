@@ -173,7 +173,7 @@ fun RiskHomeScreen(
             // Online сьогодні → сьогоднішні години → тиждень у години детоксу. Активності — у Щоденнику.
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                 HomeV2Header(headerDate, onOpenSettings, settingsModifier = Modifier.tutorialTarget(targets, "settings"))
                 Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     when {
@@ -197,11 +197,14 @@ fun RiskHomeScreen(
                         }
                     }
                     // Паузи — лише коли є що назвати, одразу під карткою ідеї.
+                    // Близькість: паузи (про минуле) не пов'язані з карткою ідеї — 12 + 12 = 24 від неї.
                     if (ready && pauseState.visible) {
-                        PauseCard(
-                            state = pauseState, categories = categories, onLabel = pauseViewModel::labelGap,
-                            onDismissGap = pauseViewModel::dismissGap, onDismissCard = pauseViewModel::dismissCard
-                        )
+                        Box(Modifier.padding(top = 12.dp)) {
+                            PauseCard(
+                                state = pauseState, categories = categories, onLabel = pauseViewModel::labelGap,
+                                onDismissGap = pauseViewModel::dismissGap, onDismissCard = pauseViewModel::dismissCard
+                            )
+                        }
                     }
                 }
             }
@@ -215,7 +218,7 @@ fun RiskHomeScreen(
                         Text(
                             stringResource(if (state.disabledWindows.isNotEmpty()) R.string.v3_windows_all_off else R.string.v3_windows_empty),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 32.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
                     val ordered = occurrences.mapNotNull { byId[it.id] }.distinctBy { it.id }
@@ -225,20 +228,21 @@ fun RiskHomeScreen(
                 }
             }
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // 3. Online сьогодні.
-                if (!state.loading) OnlineTodayCard(balanceState, state.feedMinutesToday)
+                // 3. Online сьогодні + тиждень у години детоксу: одна картка з двома розділами (розділювач між ними).
+                val weekOpen = state.windows.firstOrNull()?.let { w -> { onOpenWhy(w.id) } }
+                val showWeek = ready && !observing && weekHasData(state.windows, state.daysSinceObservation)
+                if (!state.loading) OnlineTodayCard(
+                    balanceState, state.feedMinutesToday,
+                    extra = if (showWeek) ({ WeekSection(state.windows, state.daysSinceObservation, weekOpen) }) else null
+                )
                 // 4. Сьогоднішні години рядками: «Сьогодні вже було» / «Далі сьогодні».
                 if (ready && !observing) {
                     TodayRows(state.windows, now, logicalToday, heroWindowId = heroOcc?.id, onOpenWhy = onOpenWhy)
                 }
             }
             if (ready && !observing) {
-                // 5. Тиждень у години детоксу; під ним пропозиція зсунути вікно — лише коли вона є.
+                // 5. Пропозиція зсунути вікно — лише коли вона є.
                 Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    WeekCard(
-                        state.windows, state.daysSinceObservation,
-                        onOpen = state.windows.firstOrNull()?.let { w -> { onOpenWhy(w.id) } }
-                    )
                     ShiftSuggestions(state.windows, vm::applyShift, vm::dismissShift)
                 }
             }

@@ -12,9 +12,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Icon
@@ -73,7 +76,21 @@ fun PauseCard(
         // Закриття ЦІЛОЇ картки (за прямим запитом користувача, не в SRS) — окремо від per-gap
         // "×" нижче, який пропускає лише одну паузу назавжди. Тут — "прочитав, ховай до наступного
         // вікна опитування" (FR-D.3), непозначені паузи лишаються в БД.
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        // Заголовок і «×» картки — в одну лінію; «×» лишається й коли пауз у списку нема.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (state.gaps.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.pause_card_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                Spacer(Modifier.weight(1f))
+            }
             IconButton(onClick = onDismissCard, modifier = Modifier.size(24.dp)) {
                 Icon(
                     TeperaSymbols.Close,
@@ -84,10 +101,6 @@ fun PauseCard(
         }
 
         if (state.gaps.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.pause_card_title),
-                style = MaterialTheme.typography.bodyMedium
-            )
             state.gaps.forEach { gap ->
                 PauseGapRow(
                     gap = gap,
@@ -116,10 +129,11 @@ private fun PauseGapRow(gap: PauseUiGap, onClick: () -> Unit, onDismiss: () -> U
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            // Концентрично до картки (радіус 24, відступ 16): 24 − 16 = 8. Кнопка «×» всередині лишається колом.
+            .clip(RoundedCornerShape(8.dp))
             .background(TeperaPalette.cardTranslucent)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -132,7 +146,15 @@ private fun PauseGapRow(gap: PauseUiGap, onClick: () -> Unit, onDismiss: () -> U
             ),
             style = MaterialTheme.typography.bodyMedium
         )
-        TeperaIconButton(icon = TeperaSymbols.Close, contentDescription = stringResource(R.string.pause_gap_dismiss_action), onClick = onDismiss)
+        TeperaIconButton(
+            icon = TeperaSymbols.Close,
+            contentDescription = stringResource(R.string.pause_gap_dismiss_action),
+            onClick = onDismiss,
+            modifier = Modifier.width(32.dp),
+            shape = CircleShape,
+            height = 32.dp,
+            iconSize = 18.dp
+        )
     }
 }
 

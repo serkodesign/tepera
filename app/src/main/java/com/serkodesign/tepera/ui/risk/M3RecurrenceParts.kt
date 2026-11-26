@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,6 +63,10 @@ fun M3RecurrenceBadge(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun M3RecurrenceDots(dots: List<DotState>, description: String, modifier: Modifier = Modifier) {
     val colors = M3Extra.colors
+    // Темна тема: порожні кола — біле 15% замість темно-сірого (N/A — той самий колір ×40%).
+    val isDark = com.serkodesign.tepera.ui.theme.LocalTeperaColors.current.isDark
+    val missColor = if (isDark) Color.White.copy(alpha = 0.15f) else colors.dataHeat0
+    val naColor = if (isDark) Color.White.copy(alpha = 0.06f) else colors.dataHeat0.copy(alpha = 0.4f)
     Row(
         modifier.semantics(mergeDescendants = true) { contentDescription = description },
         horizontalArrangement = Arrangement.spacedBy(TeperaSpacing.dotsGap),
@@ -72,8 +77,8 @@ fun M3RecurrenceDots(dots: List<DotState>, description: String, modifier: Modifi
                 Modifier.size(7.dp).clip(CircleShape).background(
                     when (dot) {
                         DotState.HIT -> colors.signalVivid
-                        DotState.MISS -> colors.dataHeat0
-                        DotState.NOT_APPLICABLE -> colors.dataHeat0.copy(alpha = 0.4f)
+                        DotState.MISS -> missColor
+                        DotState.NOT_APPLICABLE -> naColor
                     }
                 )
             )

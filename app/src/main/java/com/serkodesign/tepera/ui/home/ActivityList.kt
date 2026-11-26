@@ -191,7 +191,7 @@ fun ActivityRow(
                 if (pulse.value > 0f) drawRect(accent.copy(alpha = 0.22f * pulse.value))
             }
             .clickable(interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onOpenHistory)
-            .padding(10.dp),
+            .padding(8.dp), // концентрично: 24 (рядок) − 8 = 16 (плитка)
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

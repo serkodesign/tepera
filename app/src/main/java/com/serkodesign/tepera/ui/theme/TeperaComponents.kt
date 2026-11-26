@@ -659,7 +659,7 @@ fun TeperaIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier.width(44.dp),
     shape: Shape = RoundedCornerShape(22.dp),
-    containerColor: Color = TeperaPalette.chipSurface,
+    containerColor: Color = TeperaPalette.roundButtonSurface,
     contentColor: Color = TeperaPalette.colors.chipContent,
     enabled: Boolean = true,
     height: Dp = 44.dp,
@@ -905,6 +905,8 @@ fun TeperaCard(
     variant: TeperaCardVariant = TeperaCardVariant.Standard,
     containerColor: Color? = null,
     borderColor: Color? = null,
+    /** Проміжок між заголовком/підзаголовком і вмістом (принцип близькості: заголовок ближче до свого вмісту). */
+    headerGap: Dp = TeperaSpacing.cardGroups,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(variant.radius)
@@ -919,29 +921,36 @@ fun TeperaCard(
         verticalArrangement = Arrangement.spacedBy(TeperaSpacing.cardGroups)
     ) {
         if (title != null || subtitle != null) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                title?.let {
-                    Text(
-                        text = it,
-                        modifier = Modifier.semantics { heading() },
-                        color = TeperaPalette.buttonBrandDark,
-                        fontFamily = TeperaPalette.headlineFont,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        lineHeight = 24.sp,
-                        letterSpacing = 0.15.sp
-                    )
+            Column(verticalArrangement = Arrangement.spacedBy(headerGap)) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    title?.let {
+                        Text(
+                            text = it,
+                            modifier = Modifier.semantics { heading() },
+                            color = TeperaPalette.buttonBrandDark,
+                            fontFamily = TeperaPalette.headlineFont,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                            lineHeight = 24.sp,
+                            letterSpacing = 0.15.sp
+                        )
+                    }
+                    subtitle?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
+                        )
+                    }
                 }
-                subtitle?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TeperaPalette.buttonBrandDark.copy(alpha = 0.7f)
-                    )
-                }
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(TeperaSpacing.cardGroups)
+                ) { content() }
             }
+        } else {
+            content()
         }
-        content()
     }
 }
 

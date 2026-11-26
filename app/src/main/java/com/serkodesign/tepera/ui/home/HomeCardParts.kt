@@ -140,7 +140,7 @@ internal fun GuessRevealRow(guessValue: String, actualValue: String, modifier: M
 internal fun GuessRevealTile(label: String, value: String, textColor: Color, fill: Color, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(fill)
             .padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween

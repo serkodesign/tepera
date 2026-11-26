@@ -70,7 +70,10 @@ fun M3ListGroup(modifier: Modifier = Modifier, content: @Composable ColumnScope.
 /** Розділювач рядків групи: 1dp `outlineVariant` на всю ширину. */
 @Composable
 fun M3ListDivider() {
-    Box(Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
+    // Темна тема: біле 15% (за запитом власника); світла — outlineVariant.
+    val color = if (LocalTeperaColors.current.isDark) androidx.compose.ui.graphics.Color.White.copy(alpha = 0.15f)
+    else MaterialTheme.colorScheme.outlineVariant
+    Box(Modifier.fillMaxWidth().height(1.dp).background(color))
 }
 
 /** Кружок іконки рядка: 40dp `surfaceContainerHighest`, гліф 20dp кольору onSurfaceVariant. */

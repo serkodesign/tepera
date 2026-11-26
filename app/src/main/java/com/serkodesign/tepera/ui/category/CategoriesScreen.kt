@@ -452,7 +452,7 @@ private fun SwatchPickable(
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .background(if (selected) TeperaPalette.buttonBrand else TeperaPalette.chipSurface, CircleShape)
+            .background(if (selected) TeperaPalette.buttonBrand else TeperaPalette.roundButtonSurface, CircleShape)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
         contentAlignment = Alignment.Center
     ) { content(if (selected) TeperaPalette.onPrimary else TeperaPalette.buttonBrandDark) }

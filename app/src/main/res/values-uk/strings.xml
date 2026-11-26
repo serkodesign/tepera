@@ -214,7 +214,7 @@
     <string name="weekly_reflection_done">Гаразд</string>
 
     <!-- Картка виявлених пауз (FR-D.1–D.5, SRS v2.6) -->
-    <string name="pause_card_title">Можете назвати ці паузи, якщо хочете</string>
+    <string name="pause_card_title">Можете назвати ці паузи</string>
     <string name="pause_gap_row_format">%1$s–%2$s · %3$s</string>
     <string name="pause_gap_dismiss_action">Пропустити цю паузу</string>
     <string name="pause_pick_category_title">Що це було?</string>

@@ -157,7 +157,7 @@ fun WeeklyDigestCard(state: WeeklyDigestUiState, modifier: Modifier = Modifier) 
 private fun DigestTile(item: DigestItem, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(TeperaPalette.cardActive)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)

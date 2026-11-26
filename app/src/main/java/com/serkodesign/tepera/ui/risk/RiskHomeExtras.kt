@@ -2,6 +2,9 @@ package com.serkodesign.tepera.ui.risk
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import com.serkodesign.tepera.ui.theme.M3ListDivider
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,7 +57,12 @@ internal fun typicalOnlineSoFar(hourly: List<Int>, days: Int, minuteOfDay: Int):
  * (FR-3.10, ніякого світлофора). Без доступу до статистики не показується: заклик дати доступ уже є на екрані.
  */
 @Composable
-fun OnlineTodayCard(state: BalanceUiState, feedMinutesToday: Int? = null) {
+fun OnlineTodayCard(
+    state: BalanceUiState,
+    feedMinutesToday: Int? = null,
+    /** Другий розділ під розділювачем у тій самій картці (тиждень); null — картка лише про сьогодні. */
+    extra: (@Composable () -> Unit)? = null
+) {
     if (state.hasUsageAccess != true) return
     val context = LocalContext.current
     val target = state.targetMinutes
@@ -71,8 +79,13 @@ fun OnlineTodayCard(state: BalanceUiState, feedMinutesToday: Int? = null) {
         }
     }
     val typicalNow = typical
-    TeperaCard(title = stringResource(R.string.v3_online_today_title)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween) {
+    // Близькість: заголовок → число 4, число → підписи 8, між підписами 4.
+    TeperaCard(title = stringResource(R.string.v3_online_today_title), headerGap = 4.dp) {
+      Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = if (feedMinutesToday != null || typicalNow != null) 4.dp else 0.dp),
+            verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
                 heroDuration(state.onlineMinutes), color = TeperaPalette.textPrimary,
                 fontSize = 32.sp, lineHeight = 36.sp
@@ -96,5 +109,11 @@ fun OnlineTodayCard(state: BalanceUiState, feedMinutesToday: Int? = null) {
                 color = TeperaPalette.textSecondary, fontSize = 14.sp, lineHeight = 20.sp
             )
         }
+      }
+      if (extra != null) {
+          // Розділювач між розділами однієї картки: 12 (проміжок картки) + 4 з кожного боку = 16.
+          Box(Modifier.padding(vertical = 4.dp)) { M3ListDivider() }
+          extra()
+      }
     }
 }

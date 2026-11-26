@@ -40,7 +40,7 @@ object TeperaExtraShapes {
 enum class TeperaCardVariant(val radius: androidx.compose.ui.unit.Dp, val padding: androidx.compose.ui.unit.Dp) {
     Standard(16.dp, 16.dp),
     Context(24.dp, 16.dp),
-    Hero(28.dp, 20.dp)
+    Hero(28.dp, 16.dp)
 }
 
 object TeperaSpacing {
