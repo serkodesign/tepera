@@ -5,9 +5,15 @@ import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.TileService
 import com.serkodesign.tepera.MainActivity
+import com.serkodesign.tepera.analytics.track
 
 /** FR-4.4: Quick Settings tile для швидкого логування — відкриває екран додавання запису. */
 class QuickLogTileService : TileService() {
+
+    override fun onTileAdded() {
+        super.onTileAdded()
+        track(com.serkodesign.tepera.analytics.AnalyticsEvent.QsTileAdded)
+    }
 
     override fun onClick() {
         super.onClick()

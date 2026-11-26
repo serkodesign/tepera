@@ -148,7 +148,8 @@ class TeperaApp : Application() {
     val riskWindowRepository: RiskWindowRepository by lazy {
         RiskWindowRepository(
             database.riskWindowDao(), database.planDao(), database.usageSlotDao(),
-            deletedWindowStore
+            deletedWindowStore,
+            analytics
         )
     }
     val riskScanner: RiskScanner by lazy {
@@ -189,7 +190,7 @@ class TeperaApp : Application() {
         )
     }
 
-    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository) }
+    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository, analytics) }
 
     val cardHistoryRepository: CardHistoryRepository by lazy {
         CardHistoryRepository(database.cardShowDao(), settingsStore)

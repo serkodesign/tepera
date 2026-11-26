@@ -134,20 +134,20 @@ class GatesViewModel(
      * CC-5: пауза воріт — "сьогодні" / "на вихідні" / "до дати" (розділ 2.3 документа: автономія
      * важливіша за ефективність, тож без підтвердження й пояснень); закінчується автоматично.
      */
-    fun pauseToday() = startPause { GatePausePresets.today(it) }
+    fun pauseToday() = startPause(com.serkodesign.tepera.analytics.PauseDuration.TODAY) { GatePausePresets.today(it) }
 
-    fun pauseWeekend() = startPause { GatePausePresets.weekend(it) }
+    fun pauseWeekend() = startPause(com.serkodesign.tepera.analytics.PauseDuration.WEEKEND) { GatePausePresets.weekend(it) }
 
-    fun pauseUntil(date: LocalDate) = startPause { GatePausePresets.untilDate(it, date) }
+    fun pauseUntil(date: LocalDate) = startPause(com.serkodesign.tepera.analytics.PauseDuration.UNTIL_DATE) { GatePausePresets.untilDate(it, date) }
 
     fun endPause() {
         viewModelScope.launch { gateRepository.endPause() }
     }
 
-    private fun startPause(window: (Long) -> PauseWindow) {
+    private fun startPause(kind: com.serkodesign.tepera.analytics.PauseDuration, window: (Long) -> PauseWindow) {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            gateRepository.startPause(window(now), now)
+            gateRepository.startPause(window(now), now, kind)
         }
     }
 

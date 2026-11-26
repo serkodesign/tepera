@@ -1,5 +1,7 @@
 package com.serkodesign.tepera.ui.settings
 
+import com.serkodesign.tepera.analytics.AnalyticsEvent
+import com.serkodesign.tepera.analytics.track
 import com.serkodesign.tepera.ui.theme.TeperaSymbols
 import com.serkodesign.tepera.ui.theme.TeperaDialog
 
@@ -115,6 +117,7 @@ fun SettingsGroupScreen(
             onConfirm = {
                 showSuggestFeatureConfirm = false
                 try {
+                    context.track(AnalyticsEvent.FeedbackFormOpened)
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FeedbackForm.urlFor(context))))
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(context, resources.getString(R.string.settings_suggest_feature_no_browser), Toast.LENGTH_SHORT).show()

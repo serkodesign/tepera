@@ -32,7 +32,8 @@ class GateRepository(
     private val context: Context,
     private val dao: AppGateDao,
     private val settingsStore: SettingsStore,
-    private val sleepWindowRepository: SleepWindowRepository
+    private val sleepWindowRepository: SleepWindowRepository,
+    private val analytics: com.serkodesign.tepera.analytics.Analytics = com.serkodesign.tepera.analytics.NoOpAnalytics
 ) {
     val gates: Flow<List<AppGateEntity>> = dao.observeAll()
 
@@ -235,9 +236,14 @@ class GateRepository(
     }
 
     /** Ставить паузу ([PauseWindow] з [GatePausePresets]); попередню (якщо була) завершує. */
-    suspend fun startPause(window: PauseWindow, nowMillis: Long = System.currentTimeMillis()) {
+    suspend fun startPause(
+        window: PauseWindow,
+        nowMillis: Long = System.currentTimeMillis(),
+        kind: com.serkodesign.tepera.analytics.PauseDuration = com.serkodesign.tepera.analytics.PauseDuration.TODAY
+    ) {
         endPause(nowMillis)
         settingsStore.setGatePause(window)
+        analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.GatePaused(kind))
     }
 
     /** "Увімкнути ворота зараз": скасовує паузу (чинну чи заплановану на майбутнє). */

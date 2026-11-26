@@ -26,7 +26,8 @@ class RiskWindowRepository(
     private val windowDao: RiskWindowDao,
     private val planDao: PlanDao,
     private val slotDao: UsageSlotDao,
-    private val deletedWindows: DeletedWindowStore? = null
+    private val deletedWindows: DeletedWindowStore? = null,
+    private val analytics: com.serkodesign.tepera.analytics.Analytics = com.serkodesign.tepera.analytics.NoOpAnalytics
 ) {
     fun observeWindows(): Flow<List<RiskWindowEntity>> = windowDao.observeAll()
 
@@ -86,11 +87,15 @@ ull дозволив би наступному перерахунку одраз
     /** Нове вікно, яке людина задала сама. Статистику (повторюваність, середнє) показують із слотів, не зі збереженого. */
     suspend fun createManual(startMinute: Int, endMinute: Int, dayType: DayType): RiskWindowEntity = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
+        val isFirst = windowDao.getAll().none { it.isManual }
         RiskWindowEntity(
             id = UUID.randomUUID().toString(), startMinute = startMinute, endMinute = endMinute, dayType = dayType,
             recurrenceDays = 0, observedDays = 0, avgMinutes = 0, topApps = "",
             createdAt = now, updatedAt = now, isUserDisabled = false, isManual = true
-        ).also { windowDao.insert(it) }
+        ).also {
+            windowDao.insert(it)
+            analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.WindowAdded(isFirst))
+        }
     }
 
     /** Змінює межі й тип днів ручного вікна; пропозицію зсуву скидає. План лишається. */
@@ -102,11 +107,15 @@ ull дозволив би наступному перерахунку одраз
                 suggestedStartMinute = null, suggestedEndMinute = null, updatedAt = System.currentTimeMillis()
             )
         )
+        analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.WindowEdited)
     }
 
     /** Видаляє ручне вікно разом із його планом і нагадуваннями (каскад). Автоматичні вікна видаляти не можна — лише вимикати. */
     suspend fun deleteManual(windowId: String) = withContext(Dispatchers.IO) {
-        if (windowDao.getById(windowId)?.isManual == true) windowDao.delete(windowId)
+        if (windowDao.getById(windowId)?.isManual == true) {
+            windowDao.delete(windowId)
+            analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.WindowDeleted)
+        }
     }
 
     /**
@@ -117,6 +126,7 @@ ull дозволив би наступному перерахунку одраз
         val w = windowDao.getById(windowId) ?: return@withContext
         if (!w.isManual) deletedWindows?.add(w.startMinute, w.endMinute)
         windowDao.delete(windowId)
+        analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.WindowDeleted)
     }
 
     /** Зберігає результат пошуку вікон; повертає актуальний стан усіх вікон. */

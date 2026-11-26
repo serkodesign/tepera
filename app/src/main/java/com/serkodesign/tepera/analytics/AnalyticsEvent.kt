@@ -16,7 +16,7 @@ enum class Category {
 
 enum class OnboardingStep { WELCOME, ACCESSIBILITY, CATEGORIES, ONLINE_ESTIMATE, PERMISSIONS, WIDGET_OFFER, GATES }
 enum class Tab { TODAY, ACTIVITIES, DATA, SETTINGS }
-enum class PauseDuration { TODAY }
+enum class PauseDuration { TODAY, WEEKEND, UNTIL_DATE }
 enum class IntentionBucket { MIN_5, MIN_15, MIN_30, OTHER }
 enum class SoftExitOutcome { LEFT, CONTINUED }
 enum class PuzzleType { SUDOKU, MATH, DIGITS, OTHER }

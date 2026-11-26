@@ -90,7 +90,8 @@ class AddEntryViewModel(
     categoryRepository: CategoryRepository,
     private val activityRepository: ActivityRepository,
     initialCategoryId: String? = null,
-    private val editingEntryId: String? = null
+    private val editingEntryId: String? = null,
+    private val analytics: com.serkodesign.tepera.analytics.Analytics = com.serkodesign.tepera.analytics.NoOpAnalytics
 ) : ViewModel() {
 
     val categories: StateFlow<List<CategoryEntity>> = categoryRepository.observeActiveCategories()
@@ -241,7 +242,10 @@ class AddEntryViewModel(
             when (result) {
                 is SaveEntryResult.Success -> {
                     // Снекбар "Записано · Скасувати" лише для нового запису: при редагуванні замінені записи вже не відновити.
-                    if (!isEditing) SavedEntryUndo.show(result.ids)
+                    if (!isEditing) {
+                        SavedEntryUndo.show(result.ids)
+                        analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.ActivityAdded)
+                    }
                     com.serkodesign.tepera.util.EntrySavedSignal.notify(categoryId)
                     _uiState.value = _uiState.value.copy(saved = true, overlapEntries = null)
                 }
@@ -255,10 +259,11 @@ class AddEntryViewModel(
         private val categoryRepository: CategoryRepository,
         private val activityRepository: ActivityRepository,
         private val initialCategoryId: String? = null,
-        private val editingEntryId: String? = null
+        private val editingEntryId: String? = null,
+        private val analytics: com.serkodesign.tepera.analytics.Analytics = com.serkodesign.tepera.analytics.NoOpAnalytics
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddEntryViewModel(categoryRepository, activityRepository, initialCategoryId, editingEntryId) as T
+            AddEntryViewModel(categoryRepository, activityRepository, initialCategoryId, editingEntryId, analytics) as T
     }
 }

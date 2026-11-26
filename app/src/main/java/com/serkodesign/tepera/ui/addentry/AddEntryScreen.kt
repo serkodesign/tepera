@@ -1,6 +1,7 @@
 package com.serkodesign.tepera.ui.addentry
 
 import androidx.compose.foundation.layout.BoxWithConstraints
+import com.serkodesign.tepera.analytics.analytics
 import androidx.compose.ui.semantics.error
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.heading
@@ -144,7 +145,10 @@ fun AddEntryScreen(
     editingEntryId: String? = null
 ) {
     val viewModel: AddEntryViewModel = viewModel(
-        factory = AddEntryViewModel.Factory(categoryRepository, activityRepository, initialCategoryId, editingEntryId)
+        factory = AddEntryViewModel.Factory(
+            categoryRepository, activityRepository, initialCategoryId, editingEntryId,
+            androidx.compose.ui.platform.LocalContext.current.analytics
+        )
     )
     val categories by viewModel.categories.collectAsState()
     val state by viewModel.uiState.collectAsState()
