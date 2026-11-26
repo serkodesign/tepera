@@ -18,7 +18,7 @@
 ## Фаза 2
 - [x] 2.1 Інтерфейс і каталог (`analytics/`, тести)
 - [x] 2.2 Сховище: `daily_event_counters`, БД v24, `MIGRATION_23_24`, схема 24.json. Компіляція + юніт-тести зелені; **androidTest (MigrationTest, DailyEventCounterDaoTest) ще не запускались — потрібен пристрій**
-- [ ] 2.3 LocalAnalytics + очищення
+- [x] 2.3 `LocalAnalytics` (фоновий запис, збої ігноруються), `AnalyticsCleanupWorker` (щодня, >90 днів), `TeperaApp.analytics` (Composite з Local). «Видалити всі дані» вже чистить таблицю через `database.clearAllTables()`; воркер перепланується в `wipeAllData`. Юніт-тести зелені
 - [ ] 2.4 Інструментування
 - [ ] 2.5 Екран «Поділитися статистикою»
 - [ ] 2.6 Перевірка і документи

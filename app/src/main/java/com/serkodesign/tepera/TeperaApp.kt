@@ -97,6 +97,18 @@ class TeperaApp : Application() {
             .build()
     }
 
+    /** Аналітика рівня 1: лише локальні денні лічильники (без мережі). Віддалений отримувач додається у Фазі 3. */
+    val analytics: com.serkodesign.tepera.analytics.Analytics by lazy {
+        com.serkodesign.tepera.analytics.CompositeAnalytics(
+            listOf(
+                com.serkodesign.tepera.analytics.LocalAnalytics(
+                    database.dailyEventCounterDao(),
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
+                )
+            )
+        )
+    }
+
     val categoryRepository: CategoryRepository by lazy {
         RoomCategoryRepository(database.categoryDao())
     }
@@ -245,6 +257,7 @@ class TeperaApp : Application() {
             RiskScanWorker.schedule(this)
             NudgeChannel.create(this)
         }
+        com.serkodesign.tepera.data.AnalyticsCleanupWorker.schedule(this)
         registerWidgetPreviewIfNeeded()
     }
 
@@ -298,6 +311,7 @@ class TeperaApp : Application() {
         seedInitialData()
         WidgetUpdateWorker.schedule(this@TeperaApp)
         WidgetRolloverWorker.schedule(this@TeperaApp)
+        com.serkodesign.tepera.data.AnalyticsCleanupWorker.schedule(this@TeperaApp)
         runCatching { activeTimerStore.refreshWidgets() }
     }
 
