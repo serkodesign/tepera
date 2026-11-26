@@ -34,6 +34,7 @@ import com.serkodesign.tepera.data.local.MIGRATION_19_20
 import com.serkodesign.tepera.data.local.MIGRATION_20_21
 import com.serkodesign.tepera.data.local.MIGRATION_21_22
 import com.serkodesign.tepera.data.local.MIGRATION_22_23
+import com.serkodesign.tepera.data.local.MIGRATION_23_24
 import com.serkodesign.tepera.data.UsageSlotWorker
 import com.serkodesign.tepera.data.repository.FeedAppRepository
 import com.serkodesign.tepera.data.repository.RiskWindowRepository
@@ -91,9 +92,21 @@ class TeperaApp : Application() {
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
                 MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
                 MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
-                MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23
+                MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24
             )
             .build()
+    }
+
+    /** Аналітика рівня 1: лише локальні денні лічильники (без мережі). Віддалений отримувач додається у Фазі 3. */
+    val analytics: com.serkodesign.tepera.analytics.Analytics by lazy {
+        com.serkodesign.tepera.analytics.CompositeAnalytics(
+            listOf(
+                com.serkodesign.tepera.analytics.LocalAnalytics(
+                    database.dailyEventCounterDao(),
+                    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
+                )
+            )
+        )
     }
 
     val categoryRepository: CategoryRepository by lazy {
@@ -135,7 +148,8 @@ class TeperaApp : Application() {
     val riskWindowRepository: RiskWindowRepository by lazy {
         RiskWindowRepository(
             database.riskWindowDao(), database.planDao(), database.usageSlotDao(),
-            deletedWindowStore
+            deletedWindowStore,
+            analytics
         )
     }
     val riskScanner: RiskScanner by lazy {
@@ -176,7 +190,7 @@ class TeperaApp : Application() {
         )
     }
 
-    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository) }
+    val gateRepository: GateRepository by lazy { GateRepository(this, database.appGateDao(), settingsStore, sleepWindowRepository, analytics) }
 
     val cardHistoryRepository: CardHistoryRepository by lazy {
         CardHistoryRepository(database.cardShowDao(), settingsStore)
@@ -244,6 +258,7 @@ class TeperaApp : Application() {
             RiskScanWorker.schedule(this)
             NudgeChannel.create(this)
         }
+        com.serkodesign.tepera.data.AnalyticsCleanupWorker.schedule(this)
         registerWidgetPreviewIfNeeded()
     }
 
@@ -294,9 +309,11 @@ class TeperaApp : Application() {
         getSharedPreferences("locale_prefs", MODE_PRIVATE).edit().clear().commit()
         getSharedPreferences("widget_prefs", MODE_PRIVATE).edit().clear().commit()
         CrashReporting.reset(this@TeperaApp)
+        com.serkodesign.tepera.analytics.AccessStateProbe.clear(this@TeperaApp)
         seedInitialData()
         WidgetUpdateWorker.schedule(this@TeperaApp)
         WidgetRolloverWorker.schedule(this@TeperaApp)
+        com.serkodesign.tepera.data.AnalyticsCleanupWorker.schedule(this@TeperaApp)
         runCatching { activeTimerStore.refreshWidgets() }
     }
 

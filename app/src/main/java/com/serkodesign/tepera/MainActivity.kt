@@ -128,6 +128,14 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Головний екран Tepera: затемнення м'якого виходу не лишається над ним. Пауза воріт (запуск службою з ключем цілі) — частина сценарію, сесію не чіпає.
         if (pendingGateRequest == null) com.serkodesign.tepera.util.SoftExitSessionBridge.endSession?.invoke()
+        // Аналітика: перехід «дозвіл надано / сервіс увімкнено» (перевірка системних налаштувань, не дані сервісу).
+        val app = application as TeperaApp
+        lifecycleScope.launch {
+            val usage = runCatching { app.balanceRepository.hasUsageAccess() }.getOrDefault(false)
+            com.serkodesign.tepera.analytics.AccessStateProbe.probe(
+                this@MainActivity, usage, com.serkodesign.tepera.util.GateAccessibility.isEnabled(this@MainActivity)
+            )
+        }
     }
 
     override fun onStart() {

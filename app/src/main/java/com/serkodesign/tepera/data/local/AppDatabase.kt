@@ -7,6 +7,7 @@ import com.serkodesign.tepera.data.local.dao.ActivityEntryDao
 import com.serkodesign.tepera.data.local.dao.AppGateDao
 import com.serkodesign.tepera.data.local.dao.CardShowDao
 import com.serkodesign.tepera.data.local.dao.CategoryDao
+import com.serkodesign.tepera.data.local.dao.DailyEventCounterDao
 import com.serkodesign.tepera.data.local.dao.DaySummaryDao
 import com.serkodesign.tepera.data.local.dao.DetectedGapDao
 import com.serkodesign.tepera.data.local.dao.ExcludedAppDao
@@ -23,6 +24,7 @@ import com.serkodesign.tepera.data.local.entity.ActivityEntryEntity
 import com.serkodesign.tepera.data.local.entity.AppGateEntity
 import com.serkodesign.tepera.data.local.entity.CardShowEntity
 import com.serkodesign.tepera.data.local.entity.CategoryEntity
+import com.serkodesign.tepera.data.local.entity.DailyEventCounterEntity
 import com.serkodesign.tepera.data.local.entity.DaySummaryEntity
 import com.serkodesign.tepera.data.local.entity.DetectedGapEntity
 import com.serkodesign.tepera.data.local.entity.ExcludedAppEntity
@@ -112,9 +114,10 @@ import com.serkodesign.tepera.data.local.entity.UserEstimateEntity
         RiskWindowEntity::class,
         PlanEntity::class,
         NudgeEventEntity::class,
-        ObservationPeriodEntity::class
+        ObservationPeriodEntity::class,
+        DailyEventCounterEntity::class
     ],
-    version = 23,
+    version = 24,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -135,4 +138,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
     abstract fun nudgeEventDao(): NudgeEventDao
     abstract fun observationPeriodDao(): ObservationPeriodDao
+    abstract fun dailyEventCounterDao(): DailyEventCounterDao
 }

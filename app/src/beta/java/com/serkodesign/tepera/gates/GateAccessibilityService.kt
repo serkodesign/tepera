@@ -1,5 +1,6 @@
 package com.serkodesign.tepera.gates
 
+import com.serkodesign.tepera.analytics.track
 import android.accessibilityservice.AccessibilityService
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
@@ -259,9 +260,17 @@ class GateAccessibilityService : AccessibilityService() {
             return
         }
         log("$pkg: показую підказку вікна $windowId")
+        // B1: вікно «почалось» для людини, коли вона вперше за добу відкрила стрічку всередині нього (не на кожне відкриття).
+        val windowDayKey = "$windowId|${now.toLocalDate()}"
+        if (windowDayKey != lastTrackedWindowDay) {
+            lastTrackedWindowDay = windowDayKey
+            track(com.serkodesign.tepera.analytics.AnalyticsEvent.RiskWindowStarted)
+        }
         PlanOverlayStore.recordShown(this)
         launchTepera(pkg, planWindowId = windowId)
     }
+
+    private var lastTrackedWindowDay: String? = null
 
     /** Причина показу чи відмови оверлея — лише в debug-збірці (назви застосунків у release-логи не пишемо). */
     private fun log(message: String) {

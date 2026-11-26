@@ -307,7 +307,7 @@ class TeperaWidget1x1 : TeperaWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 }
 
-class TeperaWidget1x1Receiver : GlanceAppWidgetReceiver() {
+class TeperaWidget1x1Receiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.BUTTONS_1X1) {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget1x1()
 }
 
@@ -317,11 +317,11 @@ class TeperaWidget2x1 : TeperaWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 }
 
-class TeperaWidget2x1Receiver : GlanceAppWidgetReceiver() {
+class TeperaWidget2x1Receiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.BUTTONS_2X1) {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget2x1()
 }
 
-class TeperaWidgetReceiver : GlanceAppWidgetReceiver() {
+class TeperaWidgetReceiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.BUTTONS_4X1) {
     override val glanceAppWidget: GlanceAppWidget = TeperaWidget()
 }
 

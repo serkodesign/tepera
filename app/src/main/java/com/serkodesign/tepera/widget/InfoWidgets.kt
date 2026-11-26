@@ -376,8 +376,8 @@ class InfoOrb1x1 : InfoWidget() {
 
 // ---------- ресівери й оновлення ----------
 
-class InfoOnlineRing2x1Receiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = InfoOnlineRing2x1() }
-class InfoOrb1x1Receiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = InfoOrb1x1() }
+class InfoOnlineRing2x1Receiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.ONLINE_RING) { override val glanceAppWidget: GlanceAppWidget = InfoOnlineRing2x1() }
+class InfoOrb1x1Receiver : TrackedWidgetReceiver(com.serkodesign.tepera.analytics.WidgetKind.ORB) { override val glanceAppWidget: GlanceAppWidget = InfoOrb1x1() }
 
 /** Оновлює всі інформаційні віджети — викликають WidgetUpdateWorker/WidgetRolloverWorker і ActiveTimerStore. */
 suspend fun updateAllInfoWidgets(context: Context) {
