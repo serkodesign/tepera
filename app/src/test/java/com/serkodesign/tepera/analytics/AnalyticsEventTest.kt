@@ -88,3 +88,18 @@ class AnalyticsEventTest {
         assertEquals(1, received)
     }
 }
+
+class AnalyticsMappingTest {
+    @Test
+    fun intention_minutes_map_to_buckets() {
+        assertEquals(IntentionBucket.MIN_5, intentionBucketFor(5))
+        assertEquals(IntentionBucket.MIN_15, intentionBucketFor(15))
+        assertEquals(IntentionBucket.MIN_30, intentionBucketFor(30))
+        assertEquals(IntentionBucket.OTHER, intentionBucketFor(7))
+    }
+
+    @Test
+    fun every_puzzle_kind_has_a_type() {
+        com.serkodesign.tepera.domain.risk.QuickPuzzles.Kind.entries.forEach { puzzleTypeFor(it) }
+    }
+}

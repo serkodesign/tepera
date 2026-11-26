@@ -1,5 +1,8 @@
 package com.serkodesign.tepera.ui.risk
 
+import com.serkodesign.tepera.analytics.AnalyticsEvent
+import com.serkodesign.tepera.analytics.puzzleTypeFor
+import com.serkodesign.tepera.analytics.track
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,22 +55,37 @@ import com.serkodesign.tepera.util.PlanOverlayStore
  * «Гаразд, іду» завжди видно й воно головна кнопка — вийти простіше, ніж розв'язувати. Помилка тихо дає нову задачу того ж типу.
  */
 @Composable
-fun PuzzleStep(total: Int, level: QuickPuzzles.Level, onAllSolved: () -> Unit, onLeave: () -> Unit) {
+fun PuzzleStep(total: Int, level: QuickPuzzles.Level, onAllSolved: () -> Unit, onLeave: () -> Unit, trackEvents: Boolean = true) {
     val context = LocalContext.current
     val kinds = remember { QuickPuzzles.pickKinds(total, PlanOverlayStore.lastPuzzleKind(context)) }
     LaunchedEffect(Unit) { kinds.lastOrNull()?.let { PlanOverlayStore.setLastPuzzleKind(context, it) } }
     var index by remember { mutableIntStateOf(0) }
     var attempt by remember { mutableIntStateOf(0) }
     val puzzle = remember(index, attempt) { QuickPuzzles.generate(kinds[index], level = level) }
+    // Аналітика: «показано» — раз на кожну задачку (повторна спроба після помилки не рахується); «покинуто» — вихід, поки не розв'язано всі.
+    var finished by remember { mutableStateOf(false) }
+    if (trackEvents) {
+        LaunchedEffect(index) { context.track(AnalyticsEvent.PuzzleShown(puzzleTypeFor(kinds[index]))) }
+    }
 
     key(index, attempt) {
         PuzzleBody(
             puzzle = puzzle,
-            onSolved = { if (index + 1 < kinds.size) index++ else onAllSolved() },
+            onSolved = {
+                if (trackEvents) context.track(AnalyticsEvent.PuzzleSolved(puzzleTypeFor(kinds[index])))
+                if (index + 1 < kinds.size) index++ else { finished = true; onAllSolved() }
+            },
             onWrong = { attempt++ }
         )
     }
-    M3Button(M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_watch_leave), onLeave, Modifier.fillMaxWidth())
+    M3Button(
+        M3ButtonType.Filled, M3ButtonSize.M, stringResource(R.string.v3_watch_leave),
+        {
+            if (trackEvents && !finished) context.track(AnalyticsEvent.PuzzleAbandoned(puzzleTypeFor(kinds[index])))
+            onLeave()
+        },
+        Modifier.fillMaxWidth()
+    )
 }
 
 @Composable

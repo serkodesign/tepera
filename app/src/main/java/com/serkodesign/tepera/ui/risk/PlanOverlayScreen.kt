@@ -1,5 +1,8 @@
 package com.serkodesign.tepera.ui.risk
 
+import com.serkodesign.tepera.analytics.AnalyticsEvent
+import com.serkodesign.tepera.analytics.intentionBucketFor
+import com.serkodesign.tepera.analytics.track
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
@@ -138,6 +141,7 @@ fun PlanOverlayScreen(
         val categoryId = suggestion.categoryId ?: return
         onDecided()
         PlanOverlayStore.recordAccepted(context)
+        context.track(AnalyticsEvent.IntentionSelected(intentionBucketFor(minutes)))
         commit(suggestion.id, minutes)
         scope.launch {
             startPlannedCategoryTimer(context, categoryId, minutes)
@@ -207,7 +211,7 @@ fun PlanOverlayScreen(
                 suggestion = c.suggestion,
                 onYes = {
                     if (c.suggestion.categoryId != null) choosingDuration = true
-                    else { onDecided(); PlanOverlayStore.recordAccepted(context); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
+                    else { onDecided(); PlanOverlayStore.recordAccepted(context); context.track(AnalyticsEvent.IntentionSelected(intentionBucketFor(DEFAULT_COMMITMENT_MINUTES))); commit(c.suggestion.id, DEFAULT_COMMITMENT_MINUTES); leave() }
                 },
                 onAnother = ::anotherIdea,
                 onOpenFive = { if (c.puzzles > 0) solving = true else openForFiveMinutes() }
@@ -232,7 +236,7 @@ fun PlanOverlayPreview(kind: String, onClose: () -> Unit) {
         when (kind) {
             "duration" -> DurationStep(onPick = { onClose() }, onBack = onClose)
             "watching" -> WatchingStep(suggestion, onLeave = onClose, onOpenFive = onClose)
-            "puzzle" -> PuzzleStep(total = 2, level = QuickPuzzles.Level.NORMAL, onAllSolved = onClose, onLeave = onClose)
+            "puzzle" -> PuzzleStep(total = 2, level = QuickPuzzles.Level.NORMAL, onAllSolved = onClose, onLeave = onClose, trackEvents = false)
             else -> SuggestionStep(suggestion, onYes = onClose, onAnother = onClose, onOpenFive = onClose)
         }
     }

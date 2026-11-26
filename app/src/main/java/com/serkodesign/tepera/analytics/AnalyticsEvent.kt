@@ -19,7 +19,7 @@ enum class Tab { TODAY, ACTIVITIES, DATA, SETTINGS }
 enum class PauseDuration { TODAY, WEEKEND, UNTIL_DATE }
 enum class IntentionBucket { MIN_5, MIN_15, MIN_30, OTHER }
 enum class SoftExitOutcome { LEFT, CONTINUED }
-enum class PuzzleType { SUDOKU, MATH, DIGITS, OTHER }
+enum class PuzzleType { SUDOKU, MATH, SCHULTE, DIGITS, SEQUENCE, INTENTION, OTHER }
 enum class WidgetKind {
     BUTTONS_1X1, BUTTONS_2X1, BUTTONS_4X1, ONLINE_RING, ORB, NEXT_HOUR, IDEA,
     ACTIVE_NOW, SKIP_TODAY, GATE_PAUSE, ADD_ENTRY, WEEK, PAUSES
