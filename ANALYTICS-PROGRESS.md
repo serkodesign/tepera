@@ -37,3 +37,26 @@
 
 ## Відкриті питання
 - Email підтримки для 2.5: `serkodesign@gmail.com` — підтверджено
+
+---
+
+## Передача на інший комп'ютер: перенести аналітику на базу `tepera-1.x` (1.4.2-beta, 55)
+
+**Чому:** фази 2.1–2.6 зроблено на старій базі (`feature/v3-mvp` = 1.3.8/51). Справжня актуальна гілка — `origin/tepera-1.x`
+(перейменована `feature/v3-mvp`, +15 комітів: 1.3.9 → 1.4.2-beta, нові картки `TeperaCard`, нова іконка, зміни налаштувань).
+На тестовому Huawei P9 стоїть 1.4.1 (54), БД v23. Гілка `feature/v3-mvp` з аналітикою **застаріла — не використовувати**.
+
+**Де лежить робота:** гілка `origin/feature/analytics` (чисті коміти 2.1–2.6 поверх `0e0a127`, без злиття). Брати саме її, не `feature/v3-mvp`.
+
+**Кроки (для Claude Code на іншому комп'ютері):**
+1. `git fetch`; `git checkout -b feature/analytics-on-1x origin/tepera-1.x`; `git merge --no-ff origin/feature/analytics`.
+2. Розв'язати конфлікти уважно, зберігаючи НОВИЙ вигляд з `tepera-1.x` і додаючи лише виклики аналітики. Очікувані місця: `TeperaNavHost.kt` (вкладки/онбординг/маршрут `STATS_SHARE`), `BackupRestoreScreen.kt` (рядок «Поділитися…», параметр `onOpenStatsShare`), `strings.xml` (uk/en, блок `stats_share_*`), `TeperaApp.kt` (БД v24, `MIGRATION_23_24`, `analytics`, `AnalyticsCleanupWorker`), `AppDatabase.kt`, `MainActivity.kt` (`onResume` → `AccessStateProbe`), віджети (`TrackedWidgetReceiver`), `PlanOverlayStore`/`PlanOverlayScreen`/`QuickPuzzleViews`/`GateAccessibilityService`, `SettingsHomeScreen.kt`. Якщо `tepera-1.x` перейменувала/перенесла екрани — перенести виклики `track()` на нові місця за `ANALYTICS-RECON.md` розділ 7 і цей файл (пункт 2.4).
+3. Версія БД на `tepera-1.x` — перевірити (була 23). Якщо там з'явилась міграція, перенумерувати `MIGRATION_23_24` і `daily_event_counters` так, щоб ланцюжок був без прогалин; `schemas/*.json` згенерувати заново.
+4. `sh gradlew :app:compileStandardDebugKotlin :app:compileBetaDebugKotlin :app:testStandardDebugUnitTest :app:testBetaDebugUnitTest` (на Windows — `gradlew`). `lintStandardDebug` має 2 помилки в старому коді (TesterStatsScreen) — не наші.
+5. Підключити пристрій (adb за повним шляхом, див. CLAUDE.md): `connectedStandardDebugAndroidTest` (`MigrationTest` має ланцюг до 24 і `migrate23to24_...`, `DailyEventCounterDaoTest`).
+6. Поставити поверх наявної установки з даними (`installBetaDebug`; на P9 1.4.1/54 < нової збірки, даунґрейду нема), пройти ручний чекліст `docs/analytics-level1-checklist.md`.
+7. Оновити цей файл результатами, закомітити в `feature/analytics-on-1x`. Не пушити в `tepera-1.x` і не зливати туди без явного «так» власника. Нічого не публікувати (політика, Data safety, Play).
+
+**Рішення власника, що лишаються:** оновлення політики за чернеткою (`docs/privacy-policy-analytics-draft.md`), Data safety за D2, версія релізу, Фаза 3 (PostHog: D1/D3/D4) — не починати без «починай Фазу 3».
+
+**Підводні камені:** на macOS `sed -i` потребує `''` (краще Edit); у zsh `--include=*.kt` без лапок ламає grep; `&&` після невдалої команди не спиняє `;`-ланцюжок — перевіряти код виходу перед комітом.
