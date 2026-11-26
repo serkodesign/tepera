@@ -22,6 +22,14 @@ if (hasSigningConfig) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// Фаза 3 аналітики: ключ проєкту PostHog лише з local.properties (`posthog.apiKey=phc_...`), НЕ комітиться.
+// Порожній ключ → віддалена аналітика вимкнена цілком (NoOp), нічого не йде в мережу.
+val localProperties = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) FileInputStream(f).use { load(it) }
+}
+val posthogApiKey: String = (localProperties.getProperty("posthog.apiKey") ?: "").trim()
+
 android {
     namespace = "com.serkodesign.tepera"
     // compileSdk 37, окремо від targetSdk: новіший Compose BOM вимагає компіляції проти API 37,
@@ -42,6 +50,7 @@ android {
         versionCode = 24
         versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "POSTHOG_KEY", "\"$posthogApiKey\"")
     }
 
     // Тестова збірка з воротами через Accessibility: окремий flavor, щоб основний реліз не мав ані сервісу, ані дозволу
@@ -158,6 +167,9 @@ dependencies {
     // (CLAUDE.md: жодної usage-аналітики в MVP, тільки crash-репорти).
     implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
     implementation("com.google.firebase:firebase-crashlytics")
+
+    // Фаза 3 аналітики (рівень 2): PostHog EU, анонімно, лише за згодою (opt-in). Версія 3.x за планом; є й 4.1.0.
+    implementation("com.posthog:posthog-android:3.77.1")
 
     // CC-9: м'яка пропозиція оновитись — Remote Config (той самий Firebase-проєкт) носить
     // "latest_version_code"/"whats_new_*", без власного бекенду. kotlinx-coroutines-play-services

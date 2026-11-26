@@ -94,3 +94,11 @@
 - П. 8 онбординг (чистий прохід): `onboarding_started`, `onboarding_step_completed` (`welcome`, `permissions`, `feeds`), `onboarding_completed` — по одному разу. `permissions` рахується й коли доступи вже надані (крок пропускається/проходить миттєво).
 - Ручний чекліст `docs/analytics-level1-checklist.md` пройдено повністю (п. 1–10; з обмеженнями, описаними вище: не перевірені `puzzle_abandoned`, `soft_exit_outcome=continued`, тост без поштового застосунку, видалення рядків >90 днів на пристрої).
 Лишаються рішення власника: політика приватності за чернеткою, Data safety (D2), версія релізу, Фаза 3.
+
+## Фаза 3 (PostHog, рівень 2) — 26.11.2026, за командою власника «Давай фазу 3»
+Рішення (рекомендації плану, власник їх явно не заповнював — діє фіче-флаг «порожній ключ = NoOp»): D1 = opt-in, D3 = GeoIP вимкнено (`$geoip_disable` на кожній події + Discard IP у проєкті PostHog), D4 = події B лише локально, D5 = EU. Версія SDK: `posthog-android:3.77.1` (є 4.1.0 — не брали, API плану під 3.x).
+- [x] 3.1 Залежність і конфіг. Ключ — `posthog.apiKey` у `local.properties` → `BuildConfig.POSTHOG_KEY` (порожній → віддалена аналітика вимкнена, мережі нема). `PostHogRemoteClient`: старт у opt-out, `PersonProfiles.NEVER`, без автозбору/сесій/feature flags, `identify/alias` ніде. **Дозволи в merged manifest (beta/standard debug) порівняно до/після — без змін; `INTERNET` уже був (Firebase), `AD_ID` не з'явився.** Новий дозвіл не додавався.
+- [x] 3.2 `RemoteAnalytics` (+`AnalyticsConsentStore`, `RemoteClient`): без згоди/клієнта — нуль викликів SDK; категорія B не йде (поки `allowCategoryB=false`); лише allowlist + `app_version`. `CompositeAnalytics` = Local + Remote. Тести `RemoteAnalyticsTest` зелені (compile+unit, standard+beta).
+- [ ] 3.3 Згода і керування (онбординг-крок, налаштування, ID аналітики, скинути ID, існуючі користувачі; UA+EN)
+- [ ] 3.4 Верифікація (нуль запитів до posthog.com до згоди; після — лише allowlist; Android 8/9/15/16)
+- [ ] 3.5 Документи (політика 8.2, Data safety, release notes) — без публікації

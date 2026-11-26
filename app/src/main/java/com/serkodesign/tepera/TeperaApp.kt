@@ -97,16 +97,49 @@ class TeperaApp : Application() {
             .build()
     }
 
-    /** Аналітика рівня 1: лише локальні денні лічильники (без мережі). Віддалений отримувач додається у Фазі 3. */
+    /** Згода на віддалену аналітику (рівень 2). За замовчуванням вимкнено (opt-in). */
+    val analyticsConsent: com.serkodesign.tepera.analytics.AnalyticsConsentStore by lazy {
+        com.serkodesign.tepera.analytics.AnalyticsConsentStore(this)
+    }
+
+    /** Клієнт PostHog; `null`, якщо ключ проєкту не заданий (`posthog.apiKey` у local.properties) — тоді мережі нема взагалі. */
+    private val remoteClient: com.serkodesign.tepera.analytics.RemoteClient? by lazy {
+        if (BuildConfig.POSTHOG_KEY.isBlank()) null
+        else runCatching {
+            com.serkodesign.tepera.analytics.PostHogRemoteClient(
+                this, BuildConfig.POSTHOG_KEY, initiallyOptedOut = !analyticsConsent.isEnabled(), debug = BuildConfig.DEBUG
+            )
+        }.getOrNull()
+    }
+
+    /** Чи доступна віддалена аналітика в цій збірці (ключ заданий). Без цього блок згоди в UI не показуємо. */
+    val remoteAnalyticsAvailable: Boolean get() = BuildConfig.POSTHOG_KEY.isNotBlank()
+
+    /** Аналітика: локальні денні лічильники (рівень 1) + віддалений PostHog (рівень 2, лише за згодою й лише категорія A). */
     val analytics: com.serkodesign.tepera.analytics.Analytics by lazy {
         com.serkodesign.tepera.analytics.CompositeAnalytics(
             listOf(
                 com.serkodesign.tepera.analytics.LocalAnalytics(
                     database.dailyEventCounterDao(),
                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
-                )
+                ),
+                com.serkodesign.tepera.analytics.RemoteAnalytics(remoteClient, analyticsConsent, BuildConfig.VERSION_NAME)
             )
         )
+    }
+
+    /** Змінює згоду. Спершу вмикаємо/вимикаємо SDK, потім пишемо подію (при вимкненні вона вже нікуди не піде). */
+    fun setAnalyticsConsent(enabled: Boolean) {
+        analyticsConsent.set(enabled)
+        remoteClient?.setOptOut(!enabled)
+        analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.AnalyticsConsentChanged(enabled))
+    }
+
+    /** ID аналітики для показу в налаштуваннях (запит на видалення); `null`, якщо віддаленої аналітики нема. */
+    fun analyticsId(): String? = remoteClient?.let { runCatching { it.distinctId() }.getOrNull() }
+
+    fun resetAnalyticsId() {
+        remoteClient?.let { runCatching { it.reset() } }
     }
 
     val categoryRepository: CategoryRepository by lazy {
@@ -310,6 +343,10 @@ class TeperaApp : Application() {
         getSharedPreferences("widget_prefs", MODE_PRIVATE).edit().clear().commit()
         CrashReporting.reset(this@TeperaApp)
         com.serkodesign.tepera.analytics.AccessStateProbe.clear(this@TeperaApp)
+        // «Видалити всі дані»: згода скидається, ID аналітики стає новим — нічого не лишається прив'язаним до людини.
+        resetAnalyticsId()
+        remoteClient?.setOptOut(true)
+        analyticsConsent.clear()
         seedInitialData()
         WidgetUpdateWorker.schedule(this@TeperaApp)
         WidgetRolloverWorker.schedule(this@TeperaApp)
