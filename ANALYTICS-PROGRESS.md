@@ -68,3 +68,16 @@
 - androidTest на Huawei P9 (EVA-DL00, Android 8): 23 тести OK (MigrationTest, DailyEventCounterDaoTest, RiskScannerTest, RiskWindowRepositoryTest). Запущено через `installBetaDebug` + `installBetaDebugAndroidTest` + `am instrument` (не `connectedAndroidTest` — той видаляє застосунок і дані).
 - `installBetaDebug` поверх 1.4.1 (54): запуск без FATAL, `PRAGMA user_version = 24`, `daily_event_counters` уже містить рядки.
 - **Ще не виконано:** ручний чекліст `docs/analytics-level1-checklist.md` (пункти 3–10: лічильники по екранах, екран «Поділитися…», видалення даних, воркер, онбординг, beta-події, локалі). Нічого не опубліковано, у `tepera-1.x` не злито й не запушено.
+
+### Ручний чекліст на Huawei P9 (26.11.2026, Android 8, beta debug 1.4.2-beta/55)
+Виконано (лічильники перевірені прямим читанням `daily_event_counters` з БД пристрою):
+- П.2 — міграція v23→v24 поверх 1.4.1: без падіння, `user_version = 24`.
+- П.3 — `tab_viewed` (today/activities/data/settings), `activity_added`, `window_added [is_first=false]`, `window_edited`, `window_deleted`, `gate_paused [duration=today]` — усе росте.
+- П.4 — у `eventName`/`propsKey` немає назв застосунків і пакетів (0 збігів за `.`/`com`).
+- П.5 (частково) — екран «Поділитися…» відкривався й лист надсилався (власник): `stats_share_opened`, `stats_shared`; текст у блоці = текст листа (звіт будується раз при відкритті, тож не містить подій `stats_share_*` цього ж відкриття). Не перевірено: тост без поштового застосунку, неактивна кнопка без подій.
+- П.7 (частково) — воркер `analytics_cleanup` у WorkManager: ENQUEUED, період 1 доба. Видалення рядка >90 днів на пристрої не перевірялось (є юніт-тест).
+- П.8 (частково) — `usage_access_granted`, `accessibility_service_enabled` записані. Повний онбординг не проходили (потрібна чиста установка).
+Не виконано / блокер:
+- П.9 (події B: `risk_window_started`, `intention_*`, `puzzle_*`, `soft_exit_*`) — служба доступності в системі ввімкнена, але на P9 не підключилась (`dumpsys accessibility` → `services:{}`, у логах тегу `TeperaPlan` порожньо), лист поверх Telegram не з'являвся. Спроби: ввімкнення через adb (не підхоплено), через системний екран (перемикач увімкнено), `force-stop`, дозвіл «Запустити» для Tepera вручну. Причину не з'ясовано (EMUI?). Перевірити на іншому пристрої (S23/G84) або після перезавантаження P9.
+- П.6 (видалити всі дані), п.10 (локалі екрана «Поділитися…») — не робили.
+Побічні зміни на P9: у «Запустити» Tepera переведено на ручне керування (усі 3 перемикачі ON); службу доступності лишено ввімкненою; додано тестовий запис активності «Природа» (~30 хв) — видалити з Щоденника за потреби. Тестове вікно 22:00–23:30 видалено.
