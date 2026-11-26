@@ -76,7 +76,9 @@ fun FeedPickerScreen(
                 else -> {
                     val needle = query.trim()
                     val visible = state.apps.filter { needle.isEmpty() || it.label.contains(needle, ignoreCase = true) }
-                    val (suggested, others) = visible.partition { it.packageName in state.suggested }
+                    // Обрані на момент відкриття — першими (порядок не стрибає, коли перемикаєш), далі підказки й решта.
+                    val (selected, rest) = visible.partition { it.packageName in state.initialFeed }
+                    val (suggested, others) = rest.partition { it.packageName in state.suggested }
                     LazyColumn(
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         contentPadding = PaddingValues(16.dp),
@@ -118,6 +120,10 @@ fun FeedPickerScreen(
                                 active = searchActive,
                                 onFocusChange = { searchFocused = it }
                             )
+                        }
+                        if (selected.isNotEmpty()) {
+                            item { GlassSectionHeader(stringResource(R.string.v3_feed_section_selected)) }
+                            items(selected, key = { "sel_" + it.packageName }) { FeedRow(it, it.packageName in state.feed) { viewModel.toggle(it) } }
                         }
                         if (suggested.isNotEmpty()) {
                             item { GlassSectionHeader(stringResource(R.string.v3_feed_section_suggested)) }

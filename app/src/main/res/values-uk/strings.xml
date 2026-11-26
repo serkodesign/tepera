@@ -633,6 +633,7 @@
     <string name="v3_feed_picker_action">Застосунки-стрічки</string>
     <string name="v3_feed_title">Застосунки-стрічки</string>
     <string name="v3_feed_hint">Обери застосунки, де «зависаєш». Час рахується лише в них.</string>
+    <string name="v3_feed_section_selected">Вибрані</string>
     <string name="v3_feed_section_suggested">Часто відкриваєте ввечері</string>
     <string name="v3_feed_section_all">Усі застосунки</string>
     <string name="v3_feed_empty">Немає даних про використання. Надайте доступ до статистики.</string>

@@ -16,7 +16,9 @@ data class FeedPickerState(
     val loading: Boolean = true,
     val apps: List<InstalledAppInfo> = emptyList(),
     val suggested: Set<String> = emptySet(),
-    val feed: Set<String> = emptySet()
+    val feed: Set<String> = emptySet(),
+    /** Що було обрано в момент відкриття екрана: їх показуємо першими, а порядок не міняється, поки перемикаєш. */
+    val initialFeed: Set<String> = emptySet()
 )
 
 class FeedPickerViewModel(private val app: TeperaApp) : ViewModel() {
@@ -28,7 +30,7 @@ class FeedPickerViewModel(private val app: TeperaApp) : ViewModel() {
             app.feedAppRepository.importLegacyIfEmpty(app.settingsStore.feedPackages.first())
             val feed = app.feedAppRepository.packages()
             val apps = app.installedAppsProvider.listUsedApps()
-            _state.update { it.copy(apps = apps, feed = feed, loading = false) }
+            _state.update { it.copy(apps = apps, feed = feed, initialFeed = feed, loading = false) }
             // Підказки рахуються довше за список — підтягуються окремо й лише міняють порядок.
             val suggested = app.feedSuggestionProvider.suggest()
             _state.update { it.copy(suggested = suggested) }

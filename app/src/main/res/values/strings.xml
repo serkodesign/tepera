@@ -616,6 +616,7 @@
     <string name="v3_feed_picker_action">Feed apps</string>
     <string name="v3_feed_title">Feed apps</string>
     <string name="v3_feed_hint">Choose the apps where you get stuck. Only they are counted.</string>
+    <string name="v3_feed_section_selected">Selected</string>
     <string name="v3_feed_section_suggested">Often opened in the evening</string>
     <string name="v3_feed_section_all">All apps</string>
     <string name="v3_feed_empty">No usage data yet. Grant usage access.</string>
