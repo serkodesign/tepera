@@ -50,7 +50,8 @@ android {
         versionCode = 24
         versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "POSTHOG_KEY", "\"$posthogApiKey\"")
+        // Ключ PostHog вшивається лише в release (див. buildTypes): debug-збірки без ключа, щоб тести не потрапляли в бойові метрики.
+        buildConfigField("String", "POSTHOG_KEY", "\"\"")
     }
 
     // Тестова збірка з воротами через Accessibility: окремий flavor, щоб основний реліз не мав ані сервісу, ані дозволу
@@ -86,6 +87,7 @@ android {
 
     buildTypes {
         release {
+            buildConfigField("String", "POSTHOG_KEY", "\"$posthogApiKey\"")
             // R8: мінімізація й обфускація DEX (вимога Play Console "DEX code optimization")
             isMinifyEnabled = true
             isShrinkResources = true
