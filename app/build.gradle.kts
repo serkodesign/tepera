@@ -66,8 +66,8 @@ android {
         }
         create("beta") {
             dimension = "distribution"
-            versionName = "1.4.2-beta"
-            versionCode = 55
+            versionName = "1.4.3"
+            versionCode = 56
             buildConfigField("boolean", "GATE_ACCESSIBILITY", "true")
             // v3.0 MVP (docs/CLAUDE-CODE-PLAN-v3-MVP.md): збір слотів і службовий екран годин ризику — лише в beta.
             buildConfigField("boolean", "V3_MVP", "true")
