@@ -1,4 +1,4 @@
-# ЧЕРНЕТКА змін до політики конфіденційності — аналітика, рівень 1 (НЕ опублікована)
+# ЧЕРНЕТКА змін до політики конфіденційності — аналітика, рівень 1 (внесено в privacy-policy.md 27.11.2026; на сайті ще НЕ опубліковано)
 
 Статус: чернетка для власника. Нічого не опубліковано. Політику на GitHub Pages оновлює власник вручну; за
 рішенням 23.11.2026 політика змінюється лише якщо потрібно (попередження Google) — ця зміна потрібна, лише
@@ -15,16 +15,16 @@
 
 ### Українською — новий пункт у списку «Які дані обробляються» (після пункту про UsageStatsManager)
 
-> - **Статистика використання (лічильники на пристрої).** Tepera веде прості щоденні лічильники використання функцій (наприклад, скільки разів додано активність чи відкрито вкладку). Вони зберігаються лише на вашому пристрої, не містять назв застосунків, введеного вами тексту, часу доби чи ідентифікаторів, автоматично видаляються через 90 днів і разом з іншими даними при «Видалити всі дані». Нам вони надходять лише якщо ви самі обираєте «Поділитися анонімною статистикою» в Налаштування → Дані й приватність: застосунок показує точний текст (підсумки за 30 днів, версії застосунку й Android), і ви самі надсилаєте його листом зі свого поштового застосунку — ви можете прочитати й змінити текст до надсилання. Сама Tepera нічого не надсилає.
+> - **Статистика використання (лічильники на пристрої).** Tepera веде прості щоденні лічильники використання функцій (наприклад, скільки разів додано активність чи відкрито вкладку). Вони зберігаються лише на вашому пристрої, не містять назв застосунків, введеного вами тексту, часу доби чи ідентифікаторів, автоматично видаляються через 90 днів і разом з іншими даними при «Видалити всі дані». Нам вони надходять лише якщо ви самі обираєте «Поділитися анонімною статистикою» в Налаштування → Дані й приватність: застосунок показує точний текст (підсумки за 30 днів, версії застосунку й Android), і ви самі надсилаєте його листом зі свого поштового застосунку — ви можете прочитати й змінити текст до надсилання. Самі лічильники Tepera не надсилає (окремо від необов'язкової аналітики рівня 2 за згодою).
 
 Також оновити дату «Останнє оновлення».
 
 ### English — new bullet in "What data is processed" (after the UsageStatsManager bullet)
 
-> - **Usage statistics (on-device counters).** Tepera keeps simple daily counters of how its features are used (for example, how many times an activity was added or a tab was opened). They are stored only on your device, contain no app names, no text you enter, no times of day and no identifiers, and are deleted automatically after 90 days or when you use "Delete all data". They reach us only if you choose "Share anonymous statistics" in Settings → Data and privacy: the app shows you the exact text (30-day totals, app and Android versions) and you send it yourself by email from your own mail app — you can read and edit it before sending. Tepera itself sends nothing.
+> - **Usage statistics (on-device counters).** Tepera keeps simple daily counters of how its features are used (for example, how many times an activity was added or a tab was opened). They are stored only on your device, contain no app names, no text you enter, no times of day and no identifiers, and are deleted automatically after 90 days or when you use "Delete all data". They reach us only if you choose "Share anonymous statistics" in Settings → Data and privacy: the app shows you the exact text (30-day totals, app and Android versions) and you send it yourself by email from your own mail app — you can read and edit it before sending. The counters themselves are never sent by Tepera (separate from the optional level 2 analytics with consent).
 
 ## Що НЕ змінюється
-- Блок «Аналітика й мережа» (crash-звіти Crashlytics) — без змін у рівні 1. Він зміниться лише у Фазі 3 (PostHog) — окрема чернетка.
+- Блок «Аналітика й мережа» (crash-звіти Crashlytics) — без змін у рівні 1. Змінено рівнем 2 (PostHog) — див. `privacy-policy-analytics-level2-draft.md`.
 - Блок про Accessibility — без змін (рівень 1 нічого не бере з даних сервісу: події категорії B — лише лічильники кількості).
 
 ## Звірити перед публікацією

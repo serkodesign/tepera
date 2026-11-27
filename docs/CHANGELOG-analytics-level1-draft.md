@@ -10,5 +10,5 @@
 - Room schema: v23 → v24 (`daily_event_counters`, additive, `MIGRATION_23_24`). No new permissions; no new network access (INTERNET already present via Firebase).
 - Event catalog (`analytics/AnalyticsEvent.kt`): category A everywhere, category B (Accessibility/overlay-derived) only in the `beta` flavor and only counted locally.
 - Retention: counters older than 90 days are deleted daily (`AnalyticsCleanupWorker`); "Delete all data" clears them.
-- Before release: publish the policy change (`privacy-policy-analytics-draft.md`) and decide Data safety (`analytics-level1-checklist.md`). Run the manual checklist there — it has NOT been run on a device.
-- Not done on purpose: no remote analytics (PostHog is Phase 3, needs decisions D1/D3/D4).
+- Before release: the level-1 policy bullet is now in `privacy-policy.md`; Data safety — see `play-console-declarations.md` (combined level 1 + 2). The manual checklist was run on Huawei P9 (26.11.2026).
+- Remote analytics (PostHog, opt-in) is a separate level 2 — see `CHANGELOG-analytics-level2-draft.md`; this level-1 feature itself sends nothing automatically.

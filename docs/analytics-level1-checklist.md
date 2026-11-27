@@ -1,6 +1,6 @@
 # Аналітика, рівень 1 — чекліст перевірки і декларацій (для власника)
 
-## Ручний чекліст на пристрої (ще НЕ виконаний — пристрій не був підключений)
+## Ручний чекліст на пристрої (виконано на Huawei P9 26.11.2026; лишається повторний прогін на release-збірці)
 Автоматично зеленими лишаються лише юніт-тести. Інструментальні тести і живу перевірку треба зробити вручну.
 
 1. `sh gradlew :app:connectedStandardDebugAndroidTest` — `MigrationTest` (у т.ч. `migrate23to24_...`, ланцюг 17→24) і `DailyEventCounterDaoTest`.
@@ -28,7 +28,7 @@
 | App activity → App interactions | Collected · Optional · Purpose: Analytics |
 | Shared with third parties | No |
 | Encrypted in transit | Лист користувач надсилає сам своїм поштовим застосунком — відповідь вибрати за поточним формулюванням форми (вона вимагає «так/ні» для передачі з пристрою); за умовчанням «Yes» нема підстав стверджувати — звірити формулювання у формі |
-| Users can request deletion | Yes — лист на serkodesign@gmail.com (даних у нас без ID немає, видалення означає лише видалення листа) |
+| Users can request deletion | Yes — див. об'єднану таблицю в `play-console-declarations.md` (розділ «Data safety: підсумок рівнів 1+2») |
 | Collection optional | Yes |
 
 Примітка: Google може вважати дані, які людина сама надсилає листом, такими, що «не збираються застосунком».

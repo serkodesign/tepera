@@ -568,7 +568,7 @@ fun TeperaNavHost(
                     weeklySummaryNonce = pendingWeeklySummaryNonce
                 )
                 // Аналітика рівня 2: одноразовий вибір (нові й існуючі користувачі) — лише коли онбординг уже пройдено.
-                AnalyticsConsentGate {
+                AnalyticsConsentGate(settingsStore, activityRepository) {
                     if (BuildConfig.V3_MVP && v3Mode == true) {
                         val a11yPending = com.serkodesign.tepera.util.GateAccessibility.isAvailable &&
                             !settingsStore.a11yOnboardingSeen.first() &&
@@ -1014,23 +1014,36 @@ private fun analyticsOnboardingStepFor(route: String): OnboardingStep? = when (r
 }
 
 /**
- * Одноразовий вибір «Допомогти покращити Tepera». Нічого не показує, коли в збірці нема ключа віддаленої аналітики
- * або вибір уже зроблено. Після короткої паузи (щоб не збігтись із переходами) питає, лише коли [isReady] каже, що
- * онбординг завершено.
+ * Вибір «Допомогти покращити Tepera». Нічого не показує, коли в збірці нема ключа віддаленої аналітики або вибір
+ * уже зроблено. Питає не на старті, а після першого досвіду: є хоч один запис активності або минуло ≥ 2 діб від
+ * першого запуску. «Не зараз» відкладає питання на 30 днів, другий «Не зараз» = «Ні, дякую».
  */
 @Composable
-private fun AnalyticsConsentGate(isReady: suspend () -> Boolean) {
+private fun AnalyticsConsentGate(
+    settingsStore: SettingsStore,
+    activityRepository: ActivityRepository,
+    isReady: suspend () -> Boolean
+) {
     val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as com.serkodesign.tepera.TeperaApp
     if (!app.remoteAnalyticsAvailable) return
     var show by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (app.analyticsConsent.isDecided()) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        if (!app.analyticsConsent.isDue(now)) return@LaunchedEffect
         delay(2000)
-        if (isReady()) show = true
+        if (!isReady()) return@LaunchedEffect
+        val firstLaunch = settingsStore.firstLaunchMillis.first()
+        val experienced = (firstLaunch > 0L && now - firstLaunch >= 2L * 24 * 60 * 60 * 1000) ||
+            activityRepository.observeEntriesInRange(0L, now).first().isNotEmpty()
+        if (experienced) {
+            app.analyticsConsent.markShown()
+            app.analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.ConsentPromptShown)
+            show = true
+        }
     }
     if (show) {
-        com.serkodesign.tepera.ui.onboarding.AnalyticsConsentDialog { enabled ->
-            app.setAnalyticsConsent(enabled)
+        com.serkodesign.tepera.ui.onboarding.AnalyticsConsentDialog { answer ->
+            app.answerAnalyticsConsent(answer)
             show = false
         }
     }

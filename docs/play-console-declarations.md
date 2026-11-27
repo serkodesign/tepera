@@ -125,3 +125,47 @@ over" як основну аудиторію. Це звільняє від до�
 Раніше `privacy-policy.md` обіцяв "видалити всі свої дані через налаштування", а кнопки не було. Тепер
 є: Налаштування → Резервне копіювання → "Видалити всі дані" (два кроки підтвердження: пояснення, потім
 слово-підтвердження). Політику оновлено з точним шляхом.
+
+
+## Data safety: підсумок рівнів 1+2 (аналітика, 27.11.2026) — ЗАПОВНЮВАТИ ЦЕЙ РОЗДІЛ
+
+Заповнюється **до** викочування збірки з ключем PostHog (декларація має покривати всі версії в треку). Рівень 1 (лічильники
+на пристрої + лист) і рівень 2 (PostHog, opt-in) декларуються разом. Усе нижче звірити з поточним текстом форми Play Console —
+формулювання категорій Google інколи змінює.
+
+**Загальні питання**
+| Питання форми | Відповідь |
+|---|---|
+| Does your app collect or share any of the required user data types? | **Yes** (було б «No» без Crashlytics і PostHog) |
+| Is all of the user data collected by your app encrypted in transit? | **Yes** (Crashlytics і PostHog — лише HTTPS) |
+| Do you provide a way for users to request that their data be deleted? | **Yes** — в застосунку: Налаштування → Дані й приватність → «Видалити мої дані аналітики» (скидає ID + готовий лист); «Видалити всі дані» — локальні дані. Для Crashlytics окремого механізму нема (дані без акаунта) — це пояснюється в політиці |
+| Data deletion URL (якщо форма просить) | URL політики: `https://serkodesign.github.io/tepera/privacy-policy` (розділ «Продуктова аналітика»). Окремої сторінки видалення нема; якщо Google вимагатиме — додати розділ-якір чи сторінку |
+
+**Типи даних, які позначаємо «Collected»** (усе інше — «Not collected»)
+| Категорія → тип | Collected | Shared | Optional | Purpose | Звідки |
+|---|---|---|---|---|---|
+| App activity → App interactions | Yes | **No** (PostHog — service provider/обробник) | **Yes** (opt-in) | **Analytics** | події категорії A у PostHog (за згодою); рівень 1 лічильники — лише на пристрої/лист користувача, окремо не додають |
+| Device or other IDs | Yes | **No** | **Yes** (аналітика) | **Analytics** (PostHog anonymous ID); **App functionality** (Firebase installation ID для Crashlytics) | випадковий distinct_id PostHog + Crashlytics |
+| App info and performance → Crash logs | Yes | No (service provider) | Yes (перемикач «Звіти про збої») | **App functionality** | Crashlytics — без змін |
+| App info and performance → Diagnostics | Yes | No | Yes | App functionality (і Analytics для device/OS даних PostHog — модель, версія ОС, мова, часовий пояс, розмір екрана) | Crashlytics + службові властивості PostHog; якщо форма не має окремого пункту для моделі/ОС, віднести до Diagnostics/Device or other IDs |
+
+**Явно «Not collected»:** Location (approximate і precise — GeoIP вимкнено на кожній події, IP не зберігається), Personal info (ім'я,
+email, акаунт), Financial info, Health and fitness, Messages, Photos/Videos, Audio, Files, Calendar, Contacts, Web browsing, Search
+history, **Installed apps / app usage на пристрої** (UsageStatsManager обробляється лише локально — Google не вважає це збором,
+бо не передається), користувацький текст (нотатки, плани).
+**Важливо:** події категорії B (Accessibility/UsageStats-похідні) у PostHog НЕ йдуть (`allowCategoryB = false`) — тому декларація
+Accessibility лишається без змін.
+
+**Practices:** Data is encrypted in transit — Yes. Independent security review — No. Committed to Play Families Policy — Not applicable
+(аудиторія 18+).
+
+**Порядок дій у Play Console (по кроках)**
+1. Play Console → App content → **Data safety** → Manage → пройти форму за таблицею вище, зберегти.
+2. App content → **Privacy policy**: URL має відкривати оновлений текст (перевірити дату «27.11.2026» і розділи «Продуктова аналітика»
+   та «Статистика використання»). Спершу опублікувати політику (merge у гілку GitHub Pages), потім змінювати Data safety.
+3. Store listing: вставити оновлений абзац «Privacy» з `store-listing-en.md` / `store-listing-ua.md` (рядок 49).
+4. Release notes для збірки: `CHANGELOG-analytics-level2-draft.md` (розділ «Для Play Console»).
+5. Decl. Accessibility — **без змін** (D4 = ні), нічого не перезавантажувати.
+6. Перед викочуванням: PostHog → Discard client IP data (ON), GeoIP-трансформація OFF, Data retention 12 міс. (див. `posthog-setup-steps.md`, розділ 6а);
+   у збірці — реальний ключ у `local.properties`, `bundleBetaRelease`, версія без `-beta`.
+7. Після відправки на Open testing — перевірити, що Google не повернув попередження щодо розбіжності Data safety і політики.

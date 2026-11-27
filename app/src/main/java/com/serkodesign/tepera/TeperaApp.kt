@@ -135,6 +135,18 @@ class TeperaApp : Application() {
         analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.AnalyticsConsentChanged(enabled))
     }
 
+    /** Відповідь у діалозі згоди: «Так»/«Ні» — остаточно; «Не зараз» — відкласти (другий раз = «Ні»). */
+    fun answerAnalyticsConsent(answer: com.serkodesign.tepera.analytics.ConsentAnswer) {
+        when (answer) {
+            com.serkodesign.tepera.analytics.ConsentAnswer.YES -> setAnalyticsConsent(true)
+            com.serkodesign.tepera.analytics.ConsentAnswer.NO -> setAnalyticsConsent(false)
+            com.serkodesign.tepera.analytics.ConsentAnswer.LATER ->
+                if (analyticsConsent.postponedOnce()) setAnalyticsConsent(false)
+                else analyticsConsent.postpone(System.currentTimeMillis())
+        }
+        analytics.track(com.serkodesign.tepera.analytics.AnalyticsEvent.ConsentPromptAnswered(answer))
+    }
+
     /** ID аналітики для показу в налаштуваннях (запит на видалення); `null`, якщо віддаленої аналітики нема. */
     fun analyticsId(): String? = remoteClient?.let { runCatching { it.distinctId() }.getOrNull() }
 

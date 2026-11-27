@@ -46,7 +46,7 @@ We rarely pick up the phone by accident: it mostly happens at the same hours and
 
 🌗 **Light and dark theme, English and Ukrainian.**
 
-🔒 **Privacy** — your entries stay on your device. Optional anonymous usage analytics (off until you turn it on) and optional crash reports can be switched off in Settings → Data and privacy. No accounts, no ads, no social feed. Android may keep a backup of the app data in your Google account according to your phone settings.
+🔒 **Privacy** — your entries stay on your device. Optional anonymous usage analytics (off until you turn it on) and optional crash reports can be switched off, and your analytics data deleted with one tap, in Settings → Data and privacy. No accounts, no ads, no social feed. Android may keep a backup of the app data in your Google account according to your phone settings.
 
 **Permissions and Accessibility:**
 • **Usage access** (Settings → Special access) — needed to count Online time and find scrolling hours. Without it the offline log still works fully.

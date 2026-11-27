@@ -18,6 +18,7 @@ enum class OnboardingStep { WELCOME, ACCESSIBILITY, CATEGORIES, ONLINE_ESTIMATE,
 enum class Tab { TODAY, ACTIVITIES, DATA, SETTINGS }
 enum class PauseDuration { TODAY, WEEKEND, UNTIL_DATE }
 enum class IntentionBucket { MIN_5, MIN_15, MIN_30, OTHER }
+enum class ConsentAnswer { YES, NO, LATER }
 enum class SoftExitOutcome { LEFT, CONTINUED }
 enum class PuzzleType { SUDOKU, MATH, SCHULTE, DIGITS, SEQUENCE, INTENTION, OTHER }
 enum class WidgetKind {
@@ -55,6 +56,10 @@ sealed class AnalyticsEvent(
     object StatsShared : AnalyticsEvent("stats_shared", Category.A_OWN_UI)
     class AnalyticsConsentChanged(enabled: Boolean) :
         AnalyticsEvent("analytics_consent_changed", Category.A_OWN_UI, mapOf("enabled" to enabled))
+    /** Показ діалогу згоди (локально; віддалено піде лише якщо згоду вже дано). */
+    object ConsentPromptShown : AnalyticsEvent("consent_prompt_shown", Category.A_OWN_UI)
+    class ConsentPromptAnswered(answer: ConsentAnswer) :
+        AnalyticsEvent("consent_prompt_answered", Category.A_OWN_UI, mapOf("outcome" to answer.key()))
 
     // ---- Категорія B ----
     object RiskWindowStarted : AnalyticsEvent("risk_window_started", Category.B_SYSTEM_DERIVED)

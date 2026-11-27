@@ -34,6 +34,7 @@ title: Privacy Policy — Tepera
   Файл не зашифрований, тож зберігайте його так, як зберігаєте особисті дані, і не передавайте
   стороннім. Імпорт файлу повністю замінює відповідні дані на пристрої; налаштування (мова, тема,
   вікно сну, ворота, віджет) у файл не входять.
+- **Статистика використання (лічильники на пристрої).** Tepera веде прості щоденні лічильники використання функцій (наприклад, скільки разів додано активність чи відкрито вкладку). Вони зберігаються лише на вашому пристрої, не містять назв застосунків, введеного вами тексту, часу доби чи ідентифікаторів, автоматично видаляються через 90 днів і разом з іншими даними при «Видалити всі дані». Вони не надсилаються автоматично: лише якщо ви самі обираєте «Поділитися анонімною статистикою» в Налаштування → Дані й приватність, застосунок показує точний текст (підсумки за 30 днів, версії застосунку й Android), і ви самі надсилаєте його листом зі свого поштового застосунку — ви можете прочитати й змінити текст до надсилання.
 - Щоб показати співвідношення екранного й реального часу, застосунок читає **статистику
   використання застосунків на вашому пристрої** через системний API `UsageStatsManager` (доступ
   надається вручну через Налаштування Android). Ці дані обробляються **виключно на пристрої**,
@@ -54,8 +55,8 @@ title: Privacy Policy — Tepera
 - Ми **не** запитуємо дозвіл на геолокацію (в жодній формі, включно з фоновою).
 - Ми **не** створюємо облікових записів і не вимагаємо реєстрації.
 
-**Аналітика й мережа:** застосунок сам не робить мережевих запитів, окрім анонімних crash-звітів (через Firebase Crashlytics, для чого в застосунку є дозвіл на доступ до мережі) у разі
-збою. Звіт містить лише модель телефону, версію Android і технічний опис самого збою — без
+**Аналітика й мережа:** застосунок сам не робить мережевих запитів, окрім (1) анонімних crash-звітів (через Firebase Crashlytics, для чого в застосунку є дозвіл на доступ до мережі) у разі
+збою та (2) необов'язкової анонімної аналітики за вашою згодою (розділ «Продуктова аналітика» нижче). Звіт містить лише модель телефону, версію Android і технічний опис самого збою — без
 записів активностей, категорій чи часу використання застосунків, без ідентифікації користувача
 та без трекінгу поведінки в застосунку (окремо від необов'язкової аналітики нижче). **Це можна вимкнути:** перемикач «Звіти про збої»
 показується на першому екрані онбордингу і завжди доступний у Налаштування → Загальні; на час
@@ -68,10 +69,13 @@ ID аналітики, який генерує застосунок, а не д�
 не надсилаємо назви інших застосунків, тексти ваших занять, вміст екрана чи будь-які дані, отримані
 через службу спеціальних можливостей (Accessibility). Разом із подією передаються модель і
 виробник пристрою, версія Android, версія застосунку, мова, часовий пояс і розмір екрана.
-IP-адреси не зберігаються. Аналітика вимкнена, доки ви її не ввімкнете; вимкнути її чи скинути ID
-аналітики можна будь-коли в Налаштування → Дані й приватність. Щоб видалити дані аналітики,
-напишіть на serkodesign@gmail.com, вказавши ID аналітики з цього екрана. PostHog обробляє ці дані
-від нашого імені як обробник даних.
+IP-адреси не зберігаються. Аналітика вимкнена, доки ви її не ввімкнете; застосунок запитає про це не на самому початку, а після першого досвіду, а якщо натиснути «Не зараз» — спитає ще один раз приблизно через 30 днів і більше не повторюватиме; вимкнути її можна
+будь-коли в Налаштування → Дані й приватність. Там само кнопка «Видалити мої дані аналітики» одним
+тапом вимикає аналітику й скидає ID аналітики, після чого попередні події вже неможливо зв'язати з
+вами; водночас відкривається готовий лист із вашим ID — надішліть його на serkodesign@gmail.com,
+якщо хочете, щоб ми ще й стерли ці події в PostHog (ми робимо це за запитом). Події зберігаються не
+довше 12 місяців, після чого видаляються автоматично. PostHog обробляє ці дані від нашого імені як
+обробник даних.
 
 **Ваш контроль:** ви можете в будь-який момент експортувати свої дані та імпортувати їх назад
 (Налаштування → Дані й приватність) або видалити їх усі (Налаштування → Дані й приватність →
@@ -107,6 +111,7 @@ your consent the app sends anonymous usage analytics (see "Product analytics" be
   not encrypted, so keep it as you would any personal data and do not share it with others.
   Importing a file fully replaces the corresponding data on the device; settings (language, theme,
   sleep window, gates, widget) are not part of the file.
+- **Usage statistics (on-device counters).** Tepera keeps simple daily counters of how its features are used (for example, how many times an activity was added or a tab was opened). They are stored only on your device, contain no app names, no text you enter, no times of day and no identifiers, and are deleted automatically after 90 days or when you use "Delete all data". They are not sent automatically: only if you choose "Share anonymous statistics" in Settings → Data and privacy does the app show you the exact text (30-day totals, app and Android versions) and you send it yourself by email from your own mail app — you can read and edit it before sending.
 - To show your screen-time vs. real-life balance, the app reads **app usage statistics on your
   device** through the system `UsageStatsManager` API (access is granted manually via Android
   Settings). This data is processed **entirely on-device**, never transmitted to a server, and never
@@ -126,8 +131,8 @@ your consent the app sends anonymous usage analytics (see "Product analytics" be
 - We do **not** request location permissions, in any form, including background location.
 - We do **not** create user accounts or require registration.
 
-**Analytics and network:** the app makes no network requests of its own except anonymous crash reports (via Firebase Crashlytics, which is why the app holds the network permission) when something
-goes wrong. A crash report contains only the phone model, Android version, and a technical
+**Analytics and network:** the app makes no network requests of its own except (1) anonymous crash reports (via Firebase Crashlytics, which is why the app holds the network permission) when something
+goes wrong and (2) optional anonymous analytics with your consent (see "Product analytics" below). A crash report contains only the phone model, Android version, and a technical
 description of the crash — never your activity entries, categories, or app-usage time, no user
 identification, and no in-app behavior tracking (separate from the optional analytics below). **You can turn this off:** the "Crash reports"
 toggle is shown on the first onboarding screen and always available in Settings → General; it is
@@ -139,10 +144,7 @@ provider, hosted in the EU (Frankfurt, Germany). Events are linked to a random a
 by the app, not to your name, email or Google account. We do not send names of other apps, your
 activity texts, screen content or any data obtained through the Accessibility service. Along with
 each event the app sends the device model and manufacturer, Android version, app version, language,
-time zone and screen size. IP addresses are not stored. Analytics is off until you turn it on; you
-can turn it off or reset your analytics ID at any time in Settings → Data and privacy. To request
-deletion of analytics data, email serkodesign@gmail.com with the analytics ID shown there. PostHog
-processes this data on our behalf as a data processor.
+time zone and screen size. IP addresses are not stored. Analytics is off until you turn it on; the app asks not at the very start but after your first use, and if you tap "Not now" it asks once more after about 30 days and never again; you can turn it off at any time in Settings → Data and privacy. The "Delete my analytics data" button there turns analytics off and resets your analytics ID with one tap, after which past events can no longer be linked to you; a ready-made email with your ID opens at the same time — send it to serkodesign@gmail.com if you also want us to erase those events in PostHog (we do so on request). Events are kept for no longer than 12 months and are then deleted automatically. PostHog processes this data on our behalf as a data processor.
 
 **Your control:** you can export your data at any time and import it back (Settings → Data and
 privacy) or delete all of it (Settings → Data and privacy → "Delete all data"; you have to confirm
@@ -150,3 +152,27 @@ twice). Deleting also clears the "Scrolling hours" data. Uninstalling the app re
 disabled in Android system settings).
 
 **Contact:** serkodesign@gmail.com
+
+---
+
+## Data deletion / Видалення даних {#data-deletion}
+
+**English.** Tepera has no accounts, so there is no account to delete. Your activity entries and settings
+live only on your device: delete them in the app (Settings → Data and privacy → "Delete all data") or by
+uninstalling the app. If you turned on optional analytics, you can delete its data in two ways:
+1. In the app: Settings → Data and privacy → "Delete my analytics data" — turns analytics off, resets
+   your analytics ID (past events can no longer be linked to you) and opens a ready-made email with your ID.
+2. By email: write to **serkodesign@gmail.com** with the subject "Delete my Tepera analytics data" and the
+   analytics ID (it is in the email the app prepares; if you reset the ID before sending, include the old one
+   shown in that email). We erase the events for that ID in PostHog and reply when done. Crash reports contain
+   no identifiers that could be linked to you, so they cannot be looked up individually.
+
+**Українською.** У Tepera немає акаунтів, тож видаляти акаунт нема чого. Ваші записи й налаштування лежать лише на
+пристрої: видаліть їх у застосунку (Налаштування → Дані й приватність → «Видалити всі дані») або видаливши застосунок.
+Якщо ви вмикали необов'язкову аналітику, її дані можна видалити двома способами:
+1. У застосунку: Налаштування → Дані й приватність → «Видалити мої дані аналітики» — вимикає аналітику, скидає ID
+   (минулі події вже не зв'язати з вами) і відкриває готовий лист із вашим ID.
+2. Листом: напишіть на **serkodesign@gmail.com** з темою «Видалити мої дані аналітики Tepera» й ID аналітики (він у листі,
+   який готує застосунок; якщо ви скинули ID до надсилання, вкажіть старий, показаний у тому листі). Ми стираємо події
+   за цим ID у PostHog і відповідаємо, коли готово. Звіти про збої не містять ідентифікаторів, за якими можна знайти
+   конкретну людину, тому окремо їх не знайти.

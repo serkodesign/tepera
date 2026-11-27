@@ -51,8 +51,33 @@ class AnalyticsConsentStore(context: Context) : AnalyticsConsent {
     fun isDecided(): Boolean = prefs.getBoolean(KEY_DECIDED, false)
 
     fun set(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_ENABLED, enabled).putBoolean(KEY_DECIDED, true).apply()
+        prefs.edit().putBoolean(KEY_ENABLED, enabled).putBoolean(KEY_DECIDED, true)
+            .apply { if (enabled) putBoolean(KEY_EVER_ENABLED, true) }.apply()
     }
+
+    /** Чи аналітику коли-небудь вмикали (тоді «Видалити мої дані» лишається доступним і після вимкнення). */
+    fun wasEverEnabled(): Boolean = prefs.getBoolean(KEY_EVER_ENABLED, false)
+
+    /** Скільки разів уже показано діалог (локально; для оцінки частки згод). */
+    fun shownCount(): Int = prefs.getInt(KEY_SHOWN, 0)
+
+    /** Чи людина вже раз відклала вибір («Не зараз»): другий «Не зараз» вважається відмовою. */
+    fun postponedOnce(): Boolean = prefs.getInt(KEY_POSTPONED, 0) >= 1
+
+    fun markShown() {
+        prefs.edit().putInt(KEY_SHOWN, shownCount() + 1).apply()
+    }
+
+    /** «Не зараз»: нічого не вмикається, питаємо знову не раніше ніж через [SNOOZE_DAYS] днів. */
+    fun postpone(nowMillis: Long) {
+        prefs.edit()
+            .putInt(KEY_POSTPONED, prefs.getInt(KEY_POSTPONED, 0) + 1)
+            .putLong(KEY_SNOOZE_UNTIL, nowMillis + SNOOZE_DAYS * DAY_MS)
+            .apply()
+    }
+
+    /** Чи настав час питати: вибір не зроблено й відкладення (якщо було) спливло. */
+    fun isDue(nowMillis: Long): Boolean = !isDecided() && nowMillis >= prefs.getLong(KEY_SNOOZE_UNTIL, 0L)
 
     fun clear() {
         prefs.edit().clear().apply()
@@ -62,5 +87,11 @@ class AnalyticsConsentStore(context: Context) : AnalyticsConsent {
         const val PREFS = "analytics_consent"
         const val KEY_ENABLED = "enabled"
         const val KEY_DECIDED = "decided"
+        const val KEY_EVER_ENABLED = "ever_enabled"
+        const val KEY_SHOWN = "shown_count"
+        const val KEY_POSTPONED = "postponed_count"
+        const val KEY_SNOOZE_UNTIL = "snooze_until"
+        const val SNOOZE_DAYS = 30L
+        const val DAY_MS = 24L * 60 * 60 * 1000
     }
 }

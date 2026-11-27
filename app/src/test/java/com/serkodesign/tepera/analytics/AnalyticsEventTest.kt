@@ -24,6 +24,8 @@ class AnalyticsEventTest {
         AnalyticsEvent.StatsShareOpened,
         AnalyticsEvent.StatsShared,
         AnalyticsEvent.AnalyticsConsentChanged(false),
+        AnalyticsEvent.ConsentPromptShown,
+        AnalyticsEvent.ConsentPromptAnswered(ConsentAnswer.LATER),
         AnalyticsEvent.RiskWindowStarted,
         AnalyticsEvent.IntentionSheetShown,
         AnalyticsEvent.IntentionSelected(IntentionBucket.MIN_15),
@@ -58,7 +60,7 @@ class AnalyticsEventTest {
             ),
             b
         )
-        assertEquals(17, all.count { it.category == Category.A_OWN_UI })
+        assertEquals(19, all.count { it.category == Category.A_OWN_UI })
     }
 
     @Test
