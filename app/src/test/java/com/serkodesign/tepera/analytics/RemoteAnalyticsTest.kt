@@ -64,7 +64,7 @@ class RemoteAnalyticsTest {
         val client = FakeClient()
         RemoteAnalytics(client, FakeConsent(true), "1.4.2").track(categoryA)
         val (name, props) = client.captured.single()
-        assertEquals("tab_viewed", name)
+        assertEquals("tab_viewed_data", name)
         assertEquals(mapOf<String, Any>("tab" to "data", "app_version" to "1.4.2"), props)
         assertTrue(props.keys.all { it in AnalyticsAllowlist.KEYS })
     }

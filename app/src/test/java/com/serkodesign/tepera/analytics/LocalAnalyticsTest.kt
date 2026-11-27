@@ -46,7 +46,7 @@ class LocalAnalyticsTest {
         analytics.track(AnalyticsEvent.ActivityAdded)
         analytics.track(AnalyticsEvent.TabViewed(Tab.TODAY))
         assertEquals(2, dao.counts[Triple(day, "activity_added", "")])
-        assertEquals(1, dao.counts[Triple(day, "tab_viewed", "tab=today")])
+        assertEquals(1, dao.counts[Triple(day, "tab_viewed_today", "tab=today")])
     }
 
     @Test

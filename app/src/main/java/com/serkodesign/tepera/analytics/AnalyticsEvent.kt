@@ -45,7 +45,9 @@ sealed class AnalyticsEvent(
     object WindowEdited : AnalyticsEvent("window_edited", Category.A_OWN_UI)
     object WindowDeleted : AnalyticsEvent("window_deleted", Category.A_OWN_UI)
     object ActivityAdded : AnalyticsEvent("activity_added", Category.A_OWN_UI)
-    class TabViewed(tab: Tab) : AnalyticsEvent("tab_viewed", Category.A_OWN_UI, mapOf("tab" to tab.key()))
+    /** Окрема подія на кожну вкладку (`tab_viewed_today/activities/data/settings`), щоб різницю було видно в списку подій; `tab` лишається й властивістю. */
+    class TabViewed(tab: Tab) :
+        AnalyticsEvent("tab_viewed_${tab.key()}", Category.A_OWN_UI, mapOf("tab" to tab.key()))
     class GatePaused(duration: PauseDuration) :
         AnalyticsEvent("gate_paused", Category.A_OWN_UI, mapOf("duration" to duration.key()))
     class WidgetAdded(widget: WidgetKind) :
