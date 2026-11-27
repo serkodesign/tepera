@@ -11,7 +11,8 @@ import com.posthog.android.PostHogAndroidConfig
  *  — старт у стані opt-out (нічого не надсилається, доки [setOptOut] не зніме); стан узгоджує TeperaApp зі згодою;
  *  — без профілів людей, `identify()`/`alias()` ніде не викликаються;
  *  — без автозбору (життєвий цикл, екрани, deep link), без запису сесій, без feature flags;
- *  — GeoIP вимкнено на рівні кожної події (`$geoip_disable`), IP на сервері теж треба відкинути в налаштуваннях проєкту.
+ *  — GeoIP вимкнено на рівні кожної події (`$geoip_disable`); IP на кожній події підмінено на 0.0.0.0 (`$ip`), тож реальна
+ *    адреса не потрапляє у збережену подію навіть без налаштування проєкту (його все одно бажано ввімкнути).
  */
 class PostHogRemoteClient(context: Context, apiKey: String, initiallyOptedOut: Boolean, debug: Boolean) : RemoteClient {
     init {
@@ -32,7 +33,7 @@ class PostHogRemoteClient(context: Context, apiKey: String, initiallyOptedOut: B
     }
 
     override fun capture(name: String, props: Map<String, Any>) {
-        PostHog.capture(event = name, properties = props + (GEOIP_DISABLE to true))
+        PostHog.capture(event = name, properties = props + mapOf(GEOIP_DISABLE to true, IP_OVERRIDE to "0.0.0.0"))
     }
 
     override fun setOptOut(optOut: Boolean) {
@@ -48,5 +49,6 @@ class PostHogRemoteClient(context: Context, apiKey: String, initiallyOptedOut: B
     private companion object {
         const val HOST = "https://eu.i.posthog.com"
         const val GEOIP_DISABLE = "\$geoip_disable"
+        const val IP_OVERRIDE = "\$ip"
     }
 }
