@@ -4,14 +4,16 @@ title: Privacy Policy — Tepera
 
 # Privacy Policy / Політика конфіденційності — Tepera
 
-*Останнє оновлення / Last updated: 09.11.2026*
+*Останнє оновлення / Last updated: 27.11.2026*
 
 ---
 
 ## Українською
 
-**Tepera** — це офлайн-first застосунок. Ми не збираємо, не продаємо і не передаємо треті
-особам жодних персональних даних.
+**Tepera** — це офлайн-first застосунок: основний функціонал працює без мережі. Ми не продаємо
+ваші дані й не передаємо їх третім особам для реклами. **Без вашої згоди ми нічого не збираємо;
+за вашою згодою застосунок надсилає анонімну аналітику використання (розділ «Продуктова
+аналітика» нижче).**
 
 **Які дані обробляються:**
 - Усі записи про активність (категорія, тривалість, нотатки) зберігаються **лише локально на вашому
@@ -19,7 +21,8 @@ title: Privacy Policy — Tepera
 - Резервне копіювання відбувається виключно через стандартний механізм **Android Auto Backup**
   (керується Google Account на вашому пристрої) або через ручний експорт файлу, який ви самі контролюєте.
   Android може зберігати дані застосунку в резервній копії вашого облікового запису Google за
-  налаштуваннями вашого телефона; сама Tepera нічого не надсилає.
+  налаштуваннями вашого телефона; сама Tepera цього не надсилає (окрім необов'язкової аналітики за
+  вашою згодою та звітів про збої, які можна вимкнути).
 - **Що входить у файл експорту** (Налаштування → Дані й приватність → «Експортувати статистику»):
   ваші активності (назва, іконка, колір, порядок, архівація), усі записи часу (початок, тривалість,
   нотатка), виключені застосунки, орієнтир Online-часу та щоденна історія Online (хвилини Online,
@@ -54,9 +57,21 @@ title: Privacy Policy — Tepera
 **Аналітика й мережа:** застосунок сам не робить мережевих запитів, окрім анонімних crash-звітів (через Firebase Crashlytics, для чого в застосунку є дозвіл на доступ до мережі) у разі
 збою. Звіт містить лише модель телефону, версію Android і технічний опис самого збою — без
 записів активностей, категорій чи часу використання застосунків, без ідентифікації користувача
-та без трекінгу поведінки в застосунку. **Це можна вимкнути:** перемикач «Звіти про збої»
+та без трекінгу поведінки в застосунку (окремо від необов'язкової аналітики нижче). **Це можна вимкнути:** перемикач «Звіти про збої»
 показується на першому екрані онбордингу і завжди доступний у Налаштування → Загальні; на час
 закритого тестування він увімкнений за замовчуванням.
+
+**Продуктова аналітика (необов'язково).** Якщо ви вмикаєте «Допомогти покращити Tepera», застосунок
+надсилає анонімні події використання (наприклад, який екран відкрито чи що додано активність)
+сервісу аналітики PostHog із серверами в ЄС (Франкфурт, Німеччина). Події прив'язані до випадкового
+ID аналітики, який генерує застосунок, а не до вашого імені, email чи облікового запису Google. Ми
+не надсилаємо назви інших застосунків, тексти ваших занять, вміст екрана чи будь-які дані, отримані
+через службу спеціальних можливостей (Accessibility). Разом із подією передаються модель і
+виробник пристрою, версія Android, версія застосунку, мова, часовий пояс і розмір екрана.
+IP-адреси не зберігаються. Аналітика вимкнена, доки ви її не ввімкнете; вимкнути її чи скинути ID
+аналітики можна будь-коли в Налаштування → Дані й приватність. Щоб видалити дані аналітики,
+напишіть на serkodesign@gmail.com, вказавши ID аналітики з цього екрана. PostHog обробляє ці дані
+від нашого імені як обробник даних.
 
 **Ваш контроль:** ви можете в будь-який момент експортувати свої дані та імпортувати їх назад
 (Налаштування → Дані й приватність) або видалити їх усі (Налаштування → Дані й приватність →
@@ -69,16 +84,18 @@ Backup, яку можна вимкнути в системних налашту�
 
 ## English
 
-**Tepera** is an offline-first app. We do not collect, sell, or share any personal data
-with third parties.
+**Tepera** is an offline-first app: its core features work without a network. We do not sell your
+data or share it with third parties for advertising. **Without your consent we collect nothing; with
+your consent the app sends anonymous usage analytics (see "Product analytics" below).**
 
 **What data is processed:**
 - All activity entries (category, duration, notes) are stored **locally on your device only**, in the
   app's protected storage.
 - Backups happen only through the standard **Android Auto Backup** mechanism (tied to your Google
   Account on-device) or through a manual file export that you fully control. Android may keep the
-  app's data in your Google account backup according to your phone settings; Tepera itself sends
-  nothing.
+  app's data in your Google account backup according to your phone settings; Tepera itself does not
+  send it (apart from optional analytics with your consent and crash reports, which you can turn
+  off).
 - **What the export file contains** (Settings → Data and privacy → "Export statistics"): your
   activities (name, icon, colour, order, archived state), all activity entries (start, duration,
   note), excluded apps, the Online-time reference and the daily Online history (Online minutes,
@@ -112,9 +129,20 @@ with third parties.
 **Analytics and network:** the app makes no network requests of its own except anonymous crash reports (via Firebase Crashlytics, which is why the app holds the network permission) when something
 goes wrong. A crash report contains only the phone model, Android version, and a technical
 description of the crash — never your activity entries, categories, or app-usage time, no user
-identification, and no in-app behavior tracking. **You can turn this off:** the "Crash reports"
+identification, and no in-app behavior tracking (separate from the optional analytics below). **You can turn this off:** the "Crash reports"
 toggle is shown on the first onboarding screen and always available in Settings → General; it is
 on by default during the closed test.
+
+**Product analytics (optional).** If you turn on "Help improve Tepera", the app sends anonymous usage
+events (for example, which screen was opened or that an activity was added) to PostHog, our analytics
+provider, hosted in the EU (Frankfurt, Germany). Events are linked to a random analytics ID generated
+by the app, not to your name, email or Google account. We do not send names of other apps, your
+activity texts, screen content or any data obtained through the Accessibility service. Along with
+each event the app sends the device model and manufacturer, Android version, app version, language,
+time zone and screen size. IP addresses are not stored. Analytics is off until you turn it on; you
+can turn it off or reset your analytics ID at any time in Settings → Data and privacy. To request
+deletion of analytics data, email serkodesign@gmail.com with the analytics ID shown there. PostHog
+processes this data on our behalf as a data processor.
 
 **Your control:** you can export your data at any time and import it back (Settings → Data and
 privacy) or delete all of it (Settings → Data and privacy → "Delete all data"; you have to confirm
